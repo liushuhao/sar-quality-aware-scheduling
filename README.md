@@ -5,6 +5,8 @@ Companion code and data for:
 > **LIU, S. (2026).** Physics-Aware Multi-Objective Scheduling for Agile SAR
 > Satellites: Balancing Profit, NESZ, and Geometric Resolution.
 > *Advances in Space Research* (preparing for submission).
+> 
+> Companion repository: [liushuhao/sar-quality-aware-scheduling](https://github.com/liushuhao/sar-quality-aware-scheduling)
 
 ## Summary
 
