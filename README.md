@@ -4,7 +4,7 @@ Companion code and data for:
 
 > **LIU, S. (2026).** Physics-Aware Multi-Objective Scheduling for Agile SAR
 > Satellites: Balancing Profit, NESZ, and Geometric Resolution.
-> *Advances in Space Research* (submitted).
+> *Advances in Space Research* (preparing for submission).
 
 ## Summary
 
@@ -32,7 +32,7 @@ Five solvers compared on 200 systematic scenarios across four target densities (
 From repository root:
 
 ```bash
-# Five solvers × four scenario classes × 50 trials = 1000 scenarios total
+# Five solvers × 200 fixed scenarios = 1000 solver runs
 python papers/single-sat-quality/experiments/run_baselines_v4.py    # G-BL, G-SM
 python papers/single-sat-quality/experiments/run_so_f1_bl.py         # GA-P-BL
 python papers/single-sat-quality/experiments/run_moea_2obj.py        # MOEA-2
@@ -68,7 +68,7 @@ Requires TeX distribution with `amsmath`, `booktabs`, `caption`, `hyperref`, `ge
 
 ## Data Availability
 
-All experimental scenarios, solver configurations, NSGA-III reference points (Das–Dennis p=12, H=13), statistical analysis scripts, and random seeds included. Per-scenario raw results allow independent verification of all numerical claims.
+Tracked assets include solver code, scenario generators, fixed seeds/configuration, processed JSON/CSV results, analysis scripts, and figures. Generated binary scenario files and per-run pickle objects are excluded from Git; regenerate them with the supplied scripts. Configure and publish the repository remote before manuscript submission.
 
 ## Code Layout
 

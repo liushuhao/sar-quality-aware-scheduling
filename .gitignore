@@ -56,6 +56,8 @@ _c*.txt
 papers/*.pdf
 papers/*.txt
 papers/task-allocation-auctions-main/
+reference/task-allocation-auctions-main/
+nature-skills-main/
 
 # Claude local state
 .claude/
