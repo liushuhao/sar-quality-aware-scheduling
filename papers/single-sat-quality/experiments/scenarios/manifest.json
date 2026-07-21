@@ -1,0 +1,24 @@
+{
+  "generated_at": "2026-06-14T07:11:56.298777+00:00",
+  "scales": {
+    "small": 20,
+    "medium": 100,
+    "large": 500
+  },
+  "n_seeds": 30,
+  "total_scenarios": 90,
+  "orbit": {
+    "altitude_km": 600.0,
+    "inclination_deg": 97.8,
+    "ltan_h": 6.0,
+    "sim_duration_orbits": 2,
+    "timestep_s": 60
+  },
+  "instrument": {
+    "incidence_min_deg": 15.0,
+    "incidence_max_deg": 50.0,
+    "look_direction": "both",
+    "antenna_type": "reflector",
+    "min_elevation_deg": 5.0
+  }
+}

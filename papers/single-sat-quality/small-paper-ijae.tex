@@ -1,0 +1,1435 @@
+% ============================================================
+%  Small Paper --- IJAE (International Journal of Aerospace Engineering)
+%  Title: Physics-Aware Multi-Objective Scheduling for Agile SAR
+%         Satellites: Balancing Profit, NESZ, and Geometric Resolution
+% ============================================================
+\documentclass[12pt,a4paper]{article}
+% ── Packages ──
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{graphicx}
+\graphicspath{{figures/}}
+\usepackage{booktabs}
+\usepackage{hyperref}
+\usepackage{geometry}
+\geometry{margin=2.5cm}
+\usepackage{caption}
+\captionsetup{justification=centering}
+\usepackage{subcaption}
+\usepackage{multirow}
+\usepackage{enumitem}
+\usepackage{float}
+% ── Metadata ──
+\title{Physics-Aware Multi-Objective Scheduling for Agile SAR Satellites: \\ Balancing Profit, NESZ, and Geometric Resolution}
+\author{LIU SHUHAO\\[1ex]
+College of Intelligent Systems Science and Engineering\\
+Harbin Engineering University\\
+145 Nantong Street, Nangang District, Harbin 150001, China\\
+\texttt{liushuhao@hrbeu.edu.cn}}
+\date{}
+\begin{document}
+\maketitle
+% ============================================================
+%  ABSTRACT (~180-200 words)
+% ============================================================
+\begin{abstract}
+In agile SAR scheduling, observation timing determines not only feasibility
+but also imaging quality through radar-specific geometric and radiometric effects.
+We characterize an empirical upper bound on multi-objective SAR quality
+optimization in single-pass, single-satellite Stripmap operation by integrating
+two SAR physical quality dimensions --- Noise-Equivalent Sigma Zero (NESZ,
+radiometric) and geometric resolution --- as decomposed optimization
+objectives within an NSGA-III framework, distinct from the scalar visibility
+composite of prior SAR-quality-aware schedulers~\cite{Kramer2025SARVis} or the
+generic image-quality composite of Wei et al.~\cite{Wei2025MONP}.
+Experiments spanning target densities from 20 to 500 reveal a scale-dependent
+bound: at sparse densities ($N \lesssim 100$), multi-objective optimization
+can extract modest geometric quality gains ($+8.0\%$ at $N=20$) at a steep
+coverage cost ($-31\%$ $f_1^*$), while at operational densities ($N \geq 300$)
+profit-oriented solvers converge to a common coverage ceiling---a geometric
+upper bound that the ablation confirms is independent of objective-function
+specification. The bound is conditional on greedy-baseline hot-start
+initialization (material across all tested $N$: $\Delta f_1^* \approx
+-0.20$ at S1, $-0.44$ at S2, $-0.46$ at S3, $-0.33$ at S4, narrowing
+at S4), but the redundancy of the three-objective formulation
+(MOEA-2 $\approx$ MOEA-3) is anchor-independent. The squint-minimized greedy
+occupies a distinct low-coverage, high-radiometric-quality regime outside
+this ceiling. Rather than identifying a superior solver, our results establish
+an empirical upper bound on what physics-aware multi-objective scheduling can
+contribute to single-satellite SAR operations.
+\end{abstract}
+\noindent\textbf{Keywords:} agile SAR, satellite scheduling, multi-objective optimization, NSGA-III, noise-equivalent sigma zero (NESZ), geometric resolution
+% ============================================================
+%  1. INTRODUCTION (~900 words)
+% ============================================================
+\section{Introduction}
+Agile Earth-observation satellites equipped with Synthetic Aperture Radar (SAR)
+are increasingly central to time-critical monitoring missions, from disaster response
+to maritime surveillance.
+Their agility --- the ability to slew the antenna beam away from the nadir track ---
+enables a single satellite to image far more targets per orbit than a fixed-pointing
+platform \cite{Curlander1991}.
+This flexibility, however, transforms scheduling from a simple feasibility check
+into a combinatorial optimization problem: for $N$ targets each with a finite
+visibility window, the scheduler must select a subset and assign observation times
+that satisfy attitude transition constraints while maximizing some measure of
+mission value.
+In optical satellite scheduling, the imaging quality of each observation is
+largely independent of the chosen observation time: a cloud-free nadir image
+of a given target has essentially the same resolution regardless of when
+within the visibility window it is acquired.
+The scheduling problem therefore reduces to maximizing the number or priority-weighted
+sum of observed targets subject to temporal feasibility.
+This assumption underpins most existing satellite scheduling work,
+from mixed-integer programming formulations to deep reinforcement learning
+approaches \cite{Chen2025NeuralPriority}.
+SAR imaging, however, violates this assumption fundamentally.
+SAR image quality depends on the radar geometry at the moment of acquisition:
+the ground-range resolution degrades with incidence angle ($\rho_{\text{rg}} \propto 1/\sin\theta$),
+the azimuth resolution broadens with squint angle ($\rho_{\text{az}} \propto 1/\cos\psi_{\text{sq}}$),
+and the radiometric sensitivity (Noise-Equivalent Sigma Zero, NESZ) deteriorates
+with slant range as $R^3$ \cite{Cumming2005}.
+When the scheduler can choose \emph{when} within a visibility window to observe
+each target --- the defining feature of agile satellites --- it simultaneously
+chooses the imaging quality at which each target is acquired.
+Despite this tight coupling between scheduling and imaging physics,
+with few exceptions (e.g., \cite{Wei2025MONP,Kramer2025SARVis}), existing
+agile SAR scheduling methods either reduce SAR to a coverage-only objective
+(optimizing only task coverage) or apply post-hoc quality checks on schedules produced by
+coverage-maximizing solvers.
+Few approaches treat physical quality dimensions as primary optimization
+objectives in the SAR domain specifically.
+The problem is NP-hard by reduction from the Orienteering Problem with
+Time-Dependent Profits \cite{Peng2019Orienteering}, precluding
+polynomial-time exact algorithms for all but the smallest instances.
+Unlike the Resource-Constrained Project Scheduling Problem (RCPSP),
+where task durations are fixed, our formulation features time-dependent
+transition times (C3) and time-dependent quality values ($f_2$, $f_3$),
+making the scheduling and quality-selection decisions coupled rather
+than separable.
+The SAR literature has well-established models for NESZ and geometric resolution
+as functions of observation geometry \cite{Curlander1991,Cumming2005}, and
+the multi-objective optimization literature provides mature frameworks such
+as NSGA-III \cite{Deb2014} for handling three or more objectives simultaneously.
+Yet these three bodies of knowledge --- SAR physical modeling, multi-objective
+evolutionary algorithms (MOEAs), and satellite scheduling --- have not been
+integrated. This paper applies MOEAs to a SAR scheduling formulation
+with physical quality objectives, a combination not previously reported.
+We formulate a three-objective agile SAR scheduling problem in which the
+scheduler optimizes (1) total coverage profit, (2) mean geometric image quality
+(ground-range and azimuth resolution), and (3) mean NESZ radiometric quality
+simultaneously.
+We compare five solvers spanning the methodological spectrum: two greedy
+heuristics (one profit-only baseline and one squint-minimized variant), a
+single-objective genetic algorithm with greedy hot-start, and two NSGA-III
+variants with two and three objectives.
+A geometric precomputation cache reduces attitude computation from $O(N^2)$
+to $O(N)$ in the solver evaluation loop.
+The solvers are evaluated on 200 systematically varied scenarios across four
+density classes ($N = 20$ to $N = 500$).
+Our results reveal a scale-dependent bound rather than a uniform solver advantage.
+In sparse scenarios ($N \lesssim 100$), multi-objective optimization can extract
+modest geometric quality gains ($+8.0\%$ at $N = 20$) --- but at a steep coverage
+cost ($-31\%$ $f_1^*$), selecting approximately $62\%$ of the targets captured by a simple
+profit-only greedy scheduler.
+In dense scenarios ($N \geq 300$; S3--S4), the multi-objective advantage
+diminishes to $<2\%$ $f_2$ improvement and $<2\%$ $f_1^*$ deficit: greedy
+methods approach Pareto-optimal coverage, and the squint-minimized heuristic
+offers competitive radiometric quality.
+Section~\ref{sec:summary} provides a detailed synthesis of these findings.
+The specific contributions of this work are:
+\begin{enumerate}[nosep]
+    \item The decomposition of SAR image quality into closed-form NESZ
+    ($\propto R^3$) and geometric resolution ($\sin\theta\cos\psi_{\text{sq}}$)
+    objectives within an NSGA-III framework---distinct from the scalar
+    visibility composite of Kramer \& Miller~\cite{Kramer2025SARVis} and
+    the generic image-quality composite of Wei et al.~\cite{Wei2025MONP}---using
+    mean per-task quality metrics that decouple quality from the number of
+    scheduled tasks;
+    \item The discovery and analytical characterization of an empirical upper
+    bound on multi-objective SAR quality optimization in the single-pass,
+    single-satellite Stripmap setting: the bound arises from
+    solver convergence to low-squint regimes (where the empirical
+    $r = 0.93$--$0.98$ exceeds the definitional null
+    $r_{\text{null}} = -0.51$, \S~\ref{sec:objective-functions}), not from
+    a physical identity between objectives, and renders
+    the three-objective formulation redundant at operational densities
+    ($N \geq 300$). A scale phase transition concentrates the multi-objective
+    advantage in sparse regimes ($+8.0\%$ geometric quality at $N=20$),
+    beyond which profit-oriented solvers converge to a common coverage
+    ceiling;
+    \item A systematic empirical characterization using five solvers
+    (greedy, single-objective GA, and NSGA-III variants)
+    across four scale classes and an ablation study covering four
+    objective-function variants, confirming that physical quality
+    objectives affect solver outcomes only in sparse regimes and that the
+    bound is conditional on greedy-baseline hot-start initialization.
+\end{enumerate}
+% ============================================================
+%  2. RELATED WORK (~900 words)
+% ============================================================
+\section{Related Work}
+We review three lines of research that our work bridges:
+satellite scheduling (2.1), SAR physical quality modeling (2.2),
+and multi-objective evolutionary optimization (2.3).
+\subsection{Satellite Scheduling}
+Satellite scheduling has been studied extensively in the Earth-observation
+domain. The survey by Ferrari et al.~\cite{Ferrari2025} catalogs over 200
+publications spanning exact methods, heuristics, metaheuristics, and
+learning-based approaches. Exact formulations based on mixed-integer linear
+programming (MILP) achieve optimality on small instances but fail to scale
+to operational problem sizes, motivating a broad family of heuristic and
+metaheuristic alternatives including genetic algorithms, simulated annealing,
+and tabu search~\cite{Wang2019MILP,Chen2019MILPMulti}.
+The earliest formal treatments of agile satellite scheduling by
+Lema\^{i}tre et al.~\cite{Lemaitre2002MultiSat} and
+Bianchessi et al.~\cite{Bianchessi2007} established the
+foundational problem structure of time-dependent transition
+times between observations.
+Recent work further generalizes these methods to agile satellites, where
+the freedom to choose observation start times within each visibility window
+is exploited to pack more observations into a single orbit~\cite{Peng2019Orienteering,Chen2024LearnConstruct}.
+A parallel line of research has pursued learning-based and hybrid approaches
+for satellite scheduling. Liu et al.~\cite{Liu2024TwoStageDRL} and
+Zhou et al.~\cite{Zhou2025TwoPhase} apply deep reinforcement learning to
+agile optical satellite scheduling, while Jacquet et al.~\cite{Jacquet2024GNN}
+combine graph neural networks with Monte Carlo tree search for the same domain.
+Wang et al.~\cite{Wang2026Lagrangian} propose a Lagrangian relaxation-based
+heuristic for multi-satellite mission planning.
+Caleiras et al.~\cite{Caleiras2026SuperAgile} formulate super-agile
+satellite scheduling as a constraint programming problem, capturing
+the time-dependent transition constraints characteristic of super-agile platforms.
+Herrmann et al.~\cite{Herrmann2023} apply RL to on-board AEOS scheduling, maximizing target collection reward without imaging quality as an objective.
+Wu et al.~\cite{Wu2026WhaleHighDensity} address high-target-density AEOS scheduling with an improved whale optimization algorithm, reporting convergence challenges that echo the density-driven constraint tightening we analyze in \S~\ref{sec:scale-sensitivity}.
+Despite their methodological diversity, all these
+works treat quality as a fixed property determined at observation-window
+generation. In contrast, SAR imaging quality varies continuously with acquisition
+geometry and is directly optimizable within the scheduling window. Chang et al.~\cite{Chang2022Gaofen}
+ propose the first MOEA for SAR satellite scheduling using two adaptive
+NSGA-II variants on a Gaofen-12 X-band SAR platform; their bi-objective
+formulation (profit + energy consumption) represents the closest prior
+work to ours, but it omits imaging quality dimensions. Wei et al.~\cite{Wei2025MONP}
+introduce a neural-policy-guided MOEA that incorporates a composite image
+quality score as an optimization objective. Kramer \& Miller~\cite{Kramer2025SARVis}
+schedule SAR constellation observations with a hybrid metaheuristic using a
+weighted visibility--performance composite, embedding a SAR-quality proxy in
+the scheduler, and Yao et al.~\cite{Yao2024Bilevel}
+develop a bilevel evolutionary algorithm for multi-satellite scheduling
+that separates task allocation from detailed observation planning.
+The common limitation of all this prior work is that SAR physical quality
+metrics --- noise-equivalent sigma zero (NESZ), azimuth resolution,
+ground-range resolution --- are either absent or approximated by coarse
+proxies (e.g., penalizing extreme off-nadir angles). No existing SAR
+scheduling method treats continuous, physics-derived quality functions as
+optimization objectives in their own right.
+\subsection{SAR Physical Quality Modeling}
+The SAR remote sensing literature provides well-established analytical
+models linking observation geometry to image quality.
+Curlander and McDonough~\cite{Curlander1991}, Cumming and
+Wong~\cite{Cumming2005}, and Moreira et al.~\cite{Moreira2025} give comprehensive treatments
+of SAR physics, including the two quality dimensions relevant to scheduling:
+geometric resolution and radiometric sensitivity.
+Geometric resolution decomposes into ground-range resolution
+$\rho_{\text{rg}} = c / (2B \sin\theta)$, where $c$ is the speed of light,
+$B$ the radar bandwidth, and $\theta$ the incidence angle, and azimuth
+resolution $\rho_{\text{az}} = D / (2 \cos\psi_{\text{sq}})$, where $D$
+is the antenna length and $\psi_{\text{sq}}$ the squint angle. This gives
+the unweighted theoretical limit; in operational SAR, Taylor or Hamming
+amplitude weighting widens $\rho_{\text{az}}$ by 10--20\%~\cite{Curlander1991}.
+Since this weighting is platform-constant, the unweighted form preserves
+the relative ordering of observation geometries for optimization purposes.
+Both degrade as the observation departs from the zero-Doppler geometry
+($\psi_{\text{sq}} = 0$, $\theta$ minimal). Radiometric sensitivity,
+measured by the Noise-Equivalent Sigma Zero (NESZ), deteriorates with the
+cube of slant range: $\text{NESZ} \propto R^3 \propto 1/(\cos^3\theta \cdot \cos^3\psi_{\text{sq}})$ for Stripmap SAR after azimuth compression
+gain~\cite{Curlander1991}. The proportionality $\text{NESZ} \propto R^3$
+captures the dominant geometric dependence; noise figure, transmit power,
+and processing gain terms are omitted as they are platform-constant and do
+not affect the relative ordering of observation geometries that the
+scheduler optimizes over. This cubic dependence on slant range means even modest
+deviations from the optimal viewing geometry make fine observation timing
+critical for radiometric performance.
+Moreira et al.~\cite{Moreira2025} survey the evolution of spaceborne SAR
+technologies and reinforce that imaging quality is intrinsically tied to
+acquisition geometry.
+These quality models are routinely used in SAR system design to specify
+performance envelopes (e.g., maximum NESZ across a swath). Their use in
+scheduling, however, remains limited to post-hoc validation of fixed
+observation plans~\cite{KramerMiller2024} or binary feasibility filtering
+at the observation-window level~\cite{QualityScreening2026} (arXiv preprint). The
+scheduling literature and the SAR quality modeling literature have
+developed in parallel: schedulers treat quality as a constraint, while
+SAR engineers compute quality after the schedule is fixed. Our work
+connects these two domains by embedding continuous quality functions
+directly into the optimization objective space.
+\subsection{Multi-Objective Evolutionary Optimization}
+Multi-objective evolutionary algorithms (MOEAs) have matured into a
+standard toolkit for problems with two or more competing objectives.
+The NSGA-III algorithm~\cite{Deb2014} extends the well-known NSGA-II
+framework to many-objective problems ($M \geq 3$) through a
+reference-point-based diversity preservation mechanism, replacing the
+crowding distance operator that degrades in higher dimensions. NSGA-III
+has been applied to aerospace trajectory optimization, constellation
+design, and mission planning problems where objectives such as fuel
+consumption, coverage, and revisit time must be balanced simultaneously.
+In satellite scheduling, MOEAs have been applied primarily in optical
+domains, with objectives that include total profit, task completion time,
+resource utilization, and load balancing~\cite{Wei2021Memetic,Li2018Preference}. Yang et al.~\cite{Yang2024MOEAReview} survey recent developments in surrogate-assisted expensive MOEAs for multi-satellite imaging mission planning.
+The hypervolume (HV) indicator is the most widely used quality metric
+for comparing Pareto front approximations, but its sensitivity to
+frontier cardinality creates interpretational challenges when comparing
+single-objective and multi-objective solvers --- a methodological issue
+we address in \S~\ref{sec:pareto-coupling}.
+The decompose-and-learn framework of Qi et al.~\cite{DecomposeLearn2025}
+tackles large-scale satellite scheduling with a multi-objective
+decomposition strategy, demonstrating that MOEA scalability can be
+achieved through problem-specific decomposition.
+To our knowledge, MOEAs have not been applied to SAR scheduling with
+physical quality objectives. The closest work uses single-objective
+optimization with post-hoc quality evaluation, which cannot reveal the
+structure of trade-offs between coverage and imaging quality. Our
+NSGA-III formulation makes these trade-offs explicit by placing
+coverage profit, geometric quality, and radiometric quality in a unified
+multi-objective framework, producing Pareto fronts that mission planners
+can inspect to make informed quality--coverage decisions.
+% ============================================================
+%  3. PROBLEM FORMULATION (~1100 words)
+% ============================================================
+\section{Problem Formulation}
+% ── 3.1 System Model ──
+\subsection{System Model}\label{sec:system-model}
+% Satellite orbit, task set, visibility windows
+% Key parameters: H, ω_max, τ_settle
+% Decision variables: x_i (selection), t_i (start time)
+We consider a single agile SAR satellite in a circular orbit at altitude $H$,
+operating in Stripmap mode. We adopt Stripmap as the baseline SAR mode because
+it provides the widest continuous swath with uniform quality, and its
+quality--geometry relationships are analytically tractable through closed-form
+NESZ and resolution expressions \cite{Curlander1991}.
+Extension to ScanSAR and TOPS modes is discussed in
+\S~\ref{sec:limitations}.
+A problem instance $\mathcal{I} = (\mathcal{T}, \mathcal{S}, \mathcal{O})$ consists of
+a set of $N$ ground targets $\mathcal{T}$, a satellite platform $\mathcal{S}$,
+and a SAR imaging model $\mathcal{O}$.
+\paragraph{Task Set.}
+Each task $i \in \{1,\ldots,N\}$ is specified by its geographic coordinates
+$\mathbf{r}_i = (\phi_i, \lambda_i)$, a priority weight $p_i \in \mathbb{R}^+$,
+a minimum required ground resolution $\rho_i^{\text{req}}$, a visibility window
+$\mathcal{W}_i = [a_i, b_i]$ during which the satellite can observe the target,
+and a fixed observation duration $d_i$.
+\paragraph{Satellite Platform.}
+The satellite is characterized by its maximum slew rate $\omega_{\max}$ (a
+conservative single-axis bound on three-axis attitude maneuvers), settling
+time $\tau_{\text{settle}}$ after each maneuver, per-orbit energy budget
+$E_{\max}$ and memory budget $M_{\max}$, and per-observation energy $e_i$
+and memory $m_i$ consumption.
+\paragraph{SAR Observables.}
+Given an observation time $t_i$, the satellite-to-target line-of-sight (LOS)
+vector $\mathbf{l}(t_i)$ in the Local-Vertical Local-Horizontal (LVLH) frame
+is fully determined by the satellite's orbital state.
+From $\mathbf{l}(t_i)$ we derive four geometric quantities deterministically:
+slant range $R = |\mathbf{l}|$, off-nadir angle $\phi = \arctan2(\sqrt{l_x^2+l_y^2},\, l_z)$,
+incidence angle $\theta$ (via the Earth-curvature-corrected mapping
+$\theta = \arcsin\big(\frac{R_e+H}{R_e}\sin\phi\big)$ where $R_e$ is Earth's mean radius), and
+squint angle $\psi_{\text{sq}} = \arcsin(|l_x| / R)$.
+This definition of squint angle as the angular deviation of the
+LOS vector from the zero-Doppler plane follows Curlander and
+McDonough~\cite{Curlander1991} (Ch.~9, SAR Doppler characteristics),
+where the azimuth Doppler centroid is proportional to
+$\sin\psi_{\text{sq}}$.
+A critical property is that \emph{all} quality-relevant geometry
+is a deterministic function of the single decision $t_i$.
+\paragraph{Decision Variables.}
+A schedule consists of a task selection vector $\mathbf{x} \in \{0,1\}^N$,
+an ordered sequence $S = (s_1,\ldots,s_m)$ of the $m$ selected tasks, and
+a vector of observation start times $\mathbf{t} = (t_{s_1},\ldots,t_{s_m})$.
+All geometric parameters ($\theta_i$, $\psi_{\text{sq},i}$, $R_i$) are
+\emph{derived} from $t_i$ rather than independent decision variables.
+% ── 3.2 Objective Functions ──
+\subsection{Objective Functions}\label{sec:objective-functions}
+We formulate a three-objective optimization problem that captures the
+tension between scheduling throughput and SAR-specific imaging quality.
+All quality objectives use the \emph{mean} over scheduled tasks, making
+them independent of the number of scheduled tasks $m = |\mathcal{S}|$
+and thereby producing a genuine ``quantity versus quality'' Pareto trade-off.
+\paragraph{Objective 1: Coverage Profit.}
+The normalized coverage profit (Eq.~\ref{eq:f1}) is defined relative to the greedy baseline
+\begin{equation}
+f_1^* = \frac{1}{f_1^{\text{G-BL}}} \sum_{i \in \mathcal{S}} p_i
+\label{eq:f1}
+\end{equation}
+where $f_1^{\text{G-BL}}$ is the profit achieved by the profit-only greedy
+scheduler (G-BL, \S~\ref{sec:gbl}) on the same scenario.
+\paragraph{Objective 2: Geometric Image Quality.}
+The ground pixel area of a SAR image is the product of ground-range resolution
+$\rho_{\text{rg}} = c / (2B \sin\theta)$ and azimuth resolution
+$\rho_{\text{az}} = D / (2 \cos\psi_{\text{sq}})$.
+We define a dimensionless geometric quality index:
+\begin{equation}
+f_2 = \frac{1}{|\mathcal{S}|} \sum_{i \in \mathcal{S}} \sin\theta_i \cdot \cos\psi_{\text{sq},i}
+\label{eq:f2}
+\end{equation}
+Higher $f_2$ indicates smaller ground pixel area (better geometric resolution).
+When $\mathcal{S} = \emptyset$, $f_2 = 0$.
+\paragraph{Objective 3: NESZ Radiometric Quality.}
+Noise-Equivalent Sigma Zero (NESZ) measures the minimum detectable backscatter.
+For Stripmap SAR, NESZ degrades with the cube of slant range,
+$\text{NESZ} \propto R^3 \propto 1/(\cos^3\theta \cdot \cos^3\psi_{\text{sq}})$,
+after accounting for azimuth compression gain \cite{Curlander1991}.
+We define the radiometric quality index as:
+\begin{equation}
+f_3 = \frac{1}{|\mathcal{S}|} \sum_{i \in \mathcal{S}} \cos^3\theta_i \cdot \cos^3\psi_{\text{sq},i}
+\label{eq:f3}
+\end{equation}
+Higher $f_3$ indicates lower NESZ (better radiometric sensitivity).
+When $\mathcal{S} = \emptyset$, $f_3 = 0$.
+Both $f_2$ and $f_3$ are bounded to $[0,1]$ by construction: $\sin\theta_i$,
+$\cos\psi_{\text{sq},i}$, and $\cos\theta_i$ all lie within $[0,1]$ for the
+attitude envelope used in this study.
+\paragraph{Physical Trade-Off.}
+The two quality objectives partition SAR imaging performance by physical
+mechanism: $f_2$ captures spatial resolution (geometric), $f_3$ captures
+signal-to-noise ratio (radiometric).
+Their optima are not coincident --- $f_3$ peaks at the zero-Doppler point
+($\theta$ minimal, $\psi_{\text{sq}} = 0$), whereas $f_2$ benefits from
+moderately higher $\theta$ because $\sin\theta$ grows with incidence angle.
+This creates a genuine trade-off: pursuing the cleanest NESZ
+(zero-Doppler observation) forces acceptance of stretched ground-range pixels;
+pursuing optimal ground pixel area requires deviating from the zero-Doppler
+point and accepting elevated radiometric noise.
+Critically, the squint angle $\psi_{\text{sq}}$ appears in both $f_2$ and $f_3$
+(Eqs.~\ref{eq:f2}--\ref{eq:f3}): reducing $\psi_{\text{sq}}$ simultaneously
+improves both resolution components, but at the expense of $f_2$ through
+reduced $\sin\theta$ --- creating the $[\theta, \psi_{\text{sq}}]$
+geometric structure that bounds multi-objective gain once solvers
+converge to low-squint regimes (see Eq.~\ref{eq:rnull} below and its
+axis decomposition for the exact partition into definitional and
+scheduler-induced components).
+
+Because $\theta$ and $\psi_{\text{sq}}$ are not independent but both
+derived from the same LOS vector $\mathbf{l} = (l_x, l_y, l_z)$
+(\S~\ref{sec:system-model}), the per-task $f_2$ and $f_3$ contributions
+share geometric structure. To separate definitional coupling from
+scheduler-induced correlation, we compute the analytical null
+distribution by treating observation geometry as drawn uniformly from
+the accessible envelope ($\theta \in [15^\circ, 50^\circ]$,
+$|\psi_{\text{sq}}| \leq 45^\circ$) and evaluating the moment integrals of
+$f_{2,i} = \sin\theta_i \cos\psi_{\text{sq},i}$ and
+$f_{3,i} = \cos^3\theta_i \cos^3\psi_{\text{sq},i}$ in closed form
+(validated by Monte Carlo, $r_{\text{MC}} = -0.5120$, $N = 2{\times}10^5$).
+The null correlation is
+\begin{equation}
+r_{\text{null}} = \frac{\mathrm{Cov}(f_2, f_3)}{\sqrt{\mathrm{Var}(f_2)\,\mathrm{Var}(f_3)}} \;=\; -0.51,
+\label{eq:rnull}
+\end{equation}
+where the independence of $\theta$ and $\psi_{\text{sq}}$ under the null
+factorizes the moments, e.g., $E[f_2 f_3] = E[\sin\theta\cos^3\theta]\,E[\cos^4\psi_{\text{sq}}]$.
+The \emph{negative} sign exposes a structural conflict, not redundancy:
+in the $\theta$-only limit (fixed squint), $f_{2,i} \propto \sin\theta$ and
+$f_{3,i} \propto \cos^3\theta$ are strictly anti-monotonic
+($r_\theta = -0.997$), since $f_2$ favors high incidence while $f_3$
+favors low incidence; in the $\psi_{\text{sq}}$-only limit (fixed
+$\theta$), both depend on $\cos\psi_{\text{sq}}$ positively
+($r_\psi = +0.997$), since low squint improves both. Under uniform
+geometry the $\theta$-conflict dominates, yielding $r_{\text{null}} < 0$.
+The empirical correlation $r \approx 0.93$--$0.98$
+(\S~\ref{sec:pareto-coupling}) therefore exceeds the definitional
+baseline substantially: in Fisher-$z$ space, $z(r_{\text{null}}=-0.51)
+= -0.563$ while $z(r) = 1.66$--$2.30$ for the empirical range, a gap of
+$\Delta z \approx 2.2$--$2.9$ that confirms the empirical correlation
+lies far above the null (correlation distances are compared on the
+variance-stabilizing Fisher-$z$ scale rather than as a linear
+difference). This indicates that scheduled observations are not drawn
+uniformly from the envelope: all solvers,
+including the greedy baselines, select low-squint geometries that
+suppress the $\theta$-conflict and align $f_2$ with $f_3$ along the
+shared $\cos\psi_{\text{sq}}$ factor. The residual $2$--$7\%$ variance
+($1 - r$) corresponds to the $\theta$-axis conflict space where genuine
+$f_2$--$f_3$ trade-offs can exist, but which the solver-converged
+low-squint regime leaves largely unexplored in the single-pass setting.
+This reframes the 3-objective redundancy reported in
+\S~\ref{sec:pareto-coupling}: it is not a mathematical identity between
+$f_2$ and $f_3$ but an empirical consequence of solver convergence to
+low-squint regimes.
+
+The visible-geometry envelope is wide rather than low-squint-dominated:
+across C7-feasible visibility samples ($|\psi_{\text{sq}}| \leq 45^\circ$),
+$\mathrm{corr}(f_2, f_3) = -0.95$, a strong negative correlation dominated
+by the incidence-angle conflict (\texttt{scripts/r\_visible\_envelope.py}).
+In contrast, solver-selected schedules exhibit $r = +0.93$--$0.98$,
+indicating that the low-squint regime of solver schedules is an active
+selection from the wide C7-feasible envelope, not a constraint-imposed
+collapse. This supports the solver-convergence interpretation: all
+tested solvers (including the no-physics Variant D,
+\S~\ref{sec:ablation}) converge to low-squint regimes where $f_2$ and
+$f_3$ co-vary along the shared $\cos\psi_{\text{sq}}$ factor, rendering
+the 3-objective formulation redundant in the single-pass setting.
+% ── 3.3 Constraints ──
+\subsection{Constraints}
+Seven constraints couple task selection with temporal feasibility and
+resource limits. Constraints C1, C2, and C7 are enforced during visibility
+window generation; C3--C6 are checked inline by every solver.
+\paragraph{C1: Visibility Window.}
+Equation~(\ref{eq:c1}) defines the visibility-window constraint.
+Each observation must fit within a pre-computed visibility window:
+\begin{equation}
+t_i \in [a_i, b_i - d_i] \quad \forall i \in \mathcal{S}
+\label{eq:c1}
+\end{equation}
+\paragraph{C2: Resolution Requirement.}
+The achieved ground-range resolution must meet the task's requirement.
+Via $\rho_{\text{rg}} = c/(2B\sin\theta)$, this imposes a lower bound on
+incidence angle: $\theta_i \geq \theta_i^{\min}$ where
+$\theta_i^{\min} = \arcsin\big(c/(2B \rho_i^{\text{req}})\big)$.
+\paragraph{C3: Attitude Maneuver Transition.}
+Equation~(\ref{eq:c3}) defines the attitude-maneuver transition constraint.
+Between consecutive observations, the satellite must rotate through the
+angular separation of their LOS vectors.
+Let $\mathbf{l}_k$ and $\mathbf{l}_{k+1}$ be the LVLH-frame LOS vectors at
+$t_{s_k}$ and $t_{s_{k+1}}$.
+The angular gap $\Delta\eta_k = \arccos(\mathbf{l}_k\cdot\mathbf{l}_{k+1}/(|\mathbf{l}_k||\mathbf{l}_{k+1}|))$
+must be traversed within the available inter-observation time:
+\begin{equation}
+t_{s_{k+1}} \geq t_{s_k} + d_{s_k} + \frac{\Delta\eta_k}{\omega_{\max}} + \tau_{\text{settle}} \quad \forall k \in \{1,\ldots,m-1\}
+\label{eq:c3}
+\end{equation}
+This constraint is the \emph{core coupling} in our formulation: different
+choices of $t_{s_k}$ shift the LOS vector $\mathbf{l}_k$, affecting both
+imaging quality (via $\theta_k$, $\psi_{\text{sq},k}$) and transition
+feasibility to subsequent tasks (via $\Delta\eta_k$).
+\paragraph{C4: Energy Budget.}
+$\sum_{i \in \mathcal{S}} e_i \leq E_{\max}$, where $E_{\max}$ is the
+aggregate energy budget for the orbit.
+\paragraph{C5: Memory Budget.}
+$\sum_{i \in \mathcal{S}} m_i \leq M_{\max}$, where $M_{\max}$ is the
+aggregate on-board storage budget.
+The values $E_{\max} = 10^7$ and $M_{\max} = 10^{11}$ (arbitrary units)
+are used in all experiments; these budgets are set sufficiently high to
+be non-binding under all tested scenarios, i.e., they never eliminated
+a solution candidate in any solver run. They are retained in the
+formulation for completeness, so that the framework can accommodate
+operational energy and storage budgets when they become available.
+\paragraph{C6: No Overlap.}
+Implied by C3; no two observations may overlap in time.
+\paragraph{C7: Squint Angle Limit.}
+$|\psi_{\text{sq},i}| \leq \psi_{\text{sq}}^{\max}$ for all $i \in \mathcal{S}$,
+where $\psi_{\text{sq}}^{\max}$ is the satellite's maximum achievable squint
+(typically $\pm 45^\circ$).
+The tightness of C3 scales with task density: as $N$ grows, the fraction
+of task pairs whose required angular transition
+$\Delta\eta / \omega_{\max}$ exceeds the available inter-observation
+time increases, tightening the constraint. At S1 ($N=20$), approximately
+$<10\%$ of task pairs violate C3 under the maximum maneuver rate; at S4
+($N=500$), this fraction rises to $30$--$40\%$, effectively making C3
+the dominant active constraint in dense regimes.
+% ── 3.4 Geometric Precomputation ──
+\subsection{Geometric Precomputation}
+\label{sec:geomcache}
+Evaluating attitude-dependent constraints (C3) and quality objectives
+($f_2$, $f_3$) during optimization would require on-the-fly orbit propagation
+and LVLH-frame coordinate transforms at every solver evaluation step,
+imposing a $O(N^2 \cdot K)$ overhead for $N$ tasks and $K$ discretized
+time samples per window.
+We eliminate this bottleneck through a \emph{geometric precomputation cache}
+(GeomCache) that computes, for every task $i$ at every feasible discretized
+observation time within its window, the derived geometric quantities
+$\theta_i$, $\psi_{\text{sq},i}$, $R_i$, $\phi_i$, and the inter-task
+LOS angular gaps $\Delta\eta_{ij}$.
+Following this one-time $O(N^2 \cdot K)$ precomputation, all solver
+operations access geometry via $O(1)$ table lookups.
+During MOEA evaluation, attitude feasibility and quality scores reduce
+from $O(N^2)$ to $O(N)$ per individual through the precomputed geometry
+cache, reducing the asymptotic complexity of the innermost optimization
+loop.
+% ============================================================
+%  4. METHODOLOGY (~1000 words)
+% ============================================================
+\section{Methodology}
+% ── 4.1 Solver Overview ──
+\subsection{Solver Overview}
+Table~\ref{tab:solvers} summarizes the five solvers compared in this study.
+We present the solvers in order of increasing sophistication: from greedy heuristics
+(G-BL, G-SM) through single-objective metaheuristic (GA-P-BL), to multi-objective
+evolutionary algorithms (MOEA-2, MOEA-3).
+\begin{table}[H]
+\centering
+\caption{Solvers used in this study}
+\label{tab:solvers}
+\begin{tabular}{llll}
+\toprule
+\textbf{Label} & \textbf{Type} & \textbf{Objectives} & \textbf{Hot-Start} \\
+\midrule
+G-BL   & Greedy heuristic       & max $f_1$ (profit-only)                  & --- \\
+G-SM   & Greedy heuristic       & max $f_1$ + squint minimization          & --- \\
+GA-P-BL& Single-objective GA    & max $f_1$ (G-BL seeded)                  & std = 0.5 \\
+MOEA-2 & NSGA-III (2-objective) & $f_1^*$ + $f_2$ (geometric quality)      & std = 0.5 \\
+MOEA-3 & NSGA-III (3-objective) & $f_1^*$ + $f_2$ + $f_3$ (geo.+NESZ)     & std = 0.5 \\
+\bottomrule
+\end{tabular}
+\end{table}
+All five solvers share the geometric precomputation cache (\S~\ref{sec:geomcache})
+for $O(1)$ access to $\theta_i$, $\psi_{\text{sq},i}$, and $\Delta\eta_{ij}$.
+Single-objective solvers (G-BL, G-SM, GA-P-BL) optimize only $f_1$;
+their $f_2$ and $f_3$ values are computed post-hoc on the final schedule
+for comparison with the multi-objective solvers.
+We note that the five solvers differ primarily in objective-function
+configuration rather than algorithmic paradigm. This design is intentional:
+it isolates the effect of adding physical quality objectives, which is the
+paper's research question. A comparison across algorithmic families
+(e.g., NSGA-III vs.\ MOEA/D vs.\ SMS-EMOA) is left to future work
+(\S~\ref{sec:limitations}).
+\subsection{G-BL: Greedy Baseline}
+\label{sec:gbl}
+G-BL represents the conventional optical-domain scheduling approach:
+it makes no use of SAR imaging physics when ordering or selecting tasks.
+Tasks are sorted by earliest start time $t_{\text{start}}$ and greedily inserted
+into the schedule at their earliest feasible time.
+Each task is observed at the off-nadir angle pre-stored in its visibility
+window (the angle yielding maximum elevation --- equivalent to a fixed-nadir
+policy).
+If the attitude transition constraint (C3) is violated for a candidate task,
+its start time is delayed within the window until the constraint is satisfied;
+if no feasible delay exists, the task is dropped.
+Since G-BL selects observation times solely for feasibility, its $f_2$ and
+$f_3$ values are incidental by-products of the window geometry.
+We compute these post-hoc on the final schedule to serve as the baseline
+against which physics-aware solvers are compared.
+\subsection{G-SM: Greedy Squint-Minimized}
+G-SM shares G-BL's greedy structure (sort by earliest start time) but modifies the
+observation time selection: within each visibility window, a task is
+placed at the discretized time step that minimizes squint angle
+$\psi_{\text{sq}} = \arcsin(|l_x| / R)$.
+G-SM minimizes squint angle as a computationally cheap proxy for
+maximizing $f_3$ (NESZ radiometric quality); the correlation between
+squint minimization and $f_3$ improvement is confirmed by the large
+effect size (Cliff's $\delta = +0.72$, \S~\ref{sec:summary}).
+When the window contains the zero-Doppler crossing ($l_x = 0$),
+G-SM achieves $\psi_{\text{sq}} = 0$ and the theoretical azimuth resolution
+limit $\rho_{\text{az}} = D/2$.
+With 60-s orbit propagation resolution, the true zero-Doppler instant
+may fall between samples; G-SM selects the discretized time that
+minimizes $|\psi_{\text{sq}}|$, which may yield
+$|\psi_{\text{sq}}| \leq 0.5^\circ$ rather than exactly $0^\circ$
+for windows that do not align with a sample point.
+This strategy simulates the theoretical Stripmap SAR operating mode and
+serves as a physics-aware greedy baseline: it answers the question
+``what quality improvement can a simple squint-minimization heuristic
+achieve, without any multi-objective search?''
+The squint-minimizing time selection incurs a profit penalty because
+the optimal-squint time may lie later in the window, reducing the
+remaining time for subsequent tasks (constraint C3).
+As with G-BL, $f_2$ and $f_3$ are post-hoc outputs.
+\subsection{GA-P-BL: Single-Objective GA with Hot-Start}
+\label{sec:ga-p-bl}
+GA-P-BL tests whether a genetic algorithm optimizing only $f_1$ can
+outperform greedy scheduling by exploiting temporal flexibility.
+Each chromosome encodes a vector of normalized start times
+$\boldsymbol{\tau} \in [0,1]^N$, where task $i$'s actual start time is
+$t_i = t_i^{\text{earliest}} + \tau_i \cdot (t_i^{\text{latest}} - d_i - t_i^{\text{earliest}})$.
+The task selection vector $\mathbf{x}$ emerges from constraint resolution:
+a task is dropped if no feasible insertion time exists within its window
+after satisfying C3.
+The population of 100 individuals is initialized from G-BL's solution
+with Gaussian noise of standard deviation 0.5 added to each $\tau_i$.
+This noise level is calibrated to allow task selections to change ---
+smaller noise (e.g., 0.02) locked the task set to G-BL's selection,
+preventing the GA from discovering profit-improving task substitutions.
+The GA runs for 200 generations with simulated binary crossover
+($p_c = 0.9$, $\eta_c = 20$) and polynomial mutation
+($p_m = 0.1$, $\eta_m = 20$).
+$f_2$ and $f_3$ are computed post-hoc on the best-found schedule.
+\subsection{MOEA-2 and MOEA-3: Multi-Objective Evolutionary Algorithms}
+MOEA-2 and MOEA-3 extend the GA-P-BL chromosome encoding to
+multi-objective optimization via the NSGA-III framework
+\cite{Deb2014}.
+Both use a population of 100 individuals over 200 generations with
+the same genetic operators as GA-P-BL.
+Reference points are generated via the Das--Dennis systematic
+approach with 12 divisions per objective dimension, producing
+$H = \binom{M + p - 1}{p}$ structured reference directions
+($H = 13$ for MOEA-2, $H = 91$ for MOEA-3).
+The entire population is hot-started from the G-BL solution perturbed
+by Gaussian noise (std = 0.5), and an at-least-one-task constraint
+prevents empty solutions from dominating the Pareto front.
+MOEA-2 optimizes two objectives: $f_1^*$ (normalized profit) and
+$f_2$ (mean geometric quality, Eq.~\ref{eq:f2}).
+MOEA-3 adds $f_3$ (mean NESZ radiometric quality, Eq.~\ref{eq:f3})
+as a third objective.
+The comparison between MOEA-2 and MOEA-3 directly tests whether
+adding the NESZ objective ($f_3$) produces Pareto-front differentiation
+beyond what $f_2$ alone captures, or whether the $\theta$/$\psi_{\text{sq}}$
+geometric coupling renders the third objective redundant in the
+single-pass, single-satellite setting.
+% ============================================================
+%  5. EXPERIMENTAL SETUP (~600 words)
+% ============================================================
+\section{Experimental Setup}
+% ── 5.1 Scenario Design ──
+\subsection{Scenario Design}
+Table~\ref{tab:scenarios} defines the four scenario classes.
+\begin{table}[H]
+\centering
+\caption{Scenario classes}
+\label{tab:scenarios}
+\begin{tabular}{lccc}
+\toprule
+\textbf{Class} & \textbf{Targets} & \textbf{Look Direction} & \textbf{Description} \\
+\midrule
+S1 & 20  & Both & Small, low-density \\
+S2 & 100  & Both & Medium, moderate density \\
+S3 & 300 & Both & Medium-large, transition region \\
+S4 & 500 & Both & Large, high-density \\
+\bottomrule
+\end{tabular}
+\end{table}
+All scenarios share a common satellite platform abstracted as a generic
+C-band Stripmap SAR with bilateral-looking capability:
+a circular sun-synchronous orbit at 600 km altitude
+(inclination \mbox{$\approx 97.8^\circ$}, LTAN 06:00, dawn--dusk),
+operating in Stripmap mode with a C-band SAR instrument (antenna length
+$D = 12.3$ m, bandwidth $B = 56.5$ MHz).
+The platform accesses both left- and right-side
+incidence angles in the range $[18^\circ, 47^\circ]$
+(signed convention: $\theta \in [-47^\circ, -18^\circ] \cup [18^\circ, 47^\circ]$).
+We note that this bilateral Stripmap abstraction departs from operational
+Sentinel-1A/B, which operates primarily in right-looking TOPS mode
+(Interferometric Wide swath, incidence $\sim 29^\circ$--$46^\circ$)
+\cite{ESA2021Sentinel1};
+the bilateral-looking Stripmap configuration here represents a generic
+agile-SAR concept (cf.\ TerraSAR-X dual-receive Stripmap
+\cite{Krieger2007TanDEMX} and prospective
+bistatic formations) selected to exercise the full incidence/squint
+trade-off space.
+Targets are distributed along the satellite ground track within the
+accessible swath (cross-track scatter $\pm 2.7^\circ$, roughly $\pm300$ km),
+with three distribution types per scenario class: uniform random,
+clustered (5 clusters), and mixed (half uniform, half clustered).
+The five scenarios within each class correspond to distribution type and
+random-seed variations; the 50 scenarios per class therefore consist of
+5 distribution--seed combinations $\times$ 10 random seeds.
+The four density classes (S1--S4) span the operational range from
+sparse reconnaissance ($N=20$) to dense monitoring ($N=500$);
+intermediate densities ($N=50, 150, 200, 400$) are omitted to limit
+computational cost, with the transition region $N=100$--$300$ analyzed
+through the scale-sensitivity experiments in
+\S~\ref{sec:scale-sensitivity}.
+Visibility windows are computed via orbit propagation at 60-s resolution
+(producing $K \approx 200$ discrete time samples per orbit)
+over two orbital periods ($\sim$200 min), yielding 1--2 windows per target
+on average, each spanning several minutes (typically $3$--$8$ samples per window).
+Windows are filtered by incidence-angle and minimum-elevation ($5^\circ$)
+constraints; the resulting window set encodes the bilateral
+geometry that the solver must navigate:
+targets are roughly evenly split between left- and right-looking windows
+($\sim$50\% each), and cross-side attitude transitions (e.g., $+30^\circ \to -30^\circ$)
+incur substantially larger angular gaps than same-side transitions.
+Approximately $50\%$--$60\%$ of all visibility windows contain a
+zero-Doppler crossing ($\psi_{\text{sq}} = 0$), providing G-SM with at
+least one sample point per window where the theoretical azimuth
+resolution limit is attainable; the fraction varies with target
+latitude and orbital position but remains above $40\%$ across all
+scenario classes.
+% ── 5.2 Solver Configuration ──
+\subsection{Solver Configuration}
+All five solvers use the geometric precomputation cache (\S~\ref{sec:geomcache})
+and run on a single CPU core to ensure reproducible timing comparisons.
+G-BL and G-SM are deterministic greedy heuristics with no tunable
+hyperparameters. GA-P-BL uses a population of 100 individuals over
+200 generations with simulated binary crossover ($p_c = 0.9$, $\eta_c = 20$)
+and polynomial mutation ($p_m = 0.1$, $\eta_m = 20$), hot-started from the
+G-BL solution as described in \S~\ref{sec:ga-p-bl}.
+MOEA-2 and MOEA-3 employ NSGA-III with the same population size,
+generation budget, and genetic operators as GA-P-BL.
+Reference directions are generated via Das--Dennis systematic sampling
+with 12 partitions per objective dimension ($H = 13$ for two objectives,
+$H = 91$ for three). With a population of 100 individuals and $H=91$
+reference directions for MOEA-3, approximately one individual is
+assigned per direction; niching pressure may therefore be weak.
+We verified that increasing the population to 200 does not
+qualitatively change the results reported below.
+The entire MOEA population is hot-started from the G-BL solution perturbed
+by Gaussian noise ($\sigma = 0.5$), and an at-least-one-task constraint
+prevents the empty schedule from dominating the Pareto front.
+% ── 5.3 Evaluation Metrics ──
+\subsection{Evaluation Metrics}
+We use hypervolume (HV) as the primary quality indicator for multi-objective
+comparison. Statistical significance is assessed via:
+\begin{itemize}[nosep]
+    \item \textbf{Friedman test}: overall difference across 5 solvers × 200 scenarios
+    \item \textbf{Wilcoxon signed-rank}: pairwise post-hoc comparisons with
+    Bonferroni correction. The primary family comprises 10 pairwise HV
+    comparisons ($\alpha = 0.05 / 10 = 0.005$); per-objective pairwise
+    tests (6 additional) and ablation comparisons (3 variants $\times$ 4
+    classes $\times$ 6 metrics) are reported with raw $p$-values alongside
+    the Bonferroni threshold, so readers can evaluate significance under
+    alternative corrections (e.g., Benjamini--Hochberg FDR) or tighter
+    family-wise correction.
+    \item \textbf{Cliff's delta}: non-parametric effect size, classified by
+    the Vargha--Delaney convention ($|\delta| < 0.147$ negligible,
+    $< 0.33$ small, $< 0.474$ medium, $\geq 0.474$ large).
+    As operational anchors, a $|\delta| \geq 0.474$ (large) on $f_1^*$
+    corresponds to a $\geq 15\%$ coverage difference at S4
+    ($\sim 30$ tasks); a $|\delta| < 0.147$ (negligible) on $f_2$
+    corresponds to $< 0.01$ $\Delta f_2$, equivalent to
+    $< 0.5$ m ground-range resolution at C-band.
+\end{itemize}
+Hypervolume is computed with reference point $(0, 0, 0)$ in the
+per-solver-pooled min--max-normalized objective space (all solvers' $f_i$
+values and frontier points are pooled to define a shared $[0,1]$ scale;
+see \texttt{experiments/statistical\_analysis.py}).
+% ============================================================
+%  6. RESULTS AND ANALYSIS (~1400 words)
+% ============================================================
+\section{Results and Analysis}
+% ── 6.1 Effect of Squint Awareness (Fig 1) ──
+\subsection{Effect of Squint Awareness}
+The squint-minimized greedy solver (G-SM) improves NESZ radiometric quality ($f_3$)
+relative to the profit-only baseline (G-BL) by selecting observation times that
+minimize squint angle within each visibility window.
+Across all 200 scenarios, this produces a large positive effect on $f_3$
+(Cliff's $\delta = +0.72$, $p = 1.7 \times 10^{-34}$) at a small aggregate cost
+in coverage (Cliff's $\delta = -0.25$, $p = 7.0 \times 10^{-34}$, on raw $f_1$).
+The trade-off, however, is strongly density-dependent.
+In sparse scenarios (S1, $N = 20$), G-SM retains $f_1^* = 0.85 \pm 0.16$
+($-15\%$ vs.\ G-BL at $1.00$) while improving $f_3$ from $0.32 \pm 0.17$ to
+$0.44 \pm 0.16$ ($+34\%$).
+In dense scenarios (S4, $N = 500$), the $f_1$ cost escalates:
+G-SM achieves $f_1^* = 0.61 \pm 0.09$ ($-39\%$), with $f_3$ rising from
+$0.210 \pm 0.071$ to $0.356 \pm 0.075$ ($+70\%$).
+Figure~\ref{fig:fig1} visualizes this density-dependent trade-off: the LOESS
+trend in panel (c) identifies a transition region around $N = 100$
+where the $f_1$ penalty grows rapidly.
+In dense regimes, the squint-minimization strategy becomes costly because
+tightly packed time windows offer fewer alternative observation times at low squint.
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{fig1_squint_effect.pdf}
+    \caption{Effect of squint-aware scheduling: (a) $f_3$ scatter; (b) $\Delta f_1^*$ histogram; (c) $\Delta f_1^*$ vs.\ $N$ with LOESS trend}
+    \label{fig:fig1}
+\end{figure}
+% ── 6.2 Solver Profiles (Fig 2) ──
+\subsection{Solver Profiles}
+Table~\ref{tab:solver-profiles} summarizes the three-dimensional performance of
+all five solvers on the largest scenario class (S4, $N = 500$), where
+differences are most compressed and therefore hardest to achieve.
+G-BL achieves the baseline $f_1^* = 1.00$ with $f_2 = 0.580 \pm 0.025$ and
+$f_3 = 0.210 \pm 0.071$.
+G-SM trades $f_1$ for $f_3$ quality: $f_1^* = 0.61 \pm 0.09$, $f_3 = 0.356 \pm 0.075$,
+with $f_2 = 0.506 \pm 0.035$ --- notably lower than all other solvers on geometric quality.
+GA-P-BL surpasses the greedy baseline on $f_1$ ($f_1^* = 1.17 \pm 0.27$) with
+numerically similar $f_2$ and $f_3$ ($0.580 \pm 0.024$ and
+$0.203 \pm 0.073$, respectively), confirming that the single-objective GA
+exploits time flexibility that the greedy scheduler misses.
+GA-P-BL achieves $f_1^* > 1.0$ in $58\%$ (S1: 29/50) to $100\%$ (S2: 50/50)
+of scenarios, with mean $f_1^*$ ranging from $1.09 \pm 0.14$ at S1 to
+$1.17 \pm 0.27$ at S4. Crucially, GA-P-BL maintains $f_2$ and $f_3$
+quality comparable to G-BL: $\Delta f_2 \in [-0.001, +0.009]$ and
+$\Delta f_3 \in [-0.030, -0.007]$ across all scales. The coverage
+improvement therefore does not come at a quality cost --- GA-P-BL
+genuinely identifies schedules with higher task counts while
+preserving per-task geometric and radiometric quality, challenging
+the claim that greedy scheduling is Pareto-sufficient.
+MOEA-2 and MOEA-3 both achieve near-baseline coverage ($f_1^* = 0.98 \pm 0.03$
+and $0.98 \pm 0.04$) while improving $f_2$ to $0.589 \pm 0.021$. $f_3$ drops to
+$0.169 \pm 0.066$ and $0.170 \pm 0.066$, respectively (vs. G-BL $0.210 \pm 0.071$;
+Cliff's $\delta = -0.63$, large negative effect for MOEA-2).
+The near-identity of MOEA-2 and MOEA-3 results is analyzed in detail in
+\S~\ref{sec:pareto-coupling}.
+Figure~\ref{fig:fig2} compares MOEA-2 and MOEA-3 Pareto fronts on an S4 scenario, confirming that the
+solver ranking is scale-dependent:
+GA-P-BL maximizes $f_1^*$ at no quality cost,
+while the MOEA solvers occupy a balanced middle ground on all three dimensions.
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.75\textwidth]{fig2_solver_profiles.pdf}
+    \caption{MOEA-2 vs.\ MOEA-3 Pareto fronts on a representative S4 scenario ($N = 500$)}
+    \label{fig:fig2}
+\end{figure}
+\begin{table}[H]
+\centering
+\caption{Solver performance on S4 ($N = 500$)}
+\label{tab:solver-profiles}
+\begin{tabular}{lccc}
+\toprule
+\textbf{Solver} & $f_1^*$ & $f_2$ & $f_3$ \\
+\midrule
+G-BL    & $1.00$             & $0.580 \pm 0.025$ & $0.210 \pm 0.071$ \\
+G-SM    & $0.61 \pm 0.09$    & $0.506 \pm 0.035$ & $0.356 \pm 0.075$ \\
+GA-P-BL & $1.17 \pm 0.27$    & $0.580 \pm 0.024$ & $0.203 \pm 0.073$ \\
+MOEA-2  & $0.98 \pm 0.03$    & $0.589 \pm 0.021$ & $0.169 \pm 0.066$ \\
+MOEA-3  & $0.98 \pm 0.04$    & $0.589 \pm 0.021$ & $0.170 \pm 0.066$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+% ── 6.3 Pareto Front (Fig 3) ──
+\subsection{Pareto Front Characterization}\label{sec:pareto-coupling}
+Figure~\ref{fig:fig3} illustrates the Pareto front obtained by MOEA-3 on a
+representative S4 scenario ($N = 500$ targets).
+MOEA-3 discovers $76 \pm 14$ non-dominated solutions (mean across S4 scenarios;
+MOEA-2: $76 \pm 20$), forming a continuous trade-off surface that is invisible
+to single-objective methods. The solutions span an $f_1^*$ range of
+$\sim 0.3$ and an $f_2$ range of $\sim 0.06$ at S4. For a mission
+planner, this translates to a menu of approximately 76 distinct
+quality--coverage configurations, though the narrow $f_2$ range
+limits practical differentiation among them.
+The $f_1^*$--$f_2$ projection (panel a) reveals a narrow but nonzero trade-off
+surface: the frontier spans from full-coverage solutions
+($f_1^* \approx 1.0$, $f_2 \approx 0.56$) to quality-oriented solutions
+($f_1^* \approx 0.7$, $f_2 \approx 0.62$). The compressed $f_2$ range
+($\Delta f_2 \approx 0.06$, compared to $\Delta f_2 \approx 0.10$ in sparse
+S1 scenarios) is consistent with the scale-dependent saturation documented
+in \S~\ref{sec:scale-sensitivity} --- in dense target regimes, the
+solver convergence to low-squint regimes combined with schedule
+saturation at high density limits quality differentiation regardless of solver strategy.
+Overlaying the single-point baseline solutions shows that G-BL sits at the
+``full-coverage, moderate-quality'' corner of the frontier, while G-SM occupies
+a qualitatively different region ($f_1^* \approx 0.6$, $f_3 \approx 0.35$) that
+lies outside the MOEA-3 Pareto surface --- a consequence of G-SM's aggressive
+squint minimization.
+The near-identity of MOEA-2 and MOEA-3 fronts is quantified by pairwise
+Cliff's $\delta = +0.132$ ($f_2$, negligible, $p = 3.9 \times 10^{-10}$) and
+$\delta = -0.176$ ($f_3$, small, $p = 5.6 \times 10^{-14}$).
+The empirical $\theta$/$\psi_{\text{sq}}$ correlation ($r = 0.93$--$0.98$
+across scenarios) exceeds the definitional null
+$r_{\text{null}} = -0.51$ (\S~\ref{sec:objective-functions},
+Eq.~\ref{eq:rnull})---a gap of $\Delta z \approx 2.2$--$2.9$ on the
+Fisher-$z$ scale---indicating that all
+solvers converge to low-squint regimes which align $f_2$ with $f_3$ along
+the shared $\cos\psi_{\text{sq}}$ factor and suppress the $\theta$-axis
+conflict. In this regime, optimizing $f_3$ co-varies with $f_2$
+improvement, rendering the 3-objective formulation effectively redundant
+in the single-pass, single-satellite setting studied here. The ablation
+study in \S~\ref{sec:ablation} confirms that removing physical objectives
+(variants B--D) produces indistinguishable results at S3--S4
+($N \geq 300$), reinforcing that the redundancy is an empirical
+consequence of solver convergence rather than a mathematical identity
+between the objectives. Whether alternative NSGA-III configurations or
+other many-objective algorithms could reveal greater differentiation
+between two- and three-objective formulations is discussed in
+\S~\ref{sec:limitations}.
+At S4 ($N = 500$), the Pareto front's hypervolume ratio (S4/S1) is
+$< 1$, indicating that the front becomes relatively more compact at
+higher densities --- consistent with the scale-dependent saturation
+documented above, though this does not imply degeneracy (the front
+still spans $\Delta f_1^* \approx 0.3$).
+We caution that the Pareto fronts reported here are best-known
+approximations obtained via NSGA-III; whether they represent the
+true Pareto-optimal set is unknown without exact methods
+(e.g., MILP or branch-and-bound), which remain intractable for
+$N \geq 20$ in this problem class.
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{fig3_pareto_front.pdf}
+    \caption{Pareto front on a representative S4 scenario ($N = 500$)}
+    \label{fig:fig3}
+\end{figure}
+% ── 6.4 Statistical Comparison (Fig 4) ──
+\subsection{Statistical Comparison}
+The Friedman test confirms highly significant overall differences among the
+five solvers across all 200 scenarios ($\chi^2 = 506.56$, $p \approx 10^{-108}$).
+Pairwise Wilcoxon signed-rank tests with Bonferroni correction
+($\alpha = 0.005$) reveal that all solver pairs are significantly different,
+though effect sizes vary dramatically (Fig.~\ref{fig:fig4}, Table~\ref{tab:hv}).
+The $f_1^*$ comparisons show that G-BL ($1.00$) achieves higher coverage than
+G-SM ($0.61 \pm 0.09$), while GA-P-BL ($1.17 \pm 0.27$) exceeds G-BL on
+$f_1^*$. The Cliff's $\delta$ values $\delta = -0.95$ (G-BL vs.\ G-SM) and
+$\delta = +0.44$ (G-BL vs.\ GA-P-BL) are computed on hypervolume
+(Table~\ref{tab:hv}) and reflect the HV/$f_1^*$ ranking divergence analyzed
+in \S~\ref{sec:hv-divergence}.
+MOEA-2 and MOEA-3 show large differences from G-BL and GA-P-BL on $f_1^*$ (all $p < 10^{-10}$, Cliff's $|\delta| \geq 0.79$), though directionally below G-BL and GA-P-BL ($\delta = -0.79$ to $-0.87$).
+The MOEA-2 versus MOEA-3 comparison is statistically significant
+but effect-small ($p = 1.4 \times 10^{-4}$, $\delta = -0.23$), confirming that adding
+$f_3$ as a third objective does not meaningfully change solver performance
+in this setting --- a result of the $\theta$/$\psi_{\text{sq}}$ geometric coupling
+discussed in \S~\ref{sec:pareto-coupling}.
+\begin{table}[H]
+\centering
+\caption{Hypervolume across 200 scenarios}
+\label{tab:hv}
+\begin{tabular}{lcc}
+\toprule
+\textbf{Solver} & \textbf{HV} & \textbf{SD} \\
+\midrule
+G-SM    & 0.202 & 0.040 \\
+MOEA-3  & 0.173 & 0.045 \\
+MOEA-2  & 0.169 & 0.037 \\
+G-BL    & 0.140 & 0.017 \\
+GA-P-BL & 0.117 & 0.033 \\
+\bottomrule
+\end{tabular}
+\end{table}
+\paragraph{Ranking divergence.}\label{sec:hv-divergence}
+The two frameworks yield contradictory rankings: GA-P-BL ranks highest
+for $f_1^*$ by Friedman--Wilcoxon but last in HV, while G-SM ranks last in
+$f_1^*$ but first in HV.
+This divergence is not a measurement error but a consequence of how HV
+aggregates multi-dimensional performance.
+Single-objective solvers produce exactly one Pareto point each, so their HV
+is determined entirely by that point's coordinates.
+Multi-objective solvers output $76 \pm 20$ points; HV rewards the ``spread''
+of these points across the objective space regardless of whether the spread
+reflects better solutions or merely more solutions.
+G-SM's extreme $f_3$ value extends its single point far along the $f_3$ axis,
+producing a tall hypervolume box despite mediocre coverage.
+GA-P-BL, despite superior $f_1$, occupies a compact region and thus earns
+the lowest HV.
+We therefore adopt the Friedman--Wilcoxon framework as our primary evidence,
+as it directly tests our research question (``which solver achieves higher $f_1$?'').
+HV is retained as a secondary indicator for comparing multi-objective solvers
+against each other, where point-count asymmetry does not confound the comparison.
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{fig4_hypervolume.pdf}
+    \caption{Statistical validation: (left) hypervolume distribution; (right) pairwise Cliffs $\delta$ effect sizes}
+    \label{fig:fig4}
+\end{figure}
+% ── 6.5 Scale Sensitivity (Fig 5) ──
+\subsection{Scale Sensitivity}
+\label{sec:scale-sensitivity}
+The value of multi-objective optimization depends critically on scenario
+density (Fig.~\ref{fig:fig5}, Table~\ref{tab:scale-sensitivity}).
+MOEA-2's coverage deficit relative to G-BL narrows monotonically with
+increasing scale: from $f_1^* = 0.68 \pm 0.29$ at S1 ($N = 20$) to
+$0.82 \pm 0.25$ at S2 ($N = 100$), $0.98 \pm 0.04$ at S3 ($N = 300$),
+and $0.98 \pm 0.03$ at S4 ($N = 500$).
+Concurrently, the $f_2$ improvement over G-BL shrinks from $+8.0\%$ (S1)
+to $+4.4\%$ (S2), $+1.6\%$ (S3), and $+1.5\%$ (S4).
+The proportion of scenarios where MOEA-2's coverage falls measurably short of
+G-BL ($f_1^* < 0.95$, i.e., a coverage deficit exceeding 5\%)
+falls from $88\%$ (S1) to $64\%$ (S2), $14\%$ (S3),
+and $20\%$ (S4).
+The overall pattern is monotonic from S1 to S3; the slight rise from
+S3 ($14\%$) to S4 ($20\%$) reflects the larger absolute number of
+scheduled tasks in S4 ($190 \pm 56$ vs.\ $151 \pm 39$), which increases
+the probability that small per-task adjustments push $f_1^*$ below the 0.95
+threshold even when the aggregate coverage loss is negligible.
+A $\chi^2$ test for equality of proportions (S3 vs.\ S4) yields
+$\chi^2(1) = 0.64$, $p = 0.42$, confirming that the apparent
+non-monotonicity is not statistically significant.
+Between $N = 100$ and $N = 300$,
+the multi-objective solver transitions from actively trading off coverage
+for quality to operating near the greedy baseline.
+In terms of aggregate quality, G-SM achieves the highest per-group HV in
+the dense regimes: $0.222 \pm 0.020$ at S3 and $0.224 \pm 0.024$ at S4,
+though HV comparisons between single-point and multi-point solvers are
+confounded by point-count asymmetry (see \S~\ref{sec:hv-divergence}).
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.75\textwidth]{fig5_scale_sensitivity.pdf}
+    \caption{Geometric quality ($f_2$) by scenario group and solver}
+    \label{fig:fig5}
+\end{figure}
+\begin{table}[H]
+\centering
+\caption{Scale sensitivity of MOEA-2 vs.\ G-BL}
+\label{tab:scale-sensitivity}
+\begin{tabular}{lcccc}
+\toprule
+\textbf{Class} & $N$ & $f_1^*$ (MOEA-2) & $f_2$ improvement & \% $f_1^* < 0.95$ \\
+\midrule
+S1 & 20   & $0.68 \pm 0.29$ & +8.0\% & 88\% \\
+S2 & 100  & $0.82 \pm 0.25$ & +4.4\% & 64\% \\
+S3 & 300  & $0.98 \pm 0.04$ & +1.6\% & 14\% \\
+S4 & 500  & $0.98 \pm 0.03$ & +1.5\% & 20\% \\
+\bottomrule
+\end{tabular}
+\end{table}
+Fitting a logistic regression $p(\text{deficit} \mid N) = 1 / (1 + \exp(-(\alpha + \beta N)))$
+to the proportion of scenarios with $f_1^* < 0.95$ yields a transition
+midpoint $N_{50} \approx 169$ targets (95\% CI $[111, 227]$ via bootstrap
+with 1000 resamples; $\alpha = 1.61$, $\beta = -0.0095$; see
+\texttt{scripts/n50\_logistic.py}). This means that
+by $N \approx 170$, half the scenarios show MOEA-2 within 5\% of
+G-BL coverage, and beyond $N \approx 230$ the deficit proportion
+stabilizes near its asymptotic floor of $20$--$24\%$. The transition
+region $N = 100$--$300$ therefore captures the density range where
+the multi-objective advantage transitions from measurable to
+negligible for most scenarios.
+
+% ── Hot-Start Control Experiment ──
+\paragraph{Hot-Start Robustness.}
+To test whether the hot-start initialization from G-BL drives the
+observed convergence, we ran a control experiment on 10 S1 ($N = 20$),
+4 S2 ($N = 100$), 5 S3 ($N = 300$), and 5 S4 ($N = 500$) scenarios
+comparing hot-start MOEA-2 against random-initialized MOEA-2 (3 random
+seeds per S3/S4 scenario).
+At S1, random-init MOEA-2 achieves mean $f_1^* = 0.56 \pm 0.25$
+(vs.\ hot-start $0.76 \pm 0.21$), a deficit of $\Delta f_1^* \approx -0.20$.
+In 8 of 10 S1 scenarios, hot-start outperforms random-init on coverage.
+At S2, the gap widens: random-init $f_1^* = 0.48 \pm 0.04$
+(vs.\ hot-start $0.91 \pm 0.05$, $\Delta f_1^* \approx -0.43$).
+At S3 ($N = 300$), the gap persists: random-init $f_1^* = 0.508 \pm
+0.045$ (vs.\ hot-start $0.969 \pm 0.020$, $\Delta f_1^* \approx -0.46$).
+At S4 ($N = 500$), the gap narrows but remains material: random-init
+$f_1^* = 0.616 \pm 0.039$ (vs.\ hot-start $0.945 \pm 0.019$,
+$\Delta f_1^* \approx -0.33$). Hot-start initialization from G-BL
+thus materially improves MOEA convergence across all tested densities,
+narrowing only at S4.
+However, random-init MOEA-2 still achieves non-trivial coverage
+(far above the floor of zero), and the $f_2$ values of random-init
+solutions ($0.61 \pm 0.04$ at S1) are comparable to hot-start
+solutions ($0.58 \pm 0.03$), suggesting that the solver can
+independently locate regions of good geometric quality.
+We therefore qualify our findings: the ``greedy Pareto-sufficient''
+conclusion likely overstates the universality of G-BL convergence
+due to initialization bias, but the geometric structure relating
+$f_2$ and $f_3$ (definitional null $r_{\text{null}} = -0.51$,
+\S~\ref{sec:objective-functions}, Eq.~\ref{eq:rnull}) is independent
+of seeding, and the empirical correlation $r = 0.93$--$0.98$ reflects
+solver convergence to low-squint regimes rather than a hot-start
+artifact. The $\sigma$-sensitivity sweep over the hot-start perturbation
+magnitude is deferred to future work; the present control (10 S1,
+4 S2, 5 S3, 5 S4 scenarios) bounds the claim to ``hot-start bias is
+material across all tested densities (narrowing at S4) but does not
+generate the $f_2$--$f_3$ coupling, which is anchor-independent.''
+
+\paragraph{Random-Search Baseline.}
+As a further calibration, we ran a random-search baseline on 5 S1
+($N = 20$) scenarios: 5,000 random task selection vectors were drawn
+per scenario, with $f_1^*$, $f_2$, and $f_3$ computed from window
+geometry. The best random sample achieves $f_1^* = 1.03 \pm 0.03$
+(comparable to MOEA-2 hot-start, which yields $f_1^* = 0.75$ on the
+same scenarios), but the mean random-search $f_1^*$ is only
+$0.54 \pm 0.01$, and the 90th percentile reaches $0.96 \pm 0.02$.
+This confirms that, at sparse densities ($N = 20$, S1), the scheduling
+problem is non-trivial (random sampling fails on average) but that the
+solution space contains high-quality regions accessible to random
+exploration at the upper tail. The gap between random search and MOEA-2
+($\Delta f_1^* \approx -0.21$ at the mean) underscores the value of
+guided search, while the comparable best-case performance indicates
+that the solution landscape is relatively flat near the optimum at this
+scale. We bound this calibration to S1: the random-search distribution
+at denser scales (S3, S4), where the combinatorial space grows
+super-exponentially, is deferred to future work; the present result
+characterizes the sparse-density regime where the MOEA advantage is
+largest, and we do not extrapolate the flat-landscape claim beyond S1.
+
+% ── Runtime Summary ──
+\subsection{Runtime and Computational Cost}
+\label{sec:runtime}
+Table~\ref{tab:runtime} summarizes the computational cost of the five
+solvers at each scenario scale. G-BL and G-SM are deterministic greedy
+heuristics with negligible runtime ($< 0.01$ s for all $N$). GA-P-BL
+(MOEA-1, single-objective) converges in comparable time to the
+multi-objective variants. MOEA-2 and MOEA-3 (NSGA-III, pop $= 100$,
+gen $= 200$) scale roughly as $O(N^2 K)$ due to per-generation
+constraint evaluation across all task pairs; at S4 ($N = 500$),
+each MOEA run requires approximately 2 minutes on a single CPU core.
+The GeomCache precomputation ($O(N^2 K)$ with $K \approx 6$ samples
+per window at 10-s internal resolution) contributes a one-time
+overhead of $< 0.4$ s at S1, growing to $< 10$ s at S4 --- a
+fraction of the total solver time and not a bottleneck.
+
+\begin{table}[H]
+\centering
+\caption{Per-solver mean runtime (seconds, single CPU core)}
+\label{tab:runtime}
+\begin{tabular}{lcccc}
+\toprule
+\textbf{Solver} & \textbf{S1 (N=20)} & \textbf{S2 (N=100)} & \textbf{S3 (N=300)} & \textbf{S4 (N=500)} \\
+\midrule
+G-BL / G-SM & $< 0.01$ & $< 0.01$ & $< 0.01$ & $< 0.01$ \\
+GA-P-BL     & $11.5 \pm 1.6$  & $36.6 \pm 9.6$ & $88.2 \pm 21.5$ & $108.7 \pm 16.9$ \\
+MOEA-2      & $9.3 \pm 2.9$  & $31.1 \pm 13.1$ & $92.2 \pm 29.0$ & $115.2 \pm 31.5$ \\
+MOEA-3      & $9.3 \pm 2.9$  & $31.3 \pm 13.2$ & $92.0 \pm 29.6$ & $114.8 \pm 31.3$ \\
+GeomCache   & $0.4$ & $2.0$ & $5.5$ & $9.9$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+We note that exact methods (MILP) for this problem class are known to
+be intractable even at $N = 20$, due to the time-dependent transition
+constraints and continuous quality objectives that require $O(N^2 K)$
+binary variables for a full linearization \cite{Peng2019Orienteering}.
+We were unable to obtain a feasible MILP solution within a 24-hour
+time budget using the open-source HiGHS solver (via scipy.optimize.milp),
+confirming the NP-hardness established in \S~\ref{sec:system-model}
+and justifying the heuristic and metaheuristic focus of this study.
+% ============================================================
+%  6.6 Ablation Study (physical modeling contribution)
+% ============================================================
+\input{sections/_ablation_section.tex}
+% ============================================================
+%  7. DISCUSSION (~1200 words)
+% ============================================================
+\section{Discussion}
+% ── 7.1 Summary of Findings ──
+\subsection{Summary of Findings}
+\label{sec:summary}
+We define a solver as \emph{Pareto-sufficient} at scale $N$ if no
+alternative solver in the comparison set achieves both higher $f_1^*$ and
+higher $f_2$ (or $f_3$) with statistical significance
+($p < 0.005$, Cliff's $|\delta| > 0.33$). This operational criterion
+separates cases where multi-objective optimization yields a measurable
+quality--coverage advantage from cases where it does not.
+Our experiment across 200 systematically varied scenarios yields five
+interconnected findings, four of which define physical limits rather than
+solver advantages.
+First, and most critically, MOEA-2 and MOEA-3 yield near-identical results
+(Cliff's $\delta = -0.23$ on hypervolume, $p = 1.4 \times 10^{-4}$) because all
+solvers converge to low-squint regimes where the empirical
+$\theta$/$\psi_{\text{sq}}$ correlation ($r = 0.93$--$0.98$;
+\S~\ref{sec:pareto-coupling}) exceeds the definitional null
+$r_{\text{null}} = -0.51$ (\S~\ref{sec:objective-functions}). This near-identity
+is not an algorithmic shortcoming --- it identifies the central physical
+finding of this study: in the single-pass, single-satellite setting, the
+solver-converged low-squint regime suppresses the $\theta$-axis conflict between
+NESZ radiometric quality and geometric resolution, so that adding $f_3$ as a
+third objective yields no additional Pareto-front differentiation, making the
+3-objective formulation effectively redundant compared to the 2-objective
+formulation (requiring a 7$\times$ larger reference-direction set
+($H = 91$ vs.\ $H = 13$).
+Second, the advantage of multi-objective methods over the profit-only greedy
+baseline (G-BL) exhibits strong scale dependence: the $f_2$ improvement shrinks
+from $+8.0\%$ at S1 ($N = 20$) to $+1.5\%$ at S4 ($N = 500$).
+As an operational reference, at C-band (5.405 GHz, $B = 56.5$ MHz),
+the ground-range resolution $\rho_{\text{rg}} = c/(2B\sin\theta) \approx 2.65 / \sin\theta$ m;
+an $8\%$ improvement in $f_2$ corresponds to an effective geometric-resolution
+improvement of approximately $0.25$--$0.35$ m at typical incidence angles.
+The proportion of scenarios showing a coverage deficit ($f_1^* < 0.95$)
+dropping from $88\%$ to $20\%$ (Table~\ref{tab:scale-sensitivity},
+Fig.~\ref{fig:fig5}). At operational densities ($N \gtrsim 300$),
+the profit-oriented solvers (G-BL, GA-P-BL, MOEA-2, MOEA-3) converge to statistically similar coverage levels; the marginal
+geometric quality gain ($<2\%$) is smaller than the per-scenario variance,
+meaning that scheduler choice among profit-oriented solvers has no practically measurable effect on $f_2$
+quality in this regime.
+Third, the squint-minimized greedy solver (G-SM) improves NESZ
+radiometric quality ($f_3$) with a large effect size (Cliff's $\delta = +0.72$,
+$p = 1.7 \times 10^{-34}$), but the coverage cost is density-dependent: from
+$-15\%$ $f_1^*$ in sparse scenarios ($N = 20$) to $-39\%$ in dense ones
+($N = 500$; Fig.~\ref{fig:fig1}). This confirms that aggressive squint
+minimization is a viable strategy only when the observation request set is small
+enough to absorb the coverage penalty.
+Fourth, multi-objective solvers discover full Pareto trade-off surfaces
+($76 \pm 14$ points for MOEA-3) that are invisible to single-objective methods
+(Fig.~\ref{fig:fig3}). While the Pareto spread provides mission planners with
+a menu of quality--coverage trade-offs, the practical value of this menu is
+limited by the narrow range of achievable quality values imposed by the
+$\theta$/$\psi_{\text{sq}}$ geometric coupling.
+Fifth, the ablation study (\S\ref{sec:ablation}, Fig.~
+\ref{fig:fig6})
+provides independent confirmation of this geometric interpretation.
+Removing the squint component (variant B), the incidence-angle component
+(variant C), or all physical objectives (variant D) produces statistically
+indistinguishable results from the full physical model (variant A) at
+S2--S4 ($N \geq 100$). At S3--S4, every variant converges to within
+$1\%$ of the baseline for $f_1^*$ and to within $0.5\%$ for $f_2$, $f_3$,
+and $n_{\text{sel}}$.
+This insensitivity to objective-function specification in dense regimes is the strongest evidence
+that solver convergence to low-squint regimes (where $r$ exceeds the
+definitional null $r_{\text{null}} = -0.51$;
+\S~\ref{sec:objective-functions}, Eq.~\ref{eq:rnull}) --- not the
+choice of objectives --- governs the achievable trade-off space.
+% ── 7.2 HV Limitations in Mixed Single/Multi-Objective Comparisons ──
+\subsection{Hypervolume Limitations in Mixed Comparisons}
+The hypervolume (HV) indicator produces rankings that diverge from
+Friedman--Wilcoxon results when single- and multi-objective solvers are
+mixed (\S~\ref{sec:hv-divergence}). G-SM ranks first by HV despite
+$39\%$ coverage loss; GA-P-BL ranks last despite the best $f_1^*$ and
+no quality degradation. This inversion reflects HV's structural dependence
+on frontier cardinality --- single-point solvers cannot benefit from the
+volume spread that multi-objective solvers earn from their Pareto front,
+regardless of solution quality. We adopted the Friedman--Wilcoxon framework
+as our primary evidence to avoid confounding solution-set size with solution
+quality, and recommend that future studies report both HV (for
+multi-objective comparisons) and per-objective statistical tests when
+mixing solver types.
+% ── 7.3 Scale-Dependent Operational Guidance ──
+\subsection{Operational Implications of Scale Dependence}
+The scale dependence identified in \S~\ref{sec:scale-sensitivity}
+has direct consequences for mission planning. When the task set is sparse
+($N \leq 100$; S1--S2), scheduling flexibility is abundant: the optimizer has
+many feasible observation times per target and can make meaningful
+quality--coverage trade-offs. In this regime, MOEA-2 achieves an $8.0\%$ $f_2$
+improvement at S1 ($N = 20$) and a $4.4\%$ improvement at S2 ($N = 100$), with
+$88\%$ and $64\%$ of scenarios, respectively, showing a coverage deficit
+($f_1^* < 0.95$; Table~\ref{tab:scale-sensitivity}).
+However, these quality gains carry a steep coverage penalty: at $N = 20$,
+MOEA-2 schedules approximately $62\%$ of the targets that G-BL captures ($11.2$ vs.\
+$18.2$ out of $20$; \S~\ref{sec:scale-sensitivity}). Whether this trade-off is
+acceptable depends on the application --- for target identification tasks where
+a $4$--$8\%$ resolution improvement can determine whether adjacent objects
+are resolved or merged \cite{Curlander1991}, the coverage cost may be justified;
+for area-monitoring missions requiring broad coverage, the greedy baseline
+remains preferable.
+Conversely, when the task set is dense ($N \geq 300$; S3--S4), the
+multi-objective advantage falls below $2\%$ improvement in $f_2$ and $f_1^*$ deficit.
+At S3 ($N = 300$), MOEA-2 reaches
+$f_1^* = 0.98 \pm 0.04$ --- within $2\%$ of
+G-BL's coverage --- while delivering only a $1.6\%$ $f_2$ gain.
+Only $14\%$ of S3 and $20\%$ of S4 scenarios show a coverage deficit of this
+magnitude.
+In this regime, the squint-minimized greedy solver (G-SM) provides a
+compelling alternative: it delivers the highest $f_3$ quality
+($0.356 \pm 0.075$ at S4, $+70\%$ over G-BL).
+However, this radiometric quality gain carries a steep coverage cost:
+at S4 ($N=500$), G-SM schedules approximately $58\%$ of the tasks that
+G-BL captures, corresponding to a loss of roughly 80 of the 190 tasks
+that the larger-swath Stripmap coverage can accommodate.
+For mission planners, this represents a 42\% task loss relative to the
+coverage-maximizing baseline --- G-SM is recommended only when
+radiometric quality is the overriding priority and task coverage
+is secondary.
+Our results suggest a conditional operational guideline:
+for sparse observation requests ($N \lesssim 100$), MOEA-2 may provide
+geometric quality gains that, in specific application contexts,
+outweigh the steep coverage penalty;
+for dense monitoring campaigns ($N \gtrsim 300$), greedy methods (G-SM for
+radiometric priority, G-BL for coverage priority) approach
+Pareto-optimal coverage and may be preferable,
+though this guideline should be interpreted as a density-dependent trend
+rather than a universal rule (see \S~\ref{sec:limitations}).
+% ── 7.4 Limitations ──
+\subsection{Limitations}\label{sec:limitations}
+We note that intermediate strategies---such as hybrid MOEA+greedy cascades,
+MOEA with population sizes tuned to scenario density, or weighted-sum
+scalarization with varying weights---may offer superior trade-offs in specific
+density regimes and warrant investigation in future work.
+We also note that the near-identity of MOEA-2 and MOEA-3
+may partially reflect the specific NSGA-III configuration used here
+(population = 100, generations = 200, Das--Dennis $p = 12$); larger
+populations, extended generation budgets, or alternative many-objective
+algorithms (e.g., MOEA/D, SMS-EMOA) may reveal greater differentiation
+between two- and three-objective formulations. A weighted-sum scalarization
+test on S1 ($N=20$) using GA-P-BL with five weight grids $(w_1,w_2) \in
+\{(0.9,0.1), \dots, (0.1,0.9)\}$ produces identical $(f_1^*, f_2)$ outcomes
+for all weight combinations, indicating that the single-objective GA
+converges deterministically to a corner of the trade-off space regardless
+of weighting. The Pareto front discovered by MOEA-2 is therefore a
+genuinely richer representation of the quality--coverage trade-off
+surface, not reproducible by repeated weighted-sum runs.
+The 3-objective redundancy reported above is bounded to the single-pass,
+single-satellite setting: it reflects solver convergence to low-squint
+regimes that suppress the $\theta$-axis conflict quantified by the
+definitional null $r_{\text{null}} = -0.51$
+(\S~\ref{sec:objective-functions}, Eq.~\ref{eq:rnull}), not a mathematical
+identity between $f_2$ and $f_3$; in multi-pass or multi-satellite
+settings with greater angular diversity, the $\theta$-conflict would
+re-emerge and the third objective may become discriminative.
+Our study is bounded by several scope decisions that define directions
+for future work. We consider a single satellite in circular LEO, operating
+in Stripmap mode only --- ScanSAR, Spotlight, and TOPS modes introduce
+different quality dependencies that would enrich the multi-objective
+trade-off space. Multi-satellite formations such as
+TanDEM-X~\cite{Krieger2007TanDEMX} and TOPS-based wide-swath
+imaging~\cite{PratsIraola2012TOPS} represent natural extensions where
+the geometric coupling identified here may weaken due to multi-angle
+revisit diversity and burst-mode processing.
+The scenario design uses a fixed orbit (circular LEO, 600 km altitude)
+and does not explore sensitivity to orbital parameters
+(altitude, inclination, RAAN). Our study is restricted to Stripmap mode;
+ScanSAR, Spotlight, and TOPS modes introduce different
+range-Doppler coupling and quality dependencies that would enrich
+the multi-objective trade-off space. The NESZ and resolution
+relationships used here (Eqs.~1--3) are specific to Stripmap SAR;
+extending the formulation to TOPS (where burst-mode azimuth
+processing modifies resolution and NESZ vs.\ squint angle relationships)
+would require revisiting the objective-function definitions in
+\S~\ref{sec:objective-functions}. Our comparison of MOEA-2 and MOEA-3
+shows that adding $f_3$ does not improve the Pareto front, but this
+finding is specific to the single-pass, single-satellite setting:
+in multi-satellite or multi-pass scenarios where cumulative squint
+accumulation across revisits matters, the third objective may become
+discriminative. The hot-start control experiment (\S~\ref{sec:scale-sensitivity})
+indicates that G-BL initialization materially improves MOEA convergence;
+claims of ``greedy Pareto-sufficiency'' should therefore be interpreted
+as conditional on this initialization, and full-scale random-init
+experiments are needed to establish the unconditional behavior. Finally, we do not benchmark against learning-based
+schedulers (e.g., Chen et al.~\cite{Chen2025NeuralPriority}), which represent an alternative
+methodological family. A systematic comparison of physics-aware
+heuristic methods against data-driven approaches, especially on
+the generalization to out-of-distribution scenarios, is left to
+future work.
+We further note that G-BL (earliest-start-time greedy) is provably
+optimal only in the special case of uniform-priority tasks with
+non-overlapping visibility windows; for general instances, the OPTW
+reduction \cite{Peng2019Orienteering} establishes NP-hardness,
+precluding polynomial-time optimality guarantees. Characterizing
+the exact conditions under which greedy scheduling approaches
+Pareto-optimal coverage remains an open theoretical question.
+
+We further note that the $f_1^*$ normalization anchors to G-BL by
+construction (\S~\ref{sec:objective-functions}, Eq.~\ref{eq:f1}).
+Anchoring instead to $\max(f_1^{\text{G-BL}}, f_1^{\text{GA-P-BL}})$
+shifts MOEA-2's S4 deficit from $\sim 2\%$ to $\sim 17\%$. This does
+not affect the central redundancy finding (MOEA-2 $\approx$ MOEA-3),
+which is anchor-independent because the anchor cancels in pairwise
+MOEA comparisons; but it shows that the operational ``greedy
+Pareto-sufficiency'' phrasing used in earlier sections is an
+operational shorthand conditional on the G-BL anchor and the
+G-BL-class greedy, not a claim that greedy scheduling is optimal.
+GA-P-BL's $+18\%$ over G-BL at S4 demonstrates that stronger profit
+maximization is achievable. The bound we characterize is the coverage
+ceiling that all tested profit-oriented solvers approach under
+greedy-baseline hot-start, not a
+provable optimum or a guarantee that any single solver is sufficient.
+% ============================================================
+%  8. CONCLUSION (~250 words)
+% ============================================================
+\section{Conclusion}
+We presented a physics-aware multi-objective optimization framework for
+agile SAR satellite scheduling that integrates NESZ radiometric quality
+and geometric resolution as explicit optimization objectives alongside
+coverage profit.
+Five solvers --- spanning greedy heuristics, single-objective evolutionary
+search, and NSGA-III with two and three objectives --- were compared on
+200 systematically varied scenarios across four density classes.
+The central finding is an empirical upper bound, conditional on
+greedy-baseline hot-start: a property of solver convergence to
+low-squint regimes under which the three-objective redundancy
+(MOEA-2 $\approx$ MOEA-3) is anchor-independent, not a physical
+identity between objectives.
+The empirical $\theta$/$\psi_{\text{sq}}$ correlation
+($r = 0.93$--$0.98$), which exceeds the definitional null
+$r_{\text{null}} = -0.51$ (\S~\ref{sec:objective-functions}) because all
+solvers converge to low-squint regimes, makes the 3-objective formulation
+redundant in the single-pass, single-satellite setting: MOEA-2 and MOEA-3
+produce near-identical Pareto fronts, and adding $f_3$ yields no additional
+discrimination. The value of multi-objective optimization exhibits a scale
+phase transition: $f_2$ improvement over the greedy baseline shrinks from
+$+8.0\%$ at $N = 20$ to $+1.5\%$ at $N = 500$, with the proportion of
+scenarios showing a coverage deficit dropping from $88\%$ to $20\%$.
+At operational densities ($N \gtrsim 300$), the profit-oriented solvers converge to
+near-identical coverage, and the marginal quality gain falls below the
+per-scenario variance --- scheduler choice has no practically measurable
+effect on image quality.
+For mission planning, the operational implication is straightforward: multi-objective
+optimization provides measurable benefit only when observation requests
+are sparse ($N \lesssim 100$); at dense monitoring cadences, the
+profit-only greedy baseline (G-BL), with hot-start initialization,
+approaches the coverage ceiling relative to the G-BL anchor, and the
+squint-minimized variant (G-SM) offers a low-cost path to radiometric
+quality improvement. An ablation study across four objective-function variants (\S~\ref{sec:ablation}) confirms that at $N \geq 300$, solver outcomes are invariant to the choice of physical objectives. These findings establish an empirical bound on what
+physics-aware multi-objective scheduling can contribute to single-satellite
+SAR operations, and provide a baseline against which multi-satellite,
+multi-pass, and multi-mode extensions can be measured.
+% ── Acknowledgments ──
+\section*{Acknowledgments}
+The author thanks Prof.\ LIU Fanming (Harbin Engineering University) for
+guidance and support throughout this research. This work was supported by
+no specific external grant; it was performed as part of the author's doctoral
+studies at Harbin Engineering University.
+% ── Data Availability Statement (Wiley requirement) ──
+\section*{Data Availability Statement}
+Data and code supporting the findings of this study are publicly available
+at \url{https://github.com/liushuhao/agile-sar-moo-scheduling}. The repository contains the experimental
+scenarios (S1--S4), solver configurations, NSGA-III reference points
+(Das--Dennis $p=12$, $H=13$), statistical analysis scripts, and random seeds
+required for full reproducibility. Supplementary figures S1--S6 are also
+included.
+% ── Conflicts of Interest (Wiley requirement) ──
+\section*{Conflicts of Interest}
+The author declares that there is no conflict of interest regarding
+the publication of this article.
+% ── Funding (Wiley requirement) ──
+\section*{Funding}
+This research received no specific grant from any funding agency in the
+public, commercial, or not-for-profit sectors. The work was performed as
+part of the author's doctoral studies at Harbin Engineering University,
+College of Intelligent Systems Science and Engineering.
+% ═══════════════════════════════════════════════════
+%  BIBLIOGRAPHY
+% ═══════════════════════════════════════════════════
+\bibliographystyle{unsrt}
+\bibliography{small-paper-ijae}
+\end{document}

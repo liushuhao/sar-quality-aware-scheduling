@@ -1,0 +1,14 @@
+MOEA-3obj NO-INCIDENCE ablation (variant C): 4 groups, 200 scenarios
+  Output: D:\hermes\my-workspace\projects\phd-agile-sar\experiments\results\moea_3obj_no_incidence\_progress.json
+
+Resuming: 159 already completed
+
+=== S1: 50 scenarios ===
+
+=== S2: 50 scenarios ===
+
+=== S3: 50 scenarios ===
+
+=== S4: 50 scenarios ===
+  [160/200] S4-A_seed09.pkl: f1=1403, f2=0.59, f3=0.1517, n=264, t=151.9s
+  [170/200] S4-B_seed09.pkl: f1=583, f2=0.49, f3=0.5070, n=108, t=65.1s

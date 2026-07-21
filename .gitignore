@@ -1,0 +1,65 @@
+# Virtual environment
+.venv/
+
+# Python cache
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Pickle files (regenerable binary data)
+*.pkl
+
+# Literature raw PDFs (large, not tracked)
+literature/raw/
+
+# Ch3 results JSON/CSV/logs remain tracked for reproducibility.
+# Ch5 has no paper yet; keep its result directory local.
+papers/constellation-scheduling/experiments/results/
+
+# Third-party tools (cloned repos)
+tool/
+
+# Translation artifacts (regenerate from paper2assets)
+babeldoc-out/
+
+# Spark/idea cache
+ideaspark_run/
+
+# OS files
+Thumbs.db
+.DS_Store
+
+# IDE
+.vscode/
+.idea/
+
+# LaTeX build artifacts
+*.aux
+*.bbl
+*.blg
+*.log
+*.out
+*.toc
+*.synctex.gz
+*.fls
+*.fdb_latexmk
+
+# Backup / temp artifacts
+*_backup*/
+*.backup-*/
+*.bak*
+*_OLD*
+*corrupted*
+_c*.txt
+
+# Local reference copies / third-party repositories
+papers/*.pdf
+papers/*.txt
+papers/task-allocation-auctions-main/
+
+# Claude local state
+.claude/
+.remember/
+
+# Hermes tool metadata
+.hermes/
