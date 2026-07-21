@@ -511,6 +511,7 @@ def moea_solver(
     n_obj: int = 3,
     resolution_reqs: Optional[List[float]] = None,
     hotstart_individual: Optional[np.ndarray] = None,
+    hotstart_sigma: float = 0.5,
     n_sats: int = 1,
     **kwargs,
 ) -> SolverResult:
@@ -530,6 +531,7 @@ def moea_solver(
         n_obj: number of objectives (2 = f1+f2 geometric resolution, 3 = f1+f2+f3)
         resolution_reqs: per-target resolution requirements
         hotstart_individual: optional 2N (or 3N for multi-sat) chromosome to seed initial population
+        hotstart_sigma: std of Gaussian noise added to hot-start seed (default 0.5)
         n_sats: number of satellites (1 = single-sat, >1 = multi-sat constellation with 3N encoding)
         **kwargs: passed to build_agile_instance
 
@@ -574,19 +576,20 @@ def moea_solver(
     if hotstart_individual is not None:
         from pymoo.core.sampling import Sampling
         class _MOEAHotStartSampling(Sampling):
-            def __init__(self, x0, n_pop):
+            def __init__(self, x0, n_pop, sigma):
                 super().__init__()
                 self.x0 = x0
                 self.n_pop = n_pop
+                self.sigma = sigma
             def _do(self, problem, n_samples, **kwargs):
                 pop = np.zeros((self.n_pop, problem.n_var))
                 pop[0] = self.x0
                 rng = np.random.RandomState()
                 for i in range(1, self.n_pop):
-                    noise = rng.normal(0, 0.5, problem.n_var)  # std=0.5: unlock task selection
+                    noise = rng.normal(0, self.sigma, problem.n_var)
                     pop[i] = np.clip(self.x0 + noise, 0.0, 1.0)
                 return pop
-        sampling = _MOEAHotStartSampling(hotstart_individual, population_size)
+        sampling = _MOEAHotStartSampling(hotstart_individual, population_size, hotstart_sigma)
 
     algorithm = NSGA3(
         pop_size=population_size,
