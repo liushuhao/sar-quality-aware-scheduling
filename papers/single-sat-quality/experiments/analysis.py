@@ -27,6 +27,7 @@ from scipy.stats import wilcoxon, friedmanchisquare, f_oneway
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
+import scienceplots
 import matplotlib.ticker as mticker
 from matplotlib.patches import Patch
 import seaborn as sns
@@ -667,10 +668,10 @@ def friedman_nemenyi(groups_data: Dict[str, List[float]],
 # ═══════════════════════════════════════════════════════════════════════════
 
 def set_style():
-    """Set consistent plotting style."""
-    sns.set_style("whitegrid")
+    """Set consistent plotting style using SciencePlots."""
+    plt.style.use(['science', 'nature'])
+    sns.set_style("ticks")
     plt.rcParams.update({
-        "font.family": "serif",
         "font.size": 11,
         "axes.titlesize": 13,
         "axes.labelsize": 12,

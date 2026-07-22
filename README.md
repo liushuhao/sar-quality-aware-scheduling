@@ -27,7 +27,7 @@ Five solvers compared on 200 systematic scenarios across four target densities (
 ### Requirements
 
 - Python 3.11+
-- Dependencies: `numpy`, `scipy`, `pymoo`, `matplotlib`, `pandas` (see `requirements.txt`)
+- Dependencies: `numpy`, `scipy`, `pymoo`, `matplotlib`, `SciencePlots`, `pandas` (see `requirements.txt`)
 
 ### Run experiments
 
@@ -54,7 +54,7 @@ python papers/single-sat-quality/experiments/gen_all_figures.py     # 6 main + 6
 python papers/single-sat-quality/experiments/gen_table1.py          # Table 1 (solver matrix)
 ```
 
-Figures written to `papers/single-sat-quality/figures/`.
+Figures written to `papers/single-sat-quality/figures/`. Uses SciencePlots + local figure helpers (`figures/scripts/`).
 
 ### Build the paper PDF
 
@@ -91,7 +91,10 @@ Tracked assets include solver code, scenario generators, fixed seeds/configurati
 │   ├── single-sat-quality/   # ASR paper (Ch3)
 │   │   ├── *.tex, *.bib      # paper source
 │   │   ├── sections/         # section fragments
-│   │   ├── figures/          # paper figures + experiment plots
+│   │   ├── figures/          # paper figures + plot tooling
+│   │   │   ├── scripts/      # style_presets, figure_export, color_palettes
+│   │   │   ├── styles/       # .mplstyle files (nature, publication, presentation)
+│   │   │   └── references/   # journal requirements, color guides
 │   │   ├── experiments/      # experiment scripts + scenario data
 │   │   └── scripts/          # driver scripts
 │   └── constellation-scheduling/  # Ch5 paper (in progress)

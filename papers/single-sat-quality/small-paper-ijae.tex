@@ -1,35 +1,33 @@
 % ============================================================
-%  Small Paper --- IJAE (International Journal of Aerospace Engineering)
+%  Small Paper --- ASR (Advances in Space Research)
 %  Title: Physics-Aware Multi-Objective Scheduling for Agile SAR
 %         Satellites: Balancing Profit, NESZ, and Geometric Resolution
 % ============================================================
-\documentclass[12pt,a4paper]{article}
+\documentclass[preprint,12pt,authoryear]{elsarticle}
 % ── Packages ──
-\usepackage[utf8]{inputenc}
-\usepackage[T1]{fontenc}
 \usepackage{amsmath,amssymb,amsfonts}
-\usepackage{graphicx}
-\graphicspath{{figures/}}
 \usepackage{booktabs}
-\usepackage{hyperref}
-\usepackage{geometry}
-\geometry{margin=2.5cm}
 \usepackage{caption}
 \captionsetup{justification=centering}
 \usepackage{subcaption}
 \usepackage{multirow}
 \usepackage{enumitem}
 \usepackage{float}
+\usepackage{hyperref}
+\graphicspath{{figures/}}
+% ── Journal ──
+\journal{Advances in Space Research}
 % ── Metadata ──
-\title{Physics-Aware Multi-Objective Scheduling for Agile SAR Satellites: \\ Balancing Profit, NESZ, and Geometric Resolution}
-\author{LIU SHUHAO\\[1ex]
-College of Intelligent Systems Science and Engineering\\
-Harbin Engineering University\\
-145 Nantong Street, Nangang District, Harbin 150001, China\\
-\texttt{liushuhao@hrbeu.edu.cn}}
-\date{}
 \begin{document}
-\maketitle
+\begin{frontmatter}
+\title{Physics-Aware Multi-Objective Scheduling for Agile SAR Satellites: Balancing Profit, NESZ, and Geometric Resolution}
+\author{LIU Shuhao}
+\ead{liushuhao@hrbeu.edu.cn}
+\affiliation{organization={College of Intelligent Systems Science and Engineering, Harbin Engineering University},
+            addressline={145 Nantong Street, Nangang District},
+            city={Harbin},
+            postcode={150001},
+            country={China}}
 % ============================================================
 %  ABSTRACT (~180-200 words)
 % ============================================================
@@ -41,8 +39,8 @@ optimization in single-pass, single-satellite Stripmap operation by integrating
 two SAR physical quality dimensions --- Noise-Equivalent Sigma Zero (NESZ,
 radiometric) and geometric resolution --- as decomposed optimization
 objectives within an NSGA-III framework, distinct from the scalar visibility
-composite of prior SAR-quality-aware schedulers~\cite{Kramer2025SARVis} or the
-generic image-quality composite of Wei et al.~\cite{Wei2025MONP}.
+composite of prior SAR-quality-aware schedulers~\citep{Kramer2025SARVis} or the
+generic image-quality composite of \citet{Wei2025MONP}.
 Experiments spanning target densities from 20 to 500 reveal a scale-dependent
 bound: at sparse densities ($N \lesssim 100$), multi-objective optimization
 can extract modest geometric quality gains ($+8.0\%$ at $N=20$) at a steep
@@ -59,7 +57,10 @@ this ceiling. Rather than identifying a superior solver, our results establish
 an empirical upper bound on what physics-aware multi-objective scheduling can
 contribute to single-satellite SAR operations.
 \end{abstract}
-\noindent\textbf{Keywords:} agile SAR, satellite scheduling, multi-objective optimization, NSGA-III, noise-equivalent sigma zero (NESZ), geometric resolution
+\begin{keyword}
+agile SAR \sep satellite scheduling \sep multi-objective optimization \sep NSGA-III \sep noise-equivalent sigma zero (NESZ) \sep geometric resolution
+\end{keyword}
+\end{frontmatter}
 % ============================================================
 %  1. INTRODUCTION (~900 words)
 % ============================================================
@@ -69,7 +70,7 @@ are increasingly central to time-critical monitoring missions, from disaster res
 to maritime surveillance.
 Their agility --- the ability to slew the antenna beam away from the nadir track ---
 enables a single satellite to image far more targets per orbit than a fixed-pointing
-platform \cite{Curlander1991}.
+platform \citep{Curlander1991}.
 This flexibility, however, transforms scheduling from a simple feasibility check
 into a combinatorial optimization problem: for $N$ targets each with a finite
 visibility window, the scheduler must select a subset and assign observation times
@@ -83,25 +84,25 @@ The scheduling problem therefore reduces to maximizing the number or priority-we
 sum of observed targets subject to temporal feasibility.
 This assumption underpins most existing satellite scheduling work,
 from mixed-integer programming formulations to deep reinforcement learning
-approaches \cite{Chen2025NeuralPriority}.
+approaches \citep{Chen2025NeuralPriority}.
 SAR imaging, however, violates this assumption fundamentally.
 SAR image quality depends on the radar geometry at the moment of acquisition:
 the ground-range resolution degrades with incidence angle ($\rho_{\text{rg}} \propto 1/\sin\theta$),
 the azimuth resolution broadens with squint angle ($\rho_{\text{az}} \propto 1/\cos\psi_{\text{sq}}$),
 and the radiometric sensitivity (Noise-Equivalent Sigma Zero, NESZ) deteriorates
-with slant range as $R^3$ \cite{Cumming2005}.
+with slant range as $R^3$ \citep{Cumming2005}.
 When the scheduler can choose \emph{when} within a visibility window to observe
 each target --- the defining feature of agile satellites --- it simultaneously
 chooses the imaging quality at which each target is acquired.
 Despite this tight coupling between scheduling and imaging physics,
-with few exceptions (e.g., \cite{Wei2025MONP,Kramer2025SARVis}), existing
+with few exceptions (e.g., \citep{Wei2025MONP,Kramer2025SARVis}), existing
 agile SAR scheduling methods either reduce SAR to a coverage-only objective
 (optimizing only task coverage) or apply post-hoc quality checks on schedules produced by
 coverage-maximizing solvers.
 Few approaches treat physical quality dimensions as primary optimization
 objectives in the SAR domain specifically.
 The problem is NP-hard by reduction from the Orienteering Problem with
-Time-Dependent Profits \cite{Peng2019Orienteering}, precluding
+Time-Dependent Profits \citep{Peng2019Orienteering}, precluding
 polynomial-time exact algorithms for all but the smallest instances.
 Unlike the Resource-Constrained Project Scheduling Problem (RCPSP),
 where task durations are fixed, our formulation features time-dependent
@@ -109,9 +110,9 @@ transition times (C3) and time-dependent quality values ($f_2$, $f_3$),
 making the scheduling and quality-selection decisions coupled rather
 than separable.
 The SAR literature has well-established models for NESZ and geometric resolution
-as functions of observation geometry \cite{Curlander1991,Cumming2005}, and
+as functions of observation geometry \citep{Curlander1991,Cumming2005}, and
 the multi-objective optimization literature provides mature frameworks such
-as NSGA-III \cite{Deb2014} for handling three or more objectives simultaneously.
+as NSGA-III \citep{Deb2014} for handling three or more objectives simultaneously.
 Yet these three bodies of knowledge --- SAR physical modeling, multi-objective
 evolutionary algorithms (MOEAs), and satellite scheduling --- have not been
 integrated. This paper applies MOEAs to a SAR scheduling formulation
@@ -143,8 +144,8 @@ The specific contributions of this work are:
     \item The decomposition of SAR image quality into closed-form NESZ
     ($\propto R^3$) and geometric resolution ($\sin\theta\cos\psi_{\text{sq}}$)
     objectives within an NSGA-III framework---distinct from the scalar
-    visibility composite of Kramer \& Miller~\cite{Kramer2025SARVis} and
-    the generic image-quality composite of Wei et al.~\cite{Wei2025MONP}---using
+    visibility composite of \citet{Kramer2025SARVis} and
+    the generic image-quality composite of \citet{Wei2025MONP}---using
     mean per-task quality metrics that decouple quality from the number of
     scheduled tasks;
     \item The discovery and analytical characterization of an empirical upper
@@ -175,46 +176,46 @@ satellite scheduling (2.1), SAR physical quality modeling (2.2),
 and multi-objective evolutionary optimization (2.3).
 \subsection{Satellite Scheduling}
 Satellite scheduling has been studied extensively in the Earth-observation
-domain. The survey by Ferrari et al.~\cite{Ferrari2025} catalogs over 200
+domain. The survey by \citet{Ferrari2025} catalogs over 200
 publications spanning exact methods, heuristics, metaheuristics, and
 learning-based approaches. Exact formulations based on mixed-integer linear
 programming (MILP) achieve optimality on small instances but fail to scale
 to operational problem sizes, motivating a broad family of heuristic and
 metaheuristic alternatives including genetic algorithms, simulated annealing,
-and tabu search~\cite{Wang2019MILP,Chen2019MILPMulti}.
+and tabu search~\citep{Wang2019MILP,Chen2019MILPMulti}.
 The earliest formal treatments of agile satellite scheduling by
-Lema\^{i}tre et al.~\cite{Lemaitre2002MultiSat} and
-Bianchessi et al.~\cite{Bianchessi2007} established the
+\citet{Lemaitre2002MultiSat} and
+\citet{Bianchessi2007} established the
 foundational problem structure of time-dependent transition
 times between observations.
 Recent work further generalizes these methods to agile satellites, where
 the freedom to choose observation start times within each visibility window
-is exploited to pack more observations into a single orbit~\cite{Peng2019Orienteering,Chen2024LearnConstruct}.
+is exploited to pack more observations into a single orbit~\citep{Peng2019Orienteering,Chen2024LearnConstruct}.
 A parallel line of research has pursued learning-based and hybrid approaches
-for satellite scheduling. Liu et al.~\cite{Liu2024TwoStageDRL} and
-Zhou et al.~\cite{Zhou2025TwoPhase} apply deep reinforcement learning to
-agile optical satellite scheduling, while Jacquet et al.~\cite{Jacquet2024GNN}
+for satellite scheduling. \citet{Liu2024TwoStageDRL} and
+\citet{Zhou2025TwoPhase} apply deep reinforcement learning to
+agile optical satellite scheduling, while \citet{Jacquet2024GNN}
 combine graph neural networks with Monte Carlo tree search for the same domain.
-Wang et al.~\cite{Wang2026Lagrangian} propose a Lagrangian relaxation-based
+\citet{Wang2026Lagrangian} propose a Lagrangian relaxation-based
 heuristic for multi-satellite mission planning.
-Caleiras et al.~\cite{Caleiras2026SuperAgile} formulate super-agile
+\citet{Caleiras2026SuperAgile} formulate super-agile
 satellite scheduling as a constraint programming problem, capturing
 the time-dependent transition constraints characteristic of super-agile platforms.
-Herrmann et al.~\cite{Herrmann2023} apply RL to on-board AEOS scheduling, maximizing target collection reward without imaging quality as an objective.
-Wu et al.~\cite{Wu2026WhaleHighDensity} address high-target-density AEOS scheduling with an improved whale optimization algorithm, reporting convergence challenges that echo the density-driven constraint tightening we analyze in \S~\ref{sec:scale-sensitivity}.
+\citet{Herrmann2023} apply RL to on-board AEOS scheduling, maximizing target collection reward without imaging quality as an objective.
+\citet{Wu2026WhaleHighDensity} address high-target-density AEOS scheduling with an improved whale optimization algorithm, reporting convergence challenges that echo the density-driven constraint tightening we analyze in \S~\ref{sec:scale-sensitivity}.
 Despite their methodological diversity, all these
 works treat quality as a fixed property determined at observation-window
 generation. In contrast, SAR imaging quality varies continuously with acquisition
-geometry and is directly optimizable within the scheduling window. Chang et al.~\cite{Chang2022Gaofen}
+geometry and is directly optimizable within the scheduling window. \citet{Chang2022Gaofen}
  propose the first MOEA for SAR satellite scheduling using two adaptive
 NSGA-II variants on a Gaofen-12 X-band SAR platform; their bi-objective
 formulation (profit + energy consumption) represents the closest prior
-work to ours, but it omits imaging quality dimensions. Wei et al.~\cite{Wei2025MONP}
+work to ours, but it omits imaging quality dimensions. \citet{Wei2025MONP}
 introduce a neural-policy-guided MOEA that incorporates a composite image
-quality score as an optimization objective. Kramer \& Miller~\cite{Kramer2025SARVis}
+quality score as an optimization objective. \citet{Kramer2025SARVis}
 schedule SAR constellation observations with a hybrid metaheuristic using a
 weighted visibility--performance composite, embedding a SAR-quality proxy in
-the scheduler, and Yao et al.~\cite{Yao2024Bilevel}
+the scheduler, and \citet{Yao2024Bilevel}
 develop a bilevel evolutionary algorithm for multi-satellite scheduling
 that separates task allocation from detailed observation planning.
 The common limitation of all this prior work is that SAR physical quality
@@ -226,8 +227,7 @@ optimization objectives in their own right.
 \subsection{SAR Physical Quality Modeling}
 The SAR remote sensing literature provides well-established analytical
 models linking observation geometry to image quality.
-Curlander and McDonough~\cite{Curlander1991}, Cumming and
-Wong~\cite{Cumming2005}, and Moreira et al.~\cite{Moreira2025} give comprehensive treatments
+\citet{Curlander1991}, \citet{Cumming2005}, and \citet{Moreira2025} give comprehensive treatments
 of SAR physics, including the two quality dimensions relevant to scheduling:
 geometric resolution and radiometric sensitivity.
 Geometric resolution decomposes into ground-range resolution
@@ -236,28 +236,28 @@ $B$ the radar bandwidth, and $\theta$ the incidence angle, and azimuth
 resolution $\rho_{\text{az}} = D / (2 \cos\psi_{\text{sq}})$, where $D$
 is the antenna length and $\psi_{\text{sq}}$ the squint angle. This gives
 the unweighted theoretical limit; in operational SAR, Taylor or Hamming
-amplitude weighting widens $\rho_{\text{az}}$ by 10--20\%~\cite{Curlander1991}.
+amplitude weighting widens $\rho_{\text{az}}$ by 10--20\%~\citep{Curlander1991}.
 Since this weighting is platform-constant, the unweighted form preserves
 the relative ordering of observation geometries for optimization purposes.
 Both degrade as the observation departs from the zero-Doppler geometry
 ($\psi_{\text{sq}} = 0$, $\theta$ minimal). Radiometric sensitivity,
 measured by the Noise-Equivalent Sigma Zero (NESZ), deteriorates with the
 cube of slant range: $\text{NESZ} \propto R^3 \propto 1/(\cos^3\theta \cdot \cos^3\psi_{\text{sq}})$ for Stripmap SAR after azimuth compression
-gain~\cite{Curlander1991}. The proportionality $\text{NESZ} \propto R^3$
+gain~\citep{Curlander1991}. The proportionality $\text{NESZ} \propto R^3$
 captures the dominant geometric dependence; noise figure, transmit power,
 and processing gain terms are omitted as they are platform-constant and do
 not affect the relative ordering of observation geometries that the
 scheduler optimizes over. This cubic dependence on slant range means even modest
 deviations from the optimal viewing geometry make fine observation timing
 critical for radiometric performance.
-Moreira et al.~\cite{Moreira2025} survey the evolution of spaceborne SAR
+\citet{Moreira2025} survey the evolution of spaceborne SAR
 technologies and reinforce that imaging quality is intrinsically tied to
 acquisition geometry.
 These quality models are routinely used in SAR system design to specify
 performance envelopes (e.g., maximum NESZ across a swath). Their use in
 scheduling, however, remains limited to post-hoc validation of fixed
-observation plans~\cite{KramerMiller2024} or binary feasibility filtering
-at the observation-window level~\cite{QualityScreening2026} (arXiv preprint). The
+observation plans~\citep{KramerMiller2024} or binary feasibility filtering
+at the observation-window level~\citep{QualityScreening2026} (arXiv preprint). The
 scheduling literature and the SAR quality modeling literature have
 developed in parallel: schedulers treat quality as a constraint, while
 SAR engineers compute quality after the schedule is fixed. Our work
@@ -266,7 +266,7 @@ directly into the optimization objective space.
 \subsection{Multi-Objective Evolutionary Optimization}
 Multi-objective evolutionary algorithms (MOEAs) have matured into a
 standard toolkit for problems with two or more competing objectives.
-The NSGA-III algorithm~\cite{Deb2014} extends the well-known NSGA-II
+The NSGA-III algorithm~\citep{Deb2014} extends the well-known NSGA-II
 framework to many-objective problems ($M \geq 3$) through a
 reference-point-based diversity preservation mechanism, replacing the
 crowding distance operator that degrades in higher dimensions. NSGA-III
@@ -275,13 +275,13 @@ design, and mission planning problems where objectives such as fuel
 consumption, coverage, and revisit time must be balanced simultaneously.
 In satellite scheduling, MOEAs have been applied primarily in optical
 domains, with objectives that include total profit, task completion time,
-resource utilization, and load balancing~\cite{Wei2021Memetic,Li2018Preference}. Yang et al.~\cite{Yang2024MOEAReview} survey recent developments in surrogate-assisted expensive MOEAs for multi-satellite imaging mission planning.
+resource utilization, and load balancing~\citep{Wei2021Memetic,Li2018Preference}. \citet{Yang2024MOEAReview} survey recent developments in surrogate-assisted expensive MOEAs for multi-satellite imaging mission planning.
 The hypervolume (HV) indicator is the most widely used quality metric
 for comparing Pareto front approximations, but its sensitivity to
 frontier cardinality creates interpretational challenges when comparing
 single-objective and multi-objective solvers --- a methodological issue
 we address in \S~\ref{sec:pareto-coupling}.
-The decompose-and-learn framework of Qi et al.~\cite{DecomposeLearn2025}
+The decompose-and-learn framework of \citet{DecomposeLearn2025}
 tackles large-scale satellite scheduling with a multi-objective
 decomposition strategy, demonstrating that MOEA scalability can be
 achieved through problem-specific decomposition.
@@ -306,7 +306,7 @@ We consider a single agile SAR satellite in a circular orbit at altitude $H$,
 operating in Stripmap mode. We adopt Stripmap as the baseline SAR mode because
 it provides the widest continuous swath with uniform quality, and its
 quality--geometry relationships are analytically tractable through closed-form
-NESZ and resolution expressions \cite{Curlander1991}.
+NESZ and resolution expressions \citep{Curlander1991}.
 Extension to ScanSAR and TOPS modes is discussed in
 \S~\ref{sec:limitations}.
 A problem instance $\mathcal{I} = (\mathcal{T}, \mathcal{S}, \mathcal{O})$ consists of
@@ -335,7 +335,7 @@ $\theta = \arcsin\big(\frac{R_e+H}{R_e}\sin\phi\big)$ where $R_e$ is Earth's mea
 squint angle $\psi_{\text{sq}} = \arcsin(|l_x| / R)$.
 This definition of squint angle as the angular deviation of the
 LOS vector from the zero-Doppler plane follows Curlander and
-McDonough~\cite{Curlander1991} (Ch.~9, SAR Doppler characteristics),
+\citet{Curlander1991} (Ch.~9, SAR Doppler characteristics),
 where the azimuth Doppler centroid is proportional to
 $\sin\psi_{\text{sq}}$.
 A critical property is that \emph{all} quality-relevant geometry
@@ -376,7 +376,7 @@ When $\mathcal{S} = \emptyset$, $f_2 = 0$.
 Noise-Equivalent Sigma Zero (NESZ) measures the minimum detectable backscatter.
 For Stripmap SAR, NESZ degrades with the cube of slant range,
 $\text{NESZ} \propto R^3 \propto 1/(\cos^3\theta \cdot \cos^3\psi_{\text{sq}})$,
-after accounting for azimuth compression gain \cite{Curlander1991}.
+after accounting for azimuth compression gain \citep{Curlander1991}.
 We define the radiometric quality index as:
 \begin{equation}
 f_3 = \frac{1}{|\mathcal{S}|} \sum_{i \in \mathcal{S}} \cos^3\theta_i \cdot \cos^3\psi_{\text{sq},i}
@@ -642,7 +642,7 @@ $f_2$ and $f_3$ are computed post-hoc on the best-found schedule.
 \subsection{MOEA-2 and MOEA-3: Multi-Objective Evolutionary Algorithms}
 MOEA-2 and MOEA-3 extend the GA-P-BL chromosome encoding to
 multi-objective optimization via the NSGA-III framework
-\cite{Deb2014}.
+\citep{Deb2014}.
 Both use a population of 100 individuals over 200 generations with
 the same genetic operators as GA-P-BL.
 Reference points are generated via the Das--Dennis systematic
@@ -695,10 +695,10 @@ incidence angles in the range $[18^\circ, 47^\circ]$
 We note that this bilateral Stripmap abstraction departs from operational
 Sentinel-1A/B, which operates primarily in right-looking TOPS mode
 (Interferometric Wide swath, incidence $\sim 29^\circ$--$46^\circ$)
-\cite{ESA2021Sentinel1};
+\citep{ESA2021Sentinel1};
 the bilateral-looking Stripmap configuration here represents a generic
 agile-SAR concept (cf.\ TerraSAR-X dual-receive Stripmap
-\cite{Krieger2007TanDEMX} and prospective
+\citep{Krieger2007TanDEMX} and prospective
 bistatic formations) selected to exercise the full incidence/squint
 trade-off space.
 Targets are distributed along the satellite ground track within the
@@ -1148,7 +1148,7 @@ GeomCache   & $0.4$ & $2.0$ & $5.5$ & $9.9$ \\
 We note that exact methods (MILP) for this problem class are known to
 be intractable even at $N = 20$, due to the time-dependent transition
 constraints and continuous quality objectives that require $O(N^2 K)$
-binary variables for a full linearization \cite{Peng2019Orienteering}.
+binary variables for a full linearization \citep{Peng2019Orienteering}.
 We were unable to obtain a feasible MILP solution within a 24-hour
 time budget using the open-source HiGHS solver (via scipy.optimize.milp),
 confirming the NP-hardness established in \S~\ref{sec:system-model}
@@ -1257,7 +1257,7 @@ MOEA-2 schedules approximately $62\%$ of the targets that G-BL captures ($11.2$ 
 $18.2$ out of $20$; \S~\ref{sec:scale-sensitivity}). Whether this trade-off is
 acceptable depends on the application --- for target identification tasks where
 a $4$--$8\%$ resolution improvement can determine whether adjacent objects
-are resolved or merged \cite{Curlander1991}, the coverage cost may be justified;
+are resolved or merged \citep{Curlander1991}, the coverage cost may be justified;
 for area-monitoring missions requiring broad coverage, the greedy baseline
 remains preferable.
 Conversely, when the task set is dense ($N \geq 300$; S3--S4), the
@@ -1319,8 +1319,8 @@ for future work. We consider a single satellite in circular LEO, operating
 in Stripmap mode only --- ScanSAR, Spotlight, and TOPS modes introduce
 different quality dependencies that would enrich the multi-objective
 trade-off space. Multi-satellite formations such as
-TanDEM-X~\cite{Krieger2007TanDEMX} and TOPS-based wide-swath
-imaging~\cite{PratsIraola2012TOPS} represent natural extensions where
+TanDEM-X~\citep{Krieger2007TanDEMX} and TOPS-based wide-swath
+imaging~\citep{PratsIraola2012TOPS} represent natural extensions where
 the geometric coupling identified here may weaken due to multi-angle
 revisit diversity and burst-mode processing.
 The scenario design uses a fixed orbit (circular LEO, 600 km altitude)
@@ -1343,7 +1343,7 @@ indicates that G-BL initialization materially improves MOEA convergence;
 claims of ``greedy Pareto-sufficiency'' should therefore be interpreted
 as conditional on this initialization, and full-scale random-init
 experiments are needed to establish the unconditional behavior. Finally, we do not benchmark against learning-based
-schedulers (e.g., Chen et al.~\cite{Chen2025NeuralPriority}), which represent an alternative
+schedulers (e.g., \citet{Chen2025NeuralPriority}), which represent an alternative
 methodological family. A systematic comparison of physics-aware
 heuristic methods against data-driven approaches, especially on
 the generalization to out-of-distribution scenarios, is left to
@@ -1351,7 +1351,7 @@ future work.
 We further note that G-BL (earliest-start-time greedy) is provably
 optimal only in the special case of uniform-priority tasks with
 non-overlapping visibility windows; for general instances, the OPTW
-reduction \cite{Peng2019Orienteering} establishes NP-hardness,
+reduction \citep{Peng2019Orienteering} establishes NP-hardness,
 precluding polynomial-time optimality guarantees. Characterizing
 the exact conditions under which greedy scheduling approaches
 Pareto-optimal coverage remains an open theoretical question.
@@ -1417,6 +1417,12 @@ The author thanks Prof.\ LIU Fanming (Harbin Engineering University) for
 guidance and support throughout this research. This work was supported by
 no specific external grant; it was performed as part of the author's doctoral
 studies at Harbin Engineering University.
+% ── CRediT Authorship Contribution Statement ──
+\section*{CRediT Authorship Contribution Statement}
+\textbf{Liu Shuhao:} Conceptualization, Methodology, Software, Validation,
+Formal Analysis, Investigation, Resources, Data Curation,
+Writing -- Original Draft, Writing -- Review \& Editing, Visualization,
+Supervision, Project Administration, Funding Acquisition.
 % ── Data Availability Statement ──
 \section*{Data Availability Statement}
 Solver code, scenario generators, fixed seeds and configurations, processed
@@ -1425,10 +1431,11 @@ corresponding author. The companion repository is publicly available at
 \url{https://github.com/liushuhao/sar-quality-aware-scheduling}.
 Generated binary scenario files and per-run pickle objects are not
 tracked; they can be regenerated using the supplied scripts.
-% ── Conflicts of Interest (Wiley requirement) ──
-\section*{Conflicts of Interest}
-The author declares that there is no conflict of interest regarding
-the publication of this article.
+% ── Declaration of Competing Interest (Elsevier requirement) ──
+\section*{Declaration of Competing Interest}
+The author declares that he has no known competing financial interests or
+personal relationships that could have appeared to influence the work
+reported in this paper.
 % ── Funding (Wiley requirement) ──
 \section*{Funding}
 This research received no specific grant from any funding agency in the
@@ -1438,6 +1445,6 @@ College of Intelligent Systems Science and Engineering.
 % ═══════════════════════════════════════════════════
 %  BIBLIOGRAPHY
 % ═══════════════════════════════════════════════════
-\bibliographystyle{unsrt}
+\bibliographystyle{elsarticle-harv}
 \bibliography{small-paper-ijae}
 \end{document}

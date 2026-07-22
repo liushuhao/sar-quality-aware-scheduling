@@ -6,11 +6,17 @@ Output: papers/single-sat-quality/figures/fig{1-5}_*.pdf, .png
 
 import matplotlib; matplotlib.use('Agg')
 import matplotlib.pyplot as plt
+import scienceplots
 from matplotlib import gridspec
 import matplotlib.ticker as ticker
 import numpy as np
-import json, os, warnings
+import json, os, sys, warnings
 from collections import defaultdict
+from pathlib import Path
+
+# Import figure export helpers
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'figures', 'scripts'))
+from figure_export import save_publication_figure
 
 warnings.filterwarnings("ignore", category=UserWarning)
 
@@ -27,12 +33,12 @@ MOEA3_PATH = os.path.join(RESULTS, "moea_3obj", "_progress.json")
 STATS_PATH = os.path.join(RESULTS, "statistical_results.json")
 
 # ── Style ──
+plt.style.use(['science', 'nature'])
 plt.rcParams.update({
-    'font.family': 'sans-serif', 'font.size': 9,
+    'font.size': 9,
     'axes.titlesize': 10, 'axes.labelsize': 9,
     'xtick.labelsize': 8, 'ytick.labelsize': 8, 'legend.fontsize': 8,
-    'figure.dpi': 150, 'savefig.dpi': 300, 'savefig.bbox': 'tight',
-    'axes.grid': False, 'axes.spines.top': False, 'axes.spines.right': False,
+    'figure.dpi': 150,
 })
 
 SOLVERS = ["G-BL", "G-SM", "GA-P-BL", "MOEA-2", "MOEA-3"]
@@ -54,12 +60,12 @@ def _pkl_sha1(p):
     with open(p, 'rb') as f: return hashlib.sha1(f.read()).hexdigest()[:8]
 
 def save_figure(fig, name):
-    for ext in ['.pdf', '.png']:
-        path = os.path.join(FIG_DIR, name + ext)
-        fig.savefig(path, bbox_inches='tight', pad_inches=0.05)
-    size_pdf = os.path.getsize(os.path.join(FIG_DIR, name + '.pdf'))
-    size_png = os.path.getsize(os.path.join(FIG_DIR, name + '.png'))
-    print(f"  ✓ {name}.pdf: {size_pdf:,d} bytes\n  ✓ {name}.png: {size_png:,d} bytes")
+    paths = save_publication_figure(
+        fig, os.path.join(FIG_DIR, name),
+        formats=['pdf', 'png'], dpi=300, pad_inches=0.05
+    )
+    for p in paths:
+        print(f"  ✓ {p.name}: {p.stat().st_size:,d} bytes")
     plt.close(fig)
 
 def _f2_normalized(entry, solver_name):
