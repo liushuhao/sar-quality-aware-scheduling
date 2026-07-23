@@ -20,7 +20,7 @@
 % ── Metadata ──
 \begin{document}
 \begin{frontmatter}
-\title{Physics-Aware Multi-Objective Scheduling for Agile SAR Satellites: Balancing Profit, NESZ, and Geometric Resolution}
+\title{Physics-Aware Multi-Objective Scheduling for an Agile SAR Satellite: Balancing Profit, NESZ, and Geometric Resolution}
 \author{LIU Shuhao}
 \ead{liushuhao@hrbeu.edu.cn}
 \affiliation{organization={College of Intelligent Systems Science and Engineering, Harbin Engineering University},
@@ -51,8 +51,11 @@ upper bound that ablation confirms is independent of objective-function
 specification. This bound is conditional on greedy-baseline hot-start
 initialization, with material differences across all tested $N$ ($\Delta f_1^* \approx
 -0.20$ at S1, $-0.44$ at S2, $-0.46$ at S3, $-0.33$ at S4, narrowing
-at S4), but the redundancy of the three-objective formulation
-(MOEA-2 $\approx$ MOEA-3) is anchor-independent. The squint-minimized greedy
+at S4). The three-objective formulation (MOEA-2 $\approx$ MOEA-3)
+is effectively redundant in this single-pass, single-satellite Stripmap
+setting, but this redundancy is anchor-independent and reflects the
+geometric coupling of the low-squint regime rather than a mathematical
+identity between objectives. The squint-minimized greedy
 solver occupies a distinct low-coverage, high-radiometric-quality regime outside
 this ceiling. Rather than identifying a superior solver, our results establish
 an empirical upper bound on physics-aware multi-objective scheduling for
@@ -909,7 +912,7 @@ Overlaying the single-point baseline solutions shows that G-BL sits at the
 a qualitatively different region ($f_1^* \approx 0.6$, $f_3 \approx 0.35$) that
 lies outside the MOEA-3 Pareto surface---a consequence of G-SM's aggressive
 squint minimization.
-The near-identity of MOEA-2 and MOEA-3 fronts is quantified by pairwise
+The near-identity of MOEA-2 and MOEA-3 fronts under the NSGA-III framework is quantified by pairwise
 Cliff's $\delta = +0.132$ ($f_2$, negligible, $p = 3.9 \times 10^{-10}$) and
 Because $\theta$ and $\psi_{\text{sq}}$ are not independent but both
 derived from the same LOS vector $\mathbf{l} = (l_x, l_y, l_z)$
@@ -1119,7 +1122,7 @@ geometric quality gain ($<2\%$) is smaller than the per-scenario variance,
 meaning that scheduler choice among profit-oriented solvers has no practically measurable effect on $f_2$
 quality in this regime.
 
-Third, and most critically, MOEA-2 and MOEA-3 yield near-identical results
+Third, and most critically, MOEA-2 and MOEA-3 yield near-identical results under the NSGA-III framework
 (Cliff's $\delta = -0.23$ on hypervolume, $p = 1.4 \times 10^{-4}$) because all
 solvers converge to low-squint regimes where the empirical
 $\theta$/$\psi_{\text{sq}}$ correlation ($r = 0.93$--$0.98$;
@@ -1187,9 +1190,10 @@ $88\%$ and $64\%$ of scenarios, respectively, showing a coverage deficit
 However, these quality gains carry a steep coverage penalty: at $N = 20$,
 MOEA-2 schedules approximately $62\%$ of the targets that G-BL captures ($11.2$ vs.\
 $18.2$ out of $20$; \S~\ref{sec:scale-sensitivity}). Whether this trade-off is
-acceptable depends on the application---for target identification tasks where
-a $4$--$8\%$ resolution improvement can determine whether adjacent objects
-are resolved or merged \citep{Curlander1991}, the coverage cost may be justified;
+acceptable depends on the application---for maritime surveillance tasks where a
+$4$--$8\%$ resolution improvement ($\sim0.3$ m at C-band) can distinguish
+small vessel classes (e.g., fishing trawlers vs.\ patrol boats) that fall
+within the same pixel at baseline resolution \citep{Curlander1991}, the coverage cost may be justified;
 for area-monitoring missions requiring broad coverage, the greedy baseline
 remains preferable.
 Conversely, when the task set is dense ($N \geq 300$; S3--S4), the
@@ -1310,10 +1314,13 @@ Five solvers---spanning greedy heuristics, single-objective evolutionary
 search, and NSGA-III with two and three objectives---were compared on
 200 systematically varied scenarios across four density classes.
 The central finding is an empirical upper bound, conditional on
-greedy-baseline hot-start: a property of solver convergence to
-low-squint regimes under which the three-objective redundancy
-(MOEA-2 $\approx$ MOEA-3) is anchor-independent, not a physical
-identity between objectives.
+greedy-baseline hot-start, that governs physics-aware multi-objective
+scheduling for single-pass, single-satellite Stripmap SAR operations.
+The bound arises from solver convergence to
+low-squint regimes under which the three-objective formulation
+(MOEA-2 $\approx$ MOEA-3) becomes redundant — not because of a physical
+identity between objectives, but because the geometric coupling in the
+low-squint regime aligns $f_2$ and $f_3$ along the shared $\cos\psi_{\text{sq}}$ factor.
 The empirical $\theta$/$\psi_{\text{sq}}$ correlation
 ($r = 0.93$--$0.98$), which exceeds the definitional null
 $r_{\text{null}} = -0.51$ (\S~\ref{sec:pareto-coupling}) because all
