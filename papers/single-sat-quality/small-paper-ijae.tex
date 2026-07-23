@@ -696,7 +696,7 @@ see \texttt{experiments/statistical\_analysis.py}).
 %  6. RESULTS AND ANALYSIS (~1400 words)
 % ============================================================
 \section{Results and Analysis}
-% ── 6.1 Effect of Squint Awareness (Fig 1) ──
+% ── 6.1 Solver Profiles (Fig 2) ──
 \subsection{Solver Profiles}
 Table~\ref{tab:solver-profiles} summarizes the three-dimensional performance of
 all five solvers on the largest scenario class (S4, $N = 500$), where
@@ -750,7 +750,7 @@ MOEA-3  & $0.98 \pm 0.04$    & $0.589 \pm 0.021$ & $0.170 \pm 0.066$ \\
 \bottomrule
 \end{tabular}
 \end{table}
-% ── 6.3 Pareto Front (Fig 3) ──
+% ── 6.2 Scale Sensitivity (Fig 5) ──
 \subsection{Scale Sensitivity}
 \label{sec:scale-sensitivity}
 The value of multi-objective optimization depends critically on scenario
@@ -978,7 +978,7 @@ approximations obtained via NSGA-III; whether they represent the
 true Pareto-optimal set is unknown without exact methods
 (e.g., MILP or branch-and-bound), which remain intractable for
 $N \geq 20$ in this problem class.
-% ── 6.4 Statistical Comparison (Fig 3) ──
+% ── 6.4 Squint Awareness (Fig 1) ──
 \subsection{Effect of Squint Awareness}
 The squint-minimized greedy solver (G-SM) improves NESZ radiometric quality ($f_3$)
 relative to the profit-only baseline (G-BL) by selecting observation times that
@@ -1004,7 +1004,7 @@ tightly packed time windows offer fewer alternative observation times at low squ
     \caption{Effect of squint-aware scheduling: (a) $f_3$ scatter; (b) $\Delta f_1^*$ histogram; (c) $\Delta f_1^*$ vs.\ $N$ with LOESS trend}
     \label{fig:fig1}
 \end{figure}
-% ── 6.2 Solver Profiles (Fig 2) ──
+% ── 6.5 Statistical Comparison (Fig 4) ──
 \subsection{Statistical Comparison}
 The Friedman test confirms highly significant overall differences among the
 five solvers across all 200 scenarios ($\chi^2 = 506.56$, $p \approx 10^{-108}$).
