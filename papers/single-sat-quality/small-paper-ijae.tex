@@ -400,68 +400,17 @@ Critically, the squint angle $\psi_{\text{sq}}$ appears in both $f_2$ and $f_3$
 improves both resolution components, but at the expense of $f_2$ through
 reduced $\sin\theta$---creating the $[\theta, \psi_{\text{sq}}]$
 geometric structure that bounds multi-objective gain once solvers
-converge to low-squint regimes (see Eq.~\ref{eq:rnull} below and its
+converge to low-squint regimes (Eq.~\ref{eq:rnull} in
+	\S~\ref{sec:pareto-coupling} and its
 axis decomposition for the exact partition into definitional and
 scheduler-induced components).
 
-Because $\theta$ and $\psi_{\text{sq}}$ are not independent but both
-derived from the same LOS vector $\mathbf{l} = (l_x, l_y, l_z)$
+Because $\theta$ and $\psi_{\text{sq}}$ are derived from the same LOS vector
 (\S~\ref{sec:system-model}), the per-task $f_2$ and $f_3$ contributions
-share geometric structure. To separate definitional coupling from
-scheduler-induced correlation, we compute the analytical null
-distribution by treating observation geometry as drawn uniformly from
-the accessible envelope ($\theta \in [15^\circ, 50^\circ]$,
-$|\psi_{\text{sq}}| \leq 45^\circ$) and evaluating the moment integrals of
-$f_{2,i} = \sin\theta_i \cos\psi_{\text{sq},i}$ and
-$f_{3,i} = \cos^3\theta_i \cos^3\psi_{\text{sq},i}$ in closed form
-(validated by Monte Carlo, $r_{\text{MC}} = -0.5120$, $N = 2{\times}10^5$).
-The null correlation is
-\begin{equation}
-r_{\text{null}} = \frac{\mathrm{Cov}(f_2, f_3)}{\sqrt{\mathrm{Var}(f_2)\,\mathrm{Var}(f_3)}} \;=\; -0.51,
-\label{eq:rnull}
-\end{equation}
-where the independence of $\theta$ and $\psi_{\text{sq}}$ under the null
-factorizes the moments, e.g., $E[f_2 f_3] = E[\sin\theta\cos^3\theta]\,E[\cos^4\psi_{\text{sq}}]$.
-The \emph{negative} sign exposes a structural conflict, not redundancy:
-in the $\theta$-only limit (fixed squint), $f_{2,i} \propto \sin\theta$ and
-$f_{3,i} \propto \cos^3\theta$ are strictly anti-monotonic
-($r_\theta = -0.997$), since $f_2$ favors high incidence while $f_3$
-favors low incidence; in the $\psi_{\text{sq}}$-only limit (fixed
-$\theta$), both depend on $\cos\psi_{\text{sq}}$ positively
-($r_\psi = +0.997$), since low squint improves both. Under uniform
-geometry the $\theta$-conflict dominates, yielding $r_{\text{null}} < 0$.
-The empirical correlation $r \approx 0.93$--$0.98$
-(\S~\ref{sec:pareto-coupling}) therefore exceeds the definitional
-baseline substantially: in Fisher-$z$ space, $z(r_{\text{null}}=-0.51)
-= -0.563$ while $z(r) = 1.66$--$2.30$ for the empirical range, a gap of
-$\Delta z \approx 2.2$--$2.9$ that confirms the empirical correlation
-lies far above the null (correlation distances are compared on the
-variance-stabilizing Fisher-$z$ scale rather than as a linear
-difference). This indicates that scheduled observations are not drawn
-uniformly from the envelope: all solvers,
-including the greedy baselines, select low-squint geometries that
-suppress the $\theta$-conflict and align $f_2$ with $f_3$ along the
-shared $\cos\psi_{\text{sq}}$ factor. The residual $2$--$7\%$ variance
-($1 - r$) corresponds to the $\theta$-axis conflict space where genuine
-$f_2$--$f_3$ trade-offs can exist, but which the solver-converged
-low-squint regime leaves largely unexplored in the single-pass setting.
-This reframes the 3-objective redundancy reported in
-\S~\ref{sec:pareto-coupling}: it is not a mathematical identity between
-$f_2$ and $f_3$ but an empirical consequence of solver convergence to
-low-squint regimes.
-
-The visible-geometry envelope is wide rather than low-squint-dominated:
-across C7-feasible visibility samples ($|\psi_{\text{sq}}| \leq 45^\circ$),
-$\mathrm{corr}(f_2, f_3) = -0.95$, a strong negative correlation dominated
-by the incidence-angle conflict (\texttt{scripts/r\_visible\_envelope.py}).
-In contrast, solver-selected schedules exhibit $r = +0.93$--$0.98$,
-indicating that the low-squint regime of solver schedules is an active
-selection from the wide C7-feasible envelope, not a constraint-imposed
-collapse. This supports the solver-convergence interpretation: all
-tested solvers (including the no-physics Variant D,
-\S~\ref{sec:ablation}) converge to low-squint regimes where $f_2$ and
-$f_3$ co-vary along the shared $\cos\psi_{\text{sq}}$ factor, rendering
-the 3-objective formulation redundant in the single-pass setting.
+share geometric structure. The quantitative characterization of this
+coupling---including the definitional null correlation and its comparison
+with empirical solver outcomes---is presented in
+\S~\ref{sec:pareto-coupling}.
 % ── 3.3 Constraints ──
 \subsection{Constraints}
 Seven constraints couple task selection with temporal feasibility and
@@ -864,25 +813,68 @@ lies outside the MOEA-3 Pareto surface---a consequence of G-SM's aggressive
 squint minimization.
 The near-identity of MOEA-2 and MOEA-3 fronts is quantified by pairwise
 Cliff's $\delta = +0.132$ ($f_2$, negligible, $p = 3.9 \times 10^{-10}$) and
-$\delta = -0.176$ ($f_3$, small, $p = 5.6 \times 10^{-14}$).
-The empirical $\theta$/$\psi_{\text{sq}}$ correlation ($r = 0.93$--$0.98$
-across scenarios) exceeds the definitional null
-$r_{\text{null}} = -0.51$ (\S~\ref{sec:objective-functions},
-Eq.~\ref{eq:rnull})---a gap of $\Delta z \approx 2.2$--$2.9$ on the
-Fisher-$z$ scale---indicating that all
-solvers converge to low-squint regimes which align $f_2$ with $f_3$ along
-the shared $\cos\psi_{\text{sq}}$ factor and suppress the $\theta$-axis
-conflict. In this regime, optimizing $f_3$ co-varies with $f_2$
-improvement, rendering the 3-objective formulation effectively redundant
-in the single-pass, single-satellite setting studied here. The ablation
-study in \S~\ref{sec:ablation} confirms that removing physical objectives
-(variants B--D) produces indistinguishable results at S3--S4
-($N \geq 300$), reinforcing that the redundancy is an empirical
-consequence of solver convergence rather than a mathematical identity
-between the objectives. Whether alternative NSGA-III configurations or
-other many-objective algorithms could reveal greater differentiation
-between two- and three-objective formulations is discussed in
-\S~\ref{sec:limitations}.
+Because $\theta$ and $\psi_{\text{sq}}$ are not independent but both
+derived from the same LOS vector $\mathbf{l} = (l_x, l_y, l_z)$
+(\S~\ref{sec:system-model}), the per-task $f_2$ and $f_3$ contributions
+share geometric structure. To separate definitional coupling from
+scheduler-induced correlation, we compute the analytical null
+distribution by treating observation geometry as drawn uniformly from
+the accessible envelope ($\theta \in [15^\circ, 50^\circ]$,
+$|\psi_{\text{sq}}| \leq 45^\circ$) and evaluating the moment integrals of
+$f_{2,i} = \sin\theta_i \cos\psi_{\text{sq},i}$ and
+$f_{3,i} = \cos^3\theta_i \cos^3\psi_{\text{sq},i}$ in closed form
+(validated by Monte Carlo, $r_{\text{MC}} = -0.5120$, $N = 2{\times}10^5$).
+The null correlation is
+\begin{equation}
+r_{\text{null}} = \frac{\mathrm{Cov}(f_2, f_3)}{\sqrt{\mathrm{Var}(f_2)\,\mathrm{Var}(f_3)}} \;=\; -0.51,
+\label{eq:rnull}
+\end{equation}
+where the independence of $\theta$ and $\psi_{\text{sq}}$ under the null
+factorizes the moments, e.g., $E[f_2 f_3] = E[\sin\theta\cos^3\theta]\,E[\cos^4\psi_{\text{sq}}]$.
+The \emph{negative} sign exposes a structural conflict, not redundancy:
+in the $\theta$-only limit (fixed squint), $f_{2,i} \propto \sin\theta$ and
+$f_{3,i} \propto \cos^3\theta$ are strictly anti-monotonic
+($r_\theta = -0.997$), since $f_2$ favors high incidence while $f_3$
+favors low incidence; in the $\psi_{\text{sq}}$-only limit (fixed
+$\theta$), both depend on $\cos\psi_{\text{sq}}$ positively
+($r_\psi = +0.997$), since low squint improves both. Under uniform
+geometry the $\theta$-conflict dominates, yielding $r_{\text{null}} < 0$.
+The empirical correlation $r \approx 0.93$--$0.98$
+ therefore exceeds the definitional
+baseline substantially: in Fisher-$z$ space, $z(r_{\text{null}}=-0.51)
+= -0.563$ while $z(r) = 1.66$--$2.30$ for the empirical range, a gap of
+$\Delta z \approx 2.2$--$2.9$ that confirms the empirical correlation
+lies far above the null (correlation distances are compared on the
+variance-stabilizing Fisher-$z$ scale rather than as a linear
+difference). This indicates that scheduled observations are not drawn
+uniformly from the envelope: all solvers,
+including the greedy baselines, select low-squint geometries that
+suppress the $\theta$-conflict and align $f_2$ with $f_3$ along the
+shared $\cos\psi_{\text{sq}}$ factor. The residual $2$--$7\%$ variance
+($1 - r$) corresponds to the $\theta$-axis conflict space where genuine
+$f_2$--$f_3$ trade-offs can exist, but which the solver-converged
+low-squint regime leaves largely unexplored in the single-pass setting.
+This reframes the 3-objective redundancy reported in
+this section: it is not a mathematical identity between
+$f_2$ and $f_3$ but an empirical consequence of solver convergence to
+low-squint regimes.
+
+The visible-geometry envelope is wide rather than low-squint-dominated:
+across C7-feasible visibility samples ($|\psi_{\text{sq}}| \leq 45^\circ$),
+$\mathrm{corr}(f_2, f_3) = -0.95$, a strong negative correlation dominated
+by the incidence-angle conflict (\texttt{scripts/r\_visible\_envelope.py}).
+In contrast, solver-selected schedules exhibit $r = +0.93$--$0.98$,
+indicating that the low-squint regime of solver schedules is an active
+selection from the wide C7-feasible envelope, not a constraint-imposed
+collapse. This supports the solver-convergence interpretation: all
+tested solvers (including the no-physics Variant D,
+\S~ef{sec:ablation}) converge to low-squint regimes where $f_2$ and
+$f_3$ co-vary along the shared $\cos\psi_{\text{sq}}$ factor, rendering
+the 3-objective formulation redundant in the single-pass setting.
+
+This reframes the 3-objective redundancy identified above: it is not a
+mathematical identity between $f_2$ and $f_3$ but an empirical consequence
+of solver convergence to low-squint regimes.
 At S4 ($N = 500$), the Pareto front's hypervolume ratio (S4/S1) is
 $< 1$, indicating that the front becomes relatively more compact at
 higher densities---consistent with the scale-dependent saturation
@@ -1044,7 +1036,7 @@ We therefore qualify our findings: the ``greedy Pareto-sufficient''
 conclusion likely overstates the universality of G-BL convergence
 due to initialization bias, but the geometric structure relating
 $f_2$ and $f_3$ (definitional null $r_{\text{null}} = -0.51$,
-\S~\ref{sec:objective-functions}, Eq.~\ref{eq:rnull}) is independent
+\S~\ref{sec:pareto-coupling}, Eq.~\ref{eq:rnull}) is independent
 of seeding, and the empirical correlation $r = 0.93$--$0.98$ reflects
 solver convergence to low-squint regimes rather than a hot-start
 artifact. We conducted a $\sigma$-sensitivity sweep over the hot-start
@@ -1189,7 +1181,7 @@ and $n_{\text{sel}}$.
 This insensitivity to objective-function specification in dense regimes is the strongest evidence
 that solver convergence to low-squint regimes (where $r$ exceeds the
 definitional null $r_{\text{null}} = -0.51$;
-\S~\ref{sec:objective-functions}, Eq.~\ref{eq:rnull})---not the
+\S~\ref{sec:pareto-coupling}, Eq.~\ref{eq:rnull})---not the
 choice of objectives---governs the achievable trade-off space.
 A related methodological note concerns the hypervolume (HV) indicator, which produces rankings that diverge from
 Friedman--Wilcoxon results when single- and multi-objective solvers are
@@ -1271,7 +1263,7 @@ The 3-objective redundancy reported above is bounded to the single-pass,
 single-satellite setting: it reflects solver convergence to low-squint
 regimes that suppress the $\theta$-axis conflict quantified by the
 definitional null $r_{\text{null}} = -0.51$
-(\S~\ref{sec:objective-functions}, Eq.~\ref{eq:rnull}), not a mathematical
+(\S~\ref{sec:pareto-coupling}, Eq.~\ref{eq:rnull}), not a mathematical
 identity between $f_2$ and $f_3$; in multi-pass or multi-satellite
 settings with greater angular diversity, the $\theta$-conflict would
 re-emerge and the third objective may become discriminative.
