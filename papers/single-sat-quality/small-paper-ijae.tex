@@ -150,7 +150,7 @@ The specific contributions of this work are:
     single-satellite Stripmap setting: the bound arises from
     solver convergence to low-squint regimes (where the empirical
     $r = 0.93$--$0.98$ exceeds the definitional null
-    $r_{\text{null}} = -0.51$, \S~\ref{sec:objective-functions}), not from
+    $r_{\text{null}} = -0.51$, \S~\ref{sec:pareto-coupling}), not from
     a physical identity between objectives, and renders
     the three-objective formulation redundant at operational densities
     ($N \geq 300$). A scale phase transition concentrates the multi-objective
@@ -894,7 +894,7 @@ The $f_1^*$--$f_2$ projection (panel a) reveals a narrow but nonzero trade-off
 surface: the frontier spans from full-coverage solutions
 ($f_1^* \approx 1.0$, $f_2 \approx 0.56$) to quality-oriented solutions
 ($f_1^* \approx 0.7$, $f_2 \approx 0.62$). The compressed $f_2$ range
-($\Delta f_2 \approx 0.06$, compared to $\Delta f_2 \approx 0.10$ in sparse
+($\Delta f_2 \approx 0.06$, compared to the total Pareto-front span of $\Delta f_2 \approx 0.10$ in sparse
 S1 scenarios) is consistent with the scale-dependent saturation documented
 in \S~\ref{sec:scale-sensitivity}---in dense target regimes, the
 solver convergence to low-squint regimes combined with schedule
@@ -1119,7 +1119,7 @@ Third, and most critically, MOEA-2 and MOEA-3 yield near-identical results
 solvers converge to low-squint regimes where the empirical
 $\theta$/$\psi_{\text{sq}}$ correlation ($r = 0.93$--$0.98$;
 \S~\ref{sec:pareto-coupling}) exceeds the definitional null
-$r_{\text{null}} = -0.51$ (\S~\ref{sec:objective-functions}). This near-identity
+$r_{\text{null}} = -0.51$ (\S~\ref{sec:pareto-coupling}). This near-identity
 is not an algorithmic shortcoming---it identifies the central physical
 finding of this study: in the single-pass, single-satellite setting, the
 solver-converged low-squint regime suppresses the $\theta$-axis conflict between
@@ -1133,11 +1133,6 @@ while providing a menu of $76 \pm 14$ distinct quality--coverage
 configurations, is compressed by the geometric coupling identified
 above: the narrow $f_2$ range ($\Delta f_2 \approx 0.06$ at S4) limits
 practical differentiation among solutions.
-($76 \pm 14$ points for MOEA-3) that are invisible to single-objective methods
-(Fig.~\ref{fig:fig2}). While the Pareto spread provides mission planners with
-a menu of quality--coverage trade-offs, the practical value of this menu is
-limited by the narrow range of achievable quality values imposed by the
-$\theta$/$\psi_{\text{sq}}$ geometric coupling.
 
 Fourth, the squint-minimized greedy solver (G-SM) improves NESZ
 radiometric quality ($f_3$) with a large effect size (Cliff's $\delta = +0.72$,
@@ -1293,7 +1288,7 @@ construction (\S~\ref{sec:objective-functions}, Eq.~\ref{eq:f1}).
 The operational ``greedy Pareto-sufficiency'' phrasing used in
 earlier sections is therefore conditional on the G-BL anchor and the
 G-BL-class greedy, not a claim that greedy scheduling is optimal.
-GA-P-BL's $+18\%$ over G-BL at S4 demonstrates that stronger profit
+GA-P-BL's $+17\%$ over G-BL at S4 demonstrates that stronger profit
 maximization is achievable. The bound we characterize is the coverage
 ceiling that all tested profit-oriented solvers approach under
 greedy-baseline hot-start, not a
@@ -1316,7 +1311,7 @@ low-squint regimes under which the three-objective redundancy
 identity between objectives.
 The empirical $\theta$/$\psi_{\text{sq}}$ correlation
 ($r = 0.93$--$0.98$), which exceeds the definitional null
-$r_{\text{null}} = -0.51$ (\S~\ref{sec:objective-functions}) because all
+$r_{\text{null}} = -0.51$ (\S~\ref{sec:pareto-coupling}) because all
 solvers converge to low-squint regimes, makes the 3-objective formulation
 redundant in the single-pass, single-satellite setting: MOEA-2 and MOEA-3
 produce near-identical Pareto fronts, and adding $f_3$ yields no additional
