@@ -615,15 +615,8 @@ $D = 12.3$ m, bandwidth $B = 56.5$ MHz).
 The platform accesses both left- and right-side
 incidence angles in the range $[18^\circ, 47^\circ]$
 (signed convention: $\theta \in [-47^\circ, -18^\circ] \cup [18^\circ, 47^\circ]$).
-We note that this bilateral Stripmap abstraction departs from operational
-Sentinel-1A/B, which operates primarily in right-looking TOPS mode
-(Interferometric Wide swath, incidence $\sim 29^\circ$--$46^\circ$)
-\citep{ESA2021Sentinel1};
-the bilateral-looking Stripmap configuration here represents a generic
-agile-SAR concept (cf.\ TerraSAR-X dual-receive Stripmap
-\citep{Krieger2007TanDEMX} and prospective
-bistatic formations) selected to exercise the full incidence/squint
-trade-off space.
+This bilateral Stripmap configuration is a generic agile-SAR concept
+selected to exercise the full incidence/squint trade-off space.
 Targets are distributed along the satellite ground track within the
 accessible swath (cross-track angular half-width $\pm 2.7^\circ$ from nadir, roughly $\pm300$ km),
 with three distribution types per scenario class: uniform random,
@@ -1297,13 +1290,8 @@ Pareto-optimal coverage remains an open theoretical question.
 
 We further note that the $f_1^*$ normalization anchors to G-BL by
 construction (\S~\ref{sec:objective-functions}, Eq.~\ref{eq:f1}).
-Anchoring instead to $\max(f_1^{\text{G-BL}}, f_1^{\text{GA-P-BL}})$
-shifts MOEA-2's S4 deficit from $\sim 2\%$ to $\sim 17\%$. This does
-not affect the central redundancy finding (MOEA-2 $\approx$ MOEA-3),
-which is anchor-independent because the anchor cancels in pairwise
-MOEA comparisons; but it shows that the operational ``greedy
-Pareto-sufficiency'' phrasing used in earlier sections is an
-operational shorthand conditional on the G-BL anchor and the
+The operational ``greedy Pareto-sufficiency'' phrasing used in
+earlier sections is therefore conditional on the G-BL anchor and the
 G-BL-class greedy, not a claim that greedy scheduling is optimal.
 GA-P-BL's $+18\%$ over G-BL at S4 demonstrates that stronger profit
 maximization is achievable. The bound we characterize is the coverage
@@ -1353,11 +1341,9 @@ multi-pass, and multi-mode extensions can be measured.
 % ── AI and AI-Assisted Technologies (Elsevier/ASR policy) ──
 \section*{AI and AI-Assisted Technologies}
 During the preparation of this work the author used AI-assisted
-tools (the ARS academic-research-skills toolchain, built on a large language
-model) for manuscript-preparation tasks only: drafting and structuring
-the response-to-reviewers letter, conducting an advisory QA audit of
-that response, simulating a verification re-review, performing an
-automated citation cross-check, and improving the clarity and flow of
+tools for manuscript-preparation tasks only: drafting and structuring
+the response-to-reviewers letter, conducting an advisory QA audit,
+simulating a verification re-review, and improving the clarity and flow of
 revised prose. The author reviewed and edited all AI-assisted output
 and takes full responsibility for the content of this article.
 AI-assisted tools were not used to generate, collect, or analyze
