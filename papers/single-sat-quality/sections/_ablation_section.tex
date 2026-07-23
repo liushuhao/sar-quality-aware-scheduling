@@ -93,7 +93,7 @@ outperforms the baseline on $f_1^*$.
 \begin{figure}[H]
     \centering
     \includegraphics[width=\textwidth]{fig6_ablation.pdf}
-    \caption{Ablation results across four objective-function variants (A--D) and four scenario classes}
+    \caption{Ablation results across four objective-function variants (A--D) and four scenario classes: grouped bars show degradation percentages relative to baseline A for each variant; negative values indicate variant outperforms baseline}
     \label{fig:fig6}
 \end{figure}
 
@@ -160,8 +160,7 @@ the budget does not restore differentiation across 10 scenarios
 15 S3 + 15 S4 runs) still converges to low-squint
 ($f_2 = 0.605 \pm 0.003$, comparable to hot-start D's $0.594$), ruling
 out hot-start residue as the sole driver --- but cannot fully rule out
-(ii) without exact methods (documented intractable at $N \geq 20$ in
-\S~\ref{sec:runtime}). We
+(ii) without exact methods (documented intractable in the preceding section). We
 therefore state the finding boundedly: under the tested
 configuration, removing physical objectives produces
 indistinguishable results, and the more parsimonious explanation is
