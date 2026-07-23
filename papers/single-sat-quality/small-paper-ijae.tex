@@ -76,7 +76,7 @@ into a combinatorial optimization problem: for $N$ targets each with a finite
 visibility window, the scheduler must select a subset and assign observation times
 that satisfy attitude transition constraints while maximizing some measure of
 mission value.
-In optical satellite scheduling, the imaging quality of each observation is
+In conventional satellite scheduling, the imaging quality of each observation is
 conventionally treated as independent of the chosen observation time: a
 cloud-free nadir image of a given target has essentially the same resolution
 regardless of when within the visibility window it is acquired.
@@ -85,7 +85,7 @@ sum of observed targets subject to temporal feasibility.
 This assumption underpins most existing satellite scheduling work,
 from mixed-integer programming formulations to deep reinforcement learning
 approaches \citep{Chen2025NeuralPriority}.
-SAR imaging fundamentally violates this assumption. Image quality depends on the radar geometry at the moment of acquisition:
+SAR imaging inherently departs from this assumption. Image quality depends on the radar geometry at the moment of acquisition:
 the ground-range resolution degrades with incidence angle ($\rho_{\text{rg}} \propto 1/\sin\theta$),
 the azimuth resolution broadens with squint angle ($\rho_{\text{az}} \propto 1/\cos\psi_{\text{sq}}$),
 and the radiometric sensitivity (Noise-Equivalent Sigma Zero, NESZ) deteriorates
@@ -504,7 +504,7 @@ paper's research question. A comparison across algorithmic families
 (\S~\ref{sec:limitations}).
 \subsection{G-BL: Greedy Baseline}
 \label{sec:gbl}
-G-BL represents the conventional optical-domain scheduling approach:
+G-BL represents the conventional scheduling approach:
 it makes no use of SAR imaging physics when ordering or selecting tasks.
 Tasks are sorted by earliest start time $t_{\text{start}}$ and greedily inserted
 into the schedule at their earliest feasible time.
