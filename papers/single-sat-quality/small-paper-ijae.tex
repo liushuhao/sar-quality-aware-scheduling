@@ -500,7 +500,7 @@ We note that the five solvers differ primarily in objective-function
 configuration rather than algorithmic paradigm. This design is intentional:
 it isolates the effect of adding physical quality objectives, which is the
 paper's research question. A comparison across algorithmic families
-(e.g., NSGA-III vs.\ MOEA/D vs.\ SMS-EMOA) is left to future work
+(e.g., NSGA-III vs.\ MOEA/D (decomposition-based) vs.\ SMS-EMOA (hypervolume-based)) is left to future work
 (\S~\ref{sec:limitations}).
 \subsection{G-BL: Greedy Baseline}
 \label{sec:gbl}
@@ -530,8 +530,8 @@ effect size (Cliff's $\delta = +0.72$, \S~\ref{sec:summary}).
 When the window contains the zero-Doppler crossing ($l_x = 0$),
 G-SM achieves $\psi_{\text{sq}} = 0$ and the theoretical azimuth resolution
 limit $\rho_{\text{az}} = D/2$.
-With 60-s orbit propagation resolution, the true zero-Doppler instant
-may fall between samples; G-SM selects the discretized time that
+With finite orbit propagation resolution, the true zero-Doppler instant
+may fall between discrete samples; G-SM selects the discretized time that
 minimizes $|\psi_{\text{sq}}|$, which may yield
 $|\psi_{\text{sq}}| \leq 0.5^\circ$ rather than exactly $0^\circ$
 for windows that do not align with a sample point.
@@ -625,7 +625,7 @@ agile-SAR concept (cf.\ TerraSAR-X dual-receive Stripmap
 bistatic formations) selected to exercise the full incidence/squint
 trade-off space.
 Targets are distributed along the satellite ground track within the
-accessible swath (cross-track scatter $\pm 2.7^\circ$, roughly $\pm300$ km),
+accessible swath (cross-track angular half-width $\pm 2.7^\circ$ from nadir, roughly $\pm300$ km),
 with three distribution types per scenario class: uniform random,
 clustered (5 clusters), and mixed (half uniform, half clustered).
 The five scenarios within each class correspond to distribution type and
@@ -637,11 +637,10 @@ intermediate densities ($N=50, 150, 200, 400$) are omitted to limit
 computational cost, with the transition region $N=100$--$300$ analyzed
 through the scale-sensitivity experiments in
 \S~\ref{sec:scale-sensitivity}.
-Visibility windows are computed via orbit propagation at 60-s resolution
-(producing $K \approx 200$ discrete time samples per orbit)
+Visibility windows are computed via orbit propagation
 over two orbital periods ($\sim$200 min), yielding 1--2 windows per target
-on average, each spanning several minutes (typically $3$--$8$ samples per window).
-Windows are filtered by incidence-angle and minimum-elevation ($5^\circ$)
+on average, each spanning several minutes.
+Windows are filtered by incidence-angle and minimum-elevation ($5^\circ$ above the local horizon)
 constraints; the resulting window set encodes the bilateral
 geometry that the solver must navigate:
 targets are roughly evenly split between left- and right-looking windows
