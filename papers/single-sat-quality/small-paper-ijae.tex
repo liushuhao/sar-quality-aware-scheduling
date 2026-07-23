@@ -465,10 +465,8 @@ where $\psi_{\text{sq}}^{\max}$ is the satellite's maximum achievable squint
 The tightness of C3 scales with task density: as $N$ grows, the fraction
 of task pairs whose required angular transition
 $\Delta\eta / \omega_{\max}$ exceeds the available inter-observation
-time increases, tightening the constraint. At S1 ($N=20$), approximately
-$<10\%$ of task pairs violate C3 under the maximum maneuver rate; at S4
-($N=500$), this fraction rises to $30$--$40\%$, effectively making C3
-the dominant active constraint in dense regimes.
+time increases, tightening the constraint and making C3 the dominant
+active constraint in dense regimes.
 % ============================================================
 %  4. METHODOLOGY (~1000 words)
 % ============================================================
@@ -868,7 +866,8 @@ indicating that the low-squint regime of solver schedules is an active
 selection from the wide C7-feasible envelope, not a constraint-imposed
 collapse. This supports the solver-convergence interpretation: all
 tested solvers (including the no-physics Variant D,
-\S~ef{sec:ablation}) converge to low-squint regimes where $f_2$ and
+\S~
+ef{sec:ablation}) converge to low-squint regimes where $f_2$ and
 $f_3$ co-vary along the shared $\cos\psi_{\text{sq}}$ factor, rendering
 the 3-objective formulation redundant in the single-pass setting.
 
