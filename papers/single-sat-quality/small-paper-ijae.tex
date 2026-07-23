@@ -1097,20 +1097,16 @@ quality--coverage advantage from cases where it does not.
 Our experiment across 200 systematically varied scenarios yields five
 interconnected findings, four of which define physical limits rather than
 solver advantages.
-First, and most critically, MOEA-2 and MOEA-3 yield near-identical results
-(Cliff's $\delta = -0.23$ on hypervolume, $p = 1.4 \times 10^{-4}$) because all
-solvers converge to low-squint regimes where the empirical
-$\theta$/$\psi_{\text{sq}}$ correlation ($r = 0.93$--$0.98$;
-\S~\ref{sec:pareto-coupling}) exceeds the definitional null
-$r_{\text{null}} = -0.51$ (\S~\ref{sec:objective-functions}). This near-identity
-is not an algorithmic shortcoming---it identifies the central physical
-finding of this study: in the single-pass, single-satellite setting, the
-solver-converged low-squint regime suppresses the $\theta$-axis conflict between
-NESZ radiometric quality and geometric resolution, so that adding $f_3$ as a
-third objective yields no additional Pareto-front differentiation, making the
-3-objective formulation effectively redundant compared to the 2-objective
-formulation, despite requiring a 7$\times$ larger reference-direction set
-($H = 91$ vs.\ $H = 13$).
+
+First, the solver survey reveals a clear ranking: GA-P-BL achieves the
+highest coverage ($f_1^* = 1.17 \pm 0.27$ at S4) with no quality degradation,
+surpassing the greedy baseline (G-BL) by exploiting temporal flexibility.
+MOEA-2 and MOEA-3 match G-BL coverage ($f_1^* = 0.98 \pm 0.04$) while
+improving geometric quality ($f_2 = 0.589 \pm 0.021$), and G-SM occupies a
+distinct high-radiometric-quality regime at substantial coverage cost.
+The Pareto front comparison (Fig.~\ref{fig:fig2}) confirms that the five
+solvers span qualitatively different regions of the quality--coverage space.
+
 Second, the advantage of multi-objective methods over the profit-only greedy
 baseline (G-BL) exhibits strong scale dependence: the $f_2$ improvement shrinks
 from $+8.0\%$ at S1 ($N = 20$) to $+1.5\%$ at S4 ($N = 500$).
@@ -1125,19 +1121,54 @@ the profit-oriented solvers (G-BL, GA-P-BL, MOEA-2, MOEA-3) converge to statisti
 geometric quality gain ($<2\%$) is smaller than the per-scenario variance,
 meaning that scheduler choice among profit-oriented solvers has no practically measurable effect on $f_2$
 quality in this regime.
-Third, the squint-minimized greedy solver (G-SM) improves NESZ
+
+Third, and most critically, MOEA-2 and MOEA-3 yield near-identical results
+(Cliff's $\delta = -0.23$ on hypervolume, $p = 1.4 \times 10^{-4}$) because all
+solvers converge to low-squint regimes where the empirical
+$\theta$/$\psi_{\text{sq}}$ correlation ($r = 0.93$--$0.98$;
+\S~\ref{sec:pareto-coupling}) exceeds the definitional null
+$r_{\text{null}} = -0.51$ (\S~\ref{sec:objective-functions}). This near-identity
+is not an algorithmic shortcoming---it identifies the central physical
+finding of this study: in the single-pass, single-satellite setting, the
+solver-converged low-squint regime suppresses the $\theta$-axis conflict between
+NESZ radiometric quality and geometric resolution, so that adding $f_3$ as a
+third objective yields no additional Pareto-front differentiation, making the
+3-objective formulation effectively redundant compared to the 2-objective
+formulation, despite requiring a 7$\times$ larger reference-direction set
+($H = 91$ vs.\ $H = 13$).
+Taken together, these results establish that the Pareto front,
+while providing a menu of $76 \pm 14$ distinct quality--coverage
+configurations, is compressed by the geometric coupling identified
+above: the narrow $f_2$ range ($\Delta f_2 \approx 0.06$ at S4) limits
+practical differentiation among solutions.
+($76 \pm 14$ points for MOEA-3) that are invisible to single-objective methods
+(Fig.~\ref{fig:fig2}). While the Pareto spread provides mission planners with
+a menu of quality--coverage trade-offs, the practical value of this menu is
+limited by the narrow range of achievable quality values imposed by the
+$\theta$/$\psi_{\text{sq}}$ geometric coupling.
+
+Fourth, the squint-minimized greedy solver (G-SM) improves NESZ
 radiometric quality ($f_3$) with a large effect size (Cliff's $\delta = +0.72$,
 $p = 1.7 \times 10^{-34}$), but the coverage cost is density-dependent: from
 $-15\%$ $f_1^*$ in sparse scenarios ($N = 20$) to $-39\%$ in dense ones
 ($N = 500$; Fig.~\ref{fig:fig1}). This confirms that aggressive squint
 minimization is a viable strategy only when the observation request set is small
 enough to absorb the coverage penalty.
-Fourth, multi-objective solvers discover full Pareto trade-off surfaces
-($76 \pm 14$ points for MOEA-3) that are invisible to single-objective methods
-(Fig.~\ref{fig:fig2}). While the Pareto spread provides mission planners with
-a menu of quality--coverage trade-offs, the practical value of this menu is
-limited by the narrow range of achievable quality values imposed by the
-$\theta$/$\psi_{\text{sq}}$ geometric coupling.
+
+A related methodological note concerns the hypervolume (HV) indicator, which produces rankings that diverge from
+Friedman--Wilcoxon results when single- and multi-objective solvers are
+mixed (\S~\ref{sec:hv-divergence}). G-SM ranks first by HV despite
+$39\%$ coverage loss; GA-P-BL ranks last despite the best $f_1^*$ and
+no quality degradation. This inversion reflects HV's structural dependence
+on frontier cardinality---single-point solvers cannot benefit from the
+volume spread that multi-objective solvers earn from their Pareto front,
+regardless of solution quality. We adopted the Friedman--Wilcoxon framework
+as our primary evidence to avoid confounding solution-set size with solution
+quality, and recommend that future studies report both HV (for
+multi-objective comparisons) and per-objective statistical tests when
+mixing solver types.
+% ── 7.3 Scale-Dependent Operational Guidance ──
+
 Fifth, the ablation study (\S\ref{sec:ablation}, Fig.~
 \ref{fig:fig6})
 provides independent confirmation of this geometric interpretation.
@@ -1152,19 +1183,6 @@ that solver convergence to low-squint regimes (where $r$ exceeds the
 definitional null $r_{\text{null}} = -0.51$;
 \S~\ref{sec:pareto-coupling}, Eq.~\ref{eq:rnull})---not the
 choice of objectives---governs the achievable trade-off space.
-A related methodological note concerns the hypervolume (HV) indicator, which produces rankings that diverge from
-Friedman--Wilcoxon results when single- and multi-objective solvers are
-mixed (\S~\ref{sec:hv-divergence}). G-SM ranks first by HV despite
-$39\%$ coverage loss; GA-P-BL ranks last despite the best $f_1^*$ and
-no quality degradation. This inversion reflects HV's structural dependence
-on frontier cardinality---single-point solvers cannot benefit from the
-volume spread that multi-objective solvers earn from their Pareto front,
-regardless of solution quality. We adopted the Friedman--Wilcoxon framework
-as our primary evidence to avoid confounding solution-set size with solution
-quality, and recommend that future studies report both HV (for
-multi-objective comparisons) and per-objective statistical tests when
-mixing solver types.
-% ── 7.3 Scale-Dependent Operational Guidance ──
 \subsection{Operational Implications of Scale Dependence}
 The scale dependence identified in \S~\ref{sec:scale-sensitivity}
 has direct consequences for mission planning. When the task set is sparse
