@@ -405,7 +405,7 @@ improves both resolution components, but at the expense of $f_2$ through
 reduced $\sin\theta$---creating the $[\theta, \psi_{\text{sq}}]$
 geometric structure that bounds multi-objective gain once solvers
 converge to low-squint regimes (Eq.~\ref{eq:rnull} in
-	\S~\ref{sec:pareto-coupling} and its
+\S~\ref{sec:pareto-coupling} and its
 axis decomposition for the exact partition into definitional and
 scheduler-induced components).
 
@@ -855,10 +855,10 @@ solver convergence to low-squint regimes rather than a hot-start
 artifact. We conducted a $\sigma$-sensitivity sweep over the hot-start
 perturbation magnitude ($\sigma \in \{0.1, 0.3, 0.5, 0.7\}$) on MOEA-3
 with 3 seeds per value on S3 ($N=300$, 10 scenarios per seed).
-The f2 and f3 quality metrics are insensitive to $\sigma$
-(mean f2 varies by $<0.002$, mean f3 by $<0.001$ across the range),
-and the f2--f3 correlation remains near zero for all $\sigma$ values
-($r_{\text{f2f3}} \in [-0.003, 0.176]$). Coverage (f1) shows a minor
+The $f_2$ and $f_3$ quality metrics are insensitive to $\sigma$
+(mean $f_2$ varies by $<0.002$, mean $f_3$ by $<0.001$ across the range),
+and the $f_2$--$f_3$ correlation remains near zero for all $\sigma$ values
+($r_{\text{f2f3}} \in [-0.003, 0.176]$). Coverage ($f_1$) shows a minor
 trend of $\approx 3\%$ decline from $\sigma=0.1$ to $\sigma=0.7$,
 consistent with the ``hot-start bias is material'' claim
 already qualified in this section. The $\sigma=0.5$ choice
@@ -914,6 +914,7 @@ lies outside the MOEA-3 Pareto surface---a consequence of G-SM's aggressive
 squint minimization.
 The near-identity of MOEA-2 and MOEA-3 fronts under the NSGA-III framework is quantified by pairwise
 Cliff's $\delta = +0.132$ ($f_2$, negligible, $p = 3.9 \times 10^{-10}$) and
+$\delta = -0.176$ ($f_3$, small, $p = 5.6 \times 10^{-14}$).
 Because $\theta$ and $\psi_{\text{sq}}$ are not independent but both
 derived from the same LOS vector $\mathbf{l} = (l_x, l_y, l_z)$
 (\S~\ref{sec:system-model}), the per-task $f_2$ and $f_3$ contributions
@@ -941,7 +942,7 @@ $\theta$), both depend on $\cos\psi_{\text{sq}}$ positively
 ($r_\psi = +0.997$), since low squint improves both. Under uniform
 geometry the $\theta$-conflict dominates, yielding $r_{\text{null}} < 0$.
 The empirical correlation $r \approx 0.93$--$0.98$
- therefore exceeds the definitional
+therefore exceeds the definitional
 baseline substantially: in Fisher-$z$ space, $z(r_{\text{null}}=-0.51)
 = -0.563$ while $z(r) = 1.66$--$2.30$ for the empirical range, a gap of
 $\Delta z \approx 2.2$--$2.9$ that confirms the empirical correlation
@@ -972,10 +973,6 @@ tested solvers (including the no-physics Variant D,
 \S~\ref{sec:ablation}) converge to low-squint regimes where $f_2$ and
 $f_3$ co-vary along the shared $\cos\psi_{\text{sq}}$ factor, rendering
 the 3-objective formulation redundant in the single-pass setting.
-
-This reframes the 3-objective redundancy identified above: it is not a
-mathematical identity between $f_2$ and $f_3$ but an empirical consequence
-of solver convergence to low-squint regimes.
 At S4 ($N = 500$), the Pareto front's hypervolume ratio (S4/S1) is
 $< 1$, indicating that the front becomes relatively more compact at
 higher densities---consistent with the scale-dependent saturation
