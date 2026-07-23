@@ -705,32 +705,6 @@ see \texttt{experiments/statistical\_analysis.py}).
 % ============================================================
 \section{Results and Analysis}
 % ── 6.1 Effect of Squint Awareness (Fig 1) ──
-\subsection{Effect of Squint Awareness}
-The squint-minimized greedy solver (G-SM) improves NESZ radiometric quality ($f_3$)
-relative to the profit-only baseline (G-BL) by selecting observation times that
-minimize squint angle within each visibility window.
-Across all 200 scenarios, this produces a large positive effect on $f_3$
-(Cliff's $\delta = +0.72$, $p = 1.7 \times 10^{-34}$) at a small aggregate cost
-in coverage (Cliff's $\delta = -0.25$, $p = 7.0 \times 10^{-34}$, on raw $f_1$).
-The trade-off, however, is strongly density-dependent.
-In sparse scenarios (S1, $N = 20$), G-SM retains $f_1^* = 0.85 \pm 0.16$
-($-15\%$ vs.\ G-BL at $1.00$) while improving $f_3$ from $0.32 \pm 0.17$ to
-$0.44 \pm 0.16$ ($+34\%$).
-In dense scenarios (S4, $N = 500$), the $f_1$ cost escalates:
-G-SM achieves $f_1^* = 0.61 \pm 0.09$ ($-39\%$), with $f_3$ rising from
-$0.210 \pm 0.071$ to $0.356 \pm 0.075$ ($+70\%$).
-Figure~\ref{fig:fig1} visualizes this density-dependent trade-off: the LOESS
-trend in panel (c) identifies a transition region around $N = 100$
-where the $f_1$ penalty grows rapidly.
-In dense regimes, the squint-minimization strategy becomes costly because
-tightly packed time windows offer fewer alternative observation times at low squint.
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=\textwidth]{fig1_squint_effect.pdf}
-    \caption{Effect of squint-aware scheduling: (a) $f_3$ scatter; (b) $\Delta f_1^*$ histogram; (c) $\Delta f_1^*$ vs.\ $N$ with LOESS trend}
-    \label{fig:fig1}
-\end{figure}
-% ── 6.2 Solver Profiles (Fig 2) ──
 \subsection{Solver Profiles}
 Table~\ref{tab:solver-profiles} summarizes the three-dimensional performance of
 all five solvers on the largest scenario class (S4, $N = 500$), where
@@ -785,166 +759,6 @@ MOEA-3  & $0.98 \pm 0.04$    & $0.589 \pm 0.021$ & $0.170 \pm 0.066$ \\
 \end{tabular}
 \end{table}
 % ── 6.3 Pareto Front (Fig 3) ──
-\subsection{Pareto Front Characterization}\label{sec:pareto-coupling}
-Figure~\ref{fig:fig2} illustrates the Pareto front obtained by MOEA-3 on a
-representative S4 scenario ($N = 500$ targets).
-MOEA-3 discovers $76 \pm 14$ non-dominated solutions (mean across S4 scenarios;
-MOEA-2: $76 \pm 20$), forming a continuous trade-off surface that is invisible
-to single-objective methods. The solutions span an $f_1^*$ range of
-$\sim 0.3$ and an $f_2$ range of $\sim 0.06$ at S4. For a mission
-planner, this translates to a menu of approximately 76 distinct
-quality--coverage configurations, though the narrow $f_2$ range
-limits practical differentiation among them.
-The $f_1^*$--$f_2$ projection (panel a) reveals a narrow but nonzero trade-off
-surface: the frontier spans from full-coverage solutions
-($f_1^* \approx 1.0$, $f_2 \approx 0.56$) to quality-oriented solutions
-($f_1^* \approx 0.7$, $f_2 \approx 0.62$). The compressed $f_2$ range
-($\Delta f_2 \approx 0.06$, compared to $\Delta f_2 \approx 0.10$ in sparse
-S1 scenarios) is consistent with the scale-dependent saturation documented
-in \S~\ref{sec:scale-sensitivity}---in dense target regimes, the
-solver convergence to low-squint regimes combined with schedule
-saturation at high density limits quality differentiation regardless of solver strategy.
-Overlaying the single-point baseline solutions shows that G-BL sits at the
-``full-coverage, moderate-quality'' corner of the frontier, while G-SM occupies
-a qualitatively different region ($f_1^* \approx 0.6$, $f_3 \approx 0.35$) that
-lies outside the MOEA-3 Pareto surface---a consequence of G-SM's aggressive
-squint minimization.
-The near-identity of MOEA-2 and MOEA-3 fronts is quantified by pairwise
-Cliff's $\delta = +0.132$ ($f_2$, negligible, $p = 3.9 \times 10^{-10}$) and
-Because $\theta$ and $\psi_{\text{sq}}$ are not independent but both
-derived from the same LOS vector $\mathbf{l} = (l_x, l_y, l_z)$
-(\S~\ref{sec:system-model}), the per-task $f_2$ and $f_3$ contributions
-share geometric structure. To separate definitional coupling from
-scheduler-induced correlation, we compute the analytical null
-distribution by treating observation geometry as drawn uniformly from
-the accessible envelope ($\theta \in [15^\circ, 50^\circ]$,
-$|\psi_{\text{sq}}| \leq 45^\circ$) and evaluating the moment integrals of
-$f_{2,i} = \sin\theta_i \cos\psi_{\text{sq},i}$ and
-$f_{3,i} = \cos^3\theta_i \cos^3\psi_{\text{sq},i}$ in closed form
-(validated by Monte Carlo, $r_{\text{MC}} = -0.5120$, $N = 2{\times}10^5$).
-The null correlation is
-\begin{equation}
-r_{\text{null}} = \frac{\mathrm{Cov}(f_2, f_3)}{\sqrt{\mathrm{Var}(f_2)\,\mathrm{Var}(f_3)}} \;=\; -0.51,
-\label{eq:rnull}
-\end{equation}
-where the independence of $\theta$ and $\psi_{\text{sq}}$ under the null
-factorizes the moments, e.g., $E[f_2 f_3] = E[\sin\theta\cos^3\theta]\,E[\cos^4\psi_{\text{sq}}]$.
-The \emph{negative} sign exposes a structural conflict, not redundancy:
-in the $\theta$-only limit (fixed squint), $f_{2,i} \propto \sin\theta$ and
-$f_{3,i} \propto \cos^3\theta$ are strictly anti-monotonic
-($r_\theta = -0.997$), since $f_2$ favors high incidence while $f_3$
-favors low incidence; in the $\psi_{\text{sq}}$-only limit (fixed
-$\theta$), both depend on $\cos\psi_{\text{sq}}$ positively
-($r_\psi = +0.997$), since low squint improves both. Under uniform
-geometry the $\theta$-conflict dominates, yielding $r_{\text{null}} < 0$.
-The empirical correlation $r \approx 0.93$--$0.98$
- therefore exceeds the definitional
-baseline substantially: in Fisher-$z$ space, $z(r_{\text{null}}=-0.51)
-= -0.563$ while $z(r) = 1.66$--$2.30$ for the empirical range, a gap of
-$\Delta z \approx 2.2$--$2.9$ that confirms the empirical correlation
-lies far above the null (correlation distances are compared on the
-variance-stabilizing Fisher-$z$ scale rather than as a linear
-difference). This indicates that scheduled observations are not drawn
-uniformly from the envelope: all solvers,
-including the greedy baselines, select low-squint geometries that
-suppress the $\theta$-conflict and align $f_2$ with $f_3$ along the
-shared $\cos\psi_{\text{sq}}$ factor. The residual $2$--$7\%$ variance
-($1 - r$) corresponds to the $\theta$-axis conflict space where genuine
-$f_2$--$f_3$ trade-offs can exist, but which the solver-converged
-low-squint regime leaves largely unexplored in the single-pass setting.
-This reframes the 3-objective redundancy reported in
-this section: it is not a mathematical identity between
-$f_2$ and $f_3$ but an empirical consequence of solver convergence to
-low-squint regimes.
-
-The visible-geometry envelope is wide rather than low-squint-dominated:
-across C7-feasible visibility samples ($|\psi_{\text{sq}}| \leq 45^\circ$),
-$\mathrm{corr}(f_2, f_3) = -0.95$, a strong negative correlation dominated
-by the incidence-angle conflict (\texttt{scripts/r\_visible\_envelope.py}).
-In contrast, solver-selected schedules exhibit $r = +0.93$--$0.98$,
-indicating that the low-squint regime of solver schedules is an active
-selection from the wide C7-feasible envelope, not a constraint-imposed
-collapse. This supports the solver-convergence interpretation: all
-tested solvers (including the no-physics Variant D,
-\S~
-ef{sec:ablation}) converge to low-squint regimes where $f_2$ and
-$f_3$ co-vary along the shared $\cos\psi_{\text{sq}}$ factor, rendering
-the 3-objective formulation redundant in the single-pass setting.
-
-This reframes the 3-objective redundancy identified above: it is not a
-mathematical identity between $f_2$ and $f_3$ but an empirical consequence
-of solver convergence to low-squint regimes.
-At S4 ($N = 500$), the Pareto front's hypervolume ratio (S4/S1) is
-$< 1$, indicating that the front becomes relatively more compact at
-higher densities---consistent with the scale-dependent saturation
-documented above, though this does not imply degeneracy (the front
-still spans $\Delta f_1^* \approx 0.3$).
-We caution that the Pareto fronts reported here are best-known
-approximations obtained via NSGA-III; whether they represent the
-true Pareto-optimal set is unknown without exact methods
-(e.g., MILP or branch-and-bound), which remain intractable for
-$N \geq 20$ in this problem class.
-% ── 6.4 Statistical Comparison (Fig 3) ──
-\subsection{Statistical Comparison}
-The Friedman test confirms highly significant overall differences among the
-five solvers across all 200 scenarios ($\chi^2 = 506.56$, $p \approx 10^{-108}$).
-Pairwise Wilcoxon signed-rank tests with Bonferroni correction
-($\alpha = 0.005$) reveal that all solver pairs are significantly different,
-though effect sizes vary dramatically (Fig.~\ref{fig:fig4}, Table~\ref{tab:hv}).
-The $f_1^*$ comparisons show that G-BL ($1.00$) achieves higher coverage than
-G-SM ($0.61 \pm 0.09$), while GA-P-BL ($1.17 \pm 0.27$) exceeds G-BL on
-$f_1^*$. The Cliff's $\delta$ values $\delta = -0.95$ (G-BL vs.\ G-SM) and
-$\delta = +0.44$ (G-BL vs.\ GA-P-BL) are computed on hypervolume
-(Table~\ref{tab:hv}) and reflect the HV/$f_1^*$ ranking divergence analyzed
-in \S~\ref{sec:hv-divergence}.
-MOEA-2 and MOEA-3 show large differences from G-BL and GA-P-BL on $f_1^*$ (all $p < 10^{-10}$, Cliff's $|\delta| \geq 0.79$), though directionally below G-BL and GA-P-BL ($\delta = -0.79$ to $-0.87$).
-The MOEA-2 versus MOEA-3 comparison is statistically significant
-but effect-small ($p = 1.4 \times 10^{-4}$, $\delta = -0.23$), confirming that adding
-$f_3$ as a third objective does not meaningfully change solver performance
-in this setting---a result of the $\theta$/$\psi_{\text{sq}}$ geometric coupling
-discussed in \S~\ref{sec:pareto-coupling}.
-\begin{table}[H]
-\centering
-\caption{Hypervolume across 200 scenarios: median (horizontal bar), IQR (box), and per-scenario values (outliers beyond 1.5$\times$IQR)}
-\label{tab:hv}
-\begin{tabular}{lcc}
-\toprule
-\textbf{Solver} & \textbf{HV} & \textbf{SD} \\
-\midrule
-G-SM    & 0.202 & 0.040 \\
-MOEA-3  & 0.173 & 0.045 \\
-MOEA-2  & 0.169 & 0.037 \\
-G-BL    & 0.140 & 0.017 \\
-GA-P-BL & 0.117 & 0.033 \\
-\bottomrule
-\end{tabular}
-\end{table}
-\paragraph{Ranking divergence.}\label{sec:hv-divergence}
-The two frameworks yield contradictory rankings: GA-P-BL ranks highest
-for $f_1^*$ by Friedman--Wilcoxon but last in HV, while G-SM ranks last in
-$f_1^*$ but first in HV.
-This divergence is not a measurement error but a consequence of how HV
-aggregates multi-dimensional performance.
-Single-objective solvers produce exactly one Pareto point each, so their HV
-is determined entirely by that point's coordinates.
-Multi-objective solvers output $76 \pm 20$ points; HV rewards the ``spread''
-of these points across the objective space regardless of whether the spread
-reflects better solutions or merely more solutions.
-G-SM's extreme $f_3$ value extends its single point far along the $f_3$ axis,
-producing a tall hypervolume box despite mediocre coverage.
-GA-P-BL, despite superior $f_1$, occupies a compact region and thus earns
-the lowest HV.
-We therefore adopt the Friedman--Wilcoxon framework as our primary evidence,
-as it directly tests our research question (``which solver achieves higher $f_1$?'').
-HV is retained as a secondary indicator for comparing multi-objective solvers
-against each other, where point-count asymmetry does not confound the comparison.
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=\textwidth]{fig4_hypervolume.pdf}
-    \caption{Statistical validation: (left) hypervolume distribution; (right) pairwise Cliffs $\delta$ effect sizes}
-    \label{fig:fig4}
-\end{figure}
-% ── 6.5 Scale Sensitivity (Fig 5) ──
 \subsection{Scale Sensitivity}
 \label{sec:scale-sensitivity}
 The value of multi-objective optimization depends critically on scenario
@@ -1074,31 +888,190 @@ characterizes the sparse-density regime where the MOEA advantage is
 largest, and we do not extrapolate the flat-landscape claim beyond S1.
 
 % ── Runtime Summary ──
-\subsection{Runtime and Computational Cost}
-\label{sec:runtime}
-Table~\ref{tab:runtime} summarizes the computational cost of the five
-solvers at each scenario scale. G-BL and G-SM are deterministic greedy
-heuristics with negligible runtime ($< 0.01$ s for all $N$). GA-P-BL
-(MOEA-1, single-objective) converges in comparable time to the
-multi-objective variants. MOEA-2 and MOEA-3 (NSGA-III, pop $= 100$,
-gen $= 200$) scale roughly as $O(N^2 K)$ due to per-generation
-constraint evaluation across all task pairs; at S4 ($N = 500$),
-each MOEA run requires approximately 2 minutes on a single CPU core.
+\subsection{Pareto Front Characterization}\label{sec:pareto-coupling}
+Figure~\ref{fig:fig2} illustrates the Pareto front obtained by MOEA-3 on a
+representative S4 scenario ($N = 500$ targets).
+MOEA-3 discovers $76 \pm 14$ non-dominated solutions (mean across S4 scenarios;
+MOEA-2: $76 \pm 20$), forming a continuous trade-off surface that is invisible
+to single-objective methods. The solutions span an $f_1^*$ range of
+$\sim 0.3$ and an $f_2$ range of $\sim 0.06$ at S4. For a mission
+planner, this translates to a menu of approximately 76 distinct
+quality--coverage configurations, though the narrow $f_2$ range
+limits practical differentiation among them.
+The $f_1^*$--$f_2$ projection (panel a) reveals a narrow but nonzero trade-off
+surface: the frontier spans from full-coverage solutions
+($f_1^* \approx 1.0$, $f_2 \approx 0.56$) to quality-oriented solutions
+($f_1^* \approx 0.7$, $f_2 \approx 0.62$). The compressed $f_2$ range
+($\Delta f_2 \approx 0.06$, compared to $\Delta f_2 \approx 0.10$ in sparse
+S1 scenarios) is consistent with the scale-dependent saturation documented
+in \S~\ref{sec:scale-sensitivity}---in dense target regimes, the
+solver convergence to low-squint regimes combined with schedule
+saturation at high density limits quality differentiation regardless of solver strategy.
+Overlaying the single-point baseline solutions shows that G-BL sits at the
+``full-coverage, moderate-quality'' corner of the frontier, while G-SM occupies
+a qualitatively different region ($f_1^* \approx 0.6$, $f_3 \approx 0.35$) that
+lies outside the MOEA-3 Pareto surface---a consequence of G-SM's aggressive
+squint minimization.
+The near-identity of MOEA-2 and MOEA-3 fronts is quantified by pairwise
+Cliff's $\delta = +0.132$ ($f_2$, negligible, $p = 3.9 \times 10^{-10}$) and
+Because $\theta$ and $\psi_{\text{sq}}$ are not independent but both
+derived from the same LOS vector $\mathbf{l} = (l_x, l_y, l_z)$
+(\S~\ref{sec:system-model}), the per-task $f_2$ and $f_3$ contributions
+share geometric structure. To separate definitional coupling from
+scheduler-induced correlation, we compute the analytical null
+distribution by treating observation geometry as drawn uniformly from
+the accessible envelope ($\theta \in [15^\circ, 50^\circ]$,
+$|\psi_{\text{sq}}| \leq 45^\circ$) and evaluating the moment integrals of
+$f_{2,i} = \sin\theta_i \cos\psi_{\text{sq},i}$ and
+$f_{3,i} = \cos^3\theta_i \cos^3\psi_{\text{sq},i}$ in closed form
+(validated by Monte Carlo, $r_{\text{MC}} = -0.5120$, $N = 2{\times}10^5$).
+The null correlation is
+\begin{equation}
+r_{\text{null}} = \frac{\mathrm{Cov}(f_2, f_3)}{\sqrt{\mathrm{Var}(f_2)\,\mathrm{Var}(f_3)}} \;=\; -0.51,
+\label{eq:rnull}
+\end{equation}
+where the independence of $\theta$ and $\psi_{\text{sq}}$ under the null
+factorizes the moments, e.g., $E[f_2 f_3] = E[\sin\theta\cos^3\theta]\,E[\cos^4\psi_{\text{sq}}]$.
+The \emph{negative} sign exposes a structural conflict, not redundancy:
+in the $\theta$-only limit (fixed squint), $f_{2,i} \propto \sin\theta$ and
+$f_{3,i} \propto \cos^3\theta$ are strictly anti-monotonic
+($r_\theta = -0.997$), since $f_2$ favors high incidence while $f_3$
+favors low incidence; in the $\psi_{\text{sq}}$-only limit (fixed
+$\theta$), both depend on $\cos\psi_{\text{sq}}$ positively
+($r_\psi = +0.997$), since low squint improves both. Under uniform
+geometry the $\theta$-conflict dominates, yielding $r_{\text{null}} < 0$.
+The empirical correlation $r \approx 0.93$--$0.98$
+ therefore exceeds the definitional
+baseline substantially: in Fisher-$z$ space, $z(r_{\text{null}}=-0.51)
+= -0.563$ while $z(r) = 1.66$--$2.30$ for the empirical range, a gap of
+$\Delta z \approx 2.2$--$2.9$ that confirms the empirical correlation
+lies far above the null (correlation distances are compared on the
+variance-stabilizing Fisher-$z$ scale rather than as a linear
+difference). This indicates that scheduled observations are not drawn
+uniformly from the envelope: all solvers,
+including the greedy baselines, select low-squint geometries that
+suppress the $\theta$-conflict and align $f_2$ with $f_3$ along the
+shared $\cos\psi_{\text{sq}}$ factor. The residual $2$--$7\%$ variance
+($1 - r$) corresponds to the $\theta$-axis conflict space where genuine
+$f_2$--$f_3$ trade-offs can exist, but which the solver-converged
+low-squint regime leaves largely unexplored in the single-pass setting.
+This reframes the 3-objective redundancy reported in
+this section: it is not a mathematical identity between
+$f_2$ and $f_3$ but an empirical consequence of solver convergence to
+low-squint regimes.
+
+The visible-geometry envelope is wide rather than low-squint-dominated:
+across C7-feasible visibility samples ($|\psi_{\text{sq}}| \leq 45^\circ$),
+$\mathrm{corr}(f_2, f_3) = -0.95$, a strong negative correlation dominated
+by the incidence-angle conflict (\texttt{scripts/r\_visible\_envelope.py}).
+In contrast, solver-selected schedules exhibit $r = +0.93$--$0.98$,
+indicating that the low-squint regime of solver schedules is an active
+selection from the wide C7-feasible envelope, not a constraint-imposed
+collapse. This supports the solver-convergence interpretation: all
+tested solvers (including the no-physics Variant D,
+\S~\ref{sec:ablation}) converge to low-squint regimes where $f_2$ and
+$f_3$ co-vary along the shared $\cos\psi_{\text{sq}}$ factor, rendering
+the 3-objective formulation redundant in the single-pass setting.
+
+This reframes the 3-objective redundancy identified above: it is not a
+mathematical identity between $f_2$ and $f_3$ but an empirical consequence
+of solver convergence to low-squint regimes.
+At S4 ($N = 500$), the Pareto front's hypervolume ratio (S4/S1) is
+$< 1$, indicating that the front becomes relatively more compact at
+higher densities---consistent with the scale-dependent saturation
+documented above, though this does not imply degeneracy (the front
+still spans $\Delta f_1^* \approx 0.3$).
+We caution that the Pareto fronts reported here are best-known
+approximations obtained via NSGA-III; whether they represent the
+true Pareto-optimal set is unknown without exact methods
+(e.g., MILP or branch-and-bound), which remain intractable for
+$N \geq 20$ in this problem class.
+% ── 6.4 Statistical Comparison (Fig 3) ──
+\subsection{Effect of Squint Awareness}
+The squint-minimized greedy solver (G-SM) improves NESZ radiometric quality ($f_3$)
+relative to the profit-only baseline (G-BL) by selecting observation times that
+minimize squint angle within each visibility window.
+Across all 200 scenarios, this produces a large positive effect on $f_3$
+(Cliff's $\delta = +0.72$, $p = 1.7 \times 10^{-34}$) at a small aggregate cost
+in coverage (Cliff's $\delta = -0.25$, $p = 7.0 \times 10^{-34}$, on raw $f_1$).
+The trade-off, however, is strongly density-dependent.
+In sparse scenarios (S1, $N = 20$), G-SM retains $f_1^* = 0.85 \pm 0.16$
+($-15\%$ vs.\ G-BL at $1.00$) while improving $f_3$ from $0.32 \pm 0.17$ to
+$0.44 \pm 0.16$ ($+34\%$).
+In dense scenarios (S4, $N = 500$), the $f_1$ cost escalates:
+G-SM achieves $f_1^* = 0.61 \pm 0.09$ ($-39\%$), with $f_3$ rising from
+$0.210 \pm 0.071$ to $0.356 \pm 0.075$ ($+70\%$).
+Figure~\ref{fig:fig1} visualizes this density-dependent trade-off: the LOESS
+trend in panel (c) identifies a transition region around $N = 100$
+where the $f_1$ penalty grows rapidly.
+In dense regimes, the squint-minimization strategy becomes costly because
+tightly packed time windows offer fewer alternative observation times at low squint.
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{fig1_squint_effect.pdf}
+    \caption{Effect of squint-aware scheduling: (a) $f_3$ scatter; (b) $\Delta f_1^*$ histogram; (c) $\Delta f_1^*$ vs.\ $N$ with LOESS trend}
+    \label{fig:fig1}
+\end{figure}
+% ── 6.2 Solver Profiles (Fig 2) ──
+\subsection{Statistical Comparison}
+The Friedman test confirms highly significant overall differences among the
+five solvers across all 200 scenarios ($\chi^2 = 506.56$, $p \approx 10^{-108}$).
+Pairwise Wilcoxon signed-rank tests with Bonferroni correction
+($\alpha = 0.005$) reveal that all solver pairs are significantly different,
+though effect sizes vary dramatically (Fig.~\ref{fig:fig4}, Table~\ref{tab:hv}).
+The $f_1^*$ comparisons show that G-BL ($1.00$) achieves higher coverage than
+G-SM ($0.61 \pm 0.09$), while GA-P-BL ($1.17 \pm 0.27$) exceeds G-BL on
+$f_1^*$. The Cliff's $\delta$ values $\delta = -0.95$ (G-BL vs.\ G-SM) and
+$\delta = +0.44$ (G-BL vs.\ GA-P-BL) are computed on hypervolume
+(Table~\ref{tab:hv}) and reflect the HV/$f_1^*$ ranking divergence analyzed
+in \S~\ref{sec:hv-divergence}.
+MOEA-2 and MOEA-3 show large differences from G-BL and GA-P-BL on $f_1^*$ (all $p < 10^{-10}$, Cliff's $|\delta| \geq 0.79$), though directionally below G-BL and GA-P-BL ($\delta = -0.79$ to $-0.87$).
+The MOEA-2 versus MOEA-3 comparison is statistically significant
+but effect-small ($p = 1.4 \times 10^{-4}$, $\delta = -0.23$), confirming that adding
+$f_3$ as a third objective does not meaningfully change solver performance
+in this setting---a result of the $\theta$/$\psi_{\text{sq}}$ geometric coupling
+discussed in \S~\ref{sec:pareto-coupling}.
 \begin{table}[H]
 \centering
-\caption{Per-solver mean runtime (seconds, single CPU core)}
-\label{tab:runtime}
-\begin{tabular}{lcccc}
+\caption{Hypervolume across 200 scenarios: median (horizontal bar), IQR (box), and per-scenario values (outliers beyond 1.5$\times$IQR)}
+\label{tab:hv}
+\begin{tabular}{lcc}
 \toprule
-\textbf{Solver} & \textbf{S1 (N=20)} & \textbf{S2 (N=100)} & \textbf{S3 (N=300)} & \textbf{S4 (N=500)} \\
+\textbf{Solver} & \textbf{HV} & \textbf{SD} \\
 \midrule
-G-BL / G-SM & $< 0.01$ & $< 0.01$ & $< 0.01$ & $< 0.01$ \\
-GA-P-BL     & $11.5 \pm 1.6$  & $36.6 \pm 9.6$ & $88.2 \pm 21.5$ & $108.7 \pm 16.9$ \\
-MOEA-2      & $9.3 \pm 2.9$  & $31.1 \pm 13.1$ & $92.2 \pm 29.0$ & $115.2 \pm 31.5$ \\
-MOEA-3      & $9.3 \pm 2.9$  & $31.3 \pm 13.2$ & $92.0 \pm 29.6$ & $114.8 \pm 31.3$ \\
+G-SM    & 0.202 & 0.040 \\
+MOEA-3  & 0.173 & 0.045 \\
+MOEA-2  & 0.169 & 0.037 \\
+G-BL    & 0.140 & 0.017 \\
+GA-P-BL & 0.117 & 0.033 \\
 \bottomrule
 \end{tabular}
 \end{table}
+\paragraph{Ranking divergence.}\label{sec:hv-divergence}
+The two frameworks yield contradictory rankings: GA-P-BL ranks highest
+for $f_1^*$ by Friedman--Wilcoxon but last in HV, while G-SM ranks last in
+$f_1^*$ but first in HV.
+This divergence is not a measurement error but a consequence of how HV
+aggregates multi-dimensional performance.
+Single-objective solvers produce exactly one Pareto point each, so their HV
+is determined entirely by that point's coordinates.
+Multi-objective solvers output $76 \pm 20$ points; HV rewards the ``spread''
+of these points across the objective space regardless of whether the spread
+reflects better solutions or merely more solutions.
+G-SM's extreme $f_3$ value extends its single point far along the $f_3$ axis,
+producing a tall hypervolume box despite mediocre coverage.
+GA-P-BL, despite superior $f_1$, occupies a compact region and thus earns
+the lowest HV.
+We therefore adopt the Friedman--Wilcoxon framework as our primary evidence,
+as it directly tests our research question (``which solver achieves higher $f_1$?'').
+HV is retained as a secondary indicator for comparing multi-objective solvers
+against each other, where point-count asymmetry does not confound the comparison.
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{fig4_hypervolume.pdf}
+    \caption{Statistical validation: (left) hypervolume distribution; (right) pairwise Cliffs $\delta$ effect sizes}
+    \label{fig:fig4}
+\end{figure}
 We note that exact methods (MILP) for this problem class are known to
 be intractable even at $N = 20$, due to the time-dependent transition
 constraints and continuous quality objectives that require $O(N^2 K)$
@@ -1107,9 +1080,6 @@ We were unable to obtain a feasible MILP solution within a 24-hour
 time budget using the open-source HiGHS solver (via scipy.optimize.milp),
 confirming the NP-hardness established in \S~\ref{sec:system-model}
 and justifying the heuristic and metaheuristic focus of this study.
-% ============================================================
-%  6.6 Ablation Study (physical modeling contribution)
-% ============================================================
 \input{sections/_ablation_section.tex}
 % ============================================================
 %  7. DISCUSSION (~1200 words)
