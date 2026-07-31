@@ -24,12 +24,12 @@ from sar_sim.types import GroundTarget, SARInstrument, KeplerianElement, Observa
 from sar_sim.generator.orbit import propagate_orbit
 from sar_sim.generator.target import lat_lon_to_ecef, eci_to_ecef_rotation, EARTH_EQUATORIAL_RADIUS
 from sar_sim.generator.visibility import (
-PROJECT = Path(__file__).resolve().parent.parent
     _compute_off_nadir_angle, _off_nadir_to_incidence,
     _determine_look_direction, _check_geometric_constraints
 )
 
-OUTPUT_ROOT = Path(r"PROJECT / "experiments\scenarios"")
+PROJECT = Path(__file__).resolve().parent.parent
+OUTPUT_ROOT = PROJECT / "experiments" / "scenarios"
 MU_EARTH = 3.986004418e14
 DEFAULT_EPOCH = datetime(2026, 6, 15, 0, 0, 0)
 
@@ -660,7 +660,7 @@ def main():
         elif dist_idx == 4:  # S4-E: Uniform, full θ [18°,47°]
             return {**base, "dist_type": "uniform"}
 
-    gen_group("S4", s4_labels, 10, s4_params, skip_existing=False)
+    gen_group("S4", s4_labels, 10, s4_params, skip_existing=True)
 
     # ──────────────────────────────────────────────────────────────────────
     # S5: ψ_sq Sensitivity (N=20, Sentinel-1, bilateral)
@@ -711,6 +711,48 @@ def main():
         }
 
     gen_group("S6", s6_labels, 10, s6_params)
+
+    # ──────────────────────────────────────────────────────────────────────
+    # S7: N=150 (intermediate density for N50 CI tightening)
+    # S8: N=200 (intermediate density for N50 CI tightening)
+    # ──────────────────────────────────────────────────────────────────────
+    print("\n--- S7: N=150, Sentinel-1, 693km, bilateral (intermediate density) ---")
+    s7_labels = ["S7-A", "S7-B", "S7-C", "S7-D", "S7-E"]
+
+    def s7_params(seed_idx, seed, dist_idx):
+        base = {"n_targets": 150, "seed": seed, "sat_params": SENTINEL1,
+                "look_direction": "both"}
+        if dist_idx == 0:
+            return {**base, "dist_type": "uniform"}
+        elif dist_idx == 1:
+            return {**base, "dist_type": "clustered", "n_clusters": 15}
+        elif dist_idx == 2:
+            return {**base, "dist_type": "mixed", "n_clusters": 7}
+        elif dist_idx == 3:
+            return {**base, "dist_type": "clustered", "n_clusters": 15}
+        elif dist_idx == 4:
+            return {**base, "dist_type": "uniform"}
+
+    gen_group("S7", s7_labels, 10, s7_params)
+
+    print("\n--- S8: N=200, Sentinel-1, 693km, bilateral (intermediate density) ---")
+    s8_labels = ["S8-A", "S8-B", "S8-C", "S8-D", "S8-E"]
+
+    def s8_params(seed_idx, seed, dist_idx):
+        base = {"n_targets": 200, "seed": seed, "sat_params": SENTINEL1,
+                "look_direction": "both"}
+        if dist_idx == 0:
+            return {**base, "dist_type": "uniform"}
+        elif dist_idx == 1:
+            return {**base, "dist_type": "clustered", "n_clusters": 15}
+        elif dist_idx == 2:
+            return {**base, "dist_type": "mixed", "n_clusters": 8}
+        elif dist_idx == 3:
+            return {**base, "dist_type": "clustered", "n_clusters": 20}
+        elif dist_idx == 4:
+            return {**base, "dist_type": "uniform"}
+
+    gen_group("S8", s8_labels, 10, s8_params)
 
     print("\n" + "=" * 70)
     print("ALL SCENARIOS GENERATED")
