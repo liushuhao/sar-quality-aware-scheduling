@@ -50,11 +50,11 @@ Random seeds fixed for full reproducibility.
 ### Generate figures
 
 ```bash
-python papers/single-sat-quality/experiments/gen_all_figures.py     # 6 main + 6 supplementary
+python papers/single-sat-quality/experiments/gen_all_figures.py     # 5 main figures (Fig1,2,4,5,6)
 python papers/single-sat-quality/experiments/gen_table1.py          # Table 1 (solver matrix)
 ```
 
-Figures written to `papers/single-sat-quality/figures/`. Uses SciencePlots + local figure helpers (`figures/scripts/`).
+Figures written to `papers/single-sat-quality/figures/`. Uses SciencePlots + scipilot-figure-skill (global skill) for style presets and export.
 
 ### Build the paper PDF
 
@@ -91,10 +91,8 @@ Tracked assets include solver code, scenario generators, fixed seeds/configurati
 │   ├── single-sat-quality/   # ASR paper (Ch3)
 │   │   ├── *.tex, *.bib      # paper source
 │   │   ├── sections/         # section fragments
-│   │   ├── figures/          # paper figures + plot tooling
-│   │   │   ├── scripts/      # style_presets, figure_export, color_palettes
-│   │   │   ├── styles/       # .mplstyle files (nature, publication, presentation)
-│   │   │   └── references/   # journal requirements, color guides
+│   │   ├── figures/          # paper figures (generated PDFs/PNGs)
+│   │   │   └── experiments/   # experiment data (subdirectories per batch)
 │   │   ├── experiments/      # experiment scripts + scenario data
 │   │   └── scripts/          # driver scripts
 │   └── constellation-scheduling/  # Ch5 paper (in progress)

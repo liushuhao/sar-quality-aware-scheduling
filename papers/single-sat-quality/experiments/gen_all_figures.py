@@ -14,16 +14,29 @@ import json, os, sys, warnings
 from collections import defaultdict
 from pathlib import Path
 
-# Import figure export helpers
-sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'figures', 'scripts'))
-from figure_export import save_publication_figure
+# Import figure export helpers from scipilot-figure-skill (global skill)
+SCIPLOT = os.path.expanduser('~/.claude/skills/scipilot-figure-skill/scripts')
+if os.path.isdir(SCIPLOT):
+    sys.path.insert(0, SCIPLOT)
+    from export_figure import export_figure
+    def save_publication_figure(fig, basename, formats=None, dpi=300, **kw):
+        return export_figure(fig, basename, formats=formats, dpi=dpi, **kw)
+else:
+    # Fallback: minimal save
+    def save_publication_figure(fig, basename, formats=None, dpi=300, **kw):
+        paths = []
+        for fmt in (formats or ['pdf', 'png']):
+            p = f"{basename}.{fmt}"
+            fig.savefig(p, dpi=dpi, bbox_inches='tight', **{k: v for k, v in kw.items() if k != 'pad_inches'})
+            paths.append(p)
+        return paths
 
 warnings.filterwarnings("ignore", category=UserWarning)
 
 # ── Paths ──
 PROJECT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 RESULTS = os.path.join(PROJECT, "experiments", "results")
-FIG_DIR = os.path.join(PROJECT, "docs", "small-paper-figures")
+FIG_DIR = os.path.join(PROJECT, "figures")
 os.makedirs(FIG_DIR, exist_ok=True)
 
 BASELINES_PATH = os.path.join(RESULTS, "baselines_200.json")
@@ -39,6 +52,9 @@ plt.rcParams.update({
     'axes.titlesize': 10, 'axes.labelsize': 9,
     'xtick.labelsize': 8, 'ytick.labelsize': 8, 'legend.fontsize': 8,
     'figure.dpi': 150,
+    'text.usetex': False,
+    'pdf.fonttype': 42,
+    'ps.fonttype': 42,
 })
 
 SOLVERS = ["G-BL", "G-SM", "GA-P-BL", "MOEA-2", "MOEA-3"]
@@ -65,7 +81,8 @@ def save_figure(fig, name):
         formats=['pdf', 'png'], dpi=300, pad_inches=0.05
     )
     for p in paths:
-        print(f"  ✓ {p.name}: {p.stat().st_size:,d} bytes")
+        p_obj = Path(p)
+        print(f"  ✓ {p_obj.name}: {p_obj.stat().st_size:,d} bytes")
     plt.close(fig)
 
 def _f2_normalized(entry, solver_name):
@@ -148,6 +165,28 @@ else:
 
 common_keys = [k for k in results if all(s in results[k] for s in SOLVERS)]
 print(f"Loaded: {len(bl_data)} scenarios, {len(common_keys)} common (all 5 solvers)")
+
+def _cliffs_delta(a, b):
+    """Return Cliff's delta for two independent samples."""
+    a = np.asarray(a, dtype=float)
+    b = np.asarray(b, dtype=float)
+    if not len(a) or not len(b):
+        return np.nan
+    differences = a[:, None] - b[None, :]
+    return (np.sum(differences > 0) - np.sum(differences < 0)) / differences.size
+
+
+def _delta_magnitude(delta):
+    """Classify Cliff's delta using the standard 0.147/0.33/0.474 cutoffs."""
+    magnitude = abs(delta)
+    if magnitude < 0.147:
+        return "negligible"
+    if magnitude < 0.33:
+        return "small"
+    if magnitude < 0.474:
+        return "medium"
+    return "large"
+
 
 # ═══════════════════════════════════════════════════════════════════════════
 #  FIGURE 1: Squint Awareness — G-SM vs G-BL (3-panel)
@@ -239,111 +278,18 @@ ax_c.legend(fontsize=7)
 save_figure(fig, "fig1_squint_effect")
 
 # ═══════════════════════════════════════════════════════════════════════════
-#  FIGURE 2: MOEA-2 vs MOEA-3 — Dual Pareto front overlay (S4 representative)
+#  FIGURE 2: [REMOVED — merged into Fig 3]
+#  (MOEA-2 vs MOEA-3 overlay now included in Fig 3)
 # ═══════════════════════════════════════════════════════════════════════════
-print("── Fig 2: MOEA-2 vs MOEA-3 Pareto Overlay ──")
-# Use S4 (dense regime) — where the near-identity claim is most consequential
+
+# ═══════════════════════════════════════════════════════════════════════════
+#  FIGURE 2 (merged from former Fig 2 + Fig 3): Pareto Front — Dual-panel
+#  f1-f2 / f1-f3 on S4 representative, with MOEA-2 vs MOEA-3 overlay
+# ═══════════════════════════════════════════════════════════════════════════
+print("── Fig 2: Pareto Front (merged, incl. MOEA-2 vs MOEA-3 overlay) ──")
+# Use S4 (dense regime) — consistent with body text claim (§6.3)
 s4_keys = [k for k in common_keys if scenario_group(k) == "S4"
            and "MOEA-2" in results[k] and "MOEA-3" in results[k]]
-# Pick the scenario with most MOEA-3 frontier points for visual richness
-def _n_frontier(k):
-    return len(results[k]["MOEA-3"].get("frontier_f1") or [])
-s4_keys.sort(key=_n_frontier, reverse=True)
-rep_key_s4 = s4_keys[0] if s4_keys else None
-
-if rep_key_s4:
-    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(11, 4.8))
-    plt.subplots_adjust(wspace=0.30, top=0.86, bottom=0.22, left=0.07, right=0.97)
-
-    m2_entry = results[rep_key_s4]["MOEA-2"]
-    m3_entry = results[rep_key_s4]["MOEA-3"]
-    ff1_m2 = m2_entry.get("frontier_f1") or []
-    ff2_m2 = m2_entry.get("frontier_f2") or []
-    ff3_m2 = m2_entry.get("frontier_f3") or []
-    ff1_m3 = m3_entry.get("frontier_f1") or []
-    ff2_m3 = m3_entry.get("frontier_f2") or []
-    ff3_m3 = m3_entry.get("frontier_f3") or []
-
-    marker_styles = {"G-BL": 's', "G-SM": '^', "GA-P-BL": 'D'}
-
-    # (a) f1-f2
-    for ff1, ff2, color, label in [
-        (ff1_m2, ff2_m2, SOLVER_COLORS["MOEA-2"], 'MOEA-2 frontier'),
-        (ff1_m3, ff2_m3, SOLVER_COLORS["MOEA-3"], 'MOEA-3 frontier'),
-    ]:
-        if ff1:
-            order = sorted(range(len(ff1)), key=lambda i: ff1[i])
-            ax1.plot([ff1[i] for i in order], [ff2[i] for i in order],
-                     c=color, linewidth=0.5, alpha=0.35, zorder=2)
-            ax1.scatter(ff1, ff2, c=color, s=8, alpha=0.5,
-                        edgecolors='none', zorder=3)
-    for solver in ["G-BL", "G-SM", "GA-P-BL"]:
-        if solver in results[rep_key_s4]:
-            r = results[rep_key_s4][solver]
-            ax1.scatter(r["f1"], r["f2"], c=SOLVER_COLORS[solver],
-                       marker=marker_styles.get(solver, 'o'), s=90,
-                       edgecolors='black', linewidth=1.2, label=solver, zorder=5)
-    ax1.set_xlabel("$f_1^*$ (Norm. Profit)", fontsize=9)
-    ax1.set_ylabel("$f_2$ (Geom. Quality)", fontsize=9)
-    ax1.set_title(f"(a) $f_1^*$–$f_2$, S4 ($N=500$)", fontsize=10)
-
-    # (b) f1-f3
-    for ff1, ff3, color, label in [
-        (ff1_m2, ff3_m2, SOLVER_COLORS["MOEA-2"], 'MOEA-2 frontier'),
-        (ff1_m3, ff3_m3, SOLVER_COLORS["MOEA-3"], 'MOEA-3 frontier'),
-    ]:
-        if ff1:
-            order = sorted(range(len(ff1)), key=lambda i: ff1[i])
-            ax2.plot([ff1[i] for i in order], [ff3[i] for i in order],
-                     c=color, linewidth=0.5, alpha=0.35, zorder=2)
-            ax2.scatter(ff1, ff3, c=color, s=8, alpha=0.5,
-                        edgecolors='none', zorder=3)
-    for solver in ["G-BL", "G-SM", "GA-P-BL"]:
-        if solver in results[rep_key_s4]:
-            r = results[rep_key_s4][solver]
-            ax2.scatter(r["f1"], r["f3"], c=SOLVER_COLORS[solver],
-                       marker=marker_styles.get(solver, 'o'), s=90,
-                       edgecolors='black', linewidth=1.2, label=solver, zorder=5)
-    ax2.set_xlabel("$f_1^*$ (Norm. Profit)", fontsize=9)
-    ax2.set_ylabel("$f_3$ (NESZ)", fontsize=9)
-    ax2.set_title(f"(b) $f_1^*$–$f_3$, S4 ($N=500$)", fontsize=10)
-
-    # Shared legend
-    handles, labels = ax1.get_legend_handles_labels()
-    # Deduplicate: MOEA-2 and MOEA-3 appear twice (once per panel)
-    seen = set()
-    unique_h, unique_l = [], []
-    for h, l in zip(handles, labels):
-        if l not in seen:
-            seen.add(l)
-            unique_h.append(h)
-            unique_l.append(l)
-    ax1.legend().set_visible(False)
-    ax2.legend().set_visible(False)
-    fig.legend(unique_h, unique_l,
-               loc='lower center', bbox_to_anchor=(0.5, -0.02),
-               ncol=5, frameon=True, framealpha=0.9, fontsize=7,
-               borderaxespad=0.0)
-
-    # δ annotation
-    if stats_data and "effect_sizes" in stats_data:
-        for k, v in stats_data["effect_sizes"].items():
-            if "MOEA2_f2_vs_MOEA3_f2" in k or "MOEA-2_f2_vs_MOEA-3_f2" in k:
-                ax1.text(0.98, 0.97, f"δ(f2)={v['cliff_delta']:+.3f} ({v['magnitude']})",
-                        transform=ax1.transAxes, fontsize=7, ha='right', va='top',
-                        bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.7))
-                break
-
-    save_figure(fig, "fig2_solver_profiles")
-else:
-    print("  ⚠ No S4 data for Fig 2 — skipping")
-
-# ═══════════════════════════════════════════════════════════════════════════
-#  FIGURE 3: Pareto Front — Dual-panel f1-f2 / f1-f3 on S4 representative
-# ═══════════════════════════════════════════════════════════════════════════
-print("── Fig 3: Pareto Front ──")
-# Use S4 (dense regime) — consistent with body text claim (§6.3, L771-772)
-s4_keys = [k for k in common_keys if scenario_group(k) == "S4" and "MOEA-3" in results[k]]
 def _f1_spread(k):
     fr = results[k]["MOEA-3"].get("frontier_f1") or []
     return (max(fr) - min(fr)) if fr else 0.0
@@ -356,20 +302,34 @@ if rep_key:
     # bottom=0.22 reserves a strip below the axes for the shared horizontal legend.
     plt.subplots_adjust(wspace=0.30, top=0.86, bottom=0.22, left=0.07, right=0.97)
     m3_entry = results[rep_key]["MOEA-3"]
+    m2_entry = results[rep_key].get("MOEA-2")  # may be None if only MOEA-3 available
     # Frontier data lives as three parallel lists, not a tuple-zipped 'frontier' key.
-    ff1 = m3_entry.get("frontier_f1") or []
-    ff2 = m3_entry.get("frontier_f2") or []
-    ff3 = m3_entry.get("frontier_f3") or []
+    ff1_m3 = m3_entry.get("frontier_f1") or []
+    ff2_m3 = m3_entry.get("frontier_f2") or []
+    ff3_m3 = m3_entry.get("frontier_f3") or []
+    if m2_entry:
+        ff1_m2 = m2_entry.get("frontier_f1") or []
+        ff2_m2 = m2_entry.get("frontier_f2") or []
+        ff3_m2 = m2_entry.get("frontier_f3") or []
+    else:
+        ff1_m2 = ff2_m2 = ff3_m2 = []
     marker_styles = {"G-BL": 's', "G-SM": '^', "GA-P-BL": 'D'}
 
-    # (a) f1-f2
-    if ff1:
-        # Draw a faint connecting line for the frontier, then the points.
-        order = sorted(range(len(ff1)), key=lambda i: ff1[i])
-        ax1.plot([ff1[i] for i in order], [ff2[i] for i in order],
+    # (a) f1-f2 — MOEA-3 frontier + MOEA-2 overlay + baselines
+    if ff1_m3:
+        # Draw a faint connecting line for the MOEA-3 frontier, then the points.
+        order = sorted(range(len(ff1_m3)), key=lambda i: ff1_m3[i])
+        ax1.plot([ff1_m3[i] for i in order], [ff2_m3[i] for i in order],
                  c='#0072B2', linewidth=0.6, alpha=0.4, zorder=2)
-        ax1.scatter(ff1, ff2, c='#0072B2', s=10, alpha=0.6,
+        ax1.scatter(ff1_m3, ff2_m3, c='#0072B2', s=10, alpha=0.6,
                     edgecolors='none', label='MOEA-3 frontier', zorder=3)
+    # MOEA-2 overlay (lighter, smaller)
+    if ff1_m2:
+        order2 = sorted(range(len(ff1_m2)), key=lambda i: ff1_m2[i])
+        ax1.plot([ff1_m2[i] for i in order2], [ff2_m2[i] for i in order2],
+                 c='#CC79A7', linewidth=0.5, alpha=0.3, zorder=2)
+        ax1.scatter(ff1_m2, ff2_m2, c='#CC79A7', s=6, alpha=0.4,
+                    edgecolors='none', label='MOEA-2 frontier', zorder=3)
     for solver in ["G-BL", "G-SM", "GA-P-BL"]:
         if solver in results[rep_key]:
             r = results[rep_key][solver]
@@ -385,26 +345,47 @@ if rep_key:
     # (bbox_to_anchor is in figure-fraction coords) so it never overlaps either
     # panel's y-axis label or any data.
     handles, labels = ax1.get_legend_handles_labels()
+    # Deduplicate: MOEA-2 and MOEA-3 appear twice (once per panel)
+    seen = set()
+    unique_h, unique_l = [], []
+    for h, l in zip(handles, labels):
+        if l not in seen:
+            seen.add(l)
+            unique_h.append(h)
+            unique_l.append(l)
     ax1.legend().set_visible(False)  # suppress the per-axes auto-legend
-    fig.legend(handles, labels,
+    fig.legend(unique_h, unique_l,
                loc='lower center', bbox_to_anchor=(0.5, -0.02),
-               ncol=4, frameon=True, framealpha=0.9, fontsize=7,
+               ncol=5, frameon=True, framealpha=0.9, fontsize=7,
                borderaxespad=0.0)
     if stats_data and "effect_sizes" in stats_data:
         for k, v in stats_data["effect_sizes"].items():
             if "MOEA-2_f2_vs_GBL_f2" in k:
-                ax1.text(0.98, 0.97, f"δ = {v['cliff_delta']:+.3f} ({v['magnitude']})",
+                ax1.text(0.98, 0.97, f"MOEA-2 vs G-BL: δ={v['cliff_delta']:+.3f} ({v['magnitude']})",
+                        transform=ax1.transAxes, fontsize=7, ha='right', va='top',
+                        bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.7))
+                break
+        for k, v in stats_data["effect_sizes"].items():
+            if "MOEA2_f2_vs_MOEA3_f2" in k or "MOEA-2_f2_vs_MOEA-3_f2" in k:
+                ax1.text(0.98, 0.88, f"MOEA-2 vs MOEA-3: δ={v['cliff_delta']:+.3f} ({v['magnitude']})",
                         transform=ax1.transAxes, fontsize=7, ha='right', va='top',
                         bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.7))
                 break
 
-    # (b) f1-f3
-    if ff1:
-        order = sorted(range(len(ff1)), key=lambda i: ff1[i])
-        ax2.plot([ff1[i] for i in order], [ff3[i] for i in order],
+    # (b) f1-f3 — MOEA-3 frontier + MOEA-2 overlay + baselines
+    if ff1_m3:
+        order = sorted(range(len(ff1_m3)), key=lambda i: ff1_m3[i])
+        ax2.plot([ff1_m3[i] for i in order], [ff3_m3[i] for i in order],
                  c='#0072B2', linewidth=0.6, alpha=0.4, zorder=2)
-        ax2.scatter(ff1, ff3, c='#0072B2', s=10, alpha=0.6,
+        ax2.scatter(ff1_m3, ff3_m3, c='#0072B2', s=10, alpha=0.6,
                     edgecolors='none', label='MOEA-3 frontier', zorder=3)
+    # MOEA-2 overlay (lighter, smaller)
+    if ff1_m2:
+        order2 = sorted(range(len(ff1_m2)), key=lambda i: ff1_m2[i])
+        ax2.plot([ff1_m2[i] for i in order2], [ff3_m2[i] for i in order2],
+                 c='#CC79A7', linewidth=0.5, alpha=0.3, zorder=2)
+        ax2.scatter(ff1_m2, ff3_m2, c='#CC79A7', s=6, alpha=0.4,
+                    edgecolors='none', label='MOEA-2 frontier', zorder=3)
     for solver in ["G-BL", "G-SM", "GA-P-BL"]:
         if solver in results[rep_key]:
             r = results[rep_key][solver]
@@ -424,7 +405,7 @@ if rep_key:
                         bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.7))
                 break
 
-    save_figure(fig, "fig3_pareto_front")
+    save_figure(fig, "fig2_solver_profiles")
 else:
     print("  ⚠ No data for Fig 3 — skipping")
 
@@ -459,7 +440,7 @@ if stats_data and "per_scenario_hv" in stats_data:
     # data noise. Placed at the lower-left so it never collides with the upper-left
     # Friedman box. Reference note ("reference") in the title signals that HV is a
     # secondary metric, not a decision objective.
-    ax_left.text(0.02, 0.02, "○ per-scenario HV (outliers beyond 1.5×IQR)",
+    ax_left.text(0.02, 0.02, r"$\circ$ per-scenario HV (outliers beyond $1.5\times\mathrm{IQR}$)",
                 transform=ax_left.transAxes, fontsize=6.5, ha='left', va='bottom',
                 style='italic', color='#555')
 
@@ -478,30 +459,34 @@ if stats_data and "per_scenario_hv" in stats_data:
         labels = [f"{p[0].split('_vs_')[0]} vs {p[0].split('_vs_')[1]}" for p in pairs]
         deltas = [p[1] for p in pairs]
         # Highlight MOEA-2 vs MOEA-3
-        colors = ['#D55E00' if ('MOEA-2' in p[0] and 'MOEA-3' in p[0]) else '#0072B2' for p in pairs]
+        colors = ['#808080' if ('MOEA-2' in p[0] and 'MOEA-3' in p[0]) else '#0072B2' for p in pairs]
         ax_right.barh(y_positions, deltas, height=0.6, color=colors, alpha=0.8, edgecolor='white')
         ax_right.axvline(x=0, color='black', linewidth=0.8)
-        ax_right.axvspan(-0.147, 0.147, alpha=0.05, color='green')
+        ax_right.axvspan(-0.147, 0.147, alpha=0.08, color='#808080')
+        ax_right.annotate("negligible effect",
+                          xy=(0.0, len(pairs) - 0.5), xytext=(0, 3),
+                          textcoords='offset points', ha='center', va='bottom',
+                          fontsize=6.5, color='#555')
         # Direction-of-effect annotation: Cliff's δ is computed as A(row) - A(col)
         # (Vargha-Delaney, scaled), so positive bars mean the ROW solver has higher
         # HV. Placed in the right strip above the existing MOEA-2-vs-MOEA-3 callout
         # so the two annotations don't collide.
         ax_right.text(0.98, 0.16,
-                      "δ > 0  →  row solver\n          has higher HV",
+                      r"$\delta > 0$  $\rightarrow$  row solver" "\n" "          has higher HV",
                       transform=ax_right.transAxes, fontsize=6.5,
                       ha='right', va='bottom', style='italic', color='#555')
         ax_right.set_yticks(y_positions)
         ax_right.set_yticklabels(labels, fontsize=6.5)
-        ax_right.set_xlabel("Cliff's δ (effect size)", fontsize=9)
+        ax_right.set_xlabel(r"Cliff's $\delta$ (effect size)", fontsize=9)
         ax_right.set_title("Pairwise effect sizes", fontsize=10)
         # Annotation: place the MOEA-2 vs MOEA-3 label OUTSIDE the bar (to the right
         # of the bar tip), so it never sits on top of the orange rectangle.
         for i, (label, d) in enumerate(zip(labels, deltas)):
             if 'MOEA-2' in label and 'MOEA-3' in label:
-                ax_right.annotate(f"MOEA-2 vs MOEA-3: δ={d:+.2f} (negligible)",
+                ax_right.annotate(f"MOEA-2 vs MOEA-3: δ={d:+.2f} (small)",
                                  xy=(d, i), xytext=(8, 0), textcoords='offset points',
                                  fontsize=7, va='center', ha='left',
-                                 color='#D55E00', fontweight='bold')
+                                 color='#555', fontweight='normal')
 
     if "friedman" in stats_data:
         fp = stats_data["friedman"]["p_value"]
@@ -516,61 +501,196 @@ else:
     print("  ⚠ No HV data — skipping Fig 4")
 
 # ═══════════════════════════════════════════════════════════════════════════
-#  FIGURE 5: Quality Boxplots — f2 faceted by scenario group
+#  FIGURE 5: 3-panel objective boxplots + logistic regression
+#  3×2 grid (3 objectives × 2 scenario-group pairs) + bottom full-width panel
+#  Shared y-axis per row; all panels for a given objective share the same scale.
 # ═══════════════════════════════════════════════════════════════════════════
-print("── Fig 5: Quality Boxplots ──")
-fig, axes = plt.subplots(2, 2, figsize=(7.5, 7.5), sharey=True)
-plt.subplots_adjust(hspace=0.35, wspace=0.15, top=0.93, bottom=0.08, left=0.10, right=0.95)
+print("── Fig 5: 3-Objective Boxplots + Logistic Regression ──")
 
-group_f2 = {g: {s: [] for s in SOLVERS} for g in SCENARIO_GROUPS}
+def _normalized_metric(entry, metric, solver_name):
+    """Return per-task mean for f2/f3 (auto-detect SUM vs MEAN); raw for f1."""
+    val = float(entry.get(metric, 0.0) or 0.0)
+    n = int(entry.get("n_selected", 0) or 1)
+    if metric in ("f2", "f3") and solver_name in ("MOEA-2", "MOEA-3") and val > 1.0 and n > 0:
+        return val / n
+    return val
+
+objectives = ["f1", "f2", "f3"]
+obj_labels = {
+    "f1": r"$f_1^*$ (Norm. Profit)",
+    "f2": r"$f_2$ (Geom. Quality)",
+    "f3": r"$f_3$ (NESZ Quality)",
+}
+group_pairs = [("S1", "S2"), ("S3", "S4")]
+pair_labels = ["S1–S2", "S3–S4"]
+pair_n_labels = ["n≈20–100", "n≈300–500"]
+
+# Collect data: obj_data[obj][pair_idx][solver] = list of values
+obj_data = {}
+for obj in objectives:
+    obj_data[obj] = {}
+    for pi, (g1, g2) in enumerate(group_pairs):
+        obj_data[obj][pi] = {}
+        for solver in SOLVERS:
+            vals = []
+            for k in common_keys:
+                g = results[k]["group"]
+                if g in (g1, g2) and solver in results[k]:
+                    if obj == "f1":
+                        v = results[k][solver].get("f1", 0.0) or 0.0
+                    else:
+                        v = _normalized_metric(results[k][solver], obj, solver)
+                    vals.append(v)
+            obj_data[obj][pi][solver] = vals
+
+# Determine y-limits per objective (shared across both columns)
+obj_ylim = {}
+for obj in objectives:
+    all_vals = []
+    for pi in range(2):
+        for solver in SOLVERS:
+            all_vals.extend(obj_data[obj][pi][solver])
+    if all_vals:
+        vmin = np.percentile(all_vals, 1)
+        vmax = np.percentile(all_vals, 99)
+        margin = (vmax - vmin) * 0.15 or 0.05
+        obj_ylim[obj] = (vmin - margin, vmax + margin)
+    else:
+        obj_ylim[obj] = (0, 1)
+
+fig = plt.figure(figsize=(8, 10.5))
+gs = gridspec.GridSpec(4, 2, height_ratios=[1, 1, 1, 0.9],
+                       hspace=0.35, wspace=0.20,
+                       left=0.09, right=0.95, top=0.96, bottom=0.08)
+
+for oi, obj in enumerate(objectives):
+    for pi in range(2):
+        ax = fig.add_subplot(gs[oi, pi])
+        box_data = [obj_data[obj][pi][s] for s in SOLVERS]
+        bp = ax.boxplot(box_data, positions=range(len(SOLVERS)),
+                        patch_artist=True, widths=0.55,
+                        medianprops={'color': 'black', 'linewidth': 1.2},
+                        flierprops={'marker': 'o', 'markersize': 2, 'alpha': 0.3})
+        for i, solver in enumerate(SOLVERS):
+            bp['boxes'][i].set_facecolor(SOLVER_COLORS[solver])
+            bp['boxes'][i].set_alpha(0.7)
+        ax.set_xticklabels(SOLVERS, rotation=30, ha='right', fontsize=7)
+        ax.set_title(f"{pair_labels[pi]} ({pair_n_labels[pi]})", fontsize=10)
+        ax.yaxis.grid(True, linestyle='--', alpha=0.3, linewidth=0.5)
+        ax.set_ylim(obj_ylim[obj])
+
+        # Per-pair effect size: MOEA-2 vs G-BL
+        delta = _cliffs_delta(
+            np.asarray(obj_data[obj][pi]["MOEA-2"]),
+            np.asarray(obj_data[obj][pi]["G-BL"])
+        )
+        if np.isfinite(delta):
+            ax.text(0.98, 0.96,
+                    f"MOEA-2 vs G-BL\nδ={delta:+.2f} ({_delta_magnitude(delta)})",
+                    transform=ax.transAxes, fontsize=6.5, ha='right', va='top',
+                    color='#444',
+                    bbox=dict(boxstyle='round,pad=0.25', facecolor='white',
+                              edgecolor='#B0B0B0', linewidth=0.5, alpha=0.85))
+
+    # Row label (shared y-axis label)
+    fig.text(0.01, 0.5 * (gs[oi, 0].y0 + gs[oi, 0].y1),
+             obj_labels[obj], fontsize=9, ha='left', va='center', rotation=90)
+
+# ── Bottom panel: Logistic regression for f1* deficit ──
+ax_log = fig.add_subplot(gs[3, :])
+from scipy.optimize import minimize
+
+# Compute deficit per scenario
+deficit_data = []
+n_targets_list = []
 for k in common_keys:
-    g = results[k]["group"]
-    if g in group_f2:
-        for s in SOLVERS:
-            if s in results[k]:
-                group_f2[g][s].append(_f2_normalized(results[k][s], s))
+    if "MOEA-2" in results[k] and "G-BL" in results[k]:
+        f1_moea = results[k]["MOEA-2"].get("f1", 0.0) or 0.0
+        n_t = results[k].get("G-BL", {}).get("n_targets", 0)
+        deficit = 1.0 if f1_moea < 0.95 else 0.0
+        deficit_data.append((n_t, deficit))
+        n_targets_list.append(n_t)
 
-group_n_map = {"S1": "n≈20", "S2": "n≈100", "S3": "n≈300", "S4": "n≈500"}
+n_vals = np.asarray([d[0] for d in deficit_data])
+deficit_vals = np.asarray([d[1] for d in deficit_data])
 
-for idx, group in enumerate(SCENARIO_GROUPS):
-    row, col = divmod(idx, 2)
-    ax = axes[row][col]
-    box_data = [group_f2[group][s] for s in SOLVERS if group_f2[group][s]]
-    bp = ax.boxplot(box_data, positions=range(len(SOLVERS)),
-                     patch_artist=True, widths=0.55,
-                     medianprops={'color': 'black', 'linewidth': 1.2},
-                     flierprops={'marker': 'o', 'markersize': 2, 'alpha': 0.3})
-    for i, solver in enumerate(SOLVERS):
-        bp['boxes'][i].set_facecolor(SOLVER_COLORS[solver])
-        bp['boxes'][i].set_alpha(0.7)
-    ax.set_xticklabels(SOLVERS, rotation=30, ha='right', fontsize=7)
-    ax.set_title(f"{group} ({group_n_map[group]})", fontsize=10)
-    ax.yaxis.grid(True, linestyle='--', alpha=0.3, linewidth=0.5)
-    # δ annotation per panel
-    if stats_data and "effect_sizes" in stats_data:
-        for k, v in stats_data["effect_sizes"].items():
-            if "MOEA-2_f2_vs_GBL_f2" in k:
-                ax.text(0.98, 0.15, f"δ={v['cliff_delta']:+.2f}", transform=ax.transAxes,
-                       fontsize=7, ha='right', color='#555')
-                break
+# Fit logistic regression: p(deficit) = 1 / (1 + exp(-(alpha + beta * N)))
+def neg_log_likelihood(params, x, y):
+    alpha, beta = params
+    p = 1.0 / (1.0 + np.exp(-(alpha + beta * x)))
+    # Avoid log(0)
+    eps = 1e-12
+    return -np.sum(y * np.log(p + eps) + (1 - y) * np.log(1 - p + eps))
 
-fig.supylabel("$f_2$ (Geometric Quality)", fontsize=10)
-# Shared caption at the figure bottom: the small grey dots in every panel are
-# boxplot fliers (per-scenario outliers beyond 1.5×IQR), not data noise. One
-# caption is enough because all four subplots use identical flier rendering.
-fig.text(0.5, 0.015,
-         "○ grey markers = per-scenario $f_2$ values beyond $1.5\\times\\mathrm{IQR}$ (outliers)",
-         ha='center', va='bottom', fontsize=7, style='italic', color='#555')
+result = minimize(neg_log_likelihood, x0=[-2.0, 0.01], args=(n_vals, deficit_vals),
+                  method='Nelder-Mead')
+alpha_opt, beta_opt = result.x
+
+# Generate fitted curve
+n_smooth = np.linspace(10, 550, 200)
+p_smooth = 1.0 / (1.0 + np.exp(-(alpha_opt + beta_opt * n_smooth)))
+
+# Bootstrap CI for N50
+n_bootstrap = 1000
+n50_samples = []
+rng = np.random.default_rng(42)
+n_unique = len(deficit_data)
+for _ in range(n_bootstrap):
+    idx = rng.integers(0, n_unique, n_unique)
+    x_boot = n_vals[idx]
+    y_boot = deficit_vals[idx]
+    try:
+        res = minimize(neg_log_likelihood, x0=[-2.0, 0.01], args=(x_boot, y_boot),
+                       method='Nelder-Mead')
+        a, b = res.x
+        if b > 0:  # Only valid if slope is positive
+            n50 = -a / b
+            n50_samples.append(n50)
+    except Exception:
+        pass
+
+n50_est = -alpha_opt / beta_opt
+n50_lower = np.percentile(n50_samples, 2.5) if n50_samples else np.nan
+n50_upper = np.percentile(n50_samples, 97.5) if n50_samples else np.nan
+
+# Scatter: per-scenario deficit (jittered for visibility)
+jitter = rng.uniform(-8, 8, len(n_vals))
+ax_log.scatter(n_vals + jitter, deficit_vals, alpha=0.3, s=8, c='#555',
+               edgecolors='none', label='Per-scenario deficit')
+
+# Fitted curve
+ax_log.plot(n_smooth, p_smooth, 'k-', linewidth=1.8, label='Logistic fit')
+
+# N50 marker
+ax_log.axvline(x=n50_est, color='#D55E00', linestyle='--', linewidth=1.2,
+               label=f'$N_{{50}} \\approx {n50_est:.0f}$')
+if not np.isnan(n50_lower) and not np.isnan(n50_upper):
+    ax_log.axvspan(n50_lower, n50_upper, alpha=0.08, color='#D55E00')
+    ax_log.annotate(f'95% CI [{n50_lower:.0f}, {n50_upper:.0f}]',
+                    xy=(n50_est, 0.5), xytext=(n50_est + 50, 0.55),
+                    fontsize=7, color='#D55E00',
+                    arrowprops=dict(arrowstyle='->', color='#D55E00', lw=0.8))
+
+ax_log.set_xlabel('Number of targets $N$', fontsize=9)
+ax_log.set_ylabel('$P(f_1^* < 0.95)$', fontsize=9)
+ax_log.set_title('Multi-objective advantage transition', fontsize=10)
+ax_log.set_xlim(10, 550)
+ax_log.legend(fontsize=7, loc='upper right', ncol=3)
+ax_log.yaxis.grid(True, linestyle='--', alpha=0.3, linewidth=0.5)
+ax_log.text(0.02, 0.98,
+            r"$\circ$ per-scenario $f_1^*$ deficit (MOEA-2 vs G-BL, $f_1^*<0.95$)",
+            transform=ax_log.transAxes, fontsize=6.5, ha='left', va='top',
+            style='italic', color='#555')
+
 save_figure(fig, "fig5_scale_sensitivity")
 
 # ── Done ──
 print("\n" + "=" * 50)
 print(f"All figures saved to {FIG_DIR}")
 for i in range(1, 6):
-    for prefix in [f"fig{i}"]:
-        pdf = os.path.join(FIG_DIR, f"{prefix}_*.pdf")
-        import glob
-        matches = glob.glob(pdf)
-        if matches:
-            print(f"  {os.path.basename(matches[0])}: {os.path.getsize(matches[0]):,d} bytes")
+    pdf = os.path.join(FIG_DIR, f"fig{i}_*.pdf")
+    import glob
+    matches = glob.glob(pdf)
+    if matches:
+        print(f"  {os.path.basename(matches[0])}: {os.path.getsize(matches[0]):,d} bytes")
 print("=" * 50)

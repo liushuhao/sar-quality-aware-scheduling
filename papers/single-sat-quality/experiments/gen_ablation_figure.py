@@ -148,8 +148,8 @@ def load_real_table() -> Tuple[Dict, List[str], List[str], List[str]]:
 def main():
     import argparse
     parser = argparse.ArgumentParser()
-    parser.add_argument("--out", default=str(PROJECT / "docs" /
-                         "small-paper-figures" / "fig6_ablation.pdf"))
+    parser.add_argument("--out", default=str(PROJECT / "figures" /
+                         "fig6_ablation.pdf"))
     parser.add_argument("--classes", nargs="*", default=None,
                         help="Class labels (default: S1-S4)")
     args = parser.parse_args()

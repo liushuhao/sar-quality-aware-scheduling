@@ -43,6 +43,8 @@ Thumbs.db
 *.synctex.gz
 *.fls
 *.fdb_latexmk
+*.xdv
+*.spl
 
 # Backup / temp artifacts
 *_backup*/
