@@ -14,5 +14,6 @@
   "S4": {
     "r": 0.9442,
     "n": 4906
-  }
+  },
+  "_deprecated": "2026-08-01: values +0.93..0.98 not reproducible (generator lost; see review/rdr-002). All reproducible calibers are negative. Use variant_d_per_task_r.json + scripts/reproduce_A_r.py."
 }

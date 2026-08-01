@@ -1,0 +1,36 @@
+{
+  "seed": null,
+  "params": {
+    "population_size": 100,
+    "n_generations": 200,
+    "n_obj": 3
+  },
+  "groups": {
+    "S2": {
+      "class": "S2",
+      "n_done": 50,
+      "n_points": 2471,
+      "r_pooled": -0.5873236323616658,
+      "f2_mean": 0.5749030490193354,
+      "f3_mean": 0.20644792782778648
+    },
+    "S3": {
+      "class": "S3",
+      "n_done": 50,
+      "n_points": 7571,
+      "r_pooled": -0.21007616643576132,
+      "f2_mean": 0.588058500564203,
+      "f3_mean": 0.17001269960441917
+    },
+    "S4": {
+      "class": "S4",
+      "n_done": 50,
+      "n_points": 9555,
+      "r_pooled": -0.1775213093508482,
+      "f2_mean": 0.5906841205550555,
+      "f3_mean": 0.16333996952481228
+    }
+  },
+  "r_pooled_overall": -0.2838754230792495,
+  "n_points_overall": 19597
+}
