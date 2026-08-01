@@ -578,20 +578,23 @@ def moea_solver(
     if hotstart_individual is not None:
         from pymoo.core.sampling import Sampling
         class _MOEAHotStartSampling(Sampling):
-            def __init__(self, x0, n_pop, sigma):
+            def __init__(self, x0, n_pop, sigma, seed):
                 super().__init__()
                 self.x0 = x0
                 self.n_pop = n_pop
                 self.sigma = sigma
+                self.seed = seed
             def _do(self, problem, n_samples, **kwargs):
                 pop = np.zeros((self.n_pop, problem.n_var))
                 pop[0] = self.x0
-                rng = np.random.RandomState()
+                # Deterministic RNG: reuse the solver seed so hot-start noise is
+                # reproducible (previously RandomState() was seeded from entropy).
+                rng = np.random.RandomState(self.seed)
                 for i in range(1, self.n_pop):
                     noise = rng.normal(0, self.sigma, problem.n_var)
                     pop[i] = np.clip(self.x0 + noise, 0.0, 1.0)
                 return pop
-        sampling = _MOEAHotStartSampling(hotstart_individual, population_size, hotstart_sigma)
+        sampling = _MOEAHotStartSampling(hotstart_individual, population_size, hotstart_sigma, seed or 1)
 
     algorithm = NSGA3(
         pop_size=population_size,

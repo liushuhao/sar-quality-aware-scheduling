@@ -477,16 +477,19 @@ from pymoo.core.sampling import Sampling
 
 class _HotStartSampling(Sampling):
     """Inject G-SM solution + perturbations as initial GA population."""
-    def __init__(self, x0: np.ndarray, n_pop: int):
+    def __init__(self, x0: np.ndarray, n_pop: int, seed: int = 1):
         super().__init__()
         self.x0 = x0
         self.n_pop = n_pop
+        self.seed = seed
 
     def _do(self, problem, n_samples, **kwargs):
         n_var = problem.n_var
         pop = np.zeros((self.n_pop, n_var))
         pop[0] = self.x0
-        rng = np.random.RandomState()
+        # Deterministic RNG (reuse solver seed); previously RandomState() used
+        # entropy, making hot-start noise non-reproducible.
+        rng = np.random.RandomState(self.seed)
         for i in range(1, self.n_pop):
             noise = rng.normal(0, 0.5, n_var)  # std=0.5: unlock task selection
             pop[i] = np.clip(self.x0 + noise, 0.0, 1.0)
@@ -536,7 +539,7 @@ def ga_hotstart_solver(
     # Use HotStartSampling: seed entire population around G-BL solution
     algorithm = GA(
         pop_size=population_size,
-        sampling=_HotStartSampling(x0, population_size),
+        sampling=_HotStartSampling(x0, population_size, seed or 1),
         crossover=SBX(prob=0.9, eta=15),
         mutation=PM(prob=1.0 / (2 * instance.N), eta=20),
         eliminate_duplicates=False,
