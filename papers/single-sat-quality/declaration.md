@@ -1,6 +1,6 @@
 Declaration of Competing Interest
 ===================================
-Paper: Physics-Aware Multi-Objective Scheduling for Agile SAR Satellites:
+Paper: Physics-Aware Multi-Objective Scheduling for an Agile SAR Satellite:
        Balancing Profit, NESZ, and Geometric Resolution
 Author: LIU Shuhao
 

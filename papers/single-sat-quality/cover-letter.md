@@ -8,7 +8,7 @@ From: LIU Shuhao, College of Intelligent Systems Science and Engineering,
 Dear Editor,
 
 I am submitting the manuscript "Physics-Aware Multi-Objective Scheduling
-for Agile SAR Satellites: Balancing Profit, NESZ, and Geometric Resolution"
+for an Agile SAR Satellite: Balancing Profit, NESZ, and Geometric Resolution"
 for consideration as a full-length article in Advances in Space Research.
 
 This manuscript presents a physics-aware multi-objective optimization
