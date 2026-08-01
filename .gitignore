@@ -80,9 +80,7 @@ papers/single-sat-quality/review/
 papers/single-sat-quality/.workbuddy/
 .agents/
 skills-lock.json
-archive/daily-logs/
-archive/handoffs/
-archive/weekly-summary-*.md
+archive/
 
 # Internal submission strategy (local only)
 papers/single-sat-quality/journal_recommendation_plan.md
