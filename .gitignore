@@ -68,3 +68,6 @@ nature-skills-main/
 # Hermes tool metadata
 .hermes/
 scientific-agent-skills-main/
+
+# Unrelated presentation deck (local only)
+satellite-tech-deck/
