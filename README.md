@@ -45,7 +45,26 @@ python papers/single-sat-quality/experiments/statistical_analysis.py
 ```
 
 Each `run_*.py` writes JSON results to `papers/single-sat-quality/experiments/results/<solver>/`.
-Random seeds fixed for full reproducibility.
+Scenario pkl files carry fixed seeds; MOEA runs use `seed=None` internally
+(pymoo seed=1, unseeded numpy) so reruns may show small stochastic
+differences in schedule-level means — reported signs/conclusions are
+robust, but exact means are not bit-reproducible.
+
+### Reproduce the coupling analysis (paper §6.4)
+
+The paper's per-task f2–f3 correlation claims are computed by:
+
+```bash
+# Variant D (no physics) per-task correlation, all 4 density classes
+PYTHONPATH=src python papers/single-sat-quality/scripts/reproduce_variant_d_r.py
+# Full-physics MOEA-3 (variant A) per-task correlation
+PYTHONPATH=src python papers/single-sat-quality/scripts/reproduce_A_r.py
+```
+
+Results: `experiments/results/variant_d_per_task_r.json` (raw per-task
+points included), `cross_solver_pool_probe.json`. Note `f2_f3_coupling.json`
+is deprecated (its +0.93–0.98 values are not reproducible; see
+`review/rdr-002-coupling-plus098-unreproducible.md`).
 
 ### Generate figures
 
