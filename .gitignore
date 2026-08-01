@@ -9,8 +9,8 @@ __pycache__/
 # Pickle files (regenerable binary data)
 *.pkl
 
-# Literature raw PDFs (large, not tracked)
-literature/raw/
+# Literature vault (full-text PDFs/JSON are copyrighted; keep local only)
+literature/
 
 # Ch3 results JSON/CSV/logs remain tracked for reproducibility.
 # Ch5 has no paper yet; keep its result directory local.
