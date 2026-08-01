@@ -5,8 +5,8 @@ Reproduces the N50 claim in section 6.5 of small-paper-ijae.tex.
 Fits p(f1* < 0.95 | N) = sigmoid(a + b*N) to per-scenario MOEA-2 results,
 computes N50 = -a/b, and bootstraps a 95% CI (1000 resamples, seed=42).
 
-Data source: experiments/results/moea_2obj/_progress.json (200 scenarios,
-4 density classes S1-S4 with N = 20, 100, 300, 500).
+Data source: experiments/results/moea_2obj/_progress.json (300 scenarios,
+6 density classes S1-S4,S7,S8 with N = 20, 100, 150, 200, 300, 500).
 Output:     experiments/results/n50_logistic.json
 """
 import json
@@ -21,7 +21,7 @@ OUT = PROJ / "experiments" / "results" / "n50_logistic.json"
 DEFICIT_THRESHOLD = 0.95
 N_BOOTSTRAP = 1000
 BOOT_SEED = 42
-GROUP_N = {"S1": 20, "S2": 100, "S3": 300, "S4": 500}
+GROUP_N = {"S1": 20, "S2": 100, "S7": 150, "S8": 200, "S3": 300, "S4": 500}
 
 
 def load_data():

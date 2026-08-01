@@ -6,13 +6,13 @@
 我们使用四种目标函数变体重复了 MOEA-3 实验：
 %
 \begin{description}
-\item[A. 完整物理模型（基线）] $f_2 = \frac{1}{|\mathcal{S}|}\sum \sin\theta_i \cdot \cos\psi_i$，
-      $f_3 = \frac{1}{|\mathcal{S}|}\sum \cos^3\theta_i \cdot \cos^3\psi_i$
+\item[A. 完整物理模型（基线）] $f_2 = \frac{1}{|\mathcal{S}|}\sum \sin\theta_i \cdot \cos\psi_{\text{sq},i}$，
+      $f_3 = \frac{1}{|\mathcal{S}|}\sum \cos^3\theta_i \cdot \cos^3\psi_{\text{sq},i}$
       （与 \S~\ref{sec:pareto-coupling} 中的标准配置相同）。
 \item[B. 去除斜视分量] $f_2 = \frac{1}{|\mathcal{S}|}\sum \sin\theta_i$，
       $f_3 = \frac{1}{|\mathcal{S}|}\sum \cos^3\theta_i$（移除 ${\psi_{\text{sq}}}$ 分量）。
-\item[C. 去除入射角分量] $f_2 = \frac{1}{|\mathcal{S}|}\sum \cos\psi_i$，
-      $f_3 = \frac{1}{|\mathcal{S}|}\sum \cos^3\psi_i$（移除 $\theta$ 分量）。
+\item[C. 去除入射角分量] $f_2 = \frac{1}{|\mathcal{S}|}\sum \cos\psi_{\text{sq},i}$，
+      $f_3 = \frac{1}{|\mathcal{S}|}\sum \cos^3\psi_{\text{sq},i}$（移除 $\theta$ 分量）。
 \item[D. 不含物理信息] $f_2 = f_3 = 1$（逐任务的目标为常数；求解器不接收
       任何几何信息；表~\ref{tab:ablation} 中所示的 $f_2$、$f_3$
       为基于所得调度结果实际观测几何事后计算的诊断值）。
@@ -21,7 +21,7 @@
 \end{description}
 %
 四种变体均使用相同的 NSGA-III 参数（种群大小 $= 100$，
-代数 $= 200$，Das--Dennis $n=12$）、相同的 200 个场景文件，
+代数 $= 200$，Das--Dennis $p=12$）、相同的 200 个场景文件，
 以及相同的 G-BL 热启动注入。仅目标函数不同，
 因此本实验属于受控消融，而非重新调参实验。
 在相同 NSGA-III 参数与相同 G-BL 种子注入下的求解器内消融充分控制了混淆因素，
@@ -31,6 +31,7 @@
 $\Delta\% = (\text{A} - \text{V})/\text{A} \times 100$，
 其中 A 为完整物理基线，V 为待比较变体；
 负值表示变体在 $f_1^*$ 上优于基线。
+百分比基于未舍入均值计算，故与表中两位小数的显示值直接相除可能存在舍入差异。
 
 \begin{table}[H]
 \centering
@@ -98,7 +99,7 @@ $\Delta\% = (\text{A} - \text{V})/\text{A} \times 100$，
 
 在 S1（$N = 20$）下，三种消融均在本文 $p<0.005$ 阈值下与基线 A 存在显著差异。
 变体 C（去除入射角分量）使 $f_1^*$ 退化 $+21.6\%$（$p=6.2\times10^{-6}$）。
-相反，变体 D（不含物理信息）通过多选取 $+32.4\%$ 个任务（$14.7$ vs.\ $11.1$），
+相反，变体 D（不含物理信息）通过多选取约三分之一个任务（$14.7$ vs.\ $11.1$），
 将表观 $f_1^*$ 提升 $-22.1\%$（$p=3.3\times10^{-7}$）；
 变体 B（去除斜视分量）则产生 $-9.5\%$ 的变化（$p=1.2\times10^{-3}$）。
 因此，物理目标在稀疏区域实质性改变求解器行为，尽管覆盖变化的方向取决于移除哪个分量。

@@ -48,9 +48,9 @@ def _pkl_sha1(pkl_path: Path) -> str:
 GIT_COMMIT = _git_commit()
 
 def get_all_scenarios():
-    """Return ordered dict of group_name -> list of pkl paths for S1-S6."""
+    """Return ordered dict of group_name -> list of pkl paths for S1-S8."""
     groups = OrderedDict()
-    for group in ["S1", "S2", "S3", "S4", "S5", "S6"]:
+    for group in ["S1", "S2", "S3", "S4", "S5", "S6", "S7", "S8"]:
         d = SCENARIOS_DIR / group
         if d.is_dir():
             pkgs = sorted(d.glob("*.pkl"))

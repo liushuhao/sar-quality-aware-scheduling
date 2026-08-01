@@ -7,13 +7,13 @@ To quantify the contribution of incidence-angle ($\theta$) and squint-angle
 experiment with four objective-function variants:
 %
 \begin{description}
-\item[A. Full physical (baseline)] $f_2 = \frac{1}{|\mathcal{S}|}\sum \sin\theta_i \cdot \cos\psi_i$,
-      $f_3 = \frac{1}{|\mathcal{S}|}\sum \cos^3\theta_i \cdot \cos^3\psi_i$ (identical to the
+\item[A. Full physical (baseline)] $f_2 = \frac{1}{|\mathcal{S}|}\sum \sin\theta_i \cdot \cos\psi_{\text{sq},i}$,
+      $f_3 = \frac{1}{|\mathcal{S}|}\sum \cos^3\theta_i \cdot \cos^3\psi_{\text{sq},i}$ (identical to the
       standard configuration in \S~\ref{sec:pareto-coupling}).
 \item[B. No squint] $f_2 = \frac{1}{|\mathcal{S}|}\sum \sin\theta_i$,
       $f_3 = \frac{1}{|\mathcal{S}|}\sum \cos^3\theta_i$ (removes ${\psi_{\text{sq}}}$ component).
-\item[C. No incidence] $f_2 = \frac{1}{|\mathcal{S}|}\sum \cos\psi_i$,
-      $f_3 = \frac{1}{|\mathcal{S}|}\sum \cos^3\psi_i$ (removes $\theta$ component).
+\item[C. No incidence] $f_2 = \frac{1}{|\mathcal{S}|}\sum \cos\psi_{\text{sq},i}$,
+      $f_3 = \frac{1}{|\mathcal{S}|}\sum \cos^3\psi_{\text{sq},i}$ (removes $\theta$ component).
 \item[D. No physics] $f_2 = f_3 = 1$ (constant per-task objective; solver receives
       no geometric information; $f_2$, $f_3$ shown in Table~\ref{tab:ablation} are post hoc diagnostics
       computed from the actual observation geometry of the resulting schedule).
@@ -24,7 +24,7 @@ experiment with four objective-function variants:
 \end{description}
 %
 All four variants use identical NSGA-III parameters (population $= 100$,
-generations $= 200$, Das-Dennis $n=12$), the same 200 scenario files, and
+generations $= 200$, Das-Dennis $p=12$), the same 200 scenario files, and
 the same G-BL hot-start injection. Only the objective functions differ,
 making this a controlled ablation rather than a retuning experiment.
 Within-solver ablation with identical NSGA-III parameters and the same
@@ -97,7 +97,7 @@ outperforms the baseline on $f_1^*$.
     \label{fig:fig5}
 \end{figure}
 
-The ablation results in Table~\ref{tab:ablation} reveal that the influence
+The ablation results (Table~\ref{tab:ablation}, Fig.~\ref{fig:fig5}) reveal that the influence
 of physical objective modeling is concentrated in sparse scenarios and
 vanishes as scenario density increases --- a pattern consistent with our
 scale-sensitivity analysis (\S~\ref{sec:scale-sensitivity}).
@@ -106,7 +106,7 @@ At S1 ($N = 20$), all three ablations differ significantly from baseline A
 at the manuscript's $p<0.005$ threshold. Variant C (no incidence) degrades
 $f_1^*$ by $+21.6\%$ ($p=6.2\times10^{-6}$). Conversely, Variant D (no
 physics) improves apparent $f_1^*$ by $-22.1\%$ ($p=3.3\times10^{-7}$) by
-selecting $+32.4\%$ more tasks (14.7 vs.\ 11.1), while Variant B (no squint)
+selecting about one-third more tasks ($14.7$ vs.\ $11.1$), while Variant B (no squint)
 yields a $-9.5\%$ change ($p=1.2\times10^{-3}$). Thus physical objectives
 materially alter solver behavior in the sparse regime, although the direction
 of the coverage change depends on which component is removed.
