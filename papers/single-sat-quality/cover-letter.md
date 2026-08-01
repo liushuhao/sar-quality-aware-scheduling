@@ -15,11 +15,12 @@ This manuscript presents a physics-aware multi-objective optimization
 framework for single-satellite agile SAR scheduling. Five solvers spanning
 greedy heuristics, single-objective GA, and NSGA-III variants are compared
 on 200 systematically varied scenarios across four density classes
-(N = 20 to 500). The central finding is an empirical upper bound on SAR
-quality optimization, conditional on solver convergence to low-squint regimes
-that render the three-objective formulation redundant at operational densities.
-The work establishes that multi-objective scheduling provides measurable
-quality benefit only when observation requests are sparse (N < 100).
+(N = 20 to 500). The central finding is an empirical saturation regime for SAR
+quality optimization, conditional on G-BL-seeded NSGA-III convergence to
+low-squint regimes that render the three-objective formulation redundant at
+operational densities. The work establishes that multi-objective scheduling
+provides measurable quality benefit only when observation requests are sparse
+(N < 100), within the single-satellite, single-pass Stripmap setting studied.
 
 Disclosure of related manuscript:
 I have an article previously accepted by Advances in Space Research

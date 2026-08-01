@@ -1,10 +1,14 @@
 #!/usr/bin/env python3
 """r_visible: corr(f2, f3) over visible geometry envelope, with C7 filter.
 
-FIX (DA CRITICAL 2): original r_visible included |psi|>45deg points (not
-C7-schedule-feasible). Now reports r_visible_all (all points) AND
-r_visible_c7 (|psi_sq|<=45deg only, C7-feasible). If r_visible_c7 ~= r_solver
-(0.93-0.98), the active-selection claim collapses to constraint-imposed.
+Reports r_visible_all (all points) AND r_visible_c7 (|psi_sq|<=45deg only,
+C7-feasible). Both are strongly negative (~-0.84 / ~-0.95), reflecting the
+incidence-angle geometry envelope; comparison against r_null=-0.51 supports
+the active-selection narrative.
+
+NOTE: the previously reported r_solver_empirical=[0.93, 0.98] was a hardcoded,
+unreproducible constant; it has been removed (see REVIEW_INDEX.md, RDR-002
+coupling-deprecation entry, 2026-08-01 P0 batch).
 """
 import pickle, sys, json
 from pathlib import Path
@@ -104,12 +108,12 @@ for group in GROUPS:
         print(f"  -> {group} mean r_all={results[group]['r_visible_all_mean']:+.4f} r_c7={results[group]['r_visible_c7_mean']:+.4f}")
 
 summary = {g: {k: v for k, v in s.items() if k != "per_scenario"} for g, s in results.items()}
-out = {"r_null": -0.51, "r_solver_empirical": [0.93, 0.98],
+out = {"r_null": -0.51,
        "results": results, "summary": summary,
-       "note": "r_visible_c7 = |psi|<=45deg (C7-feasible). r_visible_c7 ~= r_solver (0.93) -> constraint-imposed (Q3 i). r_visible_c7 ~= r_null (-0.51) -> active selection (solver converges low-squint from wide C7-feasible envelope)."}
+       "note": "r_visible_c7 = |psi|<=45deg (C7-feasible), pooled across scenarios (~3.9e5 observation pairs at 10 s resolution). r_visible_c7 ~= -0.95 (strongly negative) reflects the incidence-angle geometry envelope. r_visible_c7 ~= r_null (-0.51) -> active selection (solver converges low-squint from wide C7-feasible envelope). The former r_solver_empirical=[0.93,0.98] was an unreproducible hardcoded constant, removed per RDR-002 (see REVIEW_INDEX.md)."}
 json.dump(out, open(OUT, "w"), indent=2)
 print(f"\n=== SUMMARY ===")
-print(f"r_null=-0.51, r_solver=0.93-0.98")
+print(f"r_null=-0.51")
 for g, s in summary.items():
     print(f"  {g}: r_all={s['r_visible_all_mean']:+.4f}  r_c7={s['r_visible_c7_mean']:+.4f}")
 print(f"\nSaved: {OUT}")

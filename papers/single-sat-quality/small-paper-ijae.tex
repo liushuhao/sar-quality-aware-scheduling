@@ -948,14 +948,25 @@ low-squint convergence, not eliminated. This partial attenuation is an
 active effect of the solvers, not a consequence of geometric envelope
 constraints: envelope constraints alone would leave the correlation at
 $-0.95$.
-Ablation studies independently support this interpretation: schedules
-with all physical objectives removed (variant D, \S~\ref{sec:ablation})
-exhibit a weaker attenuation ($r \approx -0.44$ at S1) that decays to
-the same level as the full-physics schedules at high density
-($r \approx -0.18$ at S4), demonstrating that low-squint convergence is
-partly a property of the scheduling structure itself (temporal packing
-prefers low-squint windows) but is amplified by physical-objective
-guidance in the sparse regime, where the ablation contrast is largest.
+Ablation studies independently support this interpretation. With all
+physical objectives removed (variant D, \S~\ref{sec:ablation}), the
+schedule-level correlation at S1 is $r \approx -0.44$---closer to zero
+than under the full-physics variant A ($r \approx -0.69$)---and both
+variants converge to the same level at high density ($r \approx -0.18$
+at S4). In the sparse regime the physical objectives force the solver to
+retain solutions that traverse the $f_2$--$f_3$ quality trade-off,
+preserving a stronger negative correlation; without them, the solver
+maximizes coverage alone, and temporal packing incidentally favors
+low-squint windows, attenuating the residual correlation further. At
+high density this structural packing dominates irrespective of the
+objective formulation, so the ablation contrast vanishes; it is largest
+where the quality trade-off is active (S1), not where scheduling
+structure alone enforces low-squint convergence.
+Consistent with this scale-dependent saturation, the per-density
+hypervolume contracts at higher density: at S4 the pooled HV is
+$0.72$ (MOEA-2) and $0.67$ (MOEA-3) of its S1 value, i.e. the S4/S1 HV
+ratio is below unity, indicating a more compact front rather than
+degradation (the front still spans $\Delta f_1^* \approx 0.3$).
 We caution that the Pareto fronts reported here are best-known
 approximations obtained via NSGA-III; whether they represent the
 true Pareto-optimal set is unknown without exact methods, which remain

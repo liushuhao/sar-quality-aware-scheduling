@@ -543,6 +543,9 @@ def moea_solver(
 
     # Build problem instance (or reuse pre-built)
     prebuilt = kwargs.pop('instance', None)
+    # f1_gbl is a solver-level kwarg; pop it before forwarding the rest to
+    # build_agile_instance, which does not accept it.
+    f1_gbl_override = kwargs.pop('f1_gbl', None)
     if prebuilt is not None:
         instance = prebuilt
     else:
@@ -556,9 +559,8 @@ def moea_solver(
         )
 
     # ── Compute f1_gbl (G-BL reference for f1 normalization) ──────
-    f1_gbl = 1.0
-    if kwargs.get('f1_gbl') is not None:
-        f1_gbl = kwargs.pop('f1_gbl')
+    if f1_gbl_override is not None:
+        f1_gbl = f1_gbl_override
     else:
         from .baselines import baseline_b1
         gbl = baseline_b1(windows, targets, instance=instance)

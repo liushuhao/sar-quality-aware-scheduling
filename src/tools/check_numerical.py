@@ -1,9 +1,8 @@
 import json
 from pathlib import Path
 from statistics import mean, stdev
-PROJECT = Path(__file__).resolve().parent.parent
-
-RESULTS = Path(r'PROJECT / "experiments\results"')
+PROJECT = Path(__file__).resolve().parent.parent.parent  # repository root
+RESULTS = PROJECT / "papers" / "single-sat-quality" / "experiments" / "results"
 with open(RESULTS / 'baselines_200.json', encoding='utf-8') as f:
     bl = json.load(f)
 

@@ -1,7 +1,7 @@
 import re
 from pathlib import Path
-PROJECT = Path(__file__).resolve().parent.parent
-p = Path(r'PROJECT / "docs\small-paper-ijae.tex"')
+PROJECT = Path(__file__).resolve().parent.parent.parent  # repository root
+p = PROJECT / "papers" / "single-sat-quality" / "small-paper-ijae.tex"
 text = p.read_text(encoding='utf-8')
 labels = re.findall(r'\\label\{([^}]+)\}', text)
 refs = re.findall(r'\\ref\{([^}]+)\}', text)
