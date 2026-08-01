@@ -63,8 +63,9 @@ PYTHONPATH=src python papers/single-sat-quality/scripts/reproduce_A_r.py
 
 Results: `experiments/results/variant_d_per_task_r.json` (raw per-task
 points included), `cross_solver_pool_probe.json`. Note `f2_f3_coupling.json`
-is deprecated (its +0.93–0.98 values are not reproducible; see
-`review/rdr-002-coupling-plus098-unreproducible.md`).
+is deprecated: its earlier +0.93–0.98 values were not reproducible and have
+been retracted; all reproducible calibers are negative (see
+`scripts/reproduce_A_r.py` and `scripts/r_visible_envelope.py`).
 
 ### Generate figures
 
