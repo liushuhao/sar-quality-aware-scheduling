@@ -105,28 +105,21 @@ Tracked assets include solver code, scenario generators, fixed seeds/configurati
 │   ├── types.py              # GroundTarget, ObservationWindow
 │   ├── verification/         # constraint validators
 │   └── conflict/             # conflict detection
-├── src/tools/                # utilities (paper-translator, check_numerical, check_refs)
+├── src/tools/                # utilities (check_numerical, check_refs)
 ├── src/tests/                # pytest unit tests
-├── papers/
-│   ├── single-sat-quality/   # ASR paper (Ch3)
-│   │   ├── *.tex, *.bib      # paper source
-│   │   ├── sections/         # section fragments
-│   │   ├── figures/          # paper figures (generated PDFs/PNGs)
-│   │   │   └── experiments/   # experiment data (subdirectories per batch)
-│   │   ├── experiments/      # experiment scripts + scenario data
-│   │   └── scripts/          # driver scripts
-│   └── constellation-scheduling/  # Ch5 paper (in progress)
-│       └── experiments/      # Ch5 scenarios + pilot results
-├── literature/               # references
-│   ├── fulltext/             # extracted full-text JSON
-│   ├── structured/           # parsed metadata JSON
-│   ├── analysis/             # literature analysis reports
-│   └── scripts/              # parsing/import scripts
-├── reference/                # domain knowledge + ADR
-│   └── adr/                  # Architecture Decision Records
-├── thesis/                   # PhD thesis outline + chapter assembly
-└── archive/                  # process artifacts (reviews, annotations, handoffs)
+└── papers/
+    └── single-sat-quality/   # ASR paper (Ch3) — the artifact this repo supports
+        ├── *.tex, *.bib      # paper source (EN + ZH)
+        ├── sections/         # section fragments
+        ├── figures/          # paper figures (PDF/PNG, grayscale variants)
+        ├── experiments/      # experiment scripts + results data
+        └── scripts/          # reproduction / analysis driver scripts
 ```
+
+> This repository supports the single-satellite scheduling paper under
+> `papers/single-sat-quality/`. The PhD thesis outline, literature vault,
+> review records, and work-in-progress on multi-satellite scheduling are
+> maintained locally and are not part of this public artifact.
 
 ## License
 

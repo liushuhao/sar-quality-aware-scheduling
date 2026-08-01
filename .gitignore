@@ -12,9 +12,12 @@ __pycache__/
 # Literature vault (full-text PDFs/JSON are copyrighted; keep local only)
 literature/
 
+# Internal reference notes (unpublished PhD architecture / process docs)
+reference/
+
 # Ch3 results JSON/CSV/logs remain tracked for reproducibility.
-# Ch5 has no paper yet; keep its result directory local.
-papers/constellation-scheduling/experiments/results/
+# Ch5 (constellation scheduling) is unpublished work-in-progress; keep local.
+papers/constellation-scheduling/
 
 # Third-party tools (cloned repos)
 tool/
