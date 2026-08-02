@@ -67,9 +67,9 @@ def run_one(pkl_path: Path) -> dict:
     # ── Hot-start: encode G-BL solution as chromosome ──────────────────
     hotstart = None
     from sar_sim.solver.baselines import baseline_b1
-    from sar_sim.solver.types import build_agile_instance, precompute_geometry
+    from sar_sim.solver.types import build_agile_instance_from_scenario, precompute_geometry
     gbl = baseline_b1(windows, targets)
-    instance = build_agile_instance(windows, targets, max_slew_rate=SLEW_RATE, settle_time=SETTLE_TIME)
+    instance = build_agile_instance_from_scenario(data, max_slew_rate=SLEW_RATE, settle_time=SETTLE_TIME)
     precompute_geometry(instance, step_s=10.0)
     target_to_idx = {t.target_id: i for i, t in enumerate(instance.tasks)}
     x0 = np.zeros(2 * instance.N)

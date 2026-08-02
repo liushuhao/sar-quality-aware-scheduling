@@ -5,7 +5,7 @@ from numpy import cos, sin, pi, sqrt, degrees, arccos, arcsin, arctan2
 # ── 1. Code parameters ──
 MU = 3.986004418e14
 RE = 6378137.0
-h = 600000.0
+h = 693000.0
 R = RE + h
 we = 7.2921159e-5
 inc = np.radians(97.8)

@@ -20,8 +20,8 @@ from sar_sim.generator.orbit import propagate_orbit, kepler_to_eci
 from sar_sim.generator.target import (
     lat_lon_to_ecef,
     eci_to_ecef_rotation,
-    EARTH_EQUATORIAL_RADIUS,
 )
+from sar_sim.metrics.nesz import EARTH_RADIUS_MEAN_M
 
 
 def _compute_off_nadir_angle(
@@ -66,7 +66,7 @@ def _off_nadir_to_incidence(
     if off_nadir_deg <= 0.0:
         return 0.0
 
-    R_e = EARTH_EQUATORIAL_RADIUS
+    R_e = EARTH_RADIUS_MEAN_M
     R = R_e + sat_altitude_m
     ratio = R / R_e
 
@@ -133,10 +133,11 @@ def satellite_to_target_vector(
     sat_to_target_ecef = target_ecef - sat_ecef
     distance = np.linalg.norm(sat_to_target_ecef)
 
-    # Elevation angle
-    h_sat = np.linalg.norm(sat_ecef) - EARTH_EQUATORIAL_RADIUS
-    sin_elev = (h_sat**2 + 2 * EARTH_EQUATORIAL_RADIUS * h_sat - distance**2) / (
-        2 * EARTH_EQUATORIAL_RADIUS * distance
+    # Elevation angle — use volumetric mean radius for spherical-Earth
+    # geometry (consistent with nesz.off_nadir_to_incidence).
+    h_sat = np.linalg.norm(sat_ecef) - EARTH_RADIUS_MEAN_M
+    sin_elev = (h_sat**2 + 2 * EARTH_RADIUS_MEAN_M * h_sat - distance**2) / (
+        2 * EARTH_RADIUS_MEAN_M * distance
     )
     sin_elev = np.clip(sin_elev, -1.0, 1.0)
     elevation_deg = np.degrees(np.arcsin(sin_elev))

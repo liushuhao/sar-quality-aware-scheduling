@@ -21,7 +21,7 @@ from sar_sim.generator.visibility import find_visibility_windows, visibility_mat
 # ─── Orbital element presets ────────────────────────────────────────────
 
 def sun_synchronous_orbit(
-    altitude_km: float = 600.0,
+    altitude_km: float = 693.0,
     ltan: float = 6.0,  # Local Time of Ascending Node (hours)
     eccentricity: float = 0.0,
     epoch: datetime = None,

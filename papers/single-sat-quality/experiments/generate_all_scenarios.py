@@ -23,6 +23,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
 from sar_sim.types import GroundTarget, SARInstrument, KeplerianElement, ObservationWindow
 from sar_sim.generator.orbit import propagate_orbit
 from sar_sim.generator.target import lat_lon_to_ecef, eci_to_ecef_rotation, EARTH_EQUATORIAL_RADIUS
+from sar_sim.metrics.nesz import EARTH_RADIUS_MEAN_M
 from sar_sim.generator.visibility import (
     _compute_off_nadir_angle, _off_nadir_to_incidence,
     _determine_look_direction, _check_geometric_constraints
@@ -69,7 +70,7 @@ def make_orbit(altitude_km: float, ltan: float = 6.0,
 
 def get_swath_params(altitude_km: float, incidence_max: float) -> Tuple[float, float]:
     """Compute swath half-width in km and degrees."""
-    R_e = EARTH_EQUATORIAL_RADIUS
+    R_e = EARTH_RADIUS_MEAN_M
     h = altitude_km * 1000.0
     ratio = R_e / (R_e + h)
     sin_eta_max = ratio * np.sin(np.radians(incidence_max))
@@ -80,7 +81,7 @@ def get_swath_params(altitude_km: float, incidence_max: float) -> Tuple[float, f
     return swath_half_km, swath_half_deg
 
 def propagate_ground_track(orbit: KeplerianElement, n_orbits: int = 2,
-                           step: timedelta = timedelta(seconds=60)) -> List[Tuple[float, float]]:
+                           step: timedelta = timedelta(seconds=10)) -> List[Tuple[float, float]]:
     """Propagate orbit and return ground track as (lat, lon) points."""
     a = orbit.semi_major_axis
     period_s = 2 * np.pi * np.sqrt(a**3 / MU_EARTH)
@@ -335,15 +336,23 @@ def compute_batch_visibility(orbit: KeplerianElement, satellite_id: str,
             target_ecef = target_ecef_map[tid]
             los = target_ecef - sat_ecef
             distance = np.linalg.norm(los)
-            sin_elev = (h_sat_m**2 + 2 * EARTH_EQUATORIAL_RADIUS * h_sat_m - distance**2) / (
-                2 * EARTH_EQUATORIAL_RADIUS * distance)
+            sin_elev = (h_sat_m**2 + 2 * EARTH_RADIUS_MEAN_M * h_sat_m - distance**2) / (
+                2 * EARTH_RADIUS_MEAN_M * distance)
             sin_elev = np.clip(sin_elev, -1.0, 1.0)
             elev = np.degrees(np.arcsin(sin_elev))
             off_nadir = _compute_off_nadir_angle(sat_ecef, target_ecef)
             incidence = _off_nadir_to_incidence(off_nadir, h_sat_m)
             look = _determine_look_direction(sat_ecef, sat_vel_ecef, target_ecef)
 
-            passes = _check_geometric_constraints(elev, incidence, look, instrument)
+            # Squint angle (along-track LOS component) — must match
+            # satellite_to_target_vector() in visibility.py to ensure C1
+            # squint filtering is consistent across both code paths.
+            los_unit = los / distance
+            track_dir = sat_vel_ecef / np.linalg.norm(sat_vel_ecef)
+            los_along = np.dot(los_unit, track_dir)
+            squint = np.degrees(np.arcsin(np.clip(abs(los_along), 0.0, 1.0)))
+
+            passes = _check_geometric_constraints(elev, incidence, look, instrument, squint)
 
             if passes:
                 if not in_window[tid]:
@@ -449,7 +458,7 @@ def generate_one_scenario(
     period_s = 2 * np.pi * np.sqrt(a**3 / MU_EARTH)
     t_start = orbit.epoch
     t_end = t_start + timedelta(seconds=n_orbits * period_s)
-    step = timedelta(seconds=60)
+    step = timedelta(seconds=10)
 
     swath_half_km, swath_half_deg = get_swath_params(altitude_km, incidence_max)
     track = propagate_ground_track(orbit, n_orbits=n_orbits, step=step)
@@ -463,7 +472,7 @@ def generate_one_scenario(
         targets = generate_targets_s5_spread(
             n_targets, track, swath_half_deg,
             along_track_spread_deg=s5_spread_deg,
-            base_seed=s5_base_seed or seed,
+            base_seed=s5_base_seed if s5_base_seed is not None else seed,
         )
     elif s6_n_clusters is not None and s6_cluster_size is not None:
         # S6: C3 cluster stress
@@ -660,7 +669,7 @@ def main():
         elif dist_idx == 4:  # S4-E: Uniform, full θ [18°,47°]
             return {**base, "dist_type": "uniform"}
 
-    gen_group("S4", s4_labels, 10, s4_params, skip_existing=True)
+    gen_group("S4", s4_labels, 10, s4_params)
 
     # ──────────────────────────────────────────────────────────────────────
     # S5: ψ_sq Sensitivity (N=20, Sentinel-1, bilateral)

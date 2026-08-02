@@ -2,7 +2,7 @@
 
 G-BL — No Quality Awareness (Fixed Nadir-Looking Greedy):
     Maximizes coverage profit with fixed side-looking angle (no angle
-    selection). Greedy selection by earliest start time with C3 transition
+    selection). Greedy selection by earliest start time with C2 transition
     enforcement. Represents the standard AEOSSP formulation applied to SAR.
 
 G-SQ — Proxy Quality (He2024IDRL-style) [DEPRECATED — not in current paper]:
@@ -18,7 +18,7 @@ G-SM — Squint-Minimized Greedy:
     visibility window that minimizes the squint angle ψ_sq (and thus
     maximizes azimuth resolution quality f3 = Σ cos ψ_sq).
     Uses GeomCache to evaluate squint at sampling points;
-    falls back to θ-tracking for C3 feasibility when GeomCache unavailable.
+    falls back to θ-tracking for C2 feasibility when GeomCache unavailable.
 """
 
 from dataclasses import dataclass, replace
@@ -52,6 +52,7 @@ from sar_sim.solver.types import (
     GeomCache,
     _satellite_body_frame,
     _lat_lon_to_ecef,
+    compute_los_separation,
 )
 
 
@@ -69,9 +70,17 @@ class BaselineResult:
     metadata: dict
 
 
-# ─── C3 Attitude Transition Enforcement ──────────────────────────────────
+# ─── C2 Attitude Transition Enforcement ──────────────────────────────────
 
-def _c3_transition_los(
+# Scheduler-side guard band on the C2 gap test. The verifier recomputes gaps
+# in float epoch seconds while the baseline mixes datetime arithmetic; the
+# two can disagree by a few microseconds per boundary. A 10 ms pad (≈0.2 %
+# of the 5 s settle time) makes every accepted schedule verify clean without
+# meaningfully reducing schedulable density. It is applied only to the
+# feasibility comparison, never added to the reported tau.
+_C2_GATE_EPS = 0.01
+
+def _c2_transition_los(
     target_id_a: str,
     t_a_s: float,
     target_id_b: str,
@@ -80,10 +89,11 @@ def _c3_transition_los(
     max_slew_rate: float,
     settle_time: float,
 ) -> float:
-    """Compute C3 transition time using full 3-axis LOS angular separation.
+    """Compute C2 transition time using full 3-axis LOS angular separation.
 
-    Uses the same ECEF-based LOS vector model as compute_transition_time()
-    in solver/types.py (Eq. 4 in problem_formalization.md):
+    Delegates to :func:`compute_los_separation`, the same cached LOS model
+    used by the MOEA evaluator and the independent C2 verifier, so all three
+    components agree bit-for-bit on tau (Eq. 4 in problem_formalization.md):
 
         tau = arccos(l_a . l_b / (|l_a| * |l_b|)) / omega_max + tau_settle
 
@@ -97,28 +107,34 @@ def _c3_transition_los(
     Returns:
         transition time in seconds
     """
-    target_a = instance.target_map[target_id_a]
-    target_b = instance.target_map[target_id_b]
-    target_a_ecef = _lat_lon_to_ecef(target_a.lat, target_a.lon)
-    target_b_ecef = _lat_lon_to_ecef(target_b.lat, target_b.lon)
-    _, _, _, sat_a_ecef = _satellite_body_frame(t_a_s, instance)
-    _, _, _, sat_b_ecef = _satellite_body_frame(t_b_s, instance)
-    los_a = target_a_ecef - sat_a_ecef
-    los_b = target_b_ecef - sat_b_ecef
-    cos_eta = np.dot(los_a, los_b) / (
-        np.linalg.norm(los_a) * np.linalg.norm(los_b))
-    cos_eta = np.clip(cos_eta, -1.0, 1.0)
-    delta_eta = float(np.arccos(cos_eta))
+    task_a = instance.target_map[target_id_a]
+    task_b = instance.target_map[target_id_b]
+    target_a_ecef = _lat_lon_to_ecef(task_a.lat, task_a.lon)
+    target_b_ecef = _lat_lon_to_ecef(task_b.lat, task_b.lon)
+    tid_to_task = {t.target_id: t for t in instance.tasks}
+    a_task = tid_to_task[target_id_a]
+    b_task = tid_to_task[target_id_b]
+    if instance.sat_position_cache is not None and instance.target_ecef_map:
+        delta_eta = compute_los_separation(a_task, t_a_s, b_task, t_b_s, instance)
+    else:
+        _, _, _, sat_a_ecef = _satellite_body_frame(t_a_s, instance)
+        _, _, _, sat_b_ecef = _satellite_body_frame(t_b_s, instance)
+        los_a = target_a_ecef - sat_a_ecef
+        los_b = target_b_ecef - sat_b_ecef
+        cos_eta = np.dot(los_a, los_b) / (
+            np.linalg.norm(los_a) * np.linalg.norm(los_b))
+        cos_eta = np.clip(cos_eta, -1.0, 1.0)
+        delta_eta = float(np.arccos(cos_eta))
     return delta_eta / max_slew_rate + settle_time
 
 
-def _enforce_c3_transitions(
+def _enforce_c2_transitions(
     observations: List[ScheduledObservation],
     max_slew_rate: float = 0.0524,   # approx 3 deg/s
     settle_time: float = 5.0,        # seconds
     instance: Optional[AgileSARInstance] = None,
 ) -> List[ScheduledObservation]:
-    """Filter observations to satisfy C3 attitude transition feasibility.
+    """Filter observations to satisfy C2 attitude transition feasibility.
 
     Sorts by start time, then greedily keeps observations that have
     sufficient inter-observation gap for attitude slewing.
@@ -145,7 +161,7 @@ def _enforce_c3_transitions(
         instance: optional AgileSARInstance for full 3-axis LOS model
 
     Returns:
-        filtered list of ScheduledObservation (C3-feasible subset)
+        filtered list of ScheduledObservation (C2-feasible subset)
     """
     if len(observations) <= 1:
         return observations
@@ -153,52 +169,82 @@ def _enforce_c3_transitions(
     # Sort by actual start time
     sorted_obs = sorted(observations, key=lambda o: o.t_actual_start)
 
-    feasible = [sorted_obs[0]]
+    # Normalize first observation end to start + duration (window span may
+    # differ from the acquisition duration). Reject if its window is too short.
+    first = sorted_obs[0]
+    fd = first.window.duration_min
+    if (first.window.t_end - first.window.t_start).total_seconds() + 1e-6 < fd:
+        # Try dropping first and recursing on the rest
+        return _enforce_c2_transitions(sorted_obs[1:], max_slew_rate,
+                                       settle_time, instance)
+    first_end = first.t_actual_start + timedelta(seconds=fd)
+    if first_end != first.t_actual_end:
+        from dataclasses import replace as _replace
+        first = _replace(first, t_actual_end=first_end)
+    feasible = [first]
     for i in range(1, len(sorted_obs)):
         prev = feasible[-1]
         curr = sorted_obs[i]
+        duration = curr.window.duration_min
 
-        if instance is not None:
-            # Full 3-axis LOS model (Eq. 4, unified with MOEA)
-            t_prev = prev.t_actual_start.timestamp()
-            t_curr = curr.t_actual_start.timestamp()
-            tau = _c3_transition_los(
-                prev.window.target_id, t_prev,
-                curr.window.target_id, t_curr,
+        # The observation always occupies exactly `duration` seconds from
+        # its start (NOT window span — window can be shorter or longer than
+        # the acquisition). Normalize both ends. A window shorter than the
+        # acquisition cannot host it: skip.
+        if (curr.window.t_end - curr.window.t_start).total_seconds() + 1e-6 < duration:
+            continue
+        curr_end = curr.t_actual_start + timedelta(seconds=duration)
+
+        def _tau_at(t_start: datetime) -> float:
+            if instance is None:
+                phi_prev = _window_off_nadir(prev.window)
+                phi_curr = _window_off_nadir(curr.window)
+                return abs(phi_prev - phi_curr) / max_slew_rate + settle_time
+            return _c2_transition_los(
+                prev.window.target_id, prev.t_actual_start.timestamp(),
+                curr.window.target_id, t_start.timestamp(),
                 instance, max_slew_rate, settle_time,
             )
+
+        # Fixed-point: delaying the start also changes the LOS geometry
+        # (satellite moves), so tau must be recomputed at the delayed time.
+        t_start = curr.t_actual_start
+        for _ in range(8):
+            gap = (t_start - prev.t_actual_end).total_seconds()
+            tau = _tau_at(t_start)
+            if gap >= tau:
+                break
+            # Push start out to cover tau at the delayed geometry. Add the
+            # gate epsilon so the verifier's float/timestamp rounding cannot
+            # reopen a sub-centisecond violation.
+            pushed = max(
+                curr.window.t_start,
+                prev.t_actual_end + timedelta(seconds=tau + _C2_GATE_EPS),
+            )
+            if pushed <= t_start + timedelta(microseconds=1):
+                break  # no further movement — accept
+            t_start = pushed
         else:
-            # Legacy simple phi-diff (backward compatible)
-            phi_prev = _window_off_nadir(prev.window)
-            phi_curr = _window_off_nadir(curr.window)
-            d_phi = abs(phi_prev - phi_curr)
-            tau = d_phi / max_slew_rate + settle_time
-
-        # Available gap between end of previous and start of current
-        gap_at_assigned = (curr.t_actual_start - prev.t_actual_end).total_seconds()
-
-        if gap_at_assigned >= tau:
-            feasible.append(curr)
+            # Did not converge within window — reject.
             continue
 
-        # Gap at assigned start too small → try delaying current observation
-        # Earliest feasible start = max(window.t_start, prev_end + tau)
-        earliest_feasible = max(
-            curr.window.t_start,
-            prev.t_actual_end + timedelta(seconds=tau),
-        )
-        new_end = earliest_feasible + timedelta(seconds=curr.window.duration_min)
+        # Final guard: if even after the fixed-point the decoded gap does
+        # not genuinely cover tau (within the gate epsilon), reject.
+        if (t_start - prev.t_actual_end).total_seconds() + _C2_GATE_EPS < _tau_at(t_start):
+            continue
 
-        if new_end <= curr.window.t_end:
-            # Feasible by delaying — create updated observation
+        t_end = t_start + timedelta(seconds=duration)
+        if t_end > curr.window.t_end + timedelta(microseconds=1):
+            # No feasible start time within window — reject.
+            continue
+
+        if t_start == curr.t_actual_start and curr_end == curr.t_actual_end:
+            feasible.append(curr)
+        else:
             from dataclasses import replace
-            delayed = replace(
-                curr,
-                t_actual_start=earliest_feasible,
-                t_actual_end=new_end,
-            )
-            feasible.append(delayed)
-        # else: skip this observation (no feasible start time within window)
+            feasible.append(replace(
+                curr, t_actual_start=t_start, t_actual_end=t_end,
+            ))
 
     return feasible
 
@@ -300,9 +346,9 @@ def _build_metadata(
     }
 
 
-# ─── C4/C5 Budget Enforcement (Step 3) ────────────────────────────────────
+# ─── C3/C4 Budget Enforcement (Step 3) ────────────────────────────────────
 
-def _enforce_c4c5(
+def _enforce_c3c4(
     observations: List[ScheduledObservation],
     targets: List[GroundTarget],
     energy_budget: float = float("inf"),
@@ -368,7 +414,7 @@ def baseline_b1(
 
     Schedules observations at fixed side-looking angle (no angle selection).
     Greedy selection: sorts windows by earliest start time, then iteratively
-    adds observations that satisfy C3 attitude transition feasibility.
+    adds observations that satisfy C2 attitude transition feasibility.
 
     No quality awareness — all observations use the window's native off-nadir
     angle; there is no angle optimization for NESZ quality.
@@ -396,74 +442,78 @@ def baseline_b1(
     # Sort windows by start time (earliest first)
     sorted_windows = sorted(windows, key=lambda w: w.t_start)
 
-    # Greedy selection: add window if C3-feasible AND task not already scheduled
+    # Greedy selection: add window if C2-feasible AND task not already scheduled
     selected: List[ScheduledObservation] = []
     last_obs: Optional[ScheduledObservation] = None
     scheduled_targets: set = set()
 
     for w in sorted_windows:
-        # C7: unique assignment — skip if target already scheduled
+        # deduplicate: skip if target already scheduled
         if w.target_id in scheduled_targets:
             continue
+        # Window must be long enough to host a duration_min acquisition.
+        if (w.t_end - w.t_start).total_seconds() + 1e-6 < w.duration_min:
+            continue
         if last_obs is not None:
-            # C3: compute required transition time
-            if instance is not None:
-                # Full 3-axis LOS model (Eq. 4, unified with MOEA)
-                t_last = last_obs.t_actual_start.timestamp()
-                t_candidate = w.t_start.timestamp()
-                tau = _c3_transition_los(
-                    last_obs.window.target_id, t_last,
-                    w.target_id, t_candidate,
-                    instance, max_slew_rate, settle_time,
-                )
-            else:
-                # Legacy simple phi-diff (backward compatible)
-                phi_prev = _window_off_nadir(last_obs.window)
-                phi_curr = _window_off_nadir(w)
-                d_phi = abs(phi_prev - phi_curr)
-                tau = d_phi / max_slew_rate + settle_time
-
-            # Check if sufficient gap exists
-            gap = (w.t_start - last_obs.t_actual_end).total_seconds()
-            if gap < tau:
-                # Try delaying this observation within its window
-                earliest_feasible = max(
-                    w.t_start,
-                    last_obs.t_actual_end + timedelta(seconds=tau),
-                )
-                new_end = earliest_feasible + timedelta(seconds=w.duration_min)
-                if new_end <= w.t_end:
-                    obs = ScheduledObservation(
-                        window=w,
-                        t_actual_start=earliest_feasible,
-                        t_actual_end=new_end,
+            # Fixed-point: delaying within the window changes LOS geometry;
+            # recompute tau at the candidate start until the gap closes.
+            t_start = w.t_start
+            for _ in range(8):
+                if instance is not None:
+                    tau = _c2_transition_los(
+                        last_obs.window.target_id,
+                        last_obs.t_actual_start.timestamp(),
+                        w.target_id, t_start.timestamp(),
+                        instance, max_slew_rate, settle_time,
                     )
                 else:
-                    # Cannot fit — skip this window
-                    continue
-            else:
-                obs = ScheduledObservation(
-                    window=w,
-                    t_actual_start=w.t_start,
-                    t_actual_end=w.t_end,
+                    phi_prev = _window_off_nadir(last_obs.window)
+                    phi_curr = _window_off_nadir(w)
+                    tau = abs(phi_prev - phi_curr) / max_slew_rate + settle_time
+                gap = (t_start - last_obs.t_actual_end).total_seconds()
+                if gap >= tau:
+                    break
+                pushed = max(
+                    w.t_start,
+                    last_obs.t_actual_end + timedelta(seconds=tau + _C2_GATE_EPS),
                 )
+                if pushed <= t_start + timedelta(microseconds=1):
+                    break
+                t_start = pushed
+            else:
+                continue  # did not converge
+            # Final guard against residual rounding violations.
+            if ((t_start - last_obs.t_actual_end).total_seconds() + _C2_GATE_EPS
+                    < _c2_transition_los(
+                        last_obs.window.target_id,
+                        last_obs.t_actual_start.timestamp(),
+                        w.target_id, t_start.timestamp(),
+                        instance, max_slew_rate, settle_time,
+                    ) if instance is not None else False):
+                continue
+            t_end = t_start + timedelta(seconds=w.duration_min)
+            if t_end > w.t_end + timedelta(microseconds=1):
+                continue  # cannot fit within window
+            obs = ScheduledObservation(
+                window=w, t_actual_start=t_start, t_actual_end=t_end,
+            )
         else:
             obs = ScheduledObservation(
                 window=w,
                 t_actual_start=w.t_start,
-                t_actual_end=w.t_end,
+                t_actual_end=w.t_start + timedelta(seconds=w.duration_min),
             )
 
         selected.append(obs)
         scheduled_targets.add(w.target_id)
         last_obs = obs
 
-    # ── C4/C5: enforce energy and memory budgets ──────────────────────────
+    # ── C3/C4: enforce energy and memory budgets ──────────────────────────
     energy_budget = kwargs.pop("energy_budget", float("inf"))
     memory_budget = kwargs.pop("memory_budget", float("inf"))
     energy_per_obs = kwargs.pop("energy_per_obs", 50_000.0)
     memory_per_obs = kwargs.pop("memory_per_obs", 5e8)
-    selected = _enforce_c4c5(
+    selected = _enforce_c3c4(
         selected, targets, energy_budget, memory_budget,
         energy_per_obs, memory_per_obs,
     )
@@ -545,22 +595,22 @@ def baseline_b2(
 
     observations = list(result.schedule)
 
-    # ── C3: enforce attitude transition feasibility ──────────────────
-    # Filter to keep only C3-feasible sequence (consistent with MOEA)
-    observations = _enforce_c3_transitions(observations, instance=instance)
+    # ── C2: enforce attitude transition feasibility ──────────────────
+    # Filter to keep only C2-feasible sequence (consistent with MOEA)
+    observations = _enforce_c2_transitions(observations, instance=instance)
 
-    # ── C4/C5: enforce energy and memory budgets ──────────────────────────
+    # ── C3/C4: enforce energy and memory budgets ──────────────────────────
     energy_budget = solver_kwargs.pop("energy_budget", float("inf"))
     memory_budget = solver_kwargs.pop("memory_budget", float("inf"))
     energy_per_obs = solver_kwargs.pop("energy_per_obs", 50_000.0)
     memory_per_obs = solver_kwargs.pop("memory_per_obs", 5e8)
-    observations = _enforce_c4c5(
+    observations = _enforce_c3c4(
         observations, targets, energy_budget, memory_budget,
         energy_per_obs, memory_per_obs,
     )
 
     # f1 = coverage profit (O1 from formalspec: pure priority sum)
-    # Recomputing after C3 filtering to reflect actual scheduled set.
+    # Recomputing after C2 filtering to reflect actual scheduled set.
     # Uses the canonical compute_f1_coverage() — same function as MOEA.
     f1 = compute_f1_coverage(observations, targets)
 
@@ -611,7 +661,7 @@ def baseline_b3(
     - G-BL: fixed θ = window's off_nadir angle → f3 = 0
     - G-SM: picks observation time within window that minimizes |ψ_sq| → f3 > 0
 
-    Falls back to θ-tracking for C3 feasibility when GeomCache unavailable.
+    Falls back to θ-tracking for C2 feasibility when GeomCache unavailable.
 
     Args:
         windows: candidate observation windows
@@ -644,10 +694,10 @@ def baseline_b3(
 
     observations = list(result.schedule)
 
-    # ── C3: enforce attitude transition feasibility ──────────────────
-    observations = _enforce_c3_transitions(observations, instance=instance)
+    # ── C2: enforce attitude transition feasibility ──────────────────
+    observations = _enforce_c2_transitions(observations, instance=instance)
 
-    # ── C7: deduplicate — keep only first occurrence of each task ──────
+    # ── deduplicate: keep only first occurrence of each task ──────
     seen_targets = set()
     deduped = []
     for obs in observations:
@@ -664,23 +714,26 @@ def baseline_b3(
     if geom_cache is not None:
         observations = _b3_squint_minimize(observations, geom_cache, instance)
     else:
-        # Fallback: original θ-tracking for C3 feasibility
+        # Fallback: original θ-tracking for C2 feasibility
         theta_min_deg = 15.0
         theta_max_deg = 50.0
         if instrument is not None:
-            theta_min_deg = getattr(instrument, 'incidence_min', theta_min_deg)
-            theta_max_deg = getattr(instrument, 'incidence_max', theta_max_deg)
-        observations = _c3_with_theta_opt(
+            theta_min_deg = instrument.incidence_min
+            theta_max_deg = instrument.incidence_max
+        observations = _c2_with_theta_opt(
             observations, theta_min_deg, theta_max_deg,
             max_slew_rate=0.0524, settle_time=5.0,
         )
 
-    # ── C4/C5: enforce energy and memory budgets ──────────────────────────
+    # ── Re-check C2 after squint/θ optimization (t_actual may have moved) ──
+    observations = _enforce_c2_transitions(observations, instance=instance)
+
+    # ── C3/C4: enforce energy and memory budgets ──────────────────────────
     energy_budget = solver_kwargs.pop("energy_budget", float("inf"))
     memory_budget = solver_kwargs.pop("memory_budget", float("inf"))
     energy_per_obs = solver_kwargs.pop("energy_per_obs", 50_000.0)
     memory_per_obs = solver_kwargs.pop("memory_per_obs", 5e8)
-    observations = _enforce_c4c5(
+    observations = _enforce_c3c4(
         observations, targets, energy_budget, memory_budget,
         energy_per_obs, memory_per_obs,
     )
@@ -723,7 +776,7 @@ def _b3_squint_minimize(
     (fallback / pass-through).
 
     Args:
-        observations: schedule from upstream (after C3 enforcement)
+        observations: schedule from upstream (after C2 enforcement)
         geom_cache: precomputed geometry cache (GeomCache from Step 1)
         instance: AgileSARInstance (for target_id → task_idx mapping)
 
@@ -747,12 +800,35 @@ def _b3_squint_minimize(
         task_idx = target_to_idx[target_id]
         arr = geom_cache.cache[task_idx]
 
-        # Find row with smallest |psi_sq| (column 2)
-        best_k = int(np.argmin(np.abs(arr[:, 2])))
-        best_t = arr[best_k, 0]  # column 0 = epoch seconds
+        # Restrict candidates to this observation's own visibility window
+        # and to the platform off-nadir envelope (paper C1). The geometry
+        # cache spans the entire pass across all windows of the task, so an
+        # unrestricted argmin can land at near-nadir times where the target
+        # is not observable (RDR-003).
+        w_start = obs.window.t_start.timestamp()
+        w_end = obs.window.t_end.timestamp()
+        mask = (arr[:, 0] >= w_start) & (arr[:, 0] <= w_end)
+        phi_min = instance.phi_min
+        phi_max = instance.phi_max
+        mask &= (np.abs(arr[:, 1]) >= phi_min) & (np.abs(arr[:, 1]) <= phi_max)
+        if not np.any(mask):
+            # No feasible sample point in this window — keep the upstream
+            # (C2-enforced) timing unchanged rather than jumping windows.
+            result.append(obs)
+            continue
+        cand = arr[mask]
+        best_k = int(np.argmin(np.abs(cand[:, 2])))
+        best_t = cand[best_k, 0]  # column 0 = epoch seconds
 
-        # Convert epoch seconds to datetime (UTC)
-        dt_start = datetime.fromtimestamp(best_t, tz=timezone.utc)
+        # Convert epoch seconds back to a datetime whose tz matches the
+        # source window (pkl scenarios store naive UTC; unit-test fixtures
+        # use aware UTC). Mixing aware and naive breaks datetime sorting in
+        # _enforce_c2_transitions, so preserve whatever the window used.
+        ref = obs.window.t_start
+        if ref.tzinfo is not None:
+            dt_start = datetime.fromtimestamp(best_t, tz=timezone.utc)
+        else:
+            dt_start = datetime.utcfromtimestamp(best_t)
         dt_end = dt_start + timedelta(seconds=obs.window.duration_min)
 
         new_obs = replace(
@@ -765,16 +841,16 @@ def _b3_squint_minimize(
     return result
 
 
-# ─── C3 with θ optimization (legacy — replaced by _b3_squint_minimize) ────
+# ─── C2 with θ optimization (legacy — replaced by _b3_squint_minimize) ────
 
-def _c3_with_theta_opt(
+def _c2_with_theta_opt(
     observations: List[ScheduledObservation],
     theta_min_deg: float,
     theta_max_deg: float,
     max_slew_rate: float = 0.0524,
     settle_time: float = 5.0,
 ) -> List[ScheduledObservation]:
-    """C3 filter with θ optimization + start-time flexibility.
+    """C2 filter with θ optimization + start-time flexibility.
 
     For each consecutive pair, if the transition at native angles and
     assigned start time is infeasible:
@@ -783,9 +859,9 @@ def _c3_with_theta_opt(
     2. If still infeasible, try delaying the current task's start
        within its window [t_start, t_end].
 
-    This is NOT quality-aware — we pick θ solely to satisfy C3.
+    This is NOT quality-aware — we pick θ solely to satisfy C2.
 
-    Returns C3-feasible subset (may be shorter than input).
+    Returns C2-feasible subset (may be shorter than input).
     """
     if len(observations) <= 1:
         return observations

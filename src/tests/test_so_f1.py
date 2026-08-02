@@ -50,7 +50,7 @@ def test_b2_2n_encoding_shape():
         tasks=tasks, N=5, phi_min=0.2618, phi_max=0.8727,
         max_slew_rate=0.0524, settle_time=5.0,
         energy_budget=1e7, memory_budget=1e11,
-        target_map=target_map, altitude_m=600_000.0,
+        target_map=target_map, altitude_m=693_000.0,
     )
 
     problem = B2ProfitProblem(instance)
@@ -102,7 +102,7 @@ def test_b2_tau_decoding():
         tasks=tasks, N=N, phi_min=0.2618, phi_max=0.8727,
         max_slew_rate=0.0524, settle_time=5.0,
         energy_budget=1e7, memory_budget=1e11,
-        target_map=target_map, altitude_m=600_000.0,
+        target_map=target_map, altitude_m=693_000.0,
     )
 
     problem = B2ProfitProblem(instance)
@@ -154,7 +154,7 @@ def test_b2_selected_only_f1():
         tasks=tasks, N=N, phi_min=0.2618, phi_max=0.8727,
         max_slew_rate=0.0524, settle_time=5.0,
         energy_budget=1e7, memory_budget=1e11,
-        target_map=target_map, altitude_m=600_000.0,
+        target_map=target_map, altitude_m=693_000.0,
     )
 
     problem = B2ProfitProblem(instance)
@@ -193,7 +193,7 @@ def test_b2_f2_not_computed():
     instance = AgileSARInstance(tasks=tasks, N=N, phi_min=0.2618, phi_max=0.8727,
                                 max_slew_rate=0.0524, settle_time=5.0,
                                 energy_budget=1e7, memory_budget=1e11,
-                                target_map=target_map, altitude_m=600_000.0)
+                                target_map=target_map, altitude_m=693_000.0)
 
     problem = B2ProfitProblem(instance)
     X = np.array([[0.8, 0.8, 0.8, 0.5, 0.5, 0.5]])
@@ -225,7 +225,7 @@ def test_b2_penalty_coeff_matches_moea():
     instance = AgileSARInstance(tasks=tasks, N=N, phi_min=0.2618, phi_max=0.8727,
                                 max_slew_rate=0.0524, settle_time=5.0,
                                 energy_budget=1e7, memory_budget=1e11,
-                                target_map=target_map, altitude_m=600_000.0)
+                                target_map=target_map, altitude_m=693_000.0)
 
     problem = B2ProfitProblem(instance)
     assert problem.penalty_coeff == 1e5, \
@@ -257,7 +257,7 @@ def test_b2_constraint_aggregation():
     instance = AgileSARInstance(tasks=tasks, N=N, phi_min=0.2618, phi_max=0.8727,
                                 max_slew_rate=0.0524, settle_time=5.0,
                                 energy_budget=1e7, memory_budget=1e11,
-                                target_map=target_map, altitude_m=600_000.0,
+                                target_map=target_map, altitude_m=693_000.0,
                                 orbit_inclination_rad=1.707,  # ~97.8°
                                 orbit_period_s=5800.0, orbit_ref_time_s=100.0)
 
@@ -461,7 +461,7 @@ def test_b2_energy_budget_enforced():
         max_slew_rate=0.0524, settle_time=5.0,
         energy_budget=120_000.0,  # tight: each task costs 60k, 4 tasks = 240k > 120k
         memory_budget=1e11,
-        target_map=target_map, altitude_m=600_000.0,
+        target_map=target_map, altitude_m=693_000.0,
     )
 
     problem = B2ProfitProblem(instance)
@@ -515,7 +515,7 @@ def test_b2_geom_cache_fallback():
         tasks=tasks, N=N, phi_min=0.2618, phi_max=0.8727,
         max_slew_rate=0.0524, settle_time=5.0,
         energy_budget=1e7, memory_budget=1e11,
-        target_map=target_map, altitude_m=600_000.0,
+        target_map=target_map, altitude_m=693_000.0,
         geom_cache=None,  # explicit: no cache
     )
 

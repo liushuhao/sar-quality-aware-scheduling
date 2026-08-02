@@ -16,7 +16,7 @@ PROJECT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(PROJECT / "src"))
 
 from sar_sim.solver.baselines import baseline_b1, baseline_b3
-from sar_sim.solver.types import build_agile_instance, precompute_geometry
+from sar_sim.solver.types import build_agile_instance_from_scenario, precompute_geometry
 
 SCENARIOS_DIR = PROJECT / "experiments" / "scenarios"
 RESULTS_DIR = PROJECT / "experiments" / "results"
@@ -155,8 +155,8 @@ def main():
                 alt_m = alt_km * 1000.0
 
                 # Build instance + precompute geometry
-                instance = build_agile_instance(
-                    windows, targets,
+                instance = build_agile_instance_from_scenario(
+                    data,
                     max_slew_rate=SLEW_RATE,
                     settle_time=SETTLE_TIME,
                     altitude_m=alt_m,

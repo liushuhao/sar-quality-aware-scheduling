@@ -28,15 +28,17 @@ Both depend on θ and ψ_sq via observation time t_i, making them
 geometrically coupled but physically orthogonal (f2 resists small θ
 via sinθ, f3 favors small θ via cos³θ).
 
-Constraints (penalty-based):
-  MOEA-2: t_actual within at least one visibility window
-  MOEA-3: resolution requirement (θ(φ) ≥ θ_min_res) — incidence computed from φ
-  C3: attitude transition feasibility (LOS-angle model via compute_transition_time)
-      Multi-sat: C3 checked per-satellite (within each sat's task group)
-  C4: energy budget — per-satellite for multi-sat, global for single-sat
-  C5: memory budget — per-satellite for multi-sat, global for single-sat
-  C6: no target duplication across satellites (multi-sat only)
-  C7: squint angle ≤ max_squint_deg (from SARInstrument)
+Constraints (penalty-based, aligned with paper §3 C1–C4):
+  C1 (incidence + squint): enforced during visibility-window generation
+      (see sar_sim.generator.visibility._check_geometric_constraints).
+      No inline check — decoded t_actual inherits C1 feasibility from the
+      pre-filtered windows that bound the τ encoding.
+  C2: attitude maneuver and non-overlap (LOS-angle model via compute_los_separation)
+      Multi-sat: C2 checked per-satellite (within each sat's task group)
+  C3: energy budget — per-satellite for multi-sat, global for single-sat
+  C4: memory budget — per-satellite for multi-sat, global for single-sat
+  Encoding validity: decoded t_actual must fall within at least one
+      visibility window (penalised when τ lands in an inter-window gap).
 """
 
 from dataclasses import dataclass, field
@@ -46,6 +48,8 @@ from typing import List, Dict, Optional, Tuple
 
 from pymoo.core.problem import Problem
 from pymoo.algorithms.moo.nsga3 import NSGA3
+from pymoo.operators.crossover.sbx import SBX
+from pymoo.operators.mutation.pm import PM
 from pymoo.util.ref_dirs import get_reference_directions
 from pymoo.optimize import minimize
 from pymoo.termination import get_termination
@@ -66,10 +70,7 @@ from sar_sim.solver.types import (
     compute_los_separation,  # cached LOS computation
     precompute_geometry,
 )
-
-# Precomputed constant for hot-path
-_MAX_SQUINT_RAD = np.radians(45.0)
-
+from sar_sim.verification.constraints import ConstraintVerifier
 
 # ─── pymoo Problem ───────────────────────────────────────────────────────
 
@@ -183,20 +184,14 @@ class SARSchedulingProblem(Problem):
             # ── Constraints ─────────────────────────────────────────
             g = 0.0
 
-            # MOEA-2 + MOEA-3: each selected task's |φ| must be in [φ_min_i, φ_max_i]
-            # and ≥ φ_min_res.
+            # Encoding validity: decoded t_actual must fall within at least
+            # one pre-filtered visibility window.  C1 (incidence + squint)
+            # is already enforced at window-generation time, so no inline
+            # geometry check is needed here — this only catches τ values
+            # that land in an inter-window gap.
             for i in range(N):
                 if selected[i]:
                     task = inst.tasks[i]
-                    phi_abs_val = phi_dict[i]
-                    if phi_abs_val < task.phi_min:
-                        g += task.phi_min - phi_abs_val
-                    if phi_abs_val > task.phi_max:
-                        g += phi_abs_val - task.phi_max
-                    if phi_abs_val < task.phi_min_res:
-                        g += task.phi_min_res - phi_abs_val
-
-                    # MOEA-2: t_actual must be within at least one visibility window
                     t_act = t_actual_dict[i]
                     wt = task.window_times
                     if wt:
@@ -215,26 +210,10 @@ class SARSchedulingProblem(Problem):
                         if not in_any_window:
                             g += min_dist / max(task.duration, 1.0)
 
-                    # C7: squint angle constraint
-                    if squint_dict[i] > _MAX_SQUINT_RAD:
-                        g += squint_dict[i] - _MAX_SQUINT_RAD
-
-            # C6: no target duplication across satellites (multi-sat only)
-            if n_sats > 1:
-                target_sat_map: Dict[str, int] = {}  # target_id → first sat_id
-                for i in range(N):
-                    if selected[i]:
-                        tid = inst.tasks[i].target_id
-                        sid = int(sat_id[i])
-                        if tid in target_sat_map and target_sat_map[tid] != sid:
-                            g += self.penalty_coeff  # hard C6 violation
-                        else:
-                            target_sat_map[tid] = sid
-
-            # C3: transition feasibility between consecutive selected tasks
+            # C2: attitude maneuver and non-overlap between consecutive selected tasks
             sel_indices = [i for i in range(N) if selected[i]]
             if n_sats > 1:
-                # Per-satellite C3: group tasks by satellite, check within each
+                # Per-satellite C2: group tasks by satellite, check within each
                 sat_groups: Dict[int, List[int]] = {}
                 for i in sel_indices:
                     sid = int(sat_id[i])
@@ -253,15 +232,14 @@ class SARSchedulingProblem(Problem):
 
                             delta_eta = compute_los_separation(task_a, t_a, task_b, t_b, inst)
                             tau_trans = delta_eta / inst.max_slew_rate + inst.settle_time
-                            t_end_a = t_a + task_a.duration
-                            earliest_start_b = max(task_b.t_earliest, t_end_a + tau_trans)
-
-                            if earliest_start_b + task_b.duration <= task_b.t_latest:
-                                continue
-                            excess = (earliest_start_b + task_b.duration) - task_b.t_latest
-                            g += excess / max(task_b.duration, 1.0)
+                            # RDR-004: penalise the decoded-time gap directly
+                            # instead of waiving whenever a delay could in
+                            # principle exist.
+                            gap = t_b - (t_a + task_a.duration)
+                            if gap < tau_trans:
+                                g += (tau_trans - gap) / max(task_b.duration, 1.0)
             elif len(sel_indices) > 1:
-                # Original single-satellite C3
+                # Original single-satellite C2
                 sel_indices.sort(key=lambda i: t_actual_dict[i])
 
                 for k in range(len(sel_indices) - 1):
@@ -274,15 +252,13 @@ class SARSchedulingProblem(Problem):
 
                     delta_eta = compute_los_separation(task_a, t_a, task_b, t_b, inst)
                     tau_trans = delta_eta / inst.max_slew_rate + inst.settle_time
-                    t_end_a = t_a + task_a.duration
-                    earliest_start_b = max(task_b.t_earliest, t_end_a + tau_trans)
+                    # RDR-004: penalise the decoded-time gap directly instead
+                    # of waiving whenever a delay could in principle exist.
+                    gap = t_b - (t_a + task_a.duration)
+                    if gap < tau_trans:
+                        g += (tau_trans - gap) / max(task_b.duration, 1.0)
 
-                    if earliest_start_b + task_b.duration <= task_b.t_latest:
-                        continue
-                    excess = (earliest_start_b + task_b.duration) - task_b.t_latest
-                    g += excess / max(task_b.duration, 1.0)
-
-            # C4: energy budget (per-sat for multi-sat, global for single-sat)
+            # C3: energy budget (per-sat for multi-sat, global for single-sat)
             if n_sats > 1:
                 per_sat_energy = np.zeros(n_sats)
                 per_sat_budget = inst.energy_budget / n_sats
@@ -298,7 +274,7 @@ class SARSchedulingProblem(Problem):
                 if energy_used > inst.energy_budget:
                     g += (energy_used - inst.energy_budget) / inst.energy_budget
 
-            # C5: memory budget (per-sat for multi-sat, global for single-sat)
+            # C4: memory budget (per-sat for multi-sat, global for single-sat)
             if n_sats > 1:
                 per_sat_memory = np.zeros(n_sats)
                 per_sat_mem_budget = inst.memory_budget / n_sats
@@ -384,7 +360,12 @@ def _build_schedule_from_moea(
                     best_window = w
 
         if best_window is not None:
-            obs_start = datetime.fromtimestamp(t_act, tz=timezone.utc)
+            # Match the source window's tz (pkl scenarios are naive UTC;
+            # some test fixtures are aware). Mixing breaks datetime sorting.
+            if best_window.t_start.tzinfo is not None:
+                obs_start = datetime.fromtimestamp(t_act, tz=timezone.utc)
+            else:
+                obs_start = datetime.utcfromtimestamp(t_act)
             obs_end = obs_start + timedelta(seconds=task.duration)
             observations.append(ScheduledObservation(
                 window=best_window,
@@ -412,7 +393,7 @@ def decode_solution(
         n_sats: number of satellites (1 = 2N encoding, >1 = 3N encoding)
 
     Returns:
-        (selected_task_indices, off_nadir_angles, f1_norm, f2_mean, f3_mean, sat_assignments)
+        (selected_task_indices, off_nadir_angles, f1_norm, f2_mean, f3_mean, sat_assignments, t_actuals)
     """
     N = instance.N
     x_bin = X[:N]
@@ -458,7 +439,7 @@ def decode_solution(
     f1_norm = f1_raw / max(f1_gbl, 1.0)
     f2_mean = f2_num / n_sel if n_sel > 0 else 0.0
     f3_mean = f3_num / n_sel if n_sel > 0 else 0.0
-    return selected, np.array(phis), f1_norm, f2_mean, f3_mean, sat_ids
+    return selected, np.array(phis), f1_norm, f2_mean, f3_mean, sat_ids, t_actuals
 
 
 def solutions_to_frontier(
@@ -479,10 +460,11 @@ def solutions_to_frontier(
         X_pop = X_pop.reshape(1, -1)
     frontier = []
     for p in range(X_pop.shape[0]):
-        sel, phis, f1, f2, f3, _sat_ids = decode_solution(X_pop[p], instance, getattr(instance, 'f1_gbl', 1.0))
+        sel, phis, f1, f2, f3, _sat_ids, t_acts = decode_solution(X_pop[p], instance, getattr(instance, 'f1_gbl', 1.0))
         frontier.append({
             "selected": sel,
             "phis": phis.tolist() if isinstance(phis, np.ndarray) else list(phis),
+            "t_actuals": t_acts,
             "f1": f1,
             "f2": f2,
             "f3": f3,
@@ -513,6 +495,9 @@ def moea_solver(
     hotstart_individual: Optional[np.ndarray] = None,
     hotstart_sigma: float = 0.5,
     n_sats: int = 1,
+    orbit_raan_rad: Optional[float] = None,
+    orbit_epoch_s: Optional[float] = None,
+    orbit_inclination_rad: Optional[float] = None,
     **kwargs,
 ) -> SolverResult:
     """MOEA solver using NSGA-III for multi-objective agile SAR scheduling.
@@ -546,6 +531,12 @@ def moea_solver(
     # f1_gbl is a solver-level kwarg; pop it before forwarding the rest to
     # build_agile_instance, which does not accept it.
     f1_gbl_override = kwargs.pop('f1_gbl', None)
+    if orbit_raan_rad is not None:
+        kwargs["orbit_raan_rad"] = orbit_raan_rad
+    if orbit_epoch_s is not None:
+        kwargs["orbit_epoch_s"] = orbit_epoch_s
+    if orbit_inclination_rad is not None:
+        kwargs["orbit_inclination_rad"] = orbit_inclination_rad
     if prebuilt is not None:
         instance = prebuilt
     else:
@@ -594,15 +585,19 @@ def moea_solver(
                     noise = rng.normal(0, self.sigma, problem.n_var)
                     pop[i] = np.clip(self.x0 + noise, 0.0, 1.0)
                 return pop
-        sampling = _MOEAHotStartSampling(hotstart_individual, population_size, hotstart_sigma, seed or 1)
+        sampling = _MOEAHotStartSampling(hotstart_individual, population_size, hotstart_sigma, (seed if seed is not None else 1))
 
     algorithm = NSGA3(
         pop_size=population_size,
         ref_dirs=ref_dirs,
         sampling=sampling,
+        crossover=SBX(prob=0.9, eta=20),
+        mutation=PM(prob=0.1, eta=20),
     ) if sampling is not None else NSGA3(
         pop_size=population_size,
         ref_dirs=ref_dirs,
+        crossover=SBX(prob=0.9, eta=20),
+        mutation=PM(prob=0.1, eta=20),
     )
 
     termination = get_termination("n_gen", n_generations)
@@ -612,7 +607,7 @@ def moea_solver(
         problem,
         algorithm,
         termination,
-        seed=seed or 1,
+        seed=(seed if seed is not None else 1),
         verbose=False,
         save_history=False,
     )
@@ -638,6 +633,21 @@ def moea_solver(
                 frontier = []
         except Exception:
             frontier = []
+
+    # ── Post-hoc constraint verification: filter infeasible solutions ──
+    n_infeasible = 0
+    n_frontier_raw = len(frontier) if frontier else 0
+    if frontier:
+        verifier = ConstraintVerifier(instance)
+        verified = verifier.verify_frontier(frontier)
+        feasible = [sol for sol, rpt in verified if rpt.overall_pass]
+        n_infeasible = len(frontier) - len(feasible)
+        if feasible:
+            # Filter x_source to match feasible frontier
+            feasible_indices = [i for i, (_, rpt) in enumerate(verified) if rpt.overall_pass]
+            x_source = x_source[feasible_indices] if x_source is not None else None
+            frontier = feasible
+        # If all infeasible, keep original frontier (will be flagged in meta)
 
     # For SolverResult compatibility: pick the "knee" solution
     if frontier and x_source is not None:
@@ -698,8 +708,10 @@ def moea_solver(
         "population_size": population_size,
         "frontier": frontier,
         "n_frontier_points": len(frontier),
+        "n_frontier_raw": n_frontier_raw,
         "n_obj": n_obj,
         "n_sats": n_sats,
+        "n_infeasible_filtered": n_infeasible,
     }
     if n_obj == 2:
         meta["f3_posthoc"] = best.get("f3", 0.0)

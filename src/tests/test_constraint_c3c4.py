@@ -1,4 +1,4 @@
-"""TDD tests for C4/C5 constraint enforcement in baselines (Step 3).
+"""TDD tests for C3/C4 constraint enforcement in baselines (Step 3).
 
 Tests follow strict RED-GREEN-REFACTOR cycle.
 """
@@ -44,7 +44,7 @@ def _make_window(target_id, offset_min=0, elevation=45.0):
 
 
 def _make_targets_and_windows(n_tasks=5):
-    """Create non-overlapping windows and targets for testing C4/C5."""
+    """Create non-overlapping windows and targets for testing C3/C4."""
     windows = []
     targets = []
     for i in range(n_tasks):
@@ -145,7 +145,7 @@ def test_b3_energy_budget_enforced():
         max_slew_rate=0.0524, settle_time=5.0,
         energy_budget=1e7, memory_budget=1e11,
         target_map={tg.target_id: tg for tg in targets},
-        altitude_m=600_000.0,
+        altitude_m=693_000.0,
         orbit_inclination_rad=np.radians(97.8),
         orbit_period_s=5800.0,
         orbit_ref_time_s=t_ref,

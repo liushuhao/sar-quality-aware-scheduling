@@ -24,6 +24,8 @@ import numpy as np
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
 
 from pymoo.core.problem import Problem
+from pymoo.operators.crossover.sbx import SBX
+from pymoo.operators.mutation.pm import PM
 
 from sar_sim.solver.moea import (
     moea_solver,
@@ -34,13 +36,14 @@ from sar_sim.solver.moea import (
 from sar_sim.solver.types import (
     AgileTask,
     AgileSARInstance,
-    build_agile_instance,
+    build_agile_instance_from_scenario,
     compute_full_attitude,
     compute_los_separation,
     precompute_geometry,
 )
 from sar_sim.metrics.nesz import off_nadir_to_incidence
 from sar_sim.types import ObservationWindow, GroundTarget
+from sar_sim.verification.constraints import ConstraintVerifier
 
 PROJECT = Path(__file__).resolve().parent.parent
 SCENARIOS_DIR = PROJECT / "experiments" / "scenarios"
@@ -140,14 +143,6 @@ class SARSchedulingProblemNoSquint(Problem):
             for i in range(N):
                 if selected[i]:
                     task = inst.tasks[i]
-                    phi_abs_val = phi_dict[i]
-                    if phi_abs_val < task.phi_min:
-                        g += task.phi_min - phi_abs_val
-                    if phi_abs_val > task.phi_max:
-                        g += phi_abs_val - task.phi_max
-                    if phi_abs_val < task.phi_min_res:
-                        g += task.phi_min_res - phi_abs_val
-
                     t_act = t_actual_dict[i]
                     wt = task.window_times
                     if wt:
@@ -166,10 +161,7 @@ class SARSchedulingProblemNoSquint(Problem):
                         if not in_any_window:
                             g += min_dist / max(task.duration, 1.0)
 
-                    if squint_dict[i] > MAX_SQUINT_RAD:
-                        g += squint_dict[i] - MAX_SQUINT_RAD
-
-            # C3: transition feasibility
+            # C2: transition feasibility
             sel_indices = [i for i in range(N) if selected[i]]
             if len(sel_indices) > 1:
                 sel_indices.sort(key=lambda i: t_actual_dict[i])
@@ -183,13 +175,10 @@ class SARSchedulingProblemNoSquint(Problem):
 
                     delta_eta = compute_los_separation(task_a, t_a, task_b, t_b, inst)
                     tau_trans = delta_eta / inst.max_slew_rate + inst.settle_time
-                    t_end_a = t_a + task_a.duration
-                    earliest_start_b = max(task_b.t_earliest, t_end_a + tau_trans)
-
-                    if earliest_start_b + task_b.duration <= task_b.t_latest:
-                        continue
-                    excess = (earliest_start_b + task_b.duration) - task_b.t_latest
-                    g += excess / max(task_b.duration, 1.0)
+                    # RDR-004: penalise decoded-time gap directly
+                    gap = t_b - (t_a + task_a.duration)
+                    if gap < tau_trans:
+                        g += (tau_trans - gap) / max(task_b.duration, 1.0)
 
             energy_used = sum(task.energy for i, task in enumerate(inst.tasks) if selected[i])
             if energy_used > inst.energy_budget:
@@ -242,8 +231,8 @@ def moea_solver_no_squint(windows, targets, **kwargs):
     if prebuilt is not None:
         instance = prebuilt
     else:
-        instance = build_agile_instance(
-            windows, targets,
+        instance = build_agile_instance_from_scenario(
+            kwargs.get("scenario"),
             max_slew_rate=max_slew_rate,
             settle_time=settle_time,
         )
@@ -284,13 +273,15 @@ def moea_solver_no_squint(windows, targets, **kwargs):
         pop_size=population_size,
         ref_dirs=ref_dirs,
         sampling=sampling,
-    ) if sampling is not None else NSGA3(pop_size=population_size, ref_dirs=ref_dirs)
+        crossover=SBX(prob=0.9, eta=20),
+        mutation=PM(prob=0.1, eta=20),
+    ) if sampling is not None else NSGA3(pop_size=population_size, ref_dirs=ref_dirs, crossover=SBX(prob=0.9, eta=20), mutation=PM(prob=0.1, eta=20))
 
     termination = get_termination("n_gen", n_generations)
 
     res = minimize(
         problem, algorithm, termination,
-        seed=seed or 1, verbose=False, save_history=False,
+        seed=(seed if seed is not None else 1), verbose=False, save_history=False,
     )
 
     # Frontier decoding — reuse baseline function (geometry-agnostic)
@@ -310,6 +301,18 @@ def moea_solver_no_squint(windows, targets, **kwargs):
                 frontier = solutions_to_frontier(x_source, instance)
         except Exception:
             frontier = []
+
+    # Post-hoc constraint verification: filter infeasible solutions
+    n_infeasible = 0
+    if frontier:
+        verifier = ConstraintVerifier(instance)
+        verified = verifier.verify_frontier(frontier)
+        feasible = [sol for sol, rpt in verified if rpt.overall_pass]
+        n_infeasible = len(frontier) - len(feasible)
+        if feasible:
+            feasible_indices = [i for i, (_, rpt) in enumerate(verified) if rpt.overall_pass]
+            x_source = x_source[feasible_indices] if x_source is not None else None
+            frontier = feasible
 
     if frontier and x_source is not None:
         f1_vals = np.array([s["f1"] for s in frontier])
@@ -350,8 +353,10 @@ def moea_solver_no_squint(windows, targets, **kwargs):
         "population_size": population_size,
         "frontier": frontier,
         "n_frontier_points": len(frontier),
+        "n_frontier_raw": n_frontier_raw,
         "n_obj": n_obj,
         "ablation_variant": "B_no_squint",
+        "n_infeasible_filtered": n_infeasible,
     }
     return SolverResult(schedule=schedule, score=score, metadata=meta)
 
@@ -397,9 +402,9 @@ def run_one(pkl_path: Path) -> dict:
     t0 = time.time()
     hotstart = None
     from sar_sim.solver.baselines import baseline_b1
-    from sar_sim.solver.types import build_agile_instance, precompute_geometry
+    from sar_sim.solver.types import build_agile_instance_from_scenario, precompute_geometry
     gbl = baseline_b1(windows, targets)
-    instance = build_agile_instance(windows, targets, max_slew_rate=SLEW_RATE, settle_time=SETTLE_TIME)
+    instance = build_agile_instance_from_scenario(data, max_slew_rate=SLEW_RATE, settle_time=SETTLE_TIME)
     precompute_geometry(instance, step_s=10.0)
     target_to_idx = {t.target_id: i for i, t in enumerate(instance.tasks)}
     x0 = np.zeros(2 * instance.N)
@@ -427,6 +432,7 @@ def run_one(pkl_path: Path) -> dict:
         settle_time=SETTLE_TIME,
         hotstart_individual=hotstart,
         instance=instance,
+        scenario=data,
     )
     rt = time.time() - t0
 

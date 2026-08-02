@@ -72,8 +72,8 @@ EARTH_RADIUS_MEAN_M = 6371000.0  # WGS-84 volumetric mean radius
 
 # Default satellite orbital altitude for LEO SAR (meters).
 # Typical LEO SAR platforms: Sentinel-1 ≈ 693 km, ICEYE ≈ 500–600 km,
-# Capella ≈ 500 km, TerraSAR-X ≈ 514 km. 600 km is a reasonable default.
-_DEFAULT_ALTITUDE_M = 600_000.0
+# Capella ≈ 500 km, TerraSAR-X ≈ 514 km. 693 km matches the paper's Sentinel-1.
+_DEFAULT_ALTITUDE_M = 693_000.0
 
 
 def off_nadir_to_incidence(

@@ -40,7 +40,7 @@ def save_progress(progress):
 # --- Solver wrappers ---
 # Reuse EARTH_R and ORBIT_ALT from baselines runner
 EARTH_R = 6378137.0
-ORBIT_ALT = 600_000.0
+ORBIT_ALT = 693_000.0
 
 def run_moea(windows, targets, seed):
     from sar_sim.solver.moea import moea_solver

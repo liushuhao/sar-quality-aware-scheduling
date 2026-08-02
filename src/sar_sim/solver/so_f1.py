@@ -1,7 +1,7 @@
 """GA-P: Single-Objective Profit Maximizer (so_f1.py).
 
 Implements the GA-P baseline from the problem formalization (§6 GA-P):
-    max f1(x,t) = Σ x_i * p_i   s.t. MOEA-2--C6
+    max f1(x,t) = Σ x_i * p_i   s.t. C2--C4
 
 A single-objective GA (pymoo GA) searches observation times t_i
 within each task's visibility window.  Only coverage profit f1 is
@@ -38,10 +38,7 @@ from sar_sim.solver.types import (
     compute_los_separation,  # cached LOS computation
     precompute_geometry,
 )
-
-# Precomputed constants for hot-path
-_MAX_SQUINT_RAD = np.radians(45.0)
-
+from sar_sim.verification.constraints import ConstraintVerifier
 
 # ═══════════════════════════════════════════════════════════════════════════
 # B2ProfitProblem — pymoo Problem
@@ -58,7 +55,7 @@ class B2ProfitProblem(Problem):
       t_i = t_earliest_i + τ_i * (t_latest_i − d_i − t_earliest_i)
 
     Geometry at t_i is computed via ``compute_full_attitude()``.
-    Constraints MOEA-2--C6 are enforced via aggregated penalty (same as MOEA).
+    Constraints C2--C4 are enforced via aggregated penalty (same as MOEA).
     """
 
     def __init__(self, instance: AgileSARInstance, penalty_coeff: float = 1e5):
@@ -140,20 +137,23 @@ class B2ProfitProblem(Problem):
                     t_actual_list.append(t_act)
 
                     # Look up precomputed geometry (GeomCache, Step 1)
-                    # Fallback to compute_full_attitude if cache unavailable
+                    # Fallback to compute_full_attitude if cache unavailable.
+                    # Only phi (off-nadir) is needed here for the C2 transition
+                    # model's legacy fallback; C1 (incidence + squint) is
+                    # already enforced at window-generation time.
                     if inst.geom_cache is not None:
                         geom = inst.geom_cache.lookup(i, t_act)
                         phi = geom.phi
-                        squint = geom.psi_sq
-                        theta_i = geom.theta  # precomputed incidence angle
                     else:
-                        roll, _, squint = compute_full_attitude(
+                        roll, _, _ = compute_full_attitude(
                             task, t_act, 1.0, inst)
                         phi = abs(roll)
-                        theta_i = off_nadir_to_incidence(phi, inst.altitude_m)
                     phi_list.append(phi)
 
-                    # MOEA-2: time must be within at least one actual visibility window
+                    # Encoding validity: decoded t_actual must fall within at
+                    # least one pre-filtered visibility window.  C1 (incidence
+                    # + squint) is enforced at window-generation time; this
+                    # only catches τ values landing in an inter-window gap.
                     wt = task.window_times
                     if wt:
                         in_any = False
@@ -167,24 +167,8 @@ class B2ProfitProblem(Problem):
                                 min_dist = dist
                         if not in_any:
                             g += min_dist / max(task.duration, 1.0)
-                    #
-                    # C7: squint angle constraint
-                    if squint > _MAX_SQUINT_RAD:
-                        g += squint - _MAX_SQUINT_RAD
-                    #
-                    # MOEA-3: resolution constraint — check that the
-                    # actual incidence angle meets the minimum.
-                    # theta_i from GeomCache (precomputed); theta_min from task (precomputed).
-                    if theta_i < task.theta_min_res:
-                        g += (task.theta_min_res - theta_i) / max(task.theta_min_res, 0.001)
 
-                    # Note: we do NOT check phi against task.phi_min/phi_max
-                    # because those bounds are derived from flat-Earth
-                    # elevation at the window midpoint and don't match the
-                    # full 3-axis geometry.  The time-window check (MOEA-2) and
-                    # resolution check (MOEA-3) are sufficient.
-
-            # C3: transition feasibility between consecutive tasks
+            # C2: attitude maneuver and non-overlap between consecutive tasks
             if len(sel_indices) > 1:
                 # Build ordered list with times (sorted by t_actual)
                 ordered = sorted(
@@ -196,39 +180,35 @@ class B2ProfitProblem(Problem):
                     i_a = ordered[k][0]
                     i_b = ordered[k + 1][0]
                     t_a = ordered[k][1]
+                    t_b = ordered[k + 1][1]
                     task_a = inst.tasks[i_a]
                     task_b = inst.tasks[i_b]
 
                     # Required transition time
                     delta_eta = self._compute_los_separation(
-                        task_a, t_a, task_b, ordered[k + 1][1],
+                        task_a, t_a, task_b, t_b,
                     )
                     tau_trans = (delta_eta / inst.max_slew_rate
                                  + inst.settle_time)
 
-                    # Task A ends at t_a + duration
-                    t_end_a = t_a + task_a.duration
+                    # Enforce the transition on the DECODED times directly:
+                    # the gap between A's end and B's decoded start must
+                    # cover tau_trans. (RDR-004: previously the penalty was
+                    # waived whenever B could in principle be delayed within
+                    # its window, so decoded schedules kept overlapping
+                    # observations and reported metrics used infeasible
+                    # timings.)
+                    gap = t_b - (t_a + task_a.duration)
+                    if gap < tau_trans:
+                        g += (tau_trans - gap) / max(task_b.duration, 1.0)
 
-                    # Task B can be delayed within its window
-                    earliest_start_b = max(task_b.t_earliest,
-                                           t_end_a + tau_trans)
-
-                    if earliest_start_b + task_b.duration <= task_b.t_latest:
-                        # Feasible by delaying B — no penalty
-                        continue
-
-                    # Infeasible even with max delay
-                    excess = ((earliest_start_b + task_b.duration)
-                              - task_b.t_latest)
-                    g += excess / max(task_b.duration, 1.0)
-
-            # C4: energy budget
+            # C3: energy budget
             energy_used = sum(
                 inst.tasks[i].energy for i in range(N) if selected[i])
             if energy_used > inst.energy_budget:
                 g += (energy_used - inst.energy_budget) / inst.energy_budget
 
-            # C5: memory budget
+            # C4: memory budget
             memory_used = sum(
                 inst.tasks[i].memory for i in range(N) if selected[i])
             if memory_used > inst.memory_budget:
@@ -315,7 +295,12 @@ def _build_schedule_from_b2(
                 best_window = w
 
         if best_window is not None:
-            obs_start = datetime.fromtimestamp(t_act, tz=timezone.utc)
+            # Match the source window's tz (pkl scenarios are naive UTC;
+            # some test fixtures are aware). Mixing breaks datetime sorting.
+            if best_window.t_start.tzinfo is not None:
+                obs_start = datetime.fromtimestamp(t_act, tz=timezone.utc)
+            else:
+                obs_start = datetime.utcfromtimestamp(t_act)
             obs_end = obs_start + timedelta(seconds=task.duration)
             observations.append(ScheduledObservation(
                 window=best_window,
@@ -343,7 +328,7 @@ def b2_profit_solver(
 
     Uses pymoo GA with SBX crossover + polynomial mutation to search
     observation times t_i that maximise coverage profit subject to
-    MOEA-2--C6 constraints.
+    C2--C4 constraints.
 
     Args:
         windows: candidate observation windows
@@ -389,7 +374,7 @@ def b2_profit_solver(
         problem,
         algorithm,
         termination,
-        seed=seed or 1,
+        seed=(seed if seed is not None else 1),
         verbose=False,
         save_history=False,
     )
@@ -529,26 +514,38 @@ def ga_hotstart_solver(
     # Encode G-BL solution into 2N chromosome
     x0 = np.zeros(2 * instance.N)
     selected_set = set(hotstart_selected)
+    # Build a map: task_idx -> t_actual for computing proper τ values
+    t_actual_map = {}
+    for k, task_idx in enumerate(hotstart_selected):
+        if k < len(hotstart_t_actuals):
+            t_actual_map[task_idx] = hotstart_t_actuals[k]
     for i in range(instance.N):
         if i in selected_set:
             x0[i] = 1.0
-            x0[instance.N + i] = 0.0  # τ=0 = earliest feasible time (safe start)
-    # τ values (hotstart_t_actuals) are ignored — G-BL uses incompatible C3 model
+            task = instance.tasks[i]
+            if i in t_actual_map and task.time_span > 0:
+                # Compute τ from G-BL's actual observation time so the seed
+                # has realistic timings (reduces spurious C2 violations that
+                # occurred when τ was hard-coded to 0).
+                tau = (t_actual_map[i] - task.t_earliest) / task.time_span
+                x0[instance.N + i] = max(0.0, min(1.0, tau))
+            else:
+                x0[instance.N + i] = 0.5  # mid-range fallback
 
     problem = B2ProfitProblem(instance)
     # Use HotStartSampling: seed entire population around G-BL solution
     algorithm = GA(
         pop_size=population_size,
-        sampling=_HotStartSampling(x0, population_size, seed or 1),
-        crossover=SBX(prob=0.9, eta=15),
-        mutation=PM(prob=1.0 / (2 * instance.N), eta=20),
+        sampling=_HotStartSampling(x0, population_size, (seed if seed is not None else 1)),
+        crossover=SBX(prob=0.9, eta=20),
+        mutation=PM(prob=0.1, eta=20),
         eliminate_duplicates=False,
     )
 
     res = minimize(
         problem, algorithm,
         get_termination("n_gen", n_generations),
-        seed=seed or 1,
+        seed=(seed if seed is not None else 1),
         verbose=False, save_history=False,
     )
 
@@ -600,6 +597,81 @@ def ga_hotstart_solver(
         "phis_off_nadir": phis,
     }
 
+    # Post-hoc constraint verification (with t_actual for C2).
+    # Unlike MOEA (which filters out infeasible frontier solutions), GA-P is
+    # single-objective with one best solution — we repair via delay-repair
+    # (_enforce_c2_transitions) and recompute f1/f2/f3, rather than discard.
+    if sel:
+        phi_full = np.zeros(instance.N, dtype=float)
+        t_actual_full = np.zeros(instance.N, dtype=float)
+        for idx, task_idx in enumerate(sel):
+            phi_full[task_idx] = phis[idx] if idx < len(phis) else 0.0
+            t_actual_full[task_idx] = t_acts[idx] if idx < len(t_acts) else 0.0
+        verifier = ConstraintVerifier(instance)
+        report = verifier.verify_solution(sel, phi_full, t_actual=t_actual_full)
+        meta["constraint_feasible"] = report.overall_pass
+        meta["n_constraints_failed"] = report.n_failed
+
+        # If C2 violated, repair by enforcing transitions and recompute
+        if not report.overall_pass and "C2" in report.results and not report.results["C2"].passed:
+            from sar_sim.solver.baselines import _enforce_c2_transitions
+            repaired = _enforce_c2_transitions(list(schedule), instance=instance)
+            if len(repaired) < len(schedule):
+                schedule = tuple(repaired)
+                # Recompute f1/f2/f3 from repaired schedule
+                target_to_idx = {t.target_id: i for i, t in enumerate(instance.tasks)}
+                f1 = 0.0
+                f2_num = 0.0
+                f3_num = 0.0
+                n_repaired = 0
+                for obs in repaired:
+                    tid = obs.window.target_id
+                    if tid not in target_to_idx:
+                        continue
+                    task_idx = target_to_idx[tid]
+                    task = instance.tasks[task_idx]
+                    f1 += task.priority
+                    t_act = obs.t_actual_start
+                    t_act_float = t_act.timestamp() if hasattr(t_act, 'timestamp') else float(t_act)
+                    if instance.geom_cache is not None:
+                        geom = instance.geom_cache.lookup(task_idx, t_act_float)
+                        f2_num += math.sin(geom.theta) * geom.cos_psi
+                        f3_num += (math.cos(geom.theta) ** 3) * (geom.cos_psi ** 3)
+                    n_repaired += 1
+                if n_repaired > 0:
+                    f2_posthoc = f2_num / n_repaired
+                    f3_posthoc = f3_num / n_repaired
+                meta["f1"] = float(f1)
+                meta["f2"] = f2_posthoc
+                meta["f3"] = f3_posthoc
+                meta["n_selected"] = n_repaired
+                meta["repaired"] = True
+                # Re-verify after repair using the repaired schedule's own
+                # times (rebuild t_actual rather than reuse pre-repair values).
+                repaired_idx = []
+                repaired_t = np.zeros(instance.N, dtype=float)
+                repaired_phi = np.zeros(instance.N, dtype=float)
+                for obs in repaired:
+                    tid = obs.window.target_id
+                    if tid not in target_to_idx:
+                        continue
+                    ti = target_to_idx[tid]
+                    repaired_idx.append(ti)
+                    tt = obs.t_actual_start
+                    repaired_t[ti] = tt.timestamp() if hasattr(tt, 'timestamp') else float(tt)
+                    if instance.geom_cache is not None:
+                        repaired_phi[ti] = instance.geom_cache.lookup(ti, repaired_t[ti]).phi
+                report2 = verifier.verify_solution(
+                    repaired_idx, repaired_phi, t_actual=repaired_t,
+                )
+                meta["constraint_feasible"] = report2.overall_pass
+                meta["n_constraints_failed"] = report2.n_failed
+    else:
+        meta["constraint_feasible"] = True
+        meta["n_constraints_failed"] = 0
+
+    # Note: sel/phis/t_acts are NOT updated after repair; downstream must
+    # use schedule + meta, not these locals.
     return SolverResult(
         schedule=schedule,
         score=float(f1),
@@ -613,10 +685,20 @@ def b2_profit_solver_bl_seeded(
     population_size: int = 100,
     n_generations: int = 200,
     seed: Optional[int] = None,
+    orbit_raan_rad: Optional[float] = None,
+    orbit_epoch_s: Optional[float] = None,
+    orbit_inclination_rad: Optional[float] = None,
     **kwargs,
 ) -> SolverResult:
     """GA-P with G-BL hot-start: seed GA population from G-BL schedule."""
     from sar_sim.solver.baselines import baseline_b1
+
+    if orbit_raan_rad is not None:
+        kwargs["orbit_raan_rad"] = orbit_raan_rad
+    if orbit_epoch_s is not None:
+        kwargs["orbit_epoch_s"] = orbit_epoch_s
+    if orbit_inclination_rad is not None:
+        kwargs["orbit_inclination_rad"] = orbit_inclination_rad
 
     # Build instance first (needed for unified C3 transition model)
     instance = build_agile_instance(windows, targets, **kwargs)
@@ -624,6 +706,16 @@ def b2_profit_solver_bl_seeded(
 
     b1 = baseline_b1(windows, targets, instance=instance)
     target_to_idx = {t.target_id: i for i, t in enumerate(instance.tasks)}
+
+    # Recompute G-BL f1 using only tasks present in the instance, so it is
+    # directly comparable to the GA's f1 (which also only counts instance
+    # tasks).  b1.f1 may include observations for targets filtered out
+    # during build_agile_instance, making it incomparable.
+    gbl_f1 = 0.0
+    for obs in b1.schedule:
+        tid = obs.window.target_id
+        if tid in target_to_idx:
+            gbl_f1 += instance.tasks[target_to_idx[tid]].priority
 
     hotstart_selected: List[int] = []
     hotstart_t_actuals: List[float] = []
@@ -635,9 +727,14 @@ def b2_profit_solver_bl_seeded(
             if idx not in seen:
                 seen.add(idx)
                 hotstart_selected.append(idx)
-                hotstart_t_actuals.append(0.0)  # dummy — GA will search time
+                # Pass G-BL's actual observation time so the GA seed has
+                # realistic τ values (not τ=0 which causes spurious C2
+                # violations and poor hot-start quality).
+                t_act = obs.t_actual_start
+                t_act_float = t_act.timestamp() if hasattr(t_act, 'timestamp') else float(t_act)
+                hotstart_t_actuals.append(t_act_float)
 
-    return ga_hotstart_solver(
+    result = ga_hotstart_solver(
         windows, targets,
         hotstart_selected=hotstart_selected,
         hotstart_t_actuals=hotstart_t_actuals,
@@ -647,3 +744,68 @@ def b2_profit_solver_bl_seeded(
         instance=instance,
         **kwargs,
     )
+
+    # "Never worse than G-BL" guarantee: if the GA result (after repair)
+    # has lower f1 than G-BL, return G-BL's schedule with proper metadata.
+    ga_f1 = float(result.metadata.get("f1", 0.0))
+    if ga_f1 < gbl_f1 and b1.schedule:
+        # Rebuild metadata from G-BL schedule using the same instance
+        gbl_sel = []
+        gbl_t_acts = []
+        gbl_phis = []
+        gbl_f1_recomputed = 0.0
+        gbl_f2 = 0.0
+        gbl_f3 = 0.0
+        gbl_n = 0
+        seen_gbl = set()
+        for obs in b1.schedule:
+            tid = obs.window.target_id
+            if tid not in target_to_idx:
+                continue
+            task_idx = target_to_idx[tid]
+            if task_idx in seen_gbl:
+                continue
+            seen_gbl.add(task_idx)
+            task = instance.tasks[task_idx]
+            gbl_sel.append(task_idx)
+            t_act = obs.t_actual_start
+            t_act_float = t_act.timestamp() if hasattr(t_act, 'timestamp') else float(t_act)
+            gbl_t_acts.append(t_act_float)
+            gbl_f1_recomputed += task.priority
+            if instance.geom_cache is not None:
+                geom = instance.geom_cache.lookup(task_idx, t_act_float)
+                gbl_phis.append(geom.phi)
+                gbl_f2 += math.sin(geom.theta) * geom.cos_psi
+                gbl_f3 += (math.cos(geom.theta) ** 3) * (geom.cos_psi ** 3)
+            gbl_n += 1
+        if gbl_n > 0:
+            gbl_f2 /= gbl_n
+            gbl_f3 /= gbl_n
+
+        # Verify G-BL schedule constraints
+        from sar_sim.verification.constraints import ConstraintVerifier
+        phi_full = np.zeros(instance.N, dtype=float)
+        t_actual_full = np.zeros(instance.N, dtype=float)
+        for idx, task_idx in enumerate(gbl_sel):
+            phi_full[task_idx] = gbl_phis[idx] if idx < len(gbl_phis) else 0.0
+            t_actual_full[task_idx] = gbl_t_acts[idx] if idx < len(gbl_t_acts) else 0.0
+        verifier = ConstraintVerifier(instance)
+        report = verifier.verify_solution(gbl_sel, phi_full, t_actual=t_actual_full)
+
+        result.metadata["f1"] = gbl_f1_recomputed
+        result.metadata["f2"] = gbl_f2
+        result.metadata["f3"] = gbl_f3
+        result.metadata["n_selected"] = gbl_n
+        result.metadata["selected"] = gbl_sel
+        result.metadata["t_actuals"] = gbl_t_acts
+        result.metadata["phis_off_nadir"] = gbl_phis
+        result.metadata["constraint_feasible"] = report.overall_pass
+        result.metadata["n_constraints_failed"] = report.n_failed
+        result.metadata["used_gbl_fallback"] = True
+        result = SolverResult(
+            schedule=b1.schedule,
+            score=gbl_f1_recomputed,
+            metadata=result.metadata,
+        )
+
+    return result

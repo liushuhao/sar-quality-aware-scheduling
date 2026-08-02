@@ -1,8 +1,9 @@
 """Constraint verification module for agile SAR scheduling.
 
-Provides an independent ConstraintVerifier that checks C1-C5 constraints
-per-solution and produces PASS/FAIL verification reports.  Completely
-independent of MOEA._evaluate — can be used with any solver's output.
+Provides an independent ConstraintVerifier that checks C1-C4 constraints
+(paper §3) per-solution and produces PASS/FAIL verification reports.
+Completely independent of MOEA._evaluate — can be used with any solver's
+output.
 
 Typical usage in experiment pipeline::
 
@@ -19,11 +20,10 @@ from sar_sim.verification.constraints import (
     VerificationReport,
     PerConstraintResult,
     ViolationDetail,
-    verify_c1_angle_feasibility,
-    verify_c2_resolution,
-    verify_c3_transition,
-    verify_c4_energy,
-    verify_c5_memory,
+    verify_c1_incidence_squint,
+    verify_c2_transition,
+    verify_c3_energy,
+    verify_c4_memory,
 )
 
 __all__ = [
@@ -31,9 +31,8 @@ __all__ = [
     "VerificationReport",
     "PerConstraintResult",
     "ViolationDetail",
-    "verify_c1_angle_feasibility",
-    "verify_c2_resolution",
-    "verify_c3_transition",
-    "verify_c4_energy",
-    "verify_c5_memory",
+    "verify_c1_incidence_squint",
+    "verify_c2_transition",
+    "verify_c3_energy",
+    "verify_c4_memory",
 ]

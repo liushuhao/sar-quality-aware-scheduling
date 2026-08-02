@@ -140,20 +140,17 @@ class ConstraintFreeSARSchedulingProblem(SARSchedulingProblem):
                     f2_num[p] += math.sin(theta_i) * cos_psi
                     f3_num[p] += (math.cos(theta_i) ** 3) * (cos_psi ** 3)
 
-            # Constraints (same as parent, using 2N decode)
+            # Constraints (penalty-based, aligned with paper §3 C1–C4).
+            # C1 (incidence + squint) is enforced during visibility-window
+            # generation; decoded t_actual inherits C1 feasibility from the
+            # pre-filtered windows.  No inline C1 check needed here.
             g = 0.0
             for i in range(N):
                 if selected[i]:
                     task = inst.tasks[i]
-                    phi_abs_val = phi_dict[i]
-                    if phi_abs_val < task.phi_min:
-                        g += task.phi_min - phi_abs_val
-                    if phi_abs_val > task.phi_max:
-                        g += phi_abs_val - task.phi_max
-                    if phi_abs_val < task.phi_min_res:
-                        g += task.phi_min_res - phi_abs_val
 
-                    # MOEA-2: t_actual in window
+                    # Encoding validity: decoded t_actual must fall within at
+                    # least one pre-filtered visibility window.
                     t_act = t_actual_dict[i]
                     if task.windows:
                         in_any = any(
@@ -170,10 +167,7 @@ class ConstraintFreeSARSchedulingProblem(SARSchedulingProblem):
                                 min_dist = min(min_dist, abs(t_act - ws), abs(t_act - we))
                             g += min_dist / max(task.duration, 1.0)
 
-                    # C7: squint
-                    if squint_dict[i] > np.radians(45.0):
-                        g += squint_dict[i] - np.radians(45.0)
-
+            # C2: attitude maneuver and non-overlap between consecutive selected tasks
             sel_indices = [i for i in range(N) if selected[i]]
             if len(sel_indices) > 1:
                 sel_indices.sort(key=lambda i: t_actual_dict[i])
@@ -187,17 +181,17 @@ class ConstraintFreeSARSchedulingProblem(SARSchedulingProblem):
 
                     delta_eta = compute_los_separation(task_a, t_a, task_b, t_b, inst)
                     tau_trans = delta_eta / inst.max_slew_rate + inst.settle_time
-                    t_end_a = t_a + task_a.duration
-                    earliest_start_b = max(task_b.t_earliest, t_end_a + tau_trans)
-                    if earliest_start_b + task_b.duration <= task_b.t_latest:
-                        continue
-                    excess = (earliest_start_b + task_b.duration) - task_b.t_latest
-                    g += excess / max(task_b.duration, 1.0)
+                    # RDR-004: penalise decoded-time gap directly
+                    gap = t_b - (t_a + task_a.duration)
+                    if gap < tau_trans:
+                        g += (tau_trans - gap) / max(task_b.duration, 1.0)
 
+            # C3: energy budget
             energy_used = sum(inst.tasks[i].energy for i in range(N) if selected[i])
             if energy_used > inst.energy_budget:
                 g += (energy_used - inst.energy_budget) / inst.energy_budget
 
+            # C4: memory budget
             memory_used = sum(inst.tasks[i].memory for i in range(N) if selected[i])
             if memory_used > inst.memory_budget:
                 g += (memory_used - inst.memory_budget) / inst.memory_budget
@@ -377,7 +371,7 @@ def multi_moea_solver(
         problem,
         algo,
         termination,
-        seed=seed or 1,
+        seed=(seed if seed is not None else 1),
         verbose=False,
         save_history=False,
     )
@@ -583,9 +577,9 @@ def compare_algorithms(
     reference front for IGD computation.
 
     **Feasibility filtering**: After collecting all frontiers, each solution
-    is independently verified against constraints MOEA-2-C5 via
+    is independently verified against constraints C1–C4 (paper §3) via
     ConstraintVerifier.  Solutions that fail any constraint are marked
-    INFEAISIBLE and excluded from HV/IGD computation and the reference
+    INFEASIBLE and excluded from HV/IGD computation and the reference
     frontier.  The comparison table reports both raw and feasible
     frontier sizes so the infeasibility rate is visible.
 

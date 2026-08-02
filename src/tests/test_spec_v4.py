@@ -17,7 +17,7 @@ def _load(name):
     return data['targets'], data['windows']
 
 
-# ── C1: G-BL C7 dedup ─────────────────────────────────────────────────
+# ── G-BL dedup (C7 removed; unique assignment implied by C2 non-overlap) ──
 
 def test_gbl_no_duplicate_tasks():
     """G-BL schedule must not contain duplicate target_id."""

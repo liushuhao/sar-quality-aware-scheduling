@@ -195,19 +195,19 @@ def test_selected_indices_in_metadata():
 
 
 # ═══════════════════════════════════════════════════════════════════════════
-# Test 6: MOEA-baseline C3 transition time agreement (Option B verification)
+# Test 6: MOEA-baseline C2 transition time agreement (Option B verification)
 # ═══════════════════════════════════════════════════════════════════════════
 
 
-def test_c3_transition_agreement_moea_vs_baseline():
-    """MOEA compute_transition_time() and baseline _c3_transition_los()
+def test_c2_transition_agreement_moea_vs_baseline():
+    """MOEA compute_transition_time() and baseline _c2_transition_los()
     must produce identical results for the same target pair."""
     import math
     from sar_sim.solver.types import (
         build_agile_instance,
         compute_transition_time,
     )
-    from sar_sim.solver.baselines import _c3_transition_los
+    from sar_sim.solver.baselines import _c2_transition_los
 
     # Two widely separated targets
     t0 = datetime(2024, 1, 1, 0, 0, 0, tzinfo=timezone.utc)
@@ -241,7 +241,7 @@ def test_c3_transition_agreement_moea_vs_baseline():
     # Baseline transition time (using t_earliest = observation times)
     t_a_s = task_a.t_earliest
     t_b_s = task_b.t_earliest
-    tau_baseline = _c3_transition_los(
+    tau_baseline = _c2_transition_los(
         task_a.target_id, t_a_s,
         task_b.target_id, t_b_s,
         instance, max_slew, settle,
@@ -257,9 +257,9 @@ def test_c3_transition_agreement_moea_vs_baseline():
     assert tau_moea > settle, f"Expected tau > settle_time={settle}, got {tau_moea}"
 
 
-def test_c3_legacy_fallback_no_instance():
+def test_c2_legacy_fallback_no_instance():
     """When instance=None, baselines fall back to simple phi-diff (backward compat)."""
-    from sar_sim.solver.baselines import _enforce_c3_transitions
+    from sar_sim.solver.baselines import _enforce_c2_transitions
 
     t0 = datetime(2024, 1, 1, 0, 0, 0, tzinfo=timezone.utc)
     w1 = _make_window("T001", dt=t0, duration=300)
@@ -277,5 +277,5 @@ def test_c3_legacy_fallback_no_instance():
     )
 
     # Should work without instance (legacy phi-diff fallback)
-    result = _enforce_c3_transitions([obs1, obs2], instance=None)
+    result = _enforce_c2_transitions([obs1, obs2], instance=None)
     assert len(result) == 2, f"Legacy fallback should keep both, got {len(result)}"

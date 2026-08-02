@@ -1,10 +1,10 @@
-"""TDD tests for Phase 8: MOEA 2N encoding + C7 + squint + roll fix.
+"""TDD tests for Phase 8: MOEA 2N encoding + C1 squint + roll fix.
 
 Tests for 7 changes:
   A. MOEA encoding 3N → 2N (x + tau)
   B. f3 uses actual t_i (not t_earliest)
-  C. C3 uses actual t_i (not t_earliest)
-  D. C7 squint angle constraint
+  C. C2 uses actual t_i (not t_earliest)
+  D. C1 squint angle constraint (enforced at window generation)
   E. min_elevation default 0°
   F. MOEA-2 multi-window compatibility
   G. Roll fix (sqrt(los_x²+los_y²))
@@ -128,7 +128,7 @@ def test_a_2n_variable_bounds():
     assert np.all(problem.xu[:4] == 1.0), f"xu should be all 1: {problem.xu[:4]}"
 
 # ═══════════════════════════════════════════════════════════════════════════
-# Change D: C7 squint angle constraint
+# Change D: C1 squint angle constraint (enforced at window generation)
 # ═══════════════════════════════════════════════════════════════════════════
 
 def test_d_sar_instrument_has_max_squint():
@@ -150,21 +150,23 @@ def test_d_check_geometric_constraints_rejects_squint():
     instrument = SARInstrument(max_squint_deg=45.0)
 
     # Valid: squint within limits
-    # (elevation=30, incidence=30, look='right', squint not checked here)
-    # To test squint, we need to check the actual function signature.
-    # _check_geometric_constraints currently takes (elevation, incidence, look, instrument).
-    # After C7 it should also check squint angle.
-    # For now, test that max_squint exists and is passed through.
-    pass  # See test_d2 for actual squint rejection
+    assert _check_geometric_constraints(30.0, 30.0, "right", instrument, squint=30.0) is True
+    # Boundary: squint exactly at limit
+    assert _check_geometric_constraints(30.0, 30.0, "right", instrument, squint=45.0) is True
+    # Violation: squint exceeds limit
+    assert _check_geometric_constraints(30.0, 30.0, "right", instrument, squint=50.0) is False
+    # Default squint (0.0) should pass when other constraints are satisfied
+    assert _check_geometric_constraints(30.0, 30.0, "right", instrument) is True
 
 def test_d2_squint_constraint_in_moea():
-    """MOEA should penalize solutions with squint > max_squint."""
+    """MOEA uses 2N encoding (Change A); C1 squint is enforced at window
+    generation, not via inline MOEA penalty (see test_d for function-level
+    squint rejection coverage)."""
     from sar_sim.solver.moea import SARSchedulingProblem
     from sar_sim.solver.types import AgileSARInstance, AgileTask
     from sar_sim.types import GroundTarget
 
-    # Create instance where task forces high squint
-    # We'll verify that the problem n_var is 2N (Change A applies)
+    # Verify that the problem n_var is 2N (Change A applies)
     tasks = [AgileTask(
         task_id=0, target_id="T000", priority=1.0,
         windows=[], phi_min=0.3, phi_max=0.8,
@@ -224,7 +226,7 @@ def test_g_compute_full_attitude_roll_uses_los_x():
         max_slew_rate=0.0524, settle_time=5.0,
         energy_budget=1e9, memory_budget=1e12,
         target_map={"T000": target},
-        altitude_m=600_000.0,
+        altitude_m=693_000.0,
     )
 
     # Compute full attitude
@@ -255,7 +257,7 @@ def test_g_compute_full_attitude_roll_uses_los_x():
             f"sqrt formula roll {new_roll_expected} should exceed |los_y| formula {old_roll}"
 
 # ═══════════════════════════════════════════════════════════════════════════
-# Combined: f3 + C3 use actual t_i
+# Combined: f3 + C2 use actual t_i
 # ═══════════════════════════════════════════════════════════════════════════
 
 def test_bc_moea_evaluate_uses_t_actual():

@@ -77,11 +77,13 @@ class AgileSARInstance:
     energy_budget: float                 # E_max
     memory_budget: float                 # M_max
     target_map: Dict[str, GroundTarget]  # target_id -> GroundTarget
-    altitude_m: float = 600_000.0        # satellite orbital altitude (m)
+    altitude_m: float = 693_000.0        # satellite orbital altitude (m)
     # ── Orbital parameters for 3-axis attitude computation ──────────────
     orbit_inclination_rad: float = DEFAULT_INCLINATION_RAD  # orbit inclination
     orbit_period_s: float = 5800.0       # orbital period (s), computed from altitude
-    orbit_ref_time_s: float = 0.0        # epoch seconds of ascending-node reference
+    orbit_ref_time_s: float = 0.0        # epoch seconds of ascending-node reference (phase=0)
+    orbit_raan_rad: float = 0.0          # RAAN (radians) — needed for correct ECI position
+    orbit_epoch_s: float = 0.0           # orbit epoch as Unix timestamp — for ECI→ECEF rotation
     geom_cache: Optional["GeomCache"] = None  # precomputed geometry cache
     target_ecef_map: Dict[str, np.ndarray] = field(default_factory=dict)
     sat_position_cache: Optional["SatPositionCache"] = None
@@ -102,7 +104,10 @@ def build_agile_instance(
     energy_per_obs: float = 50000.0,
     memory_per_obs: float = 5e8,
     resolution_reqs: Optional[List[float]] = None,
-    altitude_m: float = 600_000.0,  # orbital altitude for phi->theta conversion
+    altitude_m: float = 693_000.0,  # orbital altitude for phi->theta conversion
+    orbit_inclination_rad: float = DEFAULT_INCLINATION_RAD,
+    orbit_raan_rad: float = 0.0,
+    orbit_epoch_s: float = 0.0,
 ) -> AgileSARInstance:
     """Build an AgileSARInstance from sar_sim observation windows.
 
@@ -120,6 +125,10 @@ def build_agile_instance(
         energy_per_obs, memory_per_obs: per-observation resource consumption
         resolution_reqs: per-task resolution constraint minima (off-nadir, rad)
         altitude_m: satellite orbital altitude for phi->theta conversion
+        orbit_inclination_rad: orbit inclination (radians)
+        orbit_raan_rad: RAAN (radians) — needed for correct ECI→ECEF geometry
+        orbit_epoch_s: orbit epoch as Unix timestamp — phase reference and
+                       ECI→ECEF rotation reference
 
     Returns:
         AgileSARInstance
@@ -200,8 +209,11 @@ def build_agile_instance(
     # --- Compute orbital period from altitude (Kepler's third law) ---
     R_orbit = EARTH_RADIUS_M + altitude_m
     orbit_period_s = 2.0 * np.pi * np.sqrt(R_orbit**3 / MU_EARTH)
-    # Use the earliest task time as orbit reference (ascending node)
-    orbit_ref_time_s = min(t.t_earliest for t in tasks) if tasks else 0.0
+    # Orbit reference time: use orbit_epoch_s if provided, else earliest task time
+    if orbit_epoch_s > 0:
+        orbit_ref_time_s = orbit_epoch_s
+    else:
+        orbit_ref_time_s = min(t.t_earliest for t in tasks) if tasks else 0.0
 
     return AgileSARInstance(
         tasks=tasks,
@@ -214,8 +226,54 @@ def build_agile_instance(
         memory_budget=memory_budget,
         target_map=target_map,
         altitude_m=altitude_m,
+        orbit_inclination_rad=orbit_inclination_rad,
         orbit_period_s=orbit_period_s,
         orbit_ref_time_s=orbit_ref_time_s,
+        orbit_raan_rad=orbit_raan_rad,
+        orbit_epoch_s=orbit_epoch_s,
+    )
+
+
+def build_agile_instance_from_scenario(
+    scenario: dict,
+    **kwargs,
+) -> AgileSARInstance:
+    """Build an AgileSARInstance from a scenario PKL dict, auto-extracting
+    orbit parameters (RAAN, inclination, epoch) from the satellite/config
+    fields.
+
+    This ensures _satellite_body_frame uses the same orbit as the
+    visibility-window generation, producing consistent phi/theta values.
+
+    Args:
+        scenario: dict loaded from a scenario .pkl file, containing keys
+            "windows", "targets", "satellite", "config".
+        **kwargs: additional arguments forwarded to build_agile_instance
+            (e.g. max_slew_rate, settle_time).
+
+    Returns:
+        AgileSARInstance with correct orbital parameters.
+    """
+    import numpy as np
+
+    sat = scenario.get("satellite", {})
+    config = scenario.get("config", {})
+
+    inclination_deg = sat.get("inclination_deg", 97.8)
+    ltan_h = sat.get("ltan_h", 6.0)
+    t_start = config.get("t_start")
+
+    orbit_inclination_rad = np.radians(inclination_deg)
+    orbit_raan_rad = np.radians(ltan_h * 15.0)
+    orbit_epoch_s = t_start.timestamp() if hasattr(t_start, "timestamp") else float(t_start)
+
+    return build_agile_instance(
+        windows=scenario["windows"],
+        targets=scenario["targets"],
+        orbit_inclination_rad=orbit_inclination_rad,
+        orbit_raan_rad=orbit_raan_rad,
+        orbit_epoch_s=orbit_epoch_s,
+        **kwargs,
     )
 
 
@@ -227,51 +285,71 @@ def _satellite_body_frame(
 ) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
     """Compute satellite body-frame axes at observation time.
 
-    Uses a circular-orbit approximation: the satellite moves in its
-    orbital plane (inclination i), and the body frame is defined as:
+    Uses a circular-orbit approximation consistent with propagate_orbit:
+    the satellite moves in its orbital plane (inclination i, RAAN Ω),
+    and the body frame is defined as:
 
         Z_body = nadir (toward Earth center)
         X_body = along-track (velocity direction)
         Y_body = cross-track = Z_body × X_body (right side)
 
+    The ECI position includes the RAAN rotation, and the ECI→ECEF
+    rotation uses the absolute Unix timestamp (matching
+    eci_to_ecef_rotation in generator/target.py).  This ensures
+    consistency with visibility-window generation.
+
     Args:
-        obs_time_s: observation time (epoch seconds)
+        obs_time_s: observation time (Unix epoch seconds)
         instance: problem instance with orbital params
 
     Returns:
-        (X_body, Y_body, Z_body) — each a unit (3,) numpy array in ECEF
+        (X_body, Y_body, Z_body, pos_ecef) — body axes are unit (3,)
+        numpy arrays in ECEF; pos_ecef is the satellite ECEF position (m).
     """
     R_orbit = EARTH_RADIUS_M + instance.altitude_m
     omega = 2.0 * np.pi / instance.orbit_period_s  # orbital angular velocity
     i_rad = instance.orbit_inclination_rad
+    raan = instance.orbit_raan_rad
     t_ref = instance.orbit_ref_time_s
 
     # Orbital phase at observation time (radians from ascending node)
     theta = omega * (obs_time_s - t_ref)
 
-    # Satellite position in ECI (ascending-node-aligned frame):
-    # Orbit plane rotated by inclination i about x-axis.
-    # Positions: x = R·cos(θ), y = R·sin(θ)·cos(i), z = R·sin(θ)·sin(i)
+    # Satellite position in perifocal frame (arg_perigee = 0):
+    # x = R·cos(θ), y = R·sin(θ), z = 0
     cos_theta = np.cos(theta)
     sin_theta = np.sin(theta)
     cos_i = np.cos(i_rad)
     sin_i = np.sin(i_rad)
+    cos_raan = np.cos(raan)
+    sin_raan = np.sin(raan)
 
-    pos_eci = np.array([
-        R_orbit * cos_theta,
-        R_orbit * sin_theta * cos_i,
-        R_orbit * sin_theta * sin_i,
+    pos_peri = np.array([R_orbit * cos_theta, R_orbit * sin_theta, 0.0])
+    vel_peri = np.array([-R_orbit * omega * sin_theta,
+                          R_orbit * omega * cos_theta, 0.0])
+
+    # ECI = R_x(inclination) @ R_z(RAAN) @ perifocal
+    # (matches kepler_to_eci rotation: R = R_z(ω) @ R_x(i) @ R_z(Ω),
+    #  with arg_perigee ω = 0)
+    R_z_raan = np.array([
+        [cos_raan, -sin_raan, 0],
+        [sin_raan,  cos_raan, 0],
+        [0,         0,        1],
     ])
-
-    # Velocity in ECI (derivative of position)
-    vel_eci = np.array([
-        -R_orbit * omega * sin_theta,
-        R_orbit * omega * cos_theta * cos_i,
-        R_orbit * omega * cos_theta * sin_i,
+    R_x_inc = np.array([
+        [1, 0,      0],
+        [0, cos_i, -sin_i],
+        [0, sin_i,  cos_i],
     ])
+    R_eci = R_x_inc @ R_z_raan
 
-    # Earth rotation correction: ECI → ECEF (rotation about z-axis)
-    earth_angle = OMEGA_EARTH * (obs_time_s - t_ref)
+    pos_eci = R_eci @ pos_peri
+    vel_eci = R_eci @ vel_peri
+
+    # Earth rotation correction: ECI → ECEF (rotation about z-axis).
+    # Use ABSOLUTE Unix timestamp to match eci_to_ecef_rotation()
+    # in generator/target.py (which uses OMEGA_EARTH * timestamp).
+    earth_angle = OMEGA_EARTH * obs_time_s
     cos_ea = np.cos(earth_angle)
     sin_ea = np.sin(earth_angle)
     R_eci2ecef = np.array([

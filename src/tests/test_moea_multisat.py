@@ -5,8 +5,8 @@ Tests are ordered by the TDD RED-GREEN-REFACTOR cycle:
   Test 2: C6 no-duplication constraint enforcement
   Test 3: C6 passes for valid assignments
   Test 4: backward compatibility with n_sats=1
-  Test 5: per-satellite C3 transition feasibility
-  Test 6: per-satellite C4/C5 budget enforcement
+  Test 5: per-satellite C2 transition feasibility
+  Test 6: per-satellite C3/C4 budget enforcement
 """
 
 import sys
@@ -98,7 +98,7 @@ def _build_multisat_instance(
         energy_budget=1e7,
         memory_budget=1e11,
         target_map={t.target_id: t for t in targets},
-        altitude_m=600_000.0,
+        altitude_m=693_000.0,
         orbit_inclination_rad=np.radians(97.8),
         orbit_period_s=5800.0,
         orbit_ref_time_s=t0,
@@ -139,11 +139,19 @@ def test_multisat_encoding_shape():
 
 
 # ═══════════════════════════════════════════════════════════════════════════
-# Test 2 (RED): C6 no-duplication — must penalize target on 2+ satellites
+# Test 2: C6 removed — duplicate targets across satellites are NOT penalised
+#         (C6 was removed to align with paper §3 C1–C4; unique assignment is
+#          implied by C2 non-overlap for single-sat, not a separate constraint)
 # ═══════════════════════════════════════════════════════════════════════════
 
-def test_c6_no_duplication_penalty():
-    """C6 must add penalty when same target assigned to multiple satellites."""
+def test_c6_removed_no_duplication_penalty():
+    """C6 was removed; duplicate targets across satellites incur no extra penalty.
+
+    The paper's C1–C4 system does not include a target-deduplication constraint.
+    For single-satellite scheduling, unique assignment is implied by C2
+    (non-overlap).  For multi-satellite, duplication is allowed — the solver
+    may assign the same target to multiple satellites without penalty.
+    """
     instance = _build_multisat_instance(n_tasks=4)
     n_sats = 2
     problem = SARSchedulingProblem(instance, n_obj=2, n_sats=n_sats)
@@ -227,7 +235,7 @@ def test_c6_no_duplication_penalty():
         energy_budget=1e7,
         memory_budget=1e11,
         target_map=target_map,
-        altitude_m=600_000.0,
+        altitude_m=693_000.0,
         orbit_inclination_rad=np.radians(97.8),
         orbit_period_s=5800.0,
         orbit_ref_time_s=t0,
@@ -239,7 +247,8 @@ def test_c6_no_duplication_penalty():
 
     # Chromosome: select all 4 tasks, tau=0.5
     # sat assignment: tasks 0,1,2,3 → sat 0,0,1,1
-    # This means T0 appears on sat 0 AND sat 1 (violates C6!)
+    # Task 3 has target_id T0 — same as task 0 (duplicate across sats).
+    # C6 was removed, so this should NOT incur a duplication penalty.
     X = np.zeros((1, 3 * N2))
     X[0, :N2] = 1.0           # all selected
     X[0, N2:2*N2] = 0.5        # tau = 0.5
@@ -253,9 +262,10 @@ def test_c6_no_duplication_penalty():
     problem2._evaluate(X, out)
     G = out["G"]
 
-    # C6 violation should be > 0 since T0 is on both sat 0 and sat 1
-    assert G[0, 0] > 0, (
-        f"C6 should penalize duplicate target T0 across satellites, got G={G[0, 0]}"
+    # C6 was removed — duplicate targets across satellites are NOT penalised.
+    # G should be 0 (no C2/C3/C4 violations in this scenario either).
+    assert G[0, 0] == 0, (
+        f"C6 removed: duplicate target T0 should NOT be penalised, got G={G[0, 0]}"
     )
 
 
@@ -351,7 +361,7 @@ def test_c6_no_duplication_pass():
         energy_budget=1e12,  # huge budget
         memory_budget=1e13,
         target_map={t.target_id: t for t in targets},
-        altitude_m=600_000.0,
+        altitude_m=693_000.0,
         orbit_inclination_rad=np.radians(97.8),
         orbit_period_s=5800.0,
         orbit_ref_time_s=t0,
@@ -374,7 +384,7 @@ def test_c6_no_duplication_pass():
     problem3._evaluate(X3, out3)
 
     # No C6 violation expected (all unique target_ids)
-    # G may be > 0 from C3/C7 etc., but should be manageable
+    # G may be > 0 from C2/C3/C4 etc., but should be manageable
     assert out3["G"].shape == (1, 1)
     # F should be non-trivial
     assert out3["F"].shape == (1, 2)
@@ -490,14 +500,14 @@ def test_per_sat_c3_transition():
 
 
 # ═══════════════════════════════════════════════════════════════════════════
-# Test 6 (RED): per-satellite C4/C5 budget
+# Test 6 (RED): per-satellite C3/C4 budget
 # ═══════════════════════════════════════════════════════════════════════════
 
-def test_per_sat_c4c5_budget():
-    """C4/C5 must check energy/memory per satellite, not globally.
+def test_per_sat_c3c4_budget():
+    """C3/C4 must check energy/memory per satellite, not globally.
 
     If total energy is under global budget but one satellite exceeds
-    its per-sat share, C4 should trigger.
+    its per-sat share, C3 should trigger.
     """
     np.random.seed(42)
     t0 = 1_000_000_000.0
@@ -560,7 +570,7 @@ def test_per_sat_c4c5_budget():
         energy_budget=300000.0,
         memory_budget=1e13,
         target_map={t.target_id: t for t in targets},
-        altitude_m=600_000.0,
+        altitude_m=693_000.0,
         orbit_inclination_rad=np.radians(97.8),
         orbit_period_s=5800.0,
         orbit_ref_time_s=t0,

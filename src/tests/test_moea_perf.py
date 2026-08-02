@@ -1,6 +1,6 @@
 """TDD regression tests for MOEA performance optimization O1+O3+O4.
 
-Verifies that merged geometry+objectives loop (O1), vectorized C4/C5 (O3),
+Verifies that merged geometry+objectives loop (O1), vectorized C3/C4 (O3),
 and path unification (O4) produce IDENTICAL output.
 """
 
@@ -61,10 +61,10 @@ def test_o1_evaluate_output_unchanged():
             f"n_obj={n_obj}: G not deterministic"
 
 
-# ── O3: vectorized C4/C5 ────────────────────────────────────────────
+# ── O3: vectorized C3/C4 ────────────────────────────────────────────
 
-def test_o3_c4c5_vectorized_unchanged():
-    """Vectorized C4/C5 must produce same G as sum(generator) version."""
+def test_o3_c3c4_vectorized_unchanged():
+    """Vectorized C3/C4 must produce same G as sum(generator) version."""
     targets, windows = _load_s2()
     inst = _make_instance(targets, windows)
 

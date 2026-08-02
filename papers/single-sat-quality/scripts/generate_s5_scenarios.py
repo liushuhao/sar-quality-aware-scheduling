@@ -26,7 +26,7 @@ PROJECT = Path(__file__).resolve().parent
 )
 
 # --- Constants (matches generate_scenarios.py from t_57dc6648) ---
-ORBIT_ALTITUDE_KM = 600.0
+ORBIT_ALTITUDE_KM = 693.0
 ORBIT_INCLINATION_DEG = 97.8
 LTAN_HOURS = 6.0
 SIM_DURATION_ORBITS = 2

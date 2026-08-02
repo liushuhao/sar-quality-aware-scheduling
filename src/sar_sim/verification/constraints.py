@@ -1,17 +1,19 @@
 """Independent constraint verification for agile SAR scheduling.
 
-Checks constraints C1-C5 from the problem formalization, producing
-per-constraint PASS/FAIL results.  Completely independent of
-SARschedulingProblem._evaluate — reuses only the transition time model
-(compute_transition_time) and Earth-curvature conversion (off_nadir_to_incidence)
-which are physics functions, not solver logic.
+Checks constraints C1-C4 from the paper (§3), producing per-constraint
+PASS/FAIL results.  Completely independent of SARSchedulingProblem._evaluate —
+reuses only the transition time model (compute_los_separation) and
+Earth-curvature conversion (off_nadir_to_incidence) which are physics
+functions, not solver logic.
 
-Constraints checked (from problem_formalization.md):
-    C1 — Angle Feasibility:  |φ_i| ∈ [φ_min_i, φ_max_i]
-    C2 — Resolution:         θ(|φ_i|) ≥ θ_min_res
-    C3 — Attitude Transition: τ(φ_a, φ_b) ≤ available_gap
-    C4 — Energy Budget:       Σ e_i ≤ E_max
-    C5 — Memory Budget:       Σ m_i ≤ M_max
+Constraints checked (paper §3, C1–C4):
+    C1 — Incidence and Squint Angle:  |θ_i| ∈ [θ^min, θ^max],
+         |ψ_sq,i| ≤ ψ_sq^max.  Enforced during visibility-window generation;
+         verified here post-hoc using decoded φ_i and (when available) ψ_sq,i.
+    C2 — Attitude Maneuver and Non-Overlap:
+         τ(l_a, l_b) ≤ available_gap between consecutive observations.
+    C3 — Energy Budget:  Σ e_i ≤ E_max
+    C4 — Memory Budget:  Σ m_i ≤ M_max
 """
 
 from __future__ import annotations
@@ -27,6 +29,7 @@ from sar_sim.solver.types import (
     compute_los_separation,
     compute_transition_time,
 )
+from sar_sim.metrics.nesz import off_nadir_to_incidence
 
 # ---------------------------------------------------------------------------
 # Report data types
@@ -38,7 +41,7 @@ class ViolationDetail:
     """Structured information about a single constraint violation.
 
     Attributes:
-        constraint: constraint label (C1–C5)
+        constraint: constraint label (C1–C4)
         task_ids: which task(s) are involved
         expected: what the constraint requires
         actual: what the solution provides
@@ -58,7 +61,7 @@ class PerConstraintResult:
     """Result of checking a single constraint.
 
     Attributes:
-        constraint: label (C1–C5)
+        constraint: label (C1–C4)
         passed: True if no violations found
         total_checks: number of individual checks performed
         violations: list of violation details (empty if passed)
@@ -79,9 +82,9 @@ class VerificationReport:
     """Complete constraint verification report for one solution.
 
     Attributes:
-        results: per-constraint results (keys: "C1"–"C5")
+        results: per-constraint results (keys: "C1"–"C4")
         overall_pass: True iff all constraints pass
-        n_constraints_checked: number of constraints checked (always 5)
+        n_constraints_checked: number of constraints checked (always 4)
         n_passed: how many constraints passed
         n_failed: how many constraints failed
         all_violations: concatenated list of all violations across all constraints
@@ -105,7 +108,7 @@ class VerificationReport:
         lines = ["=" * 60]
         lines.append(f"  CONSTRAINT VERIFICATION — {self.summary()}")
         lines.append("=" * 60)
-        for c in ["C1", "C2", "C3", "C4", "C5"]:
+        for c in ["C1", "C2", "C3", "C4"]:
             r = self.results[c]
             status = "PASS" if r.passed else "FAIL"
             lines.append(f"  {c} [{status}]  {r.total_checks} checks, "
@@ -120,57 +123,113 @@ class VerificationReport:
 # Per-constraint verification functions
 # ---------------------------------------------------------------------------
 
-def verify_c1_angle_feasibility(
+def verify_c1_incidence_squint(
     selected_indices: List[int],
     phi_signed: np.ndarray,
     tasks: List[AgileTask],
+    instance: Optional["AgileSARInstance"] = None,
+    t_actual: Optional[Union[np.ndarray, List[float]]] = None,
+    max_squint_deg: float = 45.0,
 ) -> PerConstraintResult:
-    """C1: Each selected task's |φ_i| must lie in [phi_min_i, phi_max_i].
+    """C1: Incidence and squint angle constraints (paper §3).
 
-    The off-nadir angle phi is signed (± for left/right looking), so
-    the constraint is checked on the absolute value |φ_i|.
+    Each selected acquisition must satisfy:
+      (a) incidence-angle range  θ^min ≤ |θ_i| ≤ θ^max, where θ is obtained
+          from the off-nadir angle φ via the Earth-curvature relation
+          θ = off_nadir_to_incidence(φ, altitude);
+      (b) squint-angle limit  |ψ_sq,i| ≤ ψ_sq^max  (checked only when
+          ``instance`` with ``geom_cache`` and ``t_actual`` are available;
+          otherwise C1 squint is assumed enforced at window-generation time).
+
+    Note: the resolution sub-constraint has been merged into θ^min per the
+    latest paper revision (resolution determines the lower incidence bound).
 
     Args:
         selected_indices: which tasks are selected
         phi_signed: signed off-nadir angles (indexed by task index)
         tasks: all tasks in the instance
+        instance: optional AgileSARInstance (for altitude, geom_cache squint)
+        t_actual: optional actual observation times (required for squint check)
+        max_squint_deg: maximum allowable squint angle in degrees (default 45°)
 
     Returns:
         PerConstraintResult with per-task violation details
     """
     violations: List[ViolationDetail] = []
     total_checks = 0
+    max_squint_rad = np.radians(max_squint_deg)
+
+    # Get altitude for φ→θ conversion
+    altitude_m = instance.altitude_m if instance is not None else 693_000.0
+
+    # C1 incidence bounds come from the global instrument envelope
+    # (instance.phi_min / instance.phi_max), NOT from per-task phi_min/phi_max.
+    # Per-task phi_min (from elevation_to_off_nadir, flat-Earth) is a capability
+    # descriptor and differs from the precise ECEF off-nadir used by geom_cache,
+    # which would falsely flag all MOEA frontier solutions as infeasible.
+    if instance is not None:
+        global_phi_min = instance.phi_min
+        global_phi_max = instance.phi_max
+    else:
+        global_phi_min = 0.2618   # 15° default
+        global_phi_max = 0.8727   # 50° default
+    theta_min_global = off_nadir_to_incidence(global_phi_min, altitude_m)
+    theta_max_global = off_nadir_to_incidence(global_phi_max, altitude_m)
 
     for i in selected_indices:
         task = tasks[i]
         phi_abs = abs(float(phi_signed[i]))
+        theta = off_nadir_to_incidence(phi_abs, altitude_m)
+        theta_min = theta_min_global
+        theta_max = theta_max_global
         total_checks += 1
 
-        # Below minimum
-        if phi_abs < task.phi_min:
-            mag = task.phi_min - phi_abs
+        # (a) Below incidence lower bound
+        if theta < theta_min:
+            mag = theta_min - theta
             violations.append(ViolationDetail(
                 constraint="C1",
                 task_ids=[i],
-                expected=f"|φ| >= {task.phi_min:.6f}",
-                actual=f"|φ| = {phi_abs:.6f}",
+                expected=f"|θ| >= {theta_min:.6f} (incidence min)",
+                actual=f"|θ| = {theta:.6f} (from φ={phi_abs:.6f})",
                 magnitude=mag,
-                description=f"Task {i} ({task.target_id}): |φ|={phi_abs:.4f} "
-                            f"below lower bound {task.phi_min:.4f} (Δ={mag:.4f})",
+                description=f"Task {i} ({task.target_id}): |θ|={theta:.4f} "
+                            f"below incidence lower bound {theta_min:.4f} "
+                            f"(Δ={mag:.4f})",
             ))
 
-        # Above maximum
-        if phi_abs > task.phi_max:
-            mag = phi_abs - task.phi_max
+        # (a) Above incidence upper bound
+        if theta > theta_max:
+            mag = theta - theta_max
             violations.append(ViolationDetail(
                 constraint="C1",
                 task_ids=[i],
-                expected=f"|φ| <= {task.phi_max:.6f}",
-                actual=f"|φ| = {phi_abs:.6f}",
+                expected=f"|θ| <= {theta_max:.6f} (incidence max)",
+                actual=f"|θ| = {theta:.6f} (from φ={phi_abs:.6f})",
                 magnitude=mag,
-                description=f"Task {i} ({task.target_id}): |φ|={phi_abs:.4f} "
-                            f"above upper bound {task.phi_max:.4f} (Δ={mag:.4f})",
+                description=f"Task {i} ({task.target_id}): |θ|={theta:.4f} "
+                            f"above incidence upper bound {theta_max:.4f} "
+                            f"(Δ={mag:.4f})",
             ))
+
+        # (b) Squint angle (only when geom_cache + t_actual available)
+        if (instance is not None and instance.geom_cache is not None
+                and t_actual is not None):
+            geom = instance.geom_cache.lookup(i, float(t_actual[i]))
+            psi_sq = abs(geom.psi_sq)
+            if psi_sq > max_squint_rad:
+                mag = psi_sq - max_squint_rad
+                violations.append(ViolationDetail(
+                    constraint="C1",
+                    task_ids=[i],
+                    expected=f"|ψ_sq| <= {max_squint_deg:.1f}°",
+                    actual=f"|ψ_sq| = {np.degrees(psi_sq):.2f}°",
+                    magnitude=mag,
+                    description=f"Task {i} ({task.target_id}): "
+                                f"|ψ_sq|={np.degrees(psi_sq):.2f}° "
+                                f"exceeds squint limit {max_squint_deg:.1f}° "
+                                f"(Δ={np.degrees(mag):.2f}°)",
+                ))
 
     worst = max((v.magnitude for v in violations), default=0.0)
     return PerConstraintResult(
@@ -182,61 +241,7 @@ def verify_c1_angle_feasibility(
     )
 
 
-def verify_c2_resolution(
-    selected_indices: List[int],
-    phi_signed: np.ndarray,
-    tasks: List[AgileTask],
-) -> PerConstraintResult:
-    """C2: Each selected task's |φ_i| must satisfy resolution requirement.
-
-    Checks |φ_i| >= phi_min_res for each selected task.  The resolution
-    requirement is expressed as the minimum off-nadir angle φ_min_res
-    (consistent with how the MOEA encodes this constraint).
-
-    For Earth-curvature-corrected resolution, the incidence angle θ(|φ|)
-    should be >= θ_min_res, but phi_min_res is already stored in off-nadir
-    space, so the direct comparison is equivalent given the 1.5–5° curvature.
-
-    Args:
-        selected_indices: which tasks are selected
-        phi_signed: signed off-nadir angles
-        tasks: all tasks
-
-    Returns:
-        PerConstraintResult
-    """
-    violations: List[ViolationDetail] = []
-    total_checks = 0
-
-    for i in selected_indices:
-        task = tasks[i]
-        phi_abs = abs(float(phi_signed[i]))
-        total_checks += 1
-
-        if task.phi_min_res > 0 and phi_abs < task.phi_min_res:
-            mag = task.phi_min_res - phi_abs
-            violations.append(ViolationDetail(
-                constraint="C2",
-                task_ids=[i],
-                expected=f"|φ| >= {task.phi_min_res:.6f} (resolution)",
-                actual=f"|φ| = {phi_abs:.6f}",
-                magnitude=mag,
-                description=f"Task {i} ({task.target_id}): |φ|={phi_abs:.4f} "
-                            f"below resolution minimum {task.phi_min_res:.4f} "
-                            f"(Δ={mag:.4f})",
-            ))
-
-    worst = max((v.magnitude for v in violations), default=0.0)
-    return PerConstraintResult(
-        constraint="C2",
-        passed=len(violations) == 0,
-        total_checks=total_checks,
-        violations=tuple(violations),
-        worst_violation_magnitude=worst,
-    )
-
-
-def verify_c3_transition(
+def verify_c2_transition(
     selected_indices: List[int],
     phi_signed: np.ndarray,
     tasks: List[AgileTask],
@@ -245,11 +250,12 @@ def verify_c3_transition(
     instance: Optional["AgileSARInstance"] = None,
     t_actual: Optional[Union[np.ndarray, List[float]]] = None,
 ) -> PerConstraintResult:
-    """C3: All consecutive selected tasks must have feasible transitions.
+    """C2: Attitude maneuver and non-overlap between consecutive observations.
 
     For every consecutive pair of selected tasks sorted by t_earliest,
     the attitude transition time τ(φ_a, φ_b) must not exceed the
-    available gap between t_end(a) and t_start(b).
+    available gap between t_end(a) and t_start(b).  This also enforces
+    non-overlapping execution intervals (paper §3, Eq. 6).
 
     When ``instance`` is provided, uses the full 3-axis attitude model
     (roll, pitch, yaw).  When ``instance`` is None, falls back to the
@@ -258,7 +264,7 @@ def verify_c3_transition(
     When ``t_actual`` is provided (together with ``instance``), uses the
     actual observation times for LOS angular separation (via
     ``compute_los_separation``) and gap computation, matching the MOEA's
-    own C3 evaluation.  Without ``t_actual``, falls back to t_earliest
+    own C2 evaluation.  Without ``t_actual``, falls back to t_earliest
     to preserve backward compatibility.
 
     Args:
@@ -267,7 +273,7 @@ def verify_c3_transition(
         tasks: all tasks
         max_slew_rate: maximum attitude slew rate (rad/s)
         settle_time: post-maneuver settling time (s)
-        instance: optional AgileSARInstance for full 3-axis C3 check
+        instance: optional AgileSARInstance for full 3-axis C2 check
         t_actual: optional actual observation times (length N, indexed by
                   task index).  When provided, used for LOS separation
                   and gap calculation.
@@ -280,7 +286,7 @@ def verify_c3_transition(
 
     if len(selected_indices) < 2:
         return PerConstraintResult(
-            constraint="C3",
+            constraint="C2",
             passed=True,
             total_checks=0,
         )
@@ -326,7 +332,7 @@ def verify_c3_transition(
         if available_gap < tau:
             mag = tau - available_gap
             violations.append(ViolationDetail(
-                constraint="C3",
+                constraint="C2",
                 task_ids=[i_a, i_b],
                 expected=f"available_gap >= {tau:.3f}s",
                 actual=f"available_gap = {available_gap:.3f}s",
@@ -339,7 +345,7 @@ def verify_c3_transition(
 
     worst = max((v.magnitude for v in violations), default=0.0)
     return PerConstraintResult(
-        constraint="C3",
+        constraint="C2",
         passed=len(violations) == 0,
         total_checks=total_checks,
         violations=tuple(violations),
@@ -347,12 +353,12 @@ def verify_c3_transition(
     )
 
 
-def verify_c4_energy(
+def verify_c3_energy(
     selected_indices: List[int],
     tasks: List[AgileTask],
     energy_budget: float,
 ) -> PerConstraintResult:
-    """C4: Total energy consumption must not exceed budget.
+    """C3: Total energy consumption must not exceed budget.
 
     Σ x_i · e_i ≤ E_max
 
@@ -371,7 +377,7 @@ def verify_c4_energy(
     violations: Tuple[ViolationDetail, ...] = ()
     if not passed:
         violations = (ViolationDetail(
-            constraint="C4",
+            constraint="C3",
             task_ids=list(selected_indices),
             expected=f"Σ energy <= {energy_budget:.1f}",
             actual=f"Σ energy = {energy_used:.1f}",
@@ -381,7 +387,7 @@ def verify_c4_energy(
         ),)
 
     return PerConstraintResult(
-        constraint="C4",
+        constraint="C3",
         passed=passed,
         total_checks=1,
         violations=violations,
@@ -389,12 +395,12 @@ def verify_c4_energy(
     )
 
 
-def verify_c5_memory(
+def verify_c4_memory(
     selected_indices: List[int],
     tasks: List[AgileTask],
     memory_budget: float,
 ) -> PerConstraintResult:
-    """C5: Total memory consumption must not exceed budget.
+    """C4: Total memory consumption must not exceed budget.
 
     Σ x_i · m_i ≤ M_max
 
@@ -413,7 +419,7 @@ def verify_c5_memory(
     violations: Tuple[ViolationDetail, ...] = ()
     if not passed:
         violations = (ViolationDetail(
-            constraint="C5",
+            constraint="C4",
             task_ids=list(selected_indices),
             expected=f"Σ memory <= {memory_budget:.1f}",
             actual=f"Σ memory = {memory_used:.1f}",
@@ -423,7 +429,7 @@ def verify_c5_memory(
         ),)
 
     return PerConstraintResult(
-        constraint="C5",
+        constraint="C4",
         passed=passed,
         total_checks=1,
         violations=violations,
@@ -438,8 +444,8 @@ def verify_c5_memory(
 class ConstraintVerifier:
     """Independent constraint verifier for agile SAR scheduling solutions.
 
-    Checks all five constraints (C1–C5) for a given solution against
-    the problem instance.  Completely independent of MOEA._evaluate.
+    Checks all four constraints (C1–C4, paper §3) for a given solution
+    against the problem instance.  Completely independent of MOEA._evaluate.
 
     Usage::
 
@@ -485,8 +491,8 @@ class ConstraintVerifier:
             phi_signed: signed off-nadir angles, indexed by task index
                         (length N, only entries at selected_indices matter)
             t_actual: optional actual observation times (length N, indexed by
-                      task index).  When provided, used for C3 LOS separation
-                      and gap calculation (matching MOEA._evaluate).
+                      task index).  When provided, used for C1 squint lookup
+                      and C2 LOS separation (matching MOEA._evaluate).
 
         Returns:
             VerificationReport with per-constraint PASS/FAIL status
@@ -495,18 +501,17 @@ class ConstraintVerifier:
 
         results: Dict[str, PerConstraintResult] = {}
 
-        results["C1"] = verify_c1_angle_feasibility(
-            selected_indices, phi_signed, self._tasks)
-        results["C2"] = verify_c2_resolution(
-            selected_indices, phi_signed, self._tasks)
-        results["C3"] = verify_c3_transition(
+        results["C1"] = verify_c1_incidence_squint(
+            selected_indices, phi_signed, self._tasks,
+            instance=self._instance, t_actual=t_actual)
+        results["C2"] = verify_c2_transition(
             selected_indices, phi_signed, self._tasks,
             self._max_slew_rate, self._settle_time,
             instance=self._instance,
             t_actual=t_actual)
-        results["C4"] = verify_c4_energy(
+        results["C3"] = verify_c3_energy(
             selected_indices, self._tasks, self._energy_budget)
-        results["C5"] = verify_c5_memory(
+        results["C4"] = verify_c4_memory(
             selected_indices, self._tasks, self._memory_budget)
 
         all_pass = all(r.passed for r in results.values())
@@ -584,7 +589,9 @@ class ConstraintVerifier:
         """Verify all solutions in a Pareto frontier.
 
         Each frontier dict must have keys 'selected' (list of indices)
-        and 'phis' (list of signed off-nadir angles).
+        and 'phis' (list of signed off-nadir angles).  Optionally,
+        't_actuals' (list of decoded observation times) may be present
+        for t_actual-based C2 verification.
 
         The 'phis' list may be either:
         - Full N-length array (indexed by task index), or
@@ -609,7 +616,17 @@ class ConstraintVerifier:
                     phi_full[task_idx] = phis[idx]
             else:
                 phi_full = np.asarray(phis, dtype=float)
-            report = self.verify_solution(selected, phi_full)
+            # Reconstruct full N-length t_actual if available
+            t_actual_full = None
+            if "t_actuals" in sol and sol["t_actuals"]:
+                t_acts = sol["t_actuals"]
+                if len(t_acts) == len(selected) and len(t_acts) < self._instance.N:
+                    t_actual_full = np.zeros(self._instance.N, dtype=float)
+                    for idx, task_idx in enumerate(selected):
+                        t_actual_full[task_idx] = t_acts[idx]
+                else:
+                    t_actual_full = np.asarray(t_acts, dtype=float)
+            report = self.verify_solution(selected, phi_full, t_actual=t_actual_full)
             results.append((sol, report))
         return results
 

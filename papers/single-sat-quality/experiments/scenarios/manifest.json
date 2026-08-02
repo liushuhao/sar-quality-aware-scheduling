@@ -1,18 +1,24 @@
 {
-  "generated_at": "2026-06-14T07:11:56.298777+00:00",
-  "scales": {
-    "small": 20,
-    "medium": 100,
-    "large": 500
+  "generated_at": "PENDING_REGENERATION",
+  "generator_script": "generate_all_scenarios.py",
+  "note": "Manifest reflects target state after 10s step refactor. Existing pkl files were generated with 60s step and must be regenerated.",
+  "groups": {
+    "S1": {"n_targets": 20, "n_subconfigs": 5, "n_seeds_per_subconfig": 10, "total_pkls": 50},
+    "S2": {"n_targets": 100, "n_subconfigs": 5, "n_seeds_per_subconfig": 10, "total_pkls": 50},
+    "S3": {"n_targets": 300, "n_subconfigs": 5, "n_seeds_per_subconfig": 10, "total_pkls": 50},
+    "S4": {"n_targets": 500, "n_subconfigs": 5, "n_seeds_per_subconfig": 10, "total_pkls": 50},
+    "S5": {"n_targets": 20, "n_subconfigs": 5, "n_seeds_per_subconfig": 10, "total_pkls": 50, "purpose": "psi_sq sensitivity"},
+    "S6": {"n_targets": 20, "n_subconfigs": 5, "n_seeds_per_subconfig": 10, "total_pkls": 50, "purpose": "C3 cluster stress test, narrow window"},
+    "S7": {"n_targets": 150, "n_subconfigs": 5, "n_seeds_per_subconfig": 10, "total_pkls": 50, "purpose": "intermediate density for N50 CI tightening"},
+    "S8": {"n_targets": 200, "n_subconfigs": 5, "n_seeds_per_subconfig": 10, "total_pkls": 50, "purpose": "intermediate density for N50 CI tightening"}
   },
-  "n_seeds": 30,
-  "total_scenarios": 90,
+  "total_scenarios": 400,
   "orbit": {
-    "altitude_km": 600.0,
+    "altitude_km": 693.0,
     "inclination_deg": 97.8,
     "ltan_h": 6.0,
     "sim_duration_orbits": 2,
-    "timestep_s": 60
+    "timestep_s": 10
   },
   "instrument": {
     "incidence_min_deg": 15.0,

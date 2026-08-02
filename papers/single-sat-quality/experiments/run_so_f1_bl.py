@@ -59,10 +59,42 @@ def run_one(pkl_path: Path) -> dict:
     n_targets = data.get("n_targets", len(targets))
     seed = data.get("seed", 0)
 
-    # Compute G-BL reference f1 for normalization
+    # Extract orbit parameters from scenario so GeomCache matches visibility windows
+    sat = data.get("satellite", {})
+    config = data.get("config", {})
+    orbit_inclination_rad = np.radians(sat.get("inclination_deg", 97.8))
+    orbit_raan_rad = np.radians(sat.get("ltan_h", 6.0) * 15.0)
+    t_start = config.get("t_start")
+    orbit_epoch_s = t_start.timestamp() if hasattr(t_start, "timestamp") else float(t_start)
+
+    # Compute G-BL reference f1 for normalization.
+    # IMPORTANT: build the instance first and pass it to baseline_b1 so the
+    # G-BL schedule and f1 are computed with the same C2 transition model
+    # and target set as the GA-P-BL solver.  Calling baseline_b1(windows,
+    # targets) without an instance yields a different (incomparable) f1
+    # because it includes targets filtered out during build_agile_instance
+    # and uses the legacy phi-diff C2 model.
     from sar_sim.solver.baselines import baseline_b1
-    gbl = baseline_b1(windows, targets)
-    f1_gbl = max(gbl.f1, 1.0)
+    from sar_sim.solver.types import build_agile_instance, precompute_geometry
+    instance = build_agile_instance(
+        windows, targets,
+        orbit_raan_rad=orbit_raan_rad,
+        orbit_epoch_s=orbit_epoch_s,
+        orbit_inclination_rad=orbit_inclination_rad,
+        max_slew_rate=SLEW_RATE,
+        settle_time=SETTLE_TIME,
+    )
+    precompute_geometry(instance, step_s=10.0)
+    gbl = baseline_b1(windows, targets, instance=instance)
+    target_to_idx = {t.target_id: i for i, t in enumerate(instance.tasks)}
+    gbl_f1 = 0.0
+    seen = set()
+    for obs in gbl.schedule:
+        tid = obs.window.target_id
+        if tid in target_to_idx and tid not in seen:
+            seen.add(tid)
+            gbl_f1 += instance.tasks[target_to_idx[tid]].priority
+    f1_gbl = max(gbl_f1, 1.0)
 
     t0 = time.time()
     result = b2_profit_solver_bl_seeded(
@@ -71,12 +103,13 @@ def run_one(pkl_path: Path) -> dict:
         n_generations=GA_PARAMS["n_generations"],
         max_slew_rate=SLEW_RATE,
         settle_time=SETTLE_TIME,
+        orbit_raan_rad=orbit_raan_rad,
+        orbit_epoch_s=orbit_epoch_s,
+        orbit_inclination_rad=orbit_inclination_rad,
     )
     rt = time.time() - t0
 
     meta = result.metadata
-    # Compute f1_gbl from G-BL (already run in b2_profit_solver_bl_seeded)
-    # For consistency, use the same reference — we'll get it from metadata or compute
     f1_raw = float(meta.get("f1", 0.0))
     return {
         "seed": seed,
@@ -96,6 +129,8 @@ def run_one(pkl_path: Path) -> dict:
         "selected": meta.get("selected", []),
         "t_actuals": meta.get("t_actuals", []),
         "phis_off_nadir": meta.get("phis_off_nadir", []),
+        "constraint_feasible": meta.get("constraint_feasible", True),
+        "n_constraints_failed": meta.get("n_constraints_failed", 0),
     }
 
 def main():
