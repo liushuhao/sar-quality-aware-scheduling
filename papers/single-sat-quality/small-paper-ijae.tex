@@ -50,7 +50,7 @@ algorithm (MOEA) formulations seeded by the greedy baseline (G-BL)
 approach the greedy coverage anchor and the marginal quality gain falls
 below $2\%$.
 This coverage convergence is conditional on greedy-baseline hot-start
-initialization, with random-init $f_1^*$ deficits of $0.20$--$0.46$ at all densities.
+initialization, with random-init $f_1^*$ deficits of $0.18$--$0.46$ at all densities.
 Independently, ablation shows that removing the physical
 objectives barely changes dense-regime outcomes.
 The additional third objective is effectively redundant: MOEA-3 yields
@@ -979,12 +979,15 @@ The mechanism above must be separated from initialization and search-budget
 effects. We therefore use four control experiments.
 
 \paragraph{Hot-start dependence.}
-On 10 S1, 4 S2, 5 S3, and 5 S4 scenarios, random-initialized MOEA-2 yields
-$f_1^*$ deficits of approximately $-0.18$, $-0.42$, $-0.46$, and $-0.33$
-relative to hot-start MOEA-2, respectively. G-BL seeding therefore materially
-improves coverage convergence at every tested density. This constrains the
+On 10 S1, 4 S2, 5 S3, and 5 S4 scenarios (3 seeds each), random-initialized MOEA-2 yields
+$f_1^*$ deficits of approximately $-0.18 \pm 0.26$, $-0.42 \pm 0.13$, $-0.46 \pm 0.04$, and $-0.33 \pm 0.04$
+(mean $\pm$ SD across runs) relative to hot-start MOEA-2, respectively. G-BL seeding therefore materially
+improves coverage convergence at every tested density; notably, the deficit is largest in the dense S3 class
+rather than the sparsest one, indicating that high target density does not by itself make random initialization
+sufficient. This constrains the
 coverage-ceiling claim: proximity to G-BL is initialization-dependent. By
-contrast, random-init solutions retain comparable $f_2$ values, so the
+contrast, random-init solutions attain slightly higher $f_2$ ($0.605$--$0.624$ vs.\ $0.594$--$0.603$ for the
+hot start), so the
 $f_2$--$f_3$ geometric relationship is not created by the anchor.
 The coverage ceiling is therefore a G-BL initialization effect rather than
 an artifact of the MOEA framework.
@@ -1086,7 +1089,8 @@ justified; for area-monitoring missions, the greedy baseline remains
 preferable. In dense regimes ($N \geq 300$), the multi-objective
 advantage falls below $2\%$ improvement in $f_2$, while G-SM offers
 the highest radiometric quality ($+70\%$ $f_3$ at S4) at a $39\%$
-coverage cost. The logistic midpoint $N_{50} \approx 140$
+coverage cost; this gain comes from the one-line squint-minimization
+heuristic rather than from multi-objective search. The logistic midpoint $N_{50} \approx 140$
 (\S~\ref{sec:scale-sensitivity}) provides a concrete transition
 estimate between these regimes. Our results suggest a conditional operational guideline:
 for sparse observation requests ($N \lesssim 100$), MOEA-2 may provide
@@ -1095,7 +1099,7 @@ contexts; for dense monitoring campaigns ($N \gtrsim 300$), greedy
 methods (G-SM for radiometric priority, G-BL for coverage priority)
 approach Pareto-optimal coverage and may be preferable. However,
 relative to the strongest coverage-only solver (GA-P-BL), the MOEA-2
-coverage gap persists at $13$--$14\%$ even at $N \geq 300$ (vs.
+coverage gap persists at $13$--$14\%$ even at $N \geq 300$ (paired per-scenario comparison; vs.
 $2\%$ vs. G-BL), because G-BL is a weaker reference point.
 
 % ── 7.4 Limitations ──
