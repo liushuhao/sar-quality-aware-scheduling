@@ -90,11 +90,9 @@ Requires TeX distribution with `amsmath`, `booktabs`, `caption`, `hyperref`, `ge
 
 ## Data Availability
 
-Tracked assets include solver code, scenario generators, fixed seeds/configuration, processed JSON/CSV results, analysis scripts, and figures. Generated binary scenario files and per-run pickle objects are excluded from Git; regenerate them with the supplied scripts. Configure and publish the repository remote before manuscript submission.
+Tracked assets include solver code, scenario generators, fixed seeds/configuration, processed JSON/CSV results, analysis scripts, and figures. Generated binary scenario files and per-run pickle objects are excluded from Git; regenerate them with the supplied scripts.
 
 ## Code Layout
-
-> **完整目录映射 + 文件放置规则 → 见 [`AGENTS.md`](AGENTS.md)**（协作者必读）
 
 ```
 .

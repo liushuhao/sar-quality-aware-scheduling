@@ -68,6 +68,12 @@ nature-skills-main/
 .claude/
 .remember/
 
+# Agent instruction files + internal planning (local only; contain review strategy,
+# tool names, WIP Ch5/thesis pointers — not for the public repo)
+CLAUDE.md
+AGENTS.md
+.planning/
+
 # Hermes tool metadata
 .hermes/
 scientific-agent-skills-main/
