@@ -146,10 +146,11 @@ The specific contributions of the paper are:
     a physical identity between objectives, and renders
     the three-objective formulation redundant at operational densities.
     A controlled ablation study (four objective-function variants, 200
-    scenarios per variant) confirms that this saturation regime is conditional on
-    greedy-baseline (G-BL) hot-start initialization and that solver
-    outcomes become invariant to the choice of physical objectives at
-    high target densities;
+    scenarios per variant) confirms that solver outcomes become invariant
+    to the choice of physical objectives at high target densities, and
+    initialization controls (\S~\ref{sec:robustness-calibration}) confirm
+    that coverage convergence is conditional on greedy-baseline (G-BL)
+    hot-start initialization;
     \item The decomposition of SAR image quality into closed-form NESZ
     ($\propto R^3$) and geometric quality index ($\sin\theta\cos\psi_{\text{sq}}$)
     objectives within an NSGA-III framework, distinct from the scalar
@@ -234,8 +235,12 @@ is the antenna length and $\psi_{\text{sq}}$ the squint angle. In
 operational SAR, amplitude weighting widens $\rho_{\text{az}}$ by
 10--20\%~\citep{Curlander1991}, but since this is platform-constant, the
 unweighted form preserves the relative ordering for optimization.
-Both degrade as the observation departs from the zero-Doppler geometry
-($\psi_{\text{sq}} = 0$, $\theta$ minimal). Radiometric sensitivity,
+The two resolution components respond oppositely to departure from the
+zero-Doppler geometry ($\psi_{\text{sq}} = 0$, $\theta$ minimal):
+$\rho_{\text{az}}$ worsens as $|\psi_{\text{sq}}|$ grows, whereas
+$\rho_{\text{rg}}$ is coarsest at the minimal incidence of closest approach
+and improves as $\theta$ rises away from it---the origin of the $\theta$-axis
+trade-off formalized in \S~\ref{sec:objective-functions}. Radiometric sensitivity,
 measured by the Noise-Equivalent Sigma Zero (NESZ), deteriorates with the
 cube of slant range: $\text{NESZ} \propto R^3$ for Stripmap SAR after azimuth compression
 gain~\citep{Curlander1991,Moreira2025}. We adopt a 3D geometric approximation
@@ -682,32 +687,32 @@ $f_2$ for substantially higher $f_3$.
 \textbf{Class} & \textbf{Solver} & $f_1^*$ & $f_2$ & $f_3$ \\
 \midrule
 \multirow{5}{*}{S1 ($N=20$)}
- & G-BL    & $1.00 \pm 0.00$ & $0.541 \pm 0.067$ & $0.325 \pm 0.172$ \\
- & G-SM    & $0.85 \pm 0.16$ & $0.474 \pm 0.076$ & $0.435 \pm 0.157$ \\
- & GA-P-BL & $1.09 \pm 0.14$ & $0.550 \pm 0.068$ & $0.294 \pm 0.176$ \\
- & MOEA-2  & $0.68 \pm 0.29$ & $0.585 \pm 0.054$ & $0.240 \pm 0.151$ \\
- & MOEA-3  & $0.66 \pm 0.30$ & $0.569 \pm 0.065$ & $0.288 \pm 0.150$ \\
+ & G-BL    & $1.00 \pm 0.00$ & $0.541 \pm 0.068$ & $0.325 \pm 0.174$ \\
+ & G-SM    & $0.85 \pm 0.16$ & $0.474 \pm 0.077$ & $0.435 \pm 0.158$ \\
+ & GA-P-BL & $1.09 \pm 0.14$ & $0.550 \pm 0.069$ & $0.294 \pm 0.178$ \\
+ & MOEA-2  & $0.68 \pm 0.29$ & $0.585 \pm 0.055$ & $0.240 \pm 0.153$ \\
+ & MOEA-3  & $0.66 \pm 0.30$ & $0.569 \pm 0.066$ & $0.288 \pm 0.151$ \\
 \midrule
 \multirow{5}{*}{S2 ($N=100$)}
- & G-BL    & $1.00 \pm 0.00$ & $0.540 \pm 0.058$ & $0.305 \pm 0.146$ \\
- & G-SM    & $0.74 \pm 0.09$ & $0.454 \pm 0.059$ & $0.456 \pm 0.117$ \\
- & GA-P-BL & $1.28 \pm 0.22$ & $0.548 \pm 0.055$ & $0.276 \pm 0.143$ \\
- & MOEA-2  & $0.82 \pm 0.25$ & $0.564 \pm 0.044$ & $0.235 \pm 0.127$ \\
- & MOEA-3  & $0.83 \pm 0.24$ & $0.561 \pm 0.043$ & $0.245 \pm 0.127$ \\
+ & G-BL    & $1.00 \pm 0.00$ & $0.540 \pm 0.059$ & $0.305 \pm 0.148$ \\
+ & G-SM    & $0.74 \pm 0.09$ & $0.454 \pm 0.059$ & $0.456 \pm 0.118$ \\
+ & GA-P-BL & $1.28 \pm 0.22$ & $0.548 \pm 0.056$ & $0.276 \pm 0.144$ \\
+ & MOEA-2  & $0.82 \pm 0.25$ & $0.564 \pm 0.044$ & $0.235 \pm 0.129$ \\
+ & MOEA-3  & $0.83 \pm 0.24$ & $0.561 \pm 0.044$ & $0.245 \pm 0.128$ \\
 \midrule
 \multirow{5}{*}{S3 ($N=300$)}
- & G-BL    & $1.00 \pm 0.00$ & $0.578 \pm 0.024$ & $0.217 \pm 0.070$ \\
- & G-SM    & $0.64 \pm 0.07$ & $0.501 \pm 0.034$ & $0.361 \pm 0.072$ \\
- & GA-P-BL & $1.15 \pm 0.15$ & $0.579 \pm 0.024$ & $0.203 \pm 0.071$ \\
- & MOEA-2  & $0.98 \pm 0.04$ & $0.587 \pm 0.020$ & $0.175 \pm 0.064$ \\
- & MOEA-3  & $0.97 \pm 0.03$ & $0.587 \pm 0.021$ & $0.175 \pm 0.065$ \\
+ & G-BL    & $1.00 \pm 0.00$ & $0.578 \pm 0.025$ & $0.217 \pm 0.071$ \\
+ & G-SM    & $0.64 \pm 0.07$ & $0.501 \pm 0.034$ & $0.361 \pm 0.073$ \\
+ & GA-P-BL & $1.15 \pm 0.15$ & $0.579 \pm 0.024$ & $0.203 \pm 0.072$ \\
+ & MOEA-2  & $0.98 \pm 0.04$ & $0.587 \pm 0.021$ & $0.175 \pm 0.065$ \\
+ & MOEA-3  & $0.97 \pm 0.03$ & $0.587 \pm 0.021$ & $0.175 \pm 0.066$ \\
 \midrule
 \multirow{5}{*}{S4 ($N=500$)}
  & G-BL    & $1.00 \pm 0.00$ & $0.580 \pm 0.025$ & $0.210 \pm 0.071$ \\
- & G-SM    & $0.61 \pm 0.09$ & $0.506 \pm 0.035$ & $0.356 \pm 0.074$ \\
- & GA-P-BL & $1.17 \pm 0.27$ & $0.579 \pm 0.024$ & $0.203 \pm 0.072$ \\
+ & G-SM    & $0.61 \pm 0.09$ & $0.506 \pm 0.035$ & $0.356 \pm 0.075$ \\
+ & GA-P-BL & $1.17 \pm 0.27$ & $0.579 \pm 0.025$ & $0.203 \pm 0.073$ \\
  & MOEA-2  & $0.98 \pm 0.03$ & $0.589 \pm 0.021$ & $0.169 \pm 0.066$ \\
- & MOEA-3  & $0.97 \pm 0.04$ & $0.589 \pm 0.021$ & $0.170 \pm 0.066$ \\
+ & MOEA-3  & $0.97 \pm 0.04$ & $0.589 \pm 0.021$ & $0.170 \pm 0.067$ \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -837,11 +842,14 @@ negligible for most scenarios.
 
 \textbf{Phenomenon 1: Front compression.}
 Fig.~\ref{fig:fig4} visualizes the Pareto front on a representative S4
-scenario, showing two key results. First, the front is compressed: it spans
-$\Delta f_2 \approx 0.06$, compared to $\Delta f_2 \approx 0.10$ in sparse
-S1 scenarios, confirming the scale-dependent saturation documented in
-\S\ref{sec:scale-sensitivity}. Second, the MOEA-2 and MOEA-3 fronts are
-nearly coincident, indicating that adding $f_3$ as a third objective
+scenario. The front contains $76 \pm 17$ MOEA-3 non-dominated solutions
+(MOEA-2: $78 \pm 20$) but is compressed: it spans roughly $0.3$ in $f_1^*$
+and only $0.06$ in $f_2$, against a total span of $\Delta f_2 \approx 0.10$
+in sparse S1 scenarios, confirming the scale-dependent saturation documented
+in \S\ref{sec:scale-sensitivity}. In dense regimes, solver convergence to
+low-squint geometries combined with schedule saturation limits quality
+differentiation regardless of solver strategy. The MOEA-2 and MOEA-3 fronts
+are nearly coincident, indicating that adding $f_3$ as a third objective
 produces no additional differentiation in this setting.
 
 \begin{figure}[H]
@@ -851,20 +859,10 @@ produces no additional differentiation in this setting.
     \label{fig:fig4}
 \end{figure}
 
-The representative S4 front in Fig.~\ref{fig:fig4} contains
-$76 \pm 17$ MOEA-3 non-dominated solutions (MOEA-2: $78 \pm 20$), but the
-front is compressed: it spans roughly $0.3$ in $f_1^*$ and only $0.06$ in
-$f_2$. The important result is therefore not the number of returned points,
-but why adding $f_3$ produces little extra differentiation.
 The $f_1^*$--$f_2$ projection (panel a) shows a narrow but nonzero trade-off
 surface: the frontier spans from full-coverage solutions
 ($f_1^* \approx 1.0$, $f_2 \approx 0.56$) to quality-oriented solutions
-($f_1^* \approx 0.7$, $f_2 \approx 0.62$). The compressed $f_2$ range
-($\Delta f_2 \approx 0.06$, compared to the total Pareto-front span of $\Delta f_2 \approx 0.10$ in sparse
-S1 scenarios) is consistent with the scale-dependent saturation documented
-in \S~\ref{sec:scale-sensitivity}: in dense target regimes, the
-solver convergence to low-squint regimes combined with schedule
-saturation at high density limits quality differentiation regardless of solver strategy.
+($f_1^* \approx 0.7$, $f_2 \approx 0.62$).
 Overlaying the single-point baseline solutions shows that G-BL sits at the
 ``full-coverage, moderate-quality'' corner of the frontier, while G-SM occupies
 a qualitatively different region ($f_1^* \approx 0.6$, $f_3 \approx 0.35$) that
@@ -932,7 +930,7 @@ the incidence-angle conflict.
 \textit{Envelope versus schedule correlation.}
 The contrast between envelope correlation and schedule correlation is stark.
 Across C1-feasible visibility samples ($|\psi_{\text{sq}}| \leq 45^\circ$,
-computed across all visibility windows from 20 representative scenarios,
+computed across all visibility windows from 20 scenarios (5 per density class S1--S4, the five smallest random seeds per class),
 approximately $3.9 \times 10^5$ window--time-step pairs at 10\,s resolution),
 $\mathrm{corr}(f_2, f_3) = -0.95$, a strong negative correlation dominated
 by the incidence-angle conflict. This envelope correlation of $-0.95$
@@ -982,34 +980,39 @@ effects. We therefore use four control experiments.
 
 \paragraph{Hot-start dependence.}
 On 10 S1, 4 S2, 5 S3, and 5 S4 scenarios, random-initialized MOEA-2 yields
-$f_1^*$ deficits of approximately $-0.20$, $-0.43$, $-0.46$, and $-0.33$
+$f_1^*$ deficits of approximately $-0.18$, $-0.42$, $-0.46$, and $-0.33$
 relative to hot-start MOEA-2, respectively. G-BL seeding therefore materially
 improves coverage convergence at every tested density. This constrains the
 coverage-ceiling claim: proximity to G-BL is initialization-dependent. By
 contrast, random-init solutions retain comparable $f_2$ values, so the
 $f_2$--$f_3$ geometric relationship is not created by the anchor.
-\textit{The control isolates the coverage ceiling as a G-BL initialization effect, not an artifact of the MOEA framework.}
+The coverage ceiling is therefore a G-BL initialization effect rather than
+an artifact of the MOEA framework.
 
 \paragraph{Perturbation sensitivity.}
 A sweep over $\sigma\in\{0.1,0.3,0.5,0.7\}$ on MOEA-3 (3 seeds per value,
 10 S3 scenarios per seed) changes mean $f_2$ by $<0.002$ and mean $f_3$ by
 $<0.001$. The between-perturbation correlation of mean $f_2$ and $f_3$ across $\sigma$ levels remains near zero
 ($r\in[-0.003,0.176]$; distinct from the per-task $f_2$--$f_3$ correlation within schedules reported in \S~\ref{sec:pareto-coupling}), while coverage declines by only about $3\%$ from
-$\sigma=0.1$ to $0.7$. \textit{The redundancy persists across $\sigma=0.1$--$0.7$, so it is not a byproduct of the $\sigma=0.5$ perturbation level.}
+$\sigma=0.1$ to $0.7$. Redundancy therefore persists across
+$\sigma=0.1$--$0.7$ and is not a byproduct of the $\sigma=0.5$ perturbation
+level.
 
 \paragraph{Random-search calibration.}
 On five S1 scenarios, 5,000 random task selections per scenario produce mean
 $f_1^*=0.54\pm0.01$ and a 90th percentile of $0.96\pm0.02$; the best sample
-reaches $1.03\pm0.03$. Random sampling is poor on average but occasionally
-reaches high-coverage regions, indicating a relatively flat upper tail in the
-sparse regime. \textit{Random sampling reaches high coverage only by chance and stays poor on average, so the MOEA's gains reflect structured search, not luck.}
+reaches $1.03\pm0.03$. High coverage under random sampling occurs only by
+chance; the MOEA's gains therefore reflect structured search rather than
+luck.
 
 \paragraph{Search-budget control.}
 Doubling population and generation budget to 200 and 400 on five S3 and five
 S4 scenarios does not separate full-physics A from no-physics D:
 $\Delta f_1^*=-0.005$ at S3 and $+0.002$ at S4, with post hoc
 $f_2\approx0.595$ for both. A random-init D control (15 S3 and 15 S4 runs)
-also converges to low squint ($f_2=0.605\pm0.003$). \textit{Doubling budget leaves A--D indistinguishable, so the invariance is not a budget artifact.}
+also converges to low squint ($f_2=0.605\pm0.003$). Since doubling the
+budget leaves A--D indistinguishable, the invariance is not a budget
+artifact.
 These controls collectively favor the low-squint convergence explanation
 over hot-start residue, noise-level sensitivity, random chance, or
 insufficient budget, while not ruling out all algorithm-specific effects.
@@ -1033,10 +1036,8 @@ scale-sensitivity (\S~\ref{sec:scale-sensitivity}) and ablation
 (\S~\ref{sec:ablation}) results show no solver retaining a joint
 significant advantage, so the greedy baseline is operationally
 sufficient.
-Our experiment across 200 systematically varied scenarios yields
-five interconnected findings. The effect reflects scale, not solver
-superiority: four findings reflect geometric properties of the
-single-pass observation geometry,
+Our experiment across 200 systematically varied scenarios yields five
+interconnected findings:
 \textbf{(1)}~the quality advantage of multi-objective optimization saturates with
 target density ($+8.2\%$ at $N=20$ falling to $+1.5\%$ at $N=500$);
 \textbf{(2)}~the three-objective formulation is effectively redundant, because
@@ -1063,26 +1064,11 @@ MOEA-2 and MOEA-3 differ statistically but only weakly in practical terms
 ($p=1.4\times10^{-4}$, $\delta=-0.23$ on HV), whereas contrasts involving
 G-SM are large because it occupies an extreme radiometric-quality regime.
 
-The solver survey shows a clear ranking: GA-P-BL achieves the
-highest coverage with no quality degradation, while MOEA-2 and
-MOEA-3 approach the G-BL coverage anchor and G-SM occupies a
-distinct high-radiometric-quality regime at substantial coverage cost.
-The advantage of multi-objective methods over the profit-only greedy
-baseline shows strong scale dependence: the $f_2$ improvement shrinks
-from $+8.2\%$ at S1 ($N = 20$) to $+1.5\%$ at S4 ($N = 500$),
-and the proportion of scenarios with a coverage deficit drops from
-$88\%$ to $24\%$.
-MOEA-2 and MOEA-3 yield near-identical results
-because all solvers converge to low-squint regimes where the per-task
-$f_2$--$f_3$ correlation within schedules, although negative, is
-weakened ($\approx -0.69$ to $-0.17$ across densities) relative to the
-envelope ($-0.95$) and the factorized null $r_{\text{null}} = -0.51$. The
-three-objective formulation is therefore effectively redundant in the
-single-pass, single-satellite setting.
-The squint-minimized greedy solver (G-SM) improves NESZ radiometric
-quality with a large effect size but at a density-dependent coverage
-cost, and the ablation study confirms that solver outcomes become
-invariant to the choice of physical objectives at $N \geq 300$.
+Independently of the multi-objective question, GA-P-BL achieves the highest
+coverage at every scale through single-objective temporal search
+(Table~\ref{tab:solver-profiles}), delimiting the present claims to the
+marginal value of adding physical objectives rather than to profit-oriented
+search alone.
 
 \subsection{Operational Implications}
 \label{sec:operational-implications}
@@ -1093,8 +1079,8 @@ improvement at S1 but at a steep coverage penalty ($f_1^* = 0.68$
 at $N=20$, i.e., $32\%$ profit loss relative to G-BL). Whether this trade-off is acceptable
 depends on the application: for maritime surveillance tasks where a
 $4$--$8\%$ resolution improvement ($\sim0.3$ m at C-band:
-$\rho_{\text{rg}} \approx 5.3$ m at $\theta = 30^\circ$) can
-distinguish small vessel classes that fall within the same pixel at
+$\rho_{\text{rg}} \approx 5.3$ m at $\theta = 30^\circ$) may
+affect whether adjacent targets within the same pixel are resolved or remain merged at
 baseline resolution \citep{Curlander1991}, the coverage cost may be
 justified; for area-monitoring missions, the greedy baseline remains
 preferable. In dense regimes ($N \geq 300$), the multi-objective
@@ -1107,7 +1093,11 @@ for sparse observation requests ($N \lesssim 100$), MOEA-2 may provide
 geometric quality gains that outweigh the coverage penalty in specific
 contexts; for dense monitoring campaigns ($N \gtrsim 300$), greedy
 methods (G-SM for radiometric priority, G-BL for coverage priority)
-approach Pareto-optimal coverage and may be preferable.
+approach Pareto-optimal coverage and may be preferable. However,
+relative to the strongest coverage-only solver (GA-P-BL), the MOEA-2
+coverage gap persists at $13$--$14\%$ even at $N \geq 300$ (vs.
+$2\%$ vs. G-BL), because G-BL is a weaker reference point.
+
 % ── 7.4 Limitations ──
 \subsection{Limitations}\label{sec:limitations}
 Our study is bounded by scope decisions that define directions for future work.
