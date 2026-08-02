@@ -348,6 +348,33 @@ def _build_metadata(
 
 # ─── C3/C4 Budget Enforcement (Step 3) ────────────────────────────────────
 
+def _resolve_budgets(
+    instance: Optional[AgileSARInstance],
+    kwargs: dict,
+) -> Tuple[float, float, float, float]:
+    """Resolve C3/C4 budgets and per-observation costs.
+
+    When an ``instance`` is built from a scenario it carries finite
+    ``energy_budget`` / ``memory_budget`` and per-task costs; the baseline
+    must honour these (the MOEA penalises them). Defaulting to inf here let
+    dense G-BL/G-SM schedules exceed the 200-observation budget that the
+    scenario enforces, inflating f1_gbl. Explicit kwargs override instance.
+    """
+    if instance is not None:
+        energy_budget = kwargs.pop("energy_budget", instance.energy_budget)
+        memory_budget = kwargs.pop("memory_budget", instance.memory_budget)
+        per_e = instance.tasks[0].energy if instance.tasks else 50_000.0
+        per_m = instance.tasks[0].memory if instance.tasks else 5e8
+        energy_per_obs = kwargs.pop("energy_per_obs", per_e)
+        memory_per_obs = kwargs.pop("memory_per_obs", per_m)
+    else:
+        energy_budget = kwargs.pop("energy_budget", float("inf"))
+        memory_budget = kwargs.pop("memory_budget", float("inf"))
+        energy_per_obs = kwargs.pop("energy_per_obs", 50_000.0)
+        memory_per_obs = kwargs.pop("memory_per_obs", 5e8)
+    return energy_budget, memory_budget, energy_per_obs, memory_per_obs
+
+
 def _enforce_c3c4(
     observations: List[ScheduledObservation],
     targets: List[GroundTarget],
@@ -509,10 +536,8 @@ def baseline_b1(
         last_obs = obs
 
     # ── C3/C4: enforce energy and memory budgets ──────────────────────────
-    energy_budget = kwargs.pop("energy_budget", float("inf"))
-    memory_budget = kwargs.pop("memory_budget", float("inf"))
-    energy_per_obs = kwargs.pop("energy_per_obs", 50_000.0)
-    memory_per_obs = kwargs.pop("memory_per_obs", 5e8)
+    energy_budget, memory_budget, energy_per_obs, memory_per_obs = \
+        _resolve_budgets(instance, kwargs)
     selected = _enforce_c3c4(
         selected, targets, energy_budget, memory_budget,
         energy_per_obs, memory_per_obs,
@@ -600,10 +625,8 @@ def baseline_b2(
     observations = _enforce_c2_transitions(observations, instance=instance)
 
     # ── C3/C4: enforce energy and memory budgets ──────────────────────────
-    energy_budget = solver_kwargs.pop("energy_budget", float("inf"))
-    memory_budget = solver_kwargs.pop("memory_budget", float("inf"))
-    energy_per_obs = solver_kwargs.pop("energy_per_obs", 50_000.0)
-    memory_per_obs = solver_kwargs.pop("memory_per_obs", 5e8)
+    energy_budget, memory_budget, energy_per_obs, memory_per_obs = \
+        _resolve_budgets(instance, solver_kwargs)
     observations = _enforce_c3c4(
         observations, targets, energy_budget, memory_budget,
         energy_per_obs, memory_per_obs,
@@ -729,10 +752,8 @@ def baseline_b3(
     observations = _enforce_c2_transitions(observations, instance=instance)
 
     # ── C3/C4: enforce energy and memory budgets ──────────────────────────
-    energy_budget = solver_kwargs.pop("energy_budget", float("inf"))
-    memory_budget = solver_kwargs.pop("memory_budget", float("inf"))
-    energy_per_obs = solver_kwargs.pop("energy_per_obs", 50_000.0)
-    memory_per_obs = solver_kwargs.pop("memory_per_obs", 5e8)
+    energy_budget, memory_budget, energy_per_obs, memory_per_obs = \
+        _resolve_budgets(instance, solver_kwargs)
     observations = _enforce_c3c4(
         observations, targets, energy_budget, memory_budget,
         energy_per_obs, memory_per_obs,
@@ -821,14 +842,16 @@ def _b3_squint_minimize(
         best_t = cand[best_k, 0]  # column 0 = epoch seconds
 
         # Convert epoch seconds back to a datetime whose tz matches the
-        # source window (pkl scenarios store naive UTC; unit-test fixtures
-        # use aware UTC). Mixing aware and naive breaks datetime sorting in
-        # _enforce_c2_transitions, so preserve whatever the window used.
+        # source window. pkl scenarios store naive datetimes, and naive
+        # .timestamp() interprets them as local time; the exact inverse is
+        # naive fromtimestamp(t) (also local) — utcfromtimestamp() would
+        # treat the epoch as true UTC and introduce a tz-offset shift on
+        # non-UTC machines, pushing acquisitions out of their window.
         ref = obs.window.t_start
         if ref.tzinfo is not None:
             dt_start = datetime.fromtimestamp(best_t, tz=timezone.utc)
         else:
-            dt_start = datetime.utcfromtimestamp(best_t)
+            dt_start = datetime.fromtimestamp(best_t)
         dt_end = dt_start + timedelta(seconds=obs.window.duration_min)
 
         new_obs = replace(

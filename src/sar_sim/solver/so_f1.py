@@ -295,12 +295,13 @@ def _build_schedule_from_b2(
                 best_window = w
 
         if best_window is not None:
-            # Match the source window's tz (pkl scenarios are naive UTC;
-            # some test fixtures are aware). Mixing breaks datetime sorting.
+            # Match the source window's tz. Naive windows use naive
+            # fromtimestamp (local) — the exact inverse of naive
+            # .timestamp(); utcfromtimestamp would introduce a tz shift.
             if best_window.t_start.tzinfo is not None:
                 obs_start = datetime.fromtimestamp(t_act, tz=timezone.utc)
             else:
-                obs_start = datetime.utcfromtimestamp(t_act)
+                obs_start = datetime.fromtimestamp(t_act)
             obs_end = obs_start + timedelta(seconds=task.duration)
             observations.append(ScheduledObservation(
                 window=best_window,
