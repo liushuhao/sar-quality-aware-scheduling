@@ -579,13 +579,18 @@ class GeomCache:
             self.cache.append(np.array(rows, dtype=np.float64))
 
     def lookup(self, task_idx: int, t_actual: float) -> GeomPoint:
-        """查表获取 t_actual 时刻的几何量，支持线性插值.
+        """查表获取 t_actual 时刻的几何量，三次 Lagrange 插值.
+
+        phi/theta/psi 是时间的光滑函数，三次插值把误差从 O(h^2) 降到
+        O(h^4)，与 SatPositionCache 一致。首尾两个网格段回退线性（无
+        四点 stencil）。cos_psi 在插值后 clamp 到 [-1, 1]，防止折点
+        (psi_sq≈0) 处三次 overshoot 污染 f2/f3。
 
         - 精确命中采样点 → 直接返回
-        - 采样点之间 → 线性插值相邻两点
         - 边界外 → clamp 到最近点
         """
         arr = self.cache[task_idx]
+        n = len(arr)
 
         # Boundary clamping
         if t_actual <= arr[0, 0]:
@@ -603,29 +608,46 @@ class GeomCache:
 
         # Binary search for interval [k, k+1] containing t_actual
         k = bisect_left(arr[:, 0], t_actual) - 1
-        # Ensure k is in valid range (bisect_left returns insertion point)
         if k < 0:
             k = 0
-        if k >= len(arr) - 1:
-            k = len(arr) - 2
+        if k >= n - 1:
+            k = n - 2
 
         t_lo = arr[k, 0]
         t_hi = arr[k + 1, 0]
         if t_hi == t_lo:
-            # Degenerate: duplicate timestamps, return lo
             return GeomPoint(
                 t=t_actual, phi=arr[k, 1], psi_sq=arr[k, 2],
                 cos_psi=arr[k, 3], theta=arr[k, 4], q_nesz=arr[k, 5],
             )
 
-        alpha = (t_actual - t_lo) / (t_hi - t_lo)
-        interp = (1.0 - alpha) * arr[k, 1:] + alpha * arr[k + 1, 1:]
+        # Linear fallback on the two boundary segments.
+        if k < 1 or k >= n - 2:
+            alpha = (t_actual - t_lo) / (t_hi - t_lo)
+            interp = (1.0 - alpha) * arr[k, 1:] + alpha * arr[k + 1, 1:]
+        else:
+            # 4-point Lagrange cubic over [k-1, k, k+1, k+2].
+            ts = arr[k - 1:k + 3, 0]
+            vals = arr[k - 1:k + 3, 1:]
+            interp = np.zeros(5)
+            for j in range(4):
+                w = 1.0
+                for m in range(4):
+                    if m != j:
+                        w *= (t_actual - ts[m]) / (ts[j] - ts[m])
+                interp += w * vals[j]
+            # psi_sq = arcsin(|los_x|) has a cusp at zero-Doppler; cubic
+            # overshoots there. Interpolate psi_sq (column 1) linearly, which
+            # is more stable on the kink. The other quantities (phi, cos_psi,
+            # theta, q) are smooth and use cubic.
+            alpha = (t_actual - t_lo) / (t_hi - t_lo)
+            interp[1] = (1.0 - alpha) * arr[k, 2] + alpha * arr[k + 1, 2]
 
         return GeomPoint(
             t=t_actual,
             phi=float(interp[0]),
             psi_sq=float(interp[1]),
-            cos_psi=float(interp[2]),
+            cos_psi=float(np.clip(interp[2], -1.0, 1.0)),
             theta=float(interp[3]),
             q_nesz=float(interp[4]),
         )
