@@ -682,31 +682,42 @@ class SatPositionCache:
     # ── internal: interpolate a single (n_pts, 3) array ───────────────
 
     def _interp(self, arr: np.ndarray, t: float) -> np.ndarray:
-        """Return 3-vector at time t by linear interpolation of arr (n_pts×3).
+        """Return 3-vector at time t by cubic Lagrange interpolation.
 
-        Uses O(1) direct index computation on uniform time grid.
+        The satellite ECEF trajectory is smooth (trig), so cubic
+        interpolation on the uniform grid reduces error from O(h^2)
+        (linear) to O(h^4) at the same precompute cost. Boundary
+        segments fall back to linear because a 4-point stencil is
+        unavailable there.
         """
         times = self.times
-        # Clamp to grid boundaries
         if t <= self.t_min:
             return arr[0].copy()
         if t >= times[-1]:
             return arr[-1].copy()
 
-        # O(1) index on uniform grid
         k = int((t - self.t_min) / self.step_s)
         if k < 0:
             k = 0
         if k >= len(times) - 1:
             k = len(times) - 2
 
-        t_lo = times[k]
-        t_hi = times[k + 1]
-        if t_hi == t_lo:
-            return arr[k].copy()
+        # Linear fallback on the two boundary segments.
+        if k < 1 or k >= len(times) - 2:
+            t_lo = times[k]; t_hi = times[k + 1]
+            alpha = (t - t_lo) / (t_hi - t_lo)
+            return (1.0 - alpha) * arr[k] + alpha * arr[k + 1]
 
-        alpha = (t - t_lo) / (t_hi - t_lo)
-        return (1.0 - alpha) * arr[k] + alpha * arr[k + 1]
+        # 4-point Lagrange cubic over [k-1, k, k+1, k+2].
+        ts = times[k - 1:k + 3]
+        result = np.zeros(3, dtype=float)
+        for j in range(4):
+            w = 1.0
+            for m in range(4):
+                if m != j:
+                    w *= (t - ts[m]) / (ts[j] - ts[m])
+            result += w * arr[k - 1 + j]
+        return result
 
     # ── public interfaces ─────────────────────────────────────────────
 

@@ -304,6 +304,8 @@ def moea_solver_no_squint(windows, targets, **kwargs):
 
     # Post-hoc constraint verification: filter infeasible solutions
     n_infeasible = 0
+    n_frontier_raw = len(frontier) if frontier else 0
+    all_infeasible = False
     if frontier:
         verifier = ConstraintVerifier(instance)
         verified = verifier.verify_frontier(frontier)
@@ -313,6 +315,8 @@ def moea_solver_no_squint(windows, targets, **kwargs):
             feasible_indices = [i for i, (_, rpt) in enumerate(verified) if rpt.overall_pass]
             x_source = x_source[feasible_indices] if x_source is not None else None
             frontier = feasible
+        else:
+            all_infeasible = True
 
     if frontier and x_source is not None:
         f1_vals = np.array([s["f1"] for s in frontier])
@@ -357,6 +361,12 @@ def moea_solver_no_squint(windows, targets, **kwargs):
         "n_obj": n_obj,
         "ablation_variant": "B_no_squint",
         "n_infeasible_filtered": n_infeasible,
+        "all_infeasible": all_infeasible,
+        "selected": [int(x) for x in best.get("selected", [])],
+        "t_actuals": [float(x) for x in best.get("t_actuals", [])],
+        "phis_off_nadir": [float(x) for x in best.get("phis", [])],
+        "constraint_feasible": not all_infeasible,
+        "n_constraints_failed": -1 if all_infeasible else 0,
     }
     return SolverResult(schedule=schedule, score=score, metadata=meta)
 
@@ -475,6 +485,11 @@ def run_one(pkl_path: Path) -> dict:
         "solver_version": GIT_COMMIT,
         "params": dict(MOEA_PARAMS),
         "pkl_sha1": pkl_sha1,
+        "selected": meta.get("selected", []),
+        "t_actuals": meta.get("t_actuals", []),
+        "phis_off_nadir": meta.get("phis_off_nadir", []),
+        "constraint_feasible": bool(meta.get("constraint_feasible", True)),
+        "n_constraints_failed": int(meta.get("n_constraints_failed", 0)),
     }
 
 def main():

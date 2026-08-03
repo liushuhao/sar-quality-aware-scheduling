@@ -146,6 +146,12 @@ def run_one(pkl_path: Path) -> dict:
         "solver_version": GIT_COMMIT,
         "params": dict(MOEA_PARAMS),
         "pkl_sha1": pkl_sha1,
+        # Knee solution for independent post-hoc hard audit.
+        "selected": meta.get("selected", []),
+        "t_actuals": meta.get("t_actuals", []),
+        "phis_off_nadir": meta.get("phis_off_nadir", []),
+        "constraint_feasible": bool(meta.get("constraint_feasible", True)),
+        "n_constraints_failed": int(meta.get("n_constraints_failed", 0)),
     }
 
 def main():

@@ -638,6 +638,7 @@ def moea_solver(
     # ── Post-hoc constraint verification: filter infeasible solutions ──
     n_infeasible = 0
     n_frontier_raw = len(frontier) if frontier else 0
+    all_infeasible = False
     if frontier:
         verifier = ConstraintVerifier(instance)
         verified = verifier.verify_frontier(frontier)
@@ -648,7 +649,10 @@ def moea_solver(
             feasible_indices = [i for i, (_, rpt) in enumerate(verified) if rpt.overall_pass]
             x_source = x_source[feasible_indices] if x_source is not None else None
             frontier = feasible
-        # If all infeasible, keep original frontier (will be flagged in meta)
+        else:
+            # Every frontier point failed verification; keep them but flag
+            # so callers/audits can detect the infeasible knee.
+            all_infeasible = True
 
     # For SolverResult compatibility: pick the "knee" solution
     if frontier and x_source is not None:
@@ -713,6 +717,13 @@ def moea_solver(
         "n_obj": n_obj,
         "n_sats": n_sats,
         "n_infeasible_filtered": n_infeasible,
+        "all_infeasible": all_infeasible,
+        # Knee-solution schedule for independent post-hoc hard audit.
+        "selected": [int(x) for x in best.get("selected", [])],
+        "t_actuals": [float(x) for x in best.get("t_actuals", [])],
+        "phis_off_nadir": [float(x) for x in best.get("phis", [])],
+        "constraint_feasible": not all_infeasible,
+        "n_constraints_failed": -1 if all_infeasible else 0,
     }
     if n_obj == 2:
         meta["f3_posthoc"] = best.get("f3", 0.0)

@@ -16,7 +16,7 @@ sys.path.insert(0, str(REPO / "src"))
 from sar_sim.solver.types import build_agile_instance_from_scenario, precompute_geometry
 from sar_sim.verification.constraints import ConstraintVerifier
 
-SLEW, SETTLE, BUDGET = 0.0524, 5.0, 200
+SLEW, SETTLE = 0.0524, 5.0
 SNAP = PAPER / "experiments/results/_snapshot_audit.json"
 
 prog = json.load(open(SNAP, encoding="utf-8"))["completed"]
@@ -50,18 +50,16 @@ for key, e in prog.items():
             a[c] += 1; flags[c] = len(v.violations)
             m = max((x.magnitude for x in v.violations), default=0.0)
             worst[c] = max(worst[c], m)
-    if len(sel) > BUDGET:
-        a["overbudget"] += 1; flags["BUD"] = len(sel)
     if oow or flags:
         bad.append((key, len(sel), oow, flags))
 
 dt = time.time() - t0
-print(f"{'cls':<5}{'scen':>5}{'nsel':>7}{'OOW':>5}{'C1':>4}{'C2':>4}{'C3':>4}{'C4':>4}{'>BUD':>5}")
+print(f"{'cls':<5}{'scen':>5}{'nsel':>7}{'OOW':>5}{'C1':>4}{'C2':>4}{'C3':>4}{'C4':>4}")
 for cls in sorted(agg):
     a = agg[cls]
-    print(f"{cls:<5}{a['scen']:>5}{a['nsel']:>7}{a['oow']:>5}{a['C1']:>4}{a['C2']:>4}{a['C3']:>4}{a['C4']:>4}{a['overbudget']:>5}")
-tot = {k: sum(agg[c][k] for c in agg) for k in ("scen","oow","C1","C2","C3","C4","overbudget")}
-print(f"{'TOT':<5}{tot['scen']:>5}{'':>7}{tot['oow']:>5}{tot['C1']:>4}{tot['C2']:>4}{tot['C3']:>4}{tot['C4']:>4}{tot['overbudget']:>5}")
+    print(f"{cls:<5}{a['scen']:>5}{a['nsel']:>7}{a['oow']:>5}{a['C1']:>4}{a['C2']:>4}{a['C3']:>4}{a['C4']:>4}")
+tot = {k: sum(agg[c][k] for c in agg) for k in ("scen","oow","C1","C2","C3","C4")}
+print(f"{'TOT':<5}{tot['scen']:>5}{'':>7}{tot['oow']:>5}{tot['C1']:>4}{tot['C2']:>4}{tot['C3']:>4}{tot['C4']:>4}")
 print(f"\nworst magnitudes: " + ", ".join(f"{k}={v:.4f}" for k, v in worst.items()))
 print(f"scenarios with any issue: {len(bad)}  (audit {dt:.0f}s)")
 for b in bad[:30]:
