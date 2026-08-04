@@ -1,6 +1,6 @@
 Cover Letter
 =============
-Date: 2026-07-22
+Date: 2026-08-05
 To: Editor-in-Chief, Advances in Space Research
 From: LIU Shuhao, College of Intelligent Systems Science and Engineering,
        Harbin Engineering University, liushuhao@hrbeu.edu.cn
@@ -11,7 +11,13 @@ I am submitting the manuscript "Physics-Aware Multi-Objective Scheduling
 for an Agile SAR Satellite: Balancing Profit, NESZ, and Geometric Resolution"
 for consideration as a full-length article in Advances in Space Research.
 
-This manuscript presents a physics-aware multi-objective optimization
+This manuscript falls within the journal's scope of space technology
+applications for Earth observation: it studies the scheduling of an agile
+SAR satellite whose imaging quality is coupled to observation geometry,
+a problem at the intersection of spacecraft resource management and SAR
+remote sensing instrumentation.
+
+The manuscript presents a physics-aware multi-objective optimization
 framework for single-satellite agile SAR scheduling. Five solvers spanning
 greedy heuristics, single-objective GA, and NSGA-III variants are compared
 on 200 systematically varied scenarios across four density classes

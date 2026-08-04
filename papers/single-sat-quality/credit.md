@@ -7,11 +7,11 @@ Author: LIU Shuhao
 
 Liu Shuhao: Conceptualization, Methodology, Software, Validation,
 Formal Analysis, Investigation, Resources, Data Curation,
-Writing – Original Draft, Writing – Review & Editing, Visualization,
-Supervision, Project Administration.
+Writing – Original Draft, Writing – Review & Editing, Visualization.
 
-Note: Prof. LIU Fanming (Harbin Engineering University) provided
-guidance and supervision throughout this research, as acknowledged
-in the manuscript. The single-author designation reflects the
-author's sole responsibility for the work's execution and writing
-under the standard doctoral supervision framework.
+Note: This file mirrors the CRediT statement in the manuscript
+(small-paper-ijae.tex). Prof. LIU Fanming (Harbin Engineering University)
+provided guidance as acknowledged in the Acknowledgments section; the
+single-author designation reflects the author's sole responsibility for
+the work's execution and writing under the standard doctoral supervision
+framework.
