@@ -17,9 +17,14 @@ from sar_sim.solver.types import build_agile_instance_from_scenario, precompute_
 from sar_sim.verification.constraints import ConstraintVerifier
 
 SLEW, SETTLE = 0.0524, 5.0
-SNAP = PAPER / "experiments/results/_snapshot_audit.json"
+import argparse
+_ap = argparse.ArgumentParser(description="Full hard-constraint audit of saved solver snapshots")
+_ap.add_argument("--snapshot", default=None, help="path to snapshot JSON (default: results/_snapshot_audit.json)")
+_args = _ap.parse_args()
+SNAP = Path(_args.snapshot) if _args.snapshot else PAPER / "experiments/results/_snapshot_audit.json"
 
-prog = json.load(open(SNAP, encoding="utf-8"))["completed"]
+_data = json.load(open(SNAP, encoding="utf-8"))
+prog = _data["completed"] if "completed" in _data else _data
 print(f"snapshot solutions: {len(prog)}\n")
 
 agg = defaultdict(lambda: defaultdict(int))

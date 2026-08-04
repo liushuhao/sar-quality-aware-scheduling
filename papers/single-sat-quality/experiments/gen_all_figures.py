@@ -275,7 +275,7 @@ ax_c.set_ylabel("$\\Delta f_1^*$ (profit loss)", fontsize=9)
 ax_c.set_title("(c) Profit loss vs. scenario scale", fontsize=10)
 ax_c.legend(fontsize=7)
 
-save_figure(fig, "fig1_squint_effect")
+save_figure(fig, "fig2_squint_effect")
 
 # ═══════════════════════════════════════════════════════════════════════════
 #  FIGURE 2: [REMOVED — merged into Fig 3]
@@ -405,7 +405,7 @@ if rep_key:
                         bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.7))
                 break
 
-    save_figure(fig, "fig2_solver_profiles")
+    save_figure(fig, "fig4_solver_profiles")
 else:
     print("  ⚠ No data for Fig 3 — skipping")
 
@@ -496,7 +496,7 @@ if stats_data and "per_scenario_hv" in stats_data:
                     ha='left', va='top', fontsize=8,
                     bbox=dict(boxstyle='round', facecolor='lightgray', alpha=0.5))
 
-    save_figure(fig, "fig4_hypervolume")
+    save_figure(fig, "fig1_hypervolume")
 else:
     print("  ⚠ No HV data — skipping Fig 4")
 
@@ -682,7 +682,7 @@ ax_log.text(0.02, 0.98,
             transform=ax_log.transAxes, fontsize=6.5, ha='left', va='top',
             style='italic', color='#555')
 
-save_figure(fig, "fig5_scale_sensitivity")
+save_figure(fig, "fig3_scale_sensitivity")
 
 # ── Done ──
 print("\n" + "=" * 50)
