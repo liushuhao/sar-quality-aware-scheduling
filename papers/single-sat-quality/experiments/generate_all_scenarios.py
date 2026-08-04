@@ -18,7 +18,7 @@ from typing import List, Dict, Optional, Tuple
 import numpy as np
 
 # ─── Path Setup ──────────────────────────────────────────────────────────
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
+sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "src"))
 
 from sar_sim.types import GroundTarget, SARInstrument, KeplerianElement, ObservationWindow
 from sar_sim.generator.orbit import propagate_orbit

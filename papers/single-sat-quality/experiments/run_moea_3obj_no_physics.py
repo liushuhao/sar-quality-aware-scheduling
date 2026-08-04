@@ -17,7 +17,7 @@ from collections import OrderedDict
 import math
 import numpy as np
 
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
+sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "src"))
 
 from pymoo.core.problem import Problem
 from pymoo.algorithms.moo.nsga3 import NSGA3
