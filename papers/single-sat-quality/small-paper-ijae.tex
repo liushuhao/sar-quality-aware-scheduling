@@ -506,7 +506,7 @@ $\psi_{\text{sq}} = \arcsin(|l_x| / R)$.
 G-SM minimizes squint angle as a computationally cheap proxy for
 maximizing $f_3$ (NESZ radiometric quality); the correlation between
 squint minimization and $f_3$ improvement is confirmed by the large
-effect size (Cliff's $\delta = +0.72$, \S~\ref{sec:squint-special}).
+effect size (Cliff's $\delta = +0.91$, \S~\ref{sec:squint-special}).
 This strategy serves as a physics-aware greedy baseline: it answers the question
 ``what quality improvement can a simple squint-minimization heuristic
 achieve, without any multi-objective search?''
@@ -687,28 +687,28 @@ $f_2$ for substantially higher $f_3$.
 \midrule
 \multirow{5}{*}{S1 ($N=20$)}
  & G-BL    & $1.00 \pm 0.00$ & $0.541 \pm 0.068$ & $0.325 \pm 0.174$ \\
- & G-SM    & $0.85 \pm 0.16$ & $0.474 \pm 0.077$ & $0.435 \pm 0.158$ \\
+ & G-SM    & $0.50 \pm 0.17$ & $0.476 \pm 0.054$ & $0.644 \pm 0.058$ \\
  & GA-P-BL & $1.001 \pm 0.010$ & $0.550 \pm 0.069$ & $0.294 \pm 0.178$ \\
  & MOEA-2  & $0.68 \pm 0.29$ & $0.585 \pm 0.055$ & $0.240 \pm 0.153$ \\
  & MOEA-3  & $0.66 \pm 0.30$ & $0.569 \pm 0.066$ & $0.288 \pm 0.151$ \\
 \midrule
 \multirow{5}{*}{S2 ($N=100$)}
  & G-BL    & $1.00 \pm 0.00$ & $0.540 \pm 0.059$ & $0.305 \pm 0.148$ \\
- & G-SM    & $0.74 \pm 0.09$ & $0.454 \pm 0.059$ & $0.456 \pm 0.118$ \\
+ & G-SM    & $0.34 \pm 0.09$ & $0.461 \pm 0.057$ & $0.646 \pm 0.056$ \\
  & GA-P-BL & $1.000 \pm 0.000$ & $0.548 \pm 0.056$ & $0.276 \pm 0.144$ \\
  & MOEA-2  & $0.82 \pm 0.25$ & $0.564 \pm 0.044$ & $0.235 \pm 0.129$ \\
  & MOEA-3  & $0.83 \pm 0.24$ & $0.561 \pm 0.044$ & $0.245 \pm 0.128$ \\
 \midrule
 \multirow{5}{*}{S3 ($N=300$)}
  & G-BL    & $1.00 \pm 0.00$ & $0.578 \pm 0.025$ & $0.217 \pm 0.071$ \\
- & G-SM    & $0.64 \pm 0.07$ & $0.501 \pm 0.034$ & $0.361 \pm 0.073$ \\
+ & G-SM    & $0.27 \pm 0.04$ & $0.436 \pm 0.035$ & $0.667 \pm 0.036$ \\
  & GA-P-BL & $1.000 \pm 0.000$ & $0.579 \pm 0.024$ & $0.203 \pm 0.072$ \\
  & MOEA-2  & $0.98 \pm 0.04$ & $0.587 \pm 0.021$ & $0.175 \pm 0.065$ \\
  & MOEA-3  & $0.97 \pm 0.03$ & $0.587 \pm 0.021$ & $0.175 \pm 0.066$ \\
 \midrule
 \multirow{5}{*}{S4 ($N=500$)}
  & G-BL    & $1.00 \pm 0.00$ & $0.580 \pm 0.025$ & $0.210 \pm 0.071$ \\
- & G-SM    & $0.61 \pm 0.09$ & $0.506 \pm 0.035$ & $0.356 \pm 0.075$ \\
+ & G-SM    & $0.33 \pm 0.10$ & $0.410 \pm 0.050$ & $0.701 \pm 0.068$ \\
  & GA-P-BL & $1.006 \pm 0.019$ & $0.579 \pm 0.025$ & $0.203 \pm 0.073$ \\
  & MOEA-2  & $0.98 \pm 0.03$ & $0.589 \pm 0.021$ & $0.169 \pm 0.066$ \\
  & MOEA-3  & $0.97 \pm 0.04$ & $0.589 \pm 0.021$ & $0.170 \pm 0.067$ \\
@@ -755,15 +755,15 @@ The squint-minimized greedy solver (G-SM) improves NESZ radiometric quality ($f_
 relative to the profit-only baseline (G-BL) by selecting observation times that
 minimize squint angle within each visibility window.
 Across all 200 scenarios, this produces a large positive effect on $f_3$
-(Cliff's $\delta = +0.72$, $p = 1.7 \times 10^{-34}$) at a small aggregate cost
-in coverage (Cliff's $\delta = -0.25$, $p = 7.0 \times 10^{-34}$, on $f_1^*$; raw $f_1$ is used here because G-BL yields constant $f_1^* = 1.0$ by definition, for which the normalized-profit comparison degenerates to a one-sample test against a fixed value).
+(Cliff's $\delta = +0.91$, $p < 10^{-34}$) at a substantial aggregate cost
+in coverage (Cliff's $\delta = -1.0$, $p < 10^{-34}$, on $f_1^*$; raw $f_1$ is used here because G-BL yields constant $f_1^* = 1.0$ by definition, for which the normalized-profit comparison degenerates to a one-sample test against a fixed value).
 The trade-off, however, is strongly density-dependent.
-In sparse scenarios (S1, $N = 20$), G-SM retains $f_1^* = 0.85 \pm 0.16$
-($-15\%$ vs.\ G-BL at $1.00$) while improving $f_3$ from $0.32 \pm 0.17$ to
-$0.44 \pm 0.16$ ($+34\%$).
+In sparse scenarios (S1, $N = 20$), G-SM retains $f_1^* = 0.50 \pm 0.17$
+($-50\%$ vs.\ G-BL at $1.00$) while improving $f_3$ from $0.27 \pm 0.06$ to
+$0.64 \pm 0.06$ ($+138\%$).
 In dense scenarios (S4, $N = 500$), the $f_1$ cost escalates:
-G-SM achieves $f_1^* = 0.61 \pm 0.09$ ($-39\%$), with $f_3$ rising from
-$0.210 \pm 0.071$ to $0.356 \pm 0.075$ ($+70\%$).
+G-SM achieves $f_1^* = 0.33 \pm 0.10$ ($-67\%$), with $f_3$ rising from
+$0.53 \pm 0.12$ to $0.70 \pm 0.07$ ($+34\%$).
 Figure~\ref{fig:fig2} visualizes this density-dependent trade-off: the
 Locally Estimated Scatterplot Smoothing (LOESS)
 trend in panel (c) identifies a transition region around $N = 100$
@@ -1087,7 +1087,7 @@ baseline resolution \citep{Curlander1991}, the coverage cost may be
 justified; for area-monitoring missions, the greedy baseline remains
 preferable. In dense regimes ($N \geq 300$), the multi-objective
 advantage falls below $2\%$ improvement in $f_2$, while G-SM offers
-the highest radiometric quality ($+70\%$ $f_3$ at S4) at a $39\%$
+the highest radiometric quality ($+34\%$ $f_3$ at S4) at a $67\%$
 coverage cost; this gain comes from the one-line squint-minimization
 heuristic rather than from multi-objective search. The logistic midpoint $N_{50} \approx 140$
 (\S~\ref{sec:scale-sensitivity}) provides a concrete transition
