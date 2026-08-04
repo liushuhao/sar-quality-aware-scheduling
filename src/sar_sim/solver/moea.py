@@ -294,7 +294,7 @@ class SARSchedulingProblem(Problem):
             if n_sel[p] == 0:
                 g += 1e5
 
-            G[p] = g
+            G[p] = g * self.penalty_coeff
 
         # pymoo always minimizes; we convert maximization via negation
         # f1: normalized by G-BL reference (f1_gbl)
