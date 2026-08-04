@@ -758,7 +758,7 @@ Across all 200 scenarios, this produces a large positive effect on $f_3$
 (Cliff's $\delta = +0.91$, $p < 10^{-34}$) at a substantial aggregate cost
 in coverage (Cliff's $\delta = -1.0$, $p < 10^{-34}$, on $f_1^*$; raw $f_1$ is used here because G-BL yields constant $f_1^* = 1.0$ by definition, for which the normalized-profit comparison degenerates to a one-sample test against a fixed value).
 The trade-off, however, is strongly density-dependent.
-In sparse scenarios (S1, $N = 20$), G-SM retains $f_1^* = 0.50 \pm 0.17$
+In sparse scenarios (S1, $N = 20$), G-SM drops to $f_1^* = 0.50 \pm 0.17$
 ($-50\%$ vs.\ G-BL at $1.00$) while improving $f_3$ from $0.27 \pm 0.06$ to
 $0.64 \pm 0.06$ ($+138\%$).
 In dense scenarios (S4, $N = 500$), the $f_1$ cost escalates:
@@ -768,8 +768,11 @@ Figure~\ref{fig:fig2} visualizes this density-dependent trade-off: the
 Locally Estimated Scatterplot Smoothing (LOESS)
 trend in panel (c) identifies a transition region around $N = 100$
 where the $f_1$ penalty grows rapidly.
-In dense regimes, the squint-minimization strategy becomes costly because
-tightly packed time windows offer fewer alternative observation times at low squint.
+The radiometric advantage narrows with density ($+138\%$ at S1 to
+$+34\%$ at S4) as tightly packed time windows constrain how far each
+acquisition can be moved toward the squint-minimizing time, while the
+coverage cost remains large at every density (G-SM schedules at most
+$44\%$ of the tasks G-BL selects, falling to $\sim$20--27\% at $N \geq 100$).
 \begin{figure}[H]
     \centering
     \includegraphics[width=\textwidth]{fig2_squint_effect.pdf}
