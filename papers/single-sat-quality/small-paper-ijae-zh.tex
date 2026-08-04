@@ -393,8 +393,8 @@ G-SM 选择最小化 $|\psi_{\text{sq}}|$ 的离散时间，对于不与样本�
 \label{sec:ga-p-bl}
 GA-P-BL 测试一个仅优化 $f_1$ 的遗传算法能否通过利用时间灵活性超越贪心调度。
 每个染色体编码一个归一化开始时间向量 $\boldsymbol{\tau} \in [0,1]^N$，
-其中任务 $i$ 的实际开始时间为 $t_i = t_i^{\text{earliest}} + \tau_i \cdot (t_i^{\text{latest}} - d_i - t_i^{\text{earliest}})$。
-任务选择向量 $\mathbf{x}$ 通过约束求解产生：如果在满足 C2 后在其窗口内不存在可行插入时间，则丢弃任务。
+其中任务 $i$ 的实际开始时间为 $t_i = t_i^{\text{earliest}} + \tau_i \cdot (t_i^{\text{latest}} - d_i - t_i^{\text{earliest}})$，
+同时编码一个二元选择向量 $\mathbf{x} \in \{0,1\}^N$；两者均为决策变量（$2N$ 维染色体）。
 100 个个体的种群从 G-BL 解初始化，每个 $\tau_i$ 添加标准差为 0.5 的高斯噪声。
 该噪声水平经过校准以允许任务选择发生变化——较小的噪声（例如 0.02）将任务集锁定在 G-BL 的选择上，
 阻止 GA 发现收益改进的任务替换。

@@ -520,10 +520,9 @@ GA-P-BL tests whether a genetic algorithm optimizing only $f_1$ can
 outperform greedy scheduling by exploiting temporal flexibility.
 Each chromosome encodes a vector of normalized start times
 $\boldsymbol{\tau} \in [0,1]^N$, where task $i$'s actual start time is
-$t_i = t_i^{\text{earliest}} + \tau_i \cdot (t_i^{\text{latest}} - d_i - t_i^{\text{earliest}})$.
-The task selection vector $\mathbf{x}$ emerges from constraint resolution:
-a task is dropped if no feasible insertion time exists within its window
-after satisfying C2.
+$t_i = t_i^{\text{earliest}} + \tau_i \cdot (t_i^{\text{latest}} - d_i - t_i^{\text{earliest}})$,
+alongside a binary selection vector $\mathbf{x} \in \{0,1\}^N$; both are
+decision variables (a $2N$-dimensional chromosome).
 The population of 100 individuals is initialized from G-BL's solution
 with Gaussian noise (std = 0.5) added to each $\tau_i$.
 The GA runs for 200 generations with simulated binary crossover
