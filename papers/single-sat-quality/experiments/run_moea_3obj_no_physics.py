@@ -154,7 +154,6 @@ class SARSchedulingProblemNoPhysics(Problem):
 
 
 def moea_solver_no_physics(windows, targets, **kwargs):
-    from sar_sim.solver.baselines import baseline_b1
     population_size = kwargs.get("population_size", 100)
     n_generations = kwargs.get("n_generations", 200)
     seed = kwargs.get("seed")
