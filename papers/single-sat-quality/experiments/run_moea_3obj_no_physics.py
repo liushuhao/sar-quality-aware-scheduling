@@ -141,7 +141,7 @@ class SARSchedulingProblemNoPhysics(Problem):
             memory_used = sum(task.memory for i, task in enumerate(inst.tasks) if selected[i])
             if memory_used > inst.memory_budget: g += (memory_used - inst.memory_budget) / inst.memory_budget
             if n_sel[p] == 0: g += 1e5
-            G[p] = g
+            G[p] = g * self.penalty_coeff
 
         f1_norm = f1 / self.f1_gbl
         f2_mean = np.divide(f2_num, n_sel, out=np.zeros_like(f2_num), where=n_sel > 0)
