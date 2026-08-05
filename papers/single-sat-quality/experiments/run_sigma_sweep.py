@@ -80,7 +80,9 @@ def get_all_scenarios():
 
 def build_hotstart(windows, targets, instance):
     """Encode G-BL solution as a 2N chromosome."""
-    gbl = baseline_b1(windows, targets)
+    gbl = baseline_b1(windows, targets, max_slew_rate=instance.max_slew_rate,
+                      settle_time=instance.settle_time,
+                      geom_cache=instance.geom_cache, instance=instance)
     target_to_idx = {t.target_id: i for i, t in enumerate(instance.tasks)}
     x0 = np.zeros(2 * instance.N)
     seen = set()
