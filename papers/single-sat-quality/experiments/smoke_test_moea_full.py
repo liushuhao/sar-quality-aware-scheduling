@@ -23,10 +23,12 @@ windows = data["windows"]
 targets = data["targets"]
 print(f"  n_targets={len(targets)}, n_windows={len(windows)}")
 
-# Build G-BL hotstart (same as run_moea_3obj.py)
-gbl = baseline_b1(windows, targets)
+# Build G-BL hotstart (same as run_moea_3obj.py): instance first, then
+# baseline_b1 with full constraints so the seed is feasible.
 instance = build_agile_instance_from_scenario(data, max_slew_rate=SLEW_RATE, settle_time=SETTLE_TIME)
 precompute_geometry(instance, step_s=10.0)
+gbl = baseline_b1(windows, targets, max_slew_rate=SLEW_RATE, settle_time=SETTLE_TIME,
+                  geom_cache=instance.geom_cache, instance=instance)
 target_to_idx = {t.target_id: i for i, t in enumerate(instance.tasks)}
 x0 = np.zeros(2 * instance.N)
 seen = set()
