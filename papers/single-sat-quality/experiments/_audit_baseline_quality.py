@@ -8,7 +8,7 @@ from pathlib import Path
 from collections import defaultdict
 import numpy as np
 
-ROOT = Path(r"D:/hermes/my-workspace/projects/planning paper")
+ROOT = Path(__file__).resolve().parents[3]
 PAPER = ROOT / "papers/single-sat-quality"
 sys.path.insert(0, str(ROOT / "src"))
 

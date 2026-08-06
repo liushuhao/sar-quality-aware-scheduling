@@ -13,7 +13,9 @@ from collections import OrderedDict
 import numpy as np
 
 PROJECT = Path(__file__).resolve().parent.parent
-sys.path.insert(0, str(PROJECT / "src"))
+# Repo src lives at planning-paper/src (parents[3]); PROJECT/src does not
+# exist. Same derivation as all sibling runners (run_moea_*.py, run_so_f1_bl.py).
+sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "src"))
 
 from sar_sim.solver.baselines import baseline_b1, baseline_b3
 from sar_sim.solver.types import build_agile_instance_from_scenario, precompute_geometry
@@ -104,6 +106,35 @@ def run_both_baselines(windows, targets, instance, geom_cache) -> dict:
     }
 
 
+def run_scenario(fpath: Path) -> dict:
+    """Full production construction path for one scenario pkl.
+
+    Reused by main() and by smoke/verification scripts so the verified
+    path and the production path cannot diverge.
+    """
+    with open(fpath, "rb") as f:
+        data = pickle.load(f)
+
+    windows = data.get("windows", [])
+    targets = data.get("targets", [])
+
+    # Extract altitude from satellite dict
+    sat = data.get("satellite", {})
+    alt_km = float(sat.get("altitude_km", 693.0))
+    alt_m = alt_km * 1000.0
+
+    # Build instance + precompute geometry
+    instance = build_agile_instance_from_scenario(
+        data,
+        max_slew_rate=SLEW_RATE,
+        settle_time=SETTLE_TIME,
+        altitude_m=alt_m,
+    )
+    precompute_geometry(instance, step_s=10.0)
+
+    return run_both_baselines(windows, targets, instance, instance.geom_cache)
+
+
 def main():
     # ── Backup existing if present ──
     if OUT_PATH.exists():
@@ -143,29 +174,7 @@ def main():
             if key in results and "b1" in results.get(key, {}):
                 continue  # already done
             try:
-                with open(fpath, "rb") as f:
-                    data = pickle.load(f)
-
-                windows = data.get("windows", [])
-                targets = data.get("targets", [])
-
-                # Extract altitude from satellite dict
-                sat = data.get("satellite", {})
-                alt_km = float(sat.get("altitude_km", 693.0))
-                alt_m = alt_km * 1000.0
-
-                # Build instance + precompute geometry
-                instance = build_agile_instance_from_scenario(
-                    data,
-                    max_slew_rate=SLEW_RATE,
-                    settle_time=SETTLE_TIME,
-                    altitude_m=alt_m,
-                )
-                precompute_geometry(instance, step_s=10.0)
-
-                result = run_both_baselines(
-                    windows, targets, instance, instance.geom_cache,
-                )
+                result = run_scenario(fpath)
                 results[key] = result
                 n_done += 1
 
