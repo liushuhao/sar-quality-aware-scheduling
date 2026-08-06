@@ -13,14 +13,16 @@ from pathlib import Path
 import numpy as np
 
 # Paths
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
-OUTPUT_DIR = Path(r"PROJECT / "experiments\scenarios\S5"")
+SCRIPT_DIR = Path(__file__).resolve().parent          # papers/single-sat-quality/scripts
+PAPER_DIR = SCRIPT_DIR.parent                          # papers/single-sat-quality
+REPO_ROOT = PAPER_DIR.parent.parent                    # planning-paper
+sys.path.insert(0, str(REPO_ROOT / "src"))
+OUTPUT_DIR = PAPER_DIR / "experiments" / "scenarios" / "S5"
 
 from sar_sim.types import GroundTarget, SARInstrument, KeplerianElement, ObservationWindow
 from sar_sim.generator.orbit import propagate_orbit, kepler_to_eci
 from sar_sim.generator.target import lat_lon_to_ecef, eci_to_ecef_rotation, EARTH_EQUATORIAL_RADIUS
 from sar_sim.generator.visibility import (
-PROJECT = Path(__file__).resolve().parent
     _compute_off_nadir_angle, _off_nadir_to_incidence,
     _determine_look_direction, _check_geometric_constraints
 )
@@ -30,14 +32,21 @@ ORBIT_ALTITUDE_KM = 693.0
 ORBIT_INCLINATION_DEG = 97.8
 LTAN_HOURS = 6.0
 SIM_DURATION_ORBITS = 2
-TIMESTEP_SEC = 60
+TIMESTEP_SEC = 10  # match generate_all_scenarios.py; coarser grids leave a
+                   # violating tail between the last-passing sample and the
+                   # first-failing one (audited at 0.5s continuous geometry).
 
 INSTRUMENT = SARInstrument(
-    incidence_min=15.0, incidence_max=50.0,
+    incidence_min=18.0, incidence_max=47.0,
     look_direction="both", antenna_type="reflector", min_elevation=5.0,
 )
 
 # S5 groups: theta_ref values
+# NOTE: This standalone script predates the consolidated generate_all_scenarios.py
+# S5 branch and is kept only as a historical reference. The canonical S5 scenarios
+# are produced by generate_all_scenarios.py (incidence 18-47°, 10s grid,
+# generate_targets_s5_spread). This script's target layout differs, so its output
+# must NOT be used as experiment input. Run the main generator instead.
 THETA_REF_GROUPS = {
     "S5-A": 20.0,
     "S5-B": 25.0,
@@ -208,27 +217,16 @@ def generate_one_scenario(group_id, theta_ref, seed):
 
 # --- Main ---
 def main():
-    OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
-    total = len(THETA_REF_GROUPS) * N_SEEDS
-    completed = 0
-    t0 = time.time()
-    print(f"Generating S5 scenarios: {len(THETA_REF_GROUPS)} groups x {N_SEEDS} seeds = {total}")
-    for group_id, theta_ref in THETA_REF_GROUPS.items():
-        for seed in range(N_SEEDS):
-            fname = f"{group_id}_seed{seed:02d}.pkl"
-            fpath = OUTPUT_DIR / fname
-            if fpath.exists():
-                print(f"  [SKIP] {fname} exists")
-                completed += 1
-                continue
-            scenario = generate_one_scenario(group_id, theta_ref, seed)
-            with open(fpath, "wb") as f:
-                pickle.dump(scenario, f, protocol=pickle.HIGHEST_PROTOCOL)
-            s = scenario["stats"]
-            print(f"  [{completed+1}/{total}] {fname}: {s['n_with_windows']}/{s['n_targets_total']} visible, "
-                  f"{s['total_windows']} windows, theta_ref={theta_ref}°")
-            completed += 1
-    print(f"Done: {completed} scenarios in {time.time()-t0:.1f}s")
+    import sys
+    print("=" * 70, file=sys.stderr)
+    print("WARNING: This standalone script is DEPRECATED.", file=sys.stderr)
+    print("S5 scenarios are generated canonically by generate_all_scenarios.py", file=sys.stderr)
+    print("(experiments/generate_all_scenarios.py, S5 branch). That generator uses", file=sys.stderr)
+    print("the consolidated target layout, 18-47° incidence, and a 10s sampling grid.", file=sys.stderr)
+    print("This script's output is NOT a drop-in substitute and must not overwrite", file=sys.stderr)
+    print("the canonical S5/*.pkl. Refusing to write. Exiting.", file=sys.stderr)
+    print("=" * 70, file=sys.stderr)
+    return
 
 if __name__ == "__main__":
     main()
