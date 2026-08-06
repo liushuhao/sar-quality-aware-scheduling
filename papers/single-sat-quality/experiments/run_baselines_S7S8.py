@@ -5,7 +5,7 @@ from pathlib import Path
 from collections import OrderedDict
 
 PROJECT = Path(__file__).resolve().parent.parent
-sys.path.insert(0, str(PROJECT / "src"))
+sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "src"))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from sar_sim.solver.baselines import baseline_b1, baseline_b3

@@ -22,7 +22,7 @@ from collections import OrderedDict
 import numpy as np
 
 PROJECT = Path(__file__).resolve().parent.parent
-sys.path.insert(0, str(PROJECT / "src"))
+sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "src"))
 
 from sar_sim.solver.baselines import baseline_b1
 from sar_sim.solver.types import build_agile_instance, precompute_geometry
