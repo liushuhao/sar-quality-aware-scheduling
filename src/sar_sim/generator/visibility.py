@@ -233,11 +233,13 @@ def find_visibility_windows(
     best_off_nadir = 0.0
     best_look = "right"
     best_time = None
+    last_pass_time = None
 
     for state in states:
         _, _, elev, off_nadir, incidence, look, squint = satellite_to_target_vector(state, target)
 
         if _check_geometric_constraints(elev, incidence, look, instrument, squint):
+            last_pass_time = state.time
             if not in_window:
                 # Start of new window
                 in_window = True
@@ -263,7 +265,7 @@ def find_visibility_windows(
                         satellite_id=satellite_id,
                         target_id=target.target_id,
                         t_start=window_start,
-                        t_end=state.time,
+                        t_end=last_pass_time,
                         t_optimal=best_time,
                         elevation=best_elev,
                         off_nadir_angle=best_off_nadir,
@@ -278,7 +280,7 @@ def find_visibility_windows(
                 satellite_id=satellite_id,
                 target_id=target.target_id,
                 t_start=window_start,
-                t_end=t_end,
+                t_end=last_pass_time,
                 t_optimal=best_time,
                 elevation=best_elev,
                 off_nadir_angle=best_off_nadir,

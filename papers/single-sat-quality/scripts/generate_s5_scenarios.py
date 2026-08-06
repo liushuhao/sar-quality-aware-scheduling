@@ -118,6 +118,7 @@ def compute_batch_visibility(orbit_elements, satellite_id, targets, instrument, 
     best_off_nadir = {tgt.target_id: 0.0 for tgt in targets}
     best_look = {tgt.target_id: "right" for tgt in targets}
     best_time = {tgt.target_id: None for tgt in targets}
+    last_pass_time = {tgt.target_id: None for tgt in targets}
     results = {tgt.target_id: [] for tgt in targets}
     h_sat_m = ORBIT_ALTITUDE_KM * 1000.0
     for state in states:
@@ -137,6 +138,7 @@ def compute_batch_visibility(orbit_elements, satellite_id, targets, instrument, 
             incidence = _off_nadir_to_incidence(off_nadir, h_sat_m)
             look = _determine_look_direction(sat_ecef, sat_vel_ecef, target_ecef)
             if _check_geometric_constraints(elev, incidence, look, instrument):
+                last_pass_time[tid] = state.time
                 if not in_window[tid]:
                     in_window[tid] = True
                     window_start[tid] = state.time
@@ -153,7 +155,7 @@ def compute_batch_visibility(orbit_elements, satellite_id, targets, instrument, 
                 in_window[tid] = False
                 results[tid].append(ObservationWindow(
                     satellite_id=satellite_id, target_id=tid,
-                    t_start=window_start[tid], t_end=state.time,
+                    t_start=window_start[tid], t_end=last_pass_time[tid],
                     t_optimal=best_time[tid], elevation=best_elev[tid],
                     off_nadir_angle=best_off_nadir[tid], look_direction=best_look[tid],
                     duration_min=30.0,
@@ -163,7 +165,7 @@ def compute_batch_visibility(orbit_elements, satellite_id, targets, instrument, 
         if in_window[tid]:
             results[tid].append(ObservationWindow(
                 satellite_id=satellite_id, target_id=tid,
-                t_start=window_start[tid], t_end=t_end,
+                t_start=window_start[tid], t_end=last_pass_time[tid],
                 t_optimal=best_time[tid], elevation=best_elev[tid],
                 off_nadir_angle=best_off_nadir[tid], look_direction=best_look[tid],
                 duration_min=30.0,

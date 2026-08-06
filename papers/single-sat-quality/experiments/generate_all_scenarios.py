@@ -322,6 +322,7 @@ def compute_batch_visibility(orbit: KeplerianElement, satellite_id: str,
     best_off_nadir = {tgt.target_id: 0.0 for tgt in targets}
     best_look = {tgt.target_id: "right" for tgt in targets}
     best_time = {tgt.target_id: None for tgt in targets}
+    last_pass_time = {tgt.target_id: None for tgt in targets}
     results = {tgt.target_id: [] for tgt in targets}
 
     h_sat_m = altitude_km * 1000.0
@@ -355,6 +356,7 @@ def compute_batch_visibility(orbit: KeplerianElement, satellite_id: str,
             passes = _check_geometric_constraints(elev, incidence, look, instrument, squint)
 
             if passes:
+                last_pass_time[tid] = state.time
                 if not in_window[tid]:
                     in_window[tid] = True
                     window_start[tid] = state.time
@@ -373,7 +375,7 @@ def compute_batch_visibility(orbit: KeplerianElement, satellite_id: str,
                     in_window[tid] = False
                     results[tid].append(ObservationWindow(
                         satellite_id=satellite_id, target_id=tid,
-                        t_start=window_start[tid], t_end=state.time,
+                        t_start=window_start[tid], t_end=last_pass_time[tid],
                         t_optimal=best_time[tid], elevation=best_elev[tid],
                         off_nadir_angle=best_off_nadir[tid],
                         look_direction=best_look[tid], duration_min=30.0,
@@ -385,7 +387,7 @@ def compute_batch_visibility(orbit: KeplerianElement, satellite_id: str,
         if in_window[tid]:
             results[tid].append(ObservationWindow(
                 satellite_id=satellite_id, target_id=tid,
-                t_start=window_start[tid], t_end=t_end,
+                t_start=window_start[tid], t_end=last_pass_time[tid],
                 t_optimal=best_time[tid], elevation=best_elev[tid],
                 off_nadir_angle=best_off_nadir[tid],
                 look_direction=best_look[tid], duration_min=30.0,
