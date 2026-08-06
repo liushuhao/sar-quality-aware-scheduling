@@ -6,11 +6,11 @@ followed by its hard audit (C1-C4 + OOW). Any failed audit stops the
 batch so dirty data cannot propagate.
 
 Scope (verified against analysis scripts + old snapshots):
-  baselines S1-S4 (200)  + baselines S7/S8 (100)
-  GA-P-BL    S1-S6 (300)
+  baselines S1-S4 (200)  + baselines S7/S8 (100, for §6.3 scale)
+  GA-P-BL    S1-S4 (200)
   MOEA-2     S1-S4,S7,S8 (300; S5/S6 unused by downstream analyses)
-  MOEA-3     S1-S6 (300)
-  no_incidence / no_physics / no_squint  S1-S6 (300 each)
+  MOEA-3     S1-S4 (200)
+  no_incidence / no_physics / no_squint  S1-S4 (200 each)
 
 Logs: experiments/logs/full_rerun_<family>.log
 """
@@ -142,10 +142,10 @@ def main():
     if not audit_baselines("S7,S8", "baselines_S7S8"):
         sys.exit(1)
 
-    # ---- 3. GA-P-BL S1-S6 (300) ----
-    run_step("GA-P-BL S1-S6",
+    # ---- 3. GA-P-BL S1-S4 (200) ----
+    run_step("GA-P-BL S1-S4",
              [PY, str(EXPERIMENTS / "run_so_f1_bl.py"),
-              "--no-resume", "--groups", "S1", "S2", "S3", "S4", "S5", "S6"],
+              "--no-resume", "--groups", "S1", "S2", "S3", "S4"],
              LOGS / "full_rerun_ga_p_bl.log")
     if not audit_progress(RESULTS / "b2_profit_bl" / "_progress.json", "ga_p_bl"):
         sys.exit(1)
@@ -158,15 +158,15 @@ def main():
     if not audit_progress(RESULTS / "moea_2obj" / "_progress.json", "moea_2obj"):
         sys.exit(1)
 
-    # ---- 5. MOEA-3 S1-S6 (300) ----
+    # ---- 5. MOEA-3 S1-S4 (200) ----
     run_step("MOEA-3",
              [PY, str(EXPERIMENTS / "run_moea_3obj.py"),
-              "--no-resume", "--groups", "S1", "S2", "S3", "S4", "S5", "S6"],
+              "--no-resume", "--groups", "S1", "S2", "S3", "S4"],
              LOGS / "full_rerun_moea_3obj.log")
     if not audit_progress(RESULTS / "moea_3obj" / "_progress.json", "moea_3obj"):
         sys.exit(1)
 
-    # ---- 6-8. ablations S1-S6 (300 each) ----
+    # ---- 6-8. ablations S1-S4 (200 each) ----
     for script, dirname, snap in [
         ("run_moea_3obj_no_incidence.py", "moea_3obj_no_incidence", "no_incidence"),
         ("run_moea_3obj_no_physics.py", "moea_3obj_no_physics", "no_physics"),
@@ -174,7 +174,7 @@ def main():
     ]:
         run_step(snap,
                  [PY, str(EXPERIMENTS / script),
-                  "--no-resume", "--groups", "S1", "S2", "S3", "S4", "S5", "S6"],
+                  "--no-resume", "--groups", "S1", "S2", "S3", "S4"],
                  LOGS / f"full_rerun_{snap}.log")
         if not audit_progress(RESULTS / dirname / "_progress.json", snap):
             sys.exit(1)
