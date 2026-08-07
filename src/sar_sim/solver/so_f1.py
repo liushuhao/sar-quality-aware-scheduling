@@ -150,23 +150,13 @@ class B2ProfitProblem(Problem):
                         phi = abs(roll)
                     phi_list.append(phi)
 
-                    # Encoding validity: decoded t_actual must fall within at
-                    # least one pre-filtered visibility window.  C1 (incidence
-                    # + squint) is enforced at window-generation time; this
-                    # only catches τ values landing in an inter-window gap.
-                    wt = task.window_times
-                    if wt:
-                        in_any = False
-                        min_dist = float("inf")
-                        for w_start, w_end in wt:
-                            if w_start <= t_act <= w_end:
-                                in_any = True
-                                break
-                            dist = min(abs(t_act - w_start), abs(t_act - w_end))
-                            if dist < min_dist:
-                                min_dist = dist
-                        if not in_any:
-                            g += min_dist / max(task.duration, 1.0)
+                    # Encoding validity: the full observation interval
+                    # [t_act, t_act+duration] must lie within one visibility
+                    # window (C1 enforced at generation; this catches straddle
+                    # or past-end intervals on short windows).
+                    in_any, gap = task.interval_window_state(t_act)
+                    if not in_any:
+                        g += gap / max(task.duration, 1.0)
 
             # C2: attitude maneuver and non-overlap between consecutive tasks
             if len(sel_indices) > 1:
@@ -278,18 +268,19 @@ def _build_schedule_from_b2(
     for idx, t_act in zip(selected_indices, t_actuals):
         task = instance.tasks[idx]
 
-        # Find the window that best contains t_act
+        # Find the window that best contains the full observation interval
         best_window = None
         best_dist = float("inf")
         for w in task.windows:
             w_start = w.t_start.timestamp() if hasattr(w.t_start, 'timestamp') else w.t_start
             w_end = w.t_end.timestamp() if hasattr(w.t_end, 'timestamp') else w.t_end
-            if w_start <= t_act <= w_end:
-                # This window contains t_act
+            if w_start <= t_act and t_act + task.duration <= w_end:
+                # This window contains the full interval
                 best_window = w
                 break
             # Track closest window
-            dist = min(abs(w_start - t_act), abs(w_end - t_act))
+            dist = min(abs(w_start - t_act),
+                       abs(w_end - (t_act + task.duration)))
             if dist < best_dist:
                 best_dist = dist
                 best_window = w

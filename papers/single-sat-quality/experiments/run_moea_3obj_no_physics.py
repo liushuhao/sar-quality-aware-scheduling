@@ -113,14 +113,9 @@ class SARSchedulingProblemNoPhysics(Problem):
                 if selected[i]:
                     task = inst.tasks[i]
                     t_act = t_actual_dict[i]
-                    wt = task.window_times
-                    if wt:
-                        in_any = False; min_dist = float("inf")
-                        for w_start, w_end in wt:
-                            if w_start <= t_act <= w_end: in_any = True; break
-                            if t_act < w_start: min_dist = min(min_dist, w_start - t_act)
-                            elif t_act > w_end: min_dist = min(min_dist, t_act - w_end)
-                        if not in_any: g += min_dist / max(task.duration, 1.0)
+                    in_any, gap = task.interval_window_state(t_act)
+                    if not in_any:
+                        g += gap / max(task.duration, 1.0)
 
             sel_indices = [i for i in range(N) if selected[i]]
             if len(sel_indices) > 1:

@@ -184,31 +184,18 @@ class SARSchedulingProblem(Problem):
             # ── Constraints ─────────────────────────────────────────
             g = 0.0
 
-            # Encoding validity: decoded t_actual must fall within at least
-            # one pre-filtered visibility window.  C1 (incidence + squint)
-            # is already enforced at window-generation time, so no inline
-            # geometry check is needed here — this only catches τ values
-            # that land in an inter-window gap.
+            # Encoding validity: the full observation interval
+            # [t_act, t_act+duration] must lie within one visibility window.
+            # C1 (incidence + squint) is enforced at window-generation time;
+            # this catches τ whose interval straddles an inter-window gap or
+            # extends past a window end (short/zero windows cannot host 30 s).
             for i in range(N):
                 if selected[i]:
                     task = inst.tasks[i]
                     t_act = t_actual_dict[i]
-                    wt = task.window_times
-                    if wt:
-                        in_any_window = False
-                        min_dist = float("inf")
-                        for w_start, w_end in wt:
-                            if w_start <= t_act <= w_end:
-                                in_any_window = True
-                                break
-                            if t_act < w_start:
-                                min_dist = min(min_dist, w_start - t_act)
-                            elif t_act > w_end:
-                                min_dist = min(min_dist, t_act - w_end)
-                            else:
-                                min_dist = 0.0
-                        if not in_any_window:
-                            g += min_dist / max(task.duration, 1.0)
+                    in_any, gap = task.interval_window_state(t_act)
+                    if not in_any:
+                        g += gap / max(task.duration, 1.0)
 
             # C2: attitude maneuver and non-overlap between consecutive selected tasks
             sel_indices = [i for i in range(N) if selected[i]]
@@ -334,16 +321,17 @@ def _build_schedule_from_moea(
     for idx, t_act in zip(selected_indices, t_actuals):
         task = instance.tasks[idx]
 
-        # Find the window that best contains t_act
+        # Find the window that best contains the full observation interval
         best_window = None
         best_dist = float("inf")
         wt = task.window_times
         if wt:
             for (w_start, w_end), w in zip(wt, task.windows):
-                if w_start <= t_act <= w_end:
+                if w_start <= t_act and t_act + task.duration <= w_end:
                     best_window = w
                     break
-                dist = min(abs(t_act - w_start), abs(t_act - w_end))
+                dist = min(abs(t_act - w_start),
+                           abs(t_act + task.duration - w_end))
                 if dist < best_dist:
                     best_dist = dist
                     best_window = w
@@ -351,10 +339,10 @@ def _build_schedule_from_moea(
             for w in task.windows:
                 w_start = w.t_start.timestamp() if hasattr(w.t_start, 'timestamp') else w.t_start
                 w_end = w.t_end.timestamp() if hasattr(w.t_end, 'timestamp') else w.t_end
-                if w_start <= t_act <= w_end:
+                if w_start <= t_act and t_act + task.duration <= w_end:
                     best_window = w
                     break
-                dist = min(abs(w_start - t_act), abs(w_end - t_act))
+                dist = min(abs(w_start - t_act), abs(w_end - (t_act + task.duration)))
                 if dist < best_dist:
                     best_dist = dist
                     best_window = w

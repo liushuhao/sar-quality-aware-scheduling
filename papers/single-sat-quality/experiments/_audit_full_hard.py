@@ -36,8 +36,11 @@ def audit_one(args):
     phis = list(e["phis_off_nadir"])
     N = inst.N; phi = np.zeros(N); t = np.zeros(N); oow = 0
     for i, tt, ph in zip(sel, ta, phis):
-        wt = inst.tasks[i].window_times
-        if wt and not any(ws <= tt <= we for ws, we in wt):
+        task = inst.tasks[i]
+        wt = task.window_times
+        # Full observation interval [tt, tt+duration] must lie in one window
+        # (start-only check lets short windows host an OOW observation).
+        if wt and not any(ws <= tt and tt + task.duration <= we for ws, we in wt):
             oow += 1
         phi[i] = ph; t[i] = tt
     rep = ConstraintVerifier(inst).verify_solution(sel, phi, t_actual=t)
@@ -96,6 +99,11 @@ def main():
     print(f"scenarios with any issue: {len(bad)}  (audit {dt:.0f}s, {_args.jobs} workers)")
     for b in bad[:30]:
         print(" ", b)
+
+    # Non-zero exit on any violation so orchestrators/CI cannot silently
+    # consume dirty data (grep-based checks remain for logs).
+    n_bad = tot["oow"] + tot["C1"] + tot["C2"] + tot["C3"] + tot["C4"]
+    sys.exit(1 if n_bad else 0)
 
 
 if __name__ == "__main__":

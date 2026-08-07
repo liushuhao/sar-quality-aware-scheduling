@@ -44,11 +44,13 @@ def audit(classes):
                         continue
                     sel.append(i)
                     t = obs.t_actual_start.timestamp()
+                    t_end_obs = obs.t_actual_end.timestamp()
                     ta[i] = t
                     roll, _, _ = compute_full_attitude(inst.tasks[i], t, 1.0, inst)
                     phi[i] = roll
                     wt = inst.tasks[i].window_times
-                    if wt and not any(ws <= t <= we for ws, we in wt):
+                    # Full acquisition interval must lie within one window.
+                    if wt and not any(ws <= t and t_end_obs <= we for ws, we in wt):
                         oow += 1
                 rep = ConstraintVerifier(inst).verify_solution(sel, phi, t_actual=ta)
                 s = stats[solver]

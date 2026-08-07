@@ -9,6 +9,7 @@ transitive dependency on pymoo.
 """
 
 from dataclasses import dataclass, field
+import math
 import numpy as np
 from typing import List, Dict, Optional, Tuple
 
@@ -60,6 +61,40 @@ class AgileTask:
     time_span: float = 0.0        # t_latest - duration - t_earliest — constant per task
     window_times: List[Tuple[float, float]] = field(default_factory=list)
     # list of (w_start_float, w_end_float) for each window — avoids hasattr+timestamp in hot loop
+
+    def interval_window_state(self, t_start: float) -> Tuple[bool, float]:
+        """Feasibility of the full observation interval [t_start, t_start+duration].
+
+        A 30 s acquisition must lie ENTIRELY within one visibility window;
+        checking only the start time lets a short/zero-length window host an
+        observation whose body falls outside the window (a real C1/OOW
+        violation). Mirrors the baseline check in ``baselines.py`` (reject
+        window shorter than duration; require t_start+duration <= w_end).
+
+        Returns:
+            (True, 0.0) if some window fully contains the interval.
+            (False, gap) otherwise, where gap is the minimum absolute shift of
+            t_start needed to fit the interval (used as a penalty gradient).
+            gap is +inf when no window is long enough to host the duration —
+            such a task is physically unschedulable and should never be selected.
+        """
+        best_gap = float("inf")
+        for ws, we in self.window_times:
+            cap = we - self.duration  # latest feasible start in this window
+            if cap < ws - 1e-9:
+                continue  # window shorter than observation duration
+            if ws <= t_start <= cap:
+                return True, 0.0
+            if t_start < ws:
+                best_gap = min(best_gap, ws - t_start)
+            else:
+                best_gap = min(best_gap, t_start - cap)
+        # No window can host the full duration: task is physically
+        # unschedulable. Return a large finite penalty (not inf, which would
+        # NaN the objective) so any solution selecting it is dominated.
+        if not math.isfinite(best_gap):
+            best_gap = 5800.0  # ~one orbital period, dominates any real gap
+        return False, best_gap
 
 
 @dataclass
