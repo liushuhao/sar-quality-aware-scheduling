@@ -132,10 +132,17 @@ def run_scenario(fpath: Path) -> dict:
     )
     precompute_geometry(instance, step_s=10.0)
 
-    return run_both_baselines(windows, targets, instance, instance.geom_cache)
+    result = run_both_baselines(windows, targets, instance, instance.geom_cache)
+    result["pkl_sha1"] = _pkl_sha1(fpath)
+    return result
 
 
 def main():
+    for _s in (sys.stdout, sys.stderr):
+        try:
+            _s.reconfigure(line_buffering=True)
+        except Exception:
+            pass
     # ── Backup existing if present ──
     if OUT_PATH.exists():
         bak = RESULTS_DIR / "baselines_200.json.bak_pre_f3fix"
@@ -171,8 +178,8 @@ def main():
 
         for fpath in files:
             key = f"{group_name}/{fpath.name}"
-            if key in results and "b1" in results.get(key, {}):
-                continue  # already done
+            if key in results and results[key].get("pkl_sha1") == _pkl_sha1(fpath):
+                continue  # already done on this exact pkl
             try:
                 result = run_scenario(fpath)
                 results[key] = result

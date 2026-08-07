@@ -69,6 +69,23 @@ m3_raw = load_json(MOEA3_PATH)
 m3_data = m3_raw.get("completed", {})
 print(f"  MOEA-3: {len(m3_data)} scenarios")
 
+# ── 1b. Cross-family pkl_sha1 consistency guard ──
+# Families MUST run on the same pkl bytes to be comparable; a regenerated pkl
+# applied to only one family makes pairwise tests / Table 1 meaningless.
+# See _provenance.check_pkl_sha1_consistency for semantics.
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from _provenance import check_pkl_sha1_consistency
+check_pkl_sha1_consistency({
+    "G-BL/G-SM": {k: (v.get("pkl_sha1") if isinstance(v, dict) else None)
+                  for k, v in bl_data.items()},
+    "GA-P-BL": {k: (v.get("pkl_sha1") if isinstance(v, dict) else None)
+                for k, v in b2_data.items()},
+    "MOEA-2": {k: (v.get("pkl_sha1") if isinstance(v, dict) else None)
+               for k, v in m2_data.items()},
+    "MOEA-3": {k: (v.get("pkl_sha1") if isinstance(v, dict) else None)
+               for k, v in m3_data.items()},
+}, label="cross-family")
+
 # ── 2. Collect per-scenario results ──
 # Structure: results[scenario_key] = {
 #   "G-BL": {"f1":..., "f2":..., "f3":..., "n_targets":..., "n_selected":..., "runtime_s":..., "frontier": [(f1,f2,f3)]},

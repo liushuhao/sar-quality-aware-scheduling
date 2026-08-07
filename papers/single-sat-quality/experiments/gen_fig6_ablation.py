@@ -94,6 +94,20 @@ def load_all() -> dict:
             }
         data[vid] = entries
         print(f"  {vid}: {len(entries)} entries")
+
+    # Cross-variant + G-BL pkl_sha1 consistency: paired per-scenario comparison
+    # requires all variants + the baseline reference on the same pkls.
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    from _provenance import check_pkl_sha1_consistency
+    _raw = {}
+    for vid, dname in VARIANT_DIRS.items():
+        with open(RESULTS / dname / "_progress.json") as f:
+            completed = json.load(f).get("completed", {})
+        _raw[vid] = {k: (v.get("pkl_sha1") if isinstance(v, dict) else None)
+                     for k, v in completed.items()}
+    _raw["G-BL"] = {k: (v.get("pkl_sha1") if isinstance(v, dict) else None)
+                    for k, v in baselines.items()}
+    check_pkl_sha1_consistency(_raw, label="ablation-fig6")
     return data
 
 

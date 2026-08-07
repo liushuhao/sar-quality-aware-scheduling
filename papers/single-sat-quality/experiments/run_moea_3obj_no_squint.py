@@ -494,6 +494,11 @@ def run_one(pkl_path: Path) -> dict:
     }
 
 def main():
+    for _s in (sys.stdout, sys.stderr):
+        try:
+            _s.reconfigure(line_buffering=True)
+        except Exception:
+            pass
     import argparse
     parser = argparse.ArgumentParser()
     parser.add_argument("--groups", nargs="+", help="Groups to process")
@@ -536,7 +541,7 @@ def main():
 
         for fpath in files:
             key = f"{group_name}/{fpath.name}"
-            if key in completed:
+            if key in completed and completed[key].get("pkl_sha1") == _pkl_sha1(fpath):
                 continue
 
             try:

@@ -224,7 +224,7 @@ def run_sigma_sweep(sigma_values, groups, solvers, max_scenarios=0):
 
                 for fpath in files:
                     key = f"{gname}/{fpath.name}"
-                    if key in completed:
+                    if key in completed and completed[key].get("pkl_sha1") == _pkl_sha1(fpath):
                         continue
 
                     try:

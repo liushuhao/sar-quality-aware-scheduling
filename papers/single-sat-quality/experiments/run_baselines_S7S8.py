@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Run G-BL + G-SM baselines on S7/S8 only, append to separate output file."""
-import pickle, json, sys, time
+import pickle, json, sys, time, hashlib
 from pathlib import Path
 from collections import OrderedDict
 
@@ -16,6 +16,13 @@ RESULTS_DIR = PROJECT / "experiments" / "results"
 OUT_PATH = RESULTS_DIR / "baselines_S7S8.json"
 SLEW_RATE, SETTLE_TIME = 0.0524, 5.0
 GROUPS = ["S7", "S8"]
+
+def _pkl_sha1(pkl_path: Path) -> str:
+    sha = hashlib.sha1()
+    with open(pkl_path, "rb") as f:
+        while chunk := f.read(8192):
+            sha.update(chunk)
+    return sha.hexdigest()
 
 def _to_dict(r, f1_gbl: float, n_targets: int, runtime_s: float, normalized_f1: float) -> dict:
     """Build result dict aligned with baselines_200.json schema.
@@ -37,6 +44,11 @@ def _to_dict(r, f1_gbl: float, n_targets: int, runtime_s: float, normalized_f1: 
     }
 
 def main():
+    for _s in (sys.stdout, sys.stderr):
+        try:
+            _s.reconfigure(line_buffering=True)
+        except Exception:
+            pass
     results = OrderedDict()
     if OUT_PATH.exists():
         with open(OUT_PATH) as f:
@@ -54,7 +66,8 @@ def main():
         print(f"\n=== {group}: {len(pkgs)} scenarios ===")
         for pkl in pkgs:
             key = f"{group}/{pkl.name}"
-            if key in results and "b1" in results[key] and results[key]["b1"].get("f3") is not None:
+            cur_sha = _pkl_sha1(pkl)
+            if key in results and results[key].get("pkl_sha1") == cur_sha:
                 continue
             with open(pkl, "rb") as f:
                 data = pickle.load(f)
@@ -70,6 +83,7 @@ def main():
             t_b3 = time.time() - t0
             f1_gbl = max(float(b1.f1), 1.0)
             results[key] = {
+                "pkl_sha1": cur_sha,
                 "b1": _to_dict(b1, f1_gbl, n_targets, t_b1, 1.0),       # G-BL is the reference
                 "b3": _to_dict(b3, f1_gbl, n_targets, t_b3, float(b3.f1) / f1_gbl),
             }

@@ -7,6 +7,7 @@ definitions.
 import json
 import math
 import os
+import sys
 from collections import defaultdict, OrderedDict
 from typing import Dict, List
 
@@ -244,6 +245,16 @@ def main():
     if not variants:
         print("No variant data found. Aborting.")
         return
+
+    # Cross-variant pkl_sha1 consistency: A/B/C/D are paired per scenario, so
+    # they MUST run on the same pkl bytes. See _provenance.
+    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+    from _provenance import check_pkl_sha1_consistency
+    check_pkl_sha1_consistency({
+        vid: {k: (v.get("pkl_sha1") if isinstance(v, dict) else None)
+              for k, v in c.items()}
+        for vid, c in variants.items()
+    }, label="ablation-variants")
 
     print("\n=== Comparing variants ===\n")
     table = compare_variants(variants)

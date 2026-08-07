@@ -338,6 +338,11 @@ def run_one(pkl_path):
     }
 
 def main():
+    for _s in (sys.stdout, sys.stderr):
+        try:
+            _s.reconfigure(line_buffering=True)
+        except Exception:
+            pass
     import argparse
     parser = argparse.ArgumentParser()
     parser.add_argument("--groups", nargs="+")
@@ -363,7 +368,7 @@ def main():
         print(f"\n=== {gname}: {len(files)} scenarios ===")
         for fpath in files:
             key = f"{gname}/{fpath.name}"
-            if key in completed: continue
+            if key in completed and completed[key].get("pkl_sha1") == _pkl_sha1(fpath): continue
             try:
                 r = run_one(fpath)
                 if r is not None: completed[key] = r; total_run += 1

@@ -23,12 +23,23 @@ moea2 = json.load(open(RESULTS / "moea_2obj" / "_progress.json", encoding="utf-8
 bl = json.load(open(RESULTS / "baselines_200.json", encoding="utf-8"))
 bl78 = json.load(open(RESULTS / "baselines_S7S8.json", encoding="utf-8"))
 
+# Cross-family pkl_sha1 consistency: MOEA-2 f2 is compared against G-BL f2 per
+# class, so the two must run on the same scenario pkls. See _provenance.
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from _provenance import check_pkl_sha1_consistency
+bl_all = {**bl, **bl78}
+check_pkl_sha1_consistency({
+    "MOEA-2": {k: (v.get("pkl_sha1") if isinstance(v, dict) else None)
+               for k, v in moea2.items()},
+    "G-BL/G-SM": {k: (v.get("pkl_sha1") if isinstance(v, dict) else None)
+                  for k, v in bl_all.items()},
+}, label="scale-sensitivity")
+
 by_class = defaultdict(list)
 for key, v in moea2.items():
     cls = key.split("/")[0]
     by_class[cls].append(v)
 
-bl_all = {**bl, **bl78}
 
 print(f"{'Class':<6}{'N':>5}{'f1*':>10}{'f2 gain':>10}{'% f1*<0.95':>12}")
 rows = []
