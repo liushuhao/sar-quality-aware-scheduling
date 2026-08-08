@@ -793,24 +793,20 @@ $44\%$ of the tasks G-BL selects, falling to $\sim$20--27\% at $N \geq 100$).
 \label{sec:scale-sensitivity}
 The gap between MOEA-2 and G-BL varies systematically with scenario density
 (Fig.~\ref{fig:fig3}, Table~\ref{tab:scale-sensitivity}).
-MOEA-2's coverage deficit relative to G-BL narrows with
-increasing scale: from $f_1^* = 0.68 \pm 0.29$ at S1 ($N = 20$) to
-$0.82 \pm 0.25$ at S2 ($N = 100$), $0.94 \pm 0.06$ at S7 ($N = 150$),
-$0.96 \pm 0.04$ at S8 ($N = 200$), $0.98 \pm 0.04$ at S3 ($N = 300$),
-and $0.98 \pm 0.03$ at S4 ($N = 500$).
-The $f_2$ improvement over G-BL follows the same contraction, falling from $+8.2\%$ (S1)
-to $+4.4\%$ (S2) and to near zero at the intermediate densities ($+0.4\%$ at S7, $+0.2\%$ at S8),
-before a slight rebound to $+1.6\%$ (S3) and $+1.5\%$ (S4).
+MOEA-2's coverage deficit relative to G-BL is confined to sparse densities:
+from $f_1^* = 0.87 \pm 0.08$ at S1 ($N = 20$) it rises to
+$0.985 \pm 0.03$ at S2 ($N = 100$), and reaches $0.998$--$0.999$ at
+$N \geq 150$ (S7--S3), remaining within $1\%$ of G-BL at S4 ($0.996$).
+The $f_2$ improvement over G-BL follows the same contraction, falling from $+4.7\%$ (S1)
+to $+1.4\%$ (S2) and to $+0.8\%$ or less at $N \geq 150$.
 The proportion of scenarios where MOEA-2's coverage falls measurably short of
 G-BL ($f_1^* < 0.95$, i.e., a coverage deficit exceeding 5\%)
-falls from $88\%$ (S1) through $62\%$ (S2), $42\%$ (S7), and $30\%$ (S8) to
-$16\%$ (S3), with a slight rise to $24\%$ (S4).
-The deficit is monotonic from S1 to S3; the rise from
-S3 ($16\%$) to S4 ($24\%$) is not statistically significant
-($\chi^2(1) = 1.00$, $p = 0.32$).
-Between $N = 100$ and $N = 300$,
-the multi-objective solver transitions from actively trading off coverage
-for quality to operating near the greedy baseline.
+collapses from $84\%$ (S1) to $6\%$ (S2) and to $0\%$ at $N \geq 150$
+($2\%$ at S4, a single scenario).
+The multi-objective coverage advantage is therefore a sparse-density phenomenon:
+between $N = 20$ and $N = 100$ the solver transitions from actively trading off
+coverage for quality to operating at the greedy baseline, and beyond
+$N = 150$ the deficit is effectively zero.
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.75\textwidth]{fig3_scale_sensitivity.pdf}
@@ -825,24 +821,25 @@ for quality to operating near the greedy baseline.
 \toprule
 \textbf{Class} & $N$ & $f_1^*$ (MOEA-2) & $f_2$ improvement & \% $f_1^* < 0.95$ \\
 \midrule
-S1 & 20   & $0.68 \pm 0.29$ & +8.2\% & 88\% \\
-S2 & 100  & $0.82 \pm 0.25$ & +4.4\% & 62\% \\
-S7 & 150  & $0.94 \pm 0.06$ & +0.4\% & 42\% \\
-S8 & 200  & $0.96 \pm 0.04$ & +0.2\% & 30\% \\
-S3 & 300  & $0.98 \pm 0.04$ & +1.6\% & 16\% \\
-S4 & 500  & $0.98 \pm 0.03$ & +1.5\% & 24\% \\
+S1 & 20   & $0.87 \pm 0.08$ & +4.7\% & 84\% \\
+S2 & 100  & $0.985 \pm 0.03$ & +1.4\% & 6\% \\
+S7 & 150  & $0.998 \pm 0.00$ & +0.8\% & 0\% \\
+S8 & 200  & $0.997 \pm 0.01$ & +0.7\% & 0\% \\
+S3 & 300  & $0.999 \pm 0.00$ & +0.6\% & 0\% \\
+S4 & 500  & $0.996 \pm 0.01$ & +0.5\% & 2\% \\
 \bottomrule
 \end{tabular}
 \end{table}
 Fitting a logistic regression to the proportion of scenarios with
 $f_1^* < 0.95$ across the six density points ($N=20, 100, 150, 200, 300, 500$)
-yields a transition midpoint $N_{50} \approx 140$ targets
-(95\% CI $[117, 169]$ via bootstrap with 1000 resamples). The two intermediate
-densities ($N=150, 200$) constrain the transition directly, narrowing the CI
-from its four-point width $[111, 227]$ to $[117, 169]$. Note that the deficit proportion is non-monotonic at the high-density end
-(S3: $16\%$ $\to$ S4: $24\%$, $\chi^2(1) = 1.00$, $p = 0.32$); $N_{50}$ should therefore be read as a coarse transition indicator rather than a precise threshold. By $N \approx 140$, half the
-scenarios show MOEA-2 within 5\% of G-BL coverage, and beyond
-$N \approx 300$ the deficit proportion stabilizes near $16$--$24\%$.
+yields a transition midpoint $N_{50} \approx 50$ targets. This estimate is
+weakly constrained: only the two sparse densities ($N=20, 100$) carry
+informative deficit proportions ($84\%$ and $6\%$), while the four denser
+points are all at most $2\%$, so the bootstrap confidence interval does not
+converge. $N_{50}$ should therefore be read as a coarse indicator that the
+transition is confined to $N \in [20, 100]$, not as a precise threshold.
+Beyond $N \approx 150$, no scenario shows a coverage deficit exceeding $5\%$
+(proportion $0\%$).
 The transition region $N = 100$--$300$ therefore captures the density
 range where the multi-objective advantage transitions from measurable to
 negligible for most scenarios.
@@ -977,9 +974,11 @@ where the quality trade-off is active (S1), not where scheduling
 structure alone enforces low-squint convergence.
 Consistent with this scale-dependent saturation, the per-density
 hypervolume contracts at higher density: at S4 the pooled HV is
-$0.72$ (MOEA-2) and $0.67$ (MOEA-3) of its S1 value, i.e. the S4/S1 HV
-ratio is below unity, indicating a more compact front rather than
-degradation (the front still spans $\Delta f_1^* \approx 0.3$).
+$0.18$ (MOEA-2) and $0.11$ (MOEA-3) of its S1 value, i.e. the S4/S1 HV
+ratio is well below unity, reflecting the near-point front compression
+documented in \S\ref{sec:pareto-coupling} (S4 fronts span only
+$\Delta f_1^* \approx 0.06$) rather than a degradation of solution
+quality.
 We caution that the Pareto fronts reported here are best-known
 approximations obtained via NSGA-III; whether they represent the
 true Pareto-optimal set is unknown without exact methods, which remain
@@ -1108,9 +1107,9 @@ baseline resolution \citep{Curlander1991}, the coverage cost may be
 justified; for area-monitoring missions, the greedy baseline remains
 preferable. In dense regimes ($N \geq 300$), the multi-objective
 advantage falls below $2\%$ improvement in $f_2$, while G-SM offers
-the highest radiometric quality ($+34\%$ $f_3$ at S4) at a $67\%$
+the highest radiometric quality ($+32\%$ $f_3$ at S4) at a $63\%$
 coverage cost; this gain comes from the one-line squint-minimization
-heuristic rather than from multi-objective search. The logistic midpoint $N_{50} \approx 140$
+heuristic rather than from multi-objective search. The logistic midpoint $N_{50} \approx 50$
 (\S~\ref{sec:scale-sensitivity}) provides a concrete transition
 estimate between these regimes. Our results suggest a conditional operational guideline:
 for sparse observation requests ($N \lesssim 100$), MOEA-2 may provide
