@@ -866,13 +866,13 @@ objective produces little additional differentiation in the dense setting.
     \label{fig:fig4}
 \end{figure}
 
-The $f_1^*$--$f_2$ projection (panel a) shows a narrow but nonzero trade-off
-surface: the frontier spans from full-coverage solutions
-($f_1^* \approx 1.0$, $f_2 \approx 0.56$) to quality-oriented solutions
-($f_1^* \approx 0.7$, $f_2 \approx 0.62$).
+The $f_1^*$--$f_2$ projection (panel a) shows an extremely compressed
+surface: even for the S4 scenario with the widest $f_1^*$ spread, the
+frontier spans only $f_1^* \in [0.94, 1.00]$ and $f_2 \in [0.500, 0.503]$
+--- a near-vertical segment at full coverage.
 Overlaying the single-point baseline solutions shows that G-BL sits at the
 ``full-coverage, moderate-quality'' corner of the frontier, while G-SM occupies
-a qualitatively different region ($f_1^* \approx 0.6$, $f_3 \approx 0.35$) that
+a qualitatively different region ($f_1^* \approx 0.37$, $f_3 \approx 0.70$) that
 lies outside the MOEA-3 Pareto surface, a consequence of G-SM's aggressive
 squint minimization.
 
@@ -1086,11 +1086,11 @@ the dense-regime convergence and is inflated by the HV point-count
 asymmetry (\S~\ref{sec:pareto-coupling}); contrasts involving
 G-SM are large because it occupies an extreme radiometric-quality regime.
 
-Independently of the multi-objective question, GA-P-BL achieves the highest
-coverage at every scale through single-objective temporal search
-(Table~\ref{tab:solver-profiles}), delimiting the present claims to the
-marginal value of adding physical objectives rather than to profit-oriented
-search alone.
+Independently of the multi-objective question, GA-P-BL output is identical
+to G-BL, because its never-worse-than-baseline guard always triggers on the
+single profit objective (Table~\ref{tab:solver-profiles}), delimiting the
+present claims to the marginal value of adding physical objectives rather
+than to profit-oriented search alone.
 
 \subsection{Operational Implications}
 \label{sec:operational-implications}
@@ -1116,10 +1116,10 @@ for sparse observation requests ($N \lesssim 100$), MOEA-2 may provide
 geometric quality gains that outweigh the coverage penalty in specific
 contexts; for dense monitoring campaigns ($N \gtrsim 300$), greedy
 methods (G-SM for radiometric priority, G-BL for coverage priority)
-approach Pareto-optimal coverage and may be preferable. However,
-relative to the strongest coverage-only solver (GA-P-BL), the MOEA-2
-coverage gap persists at $13$--$14\%$ even at $N \geq 300$ (paired per-scenario comparison; vs.
-$2\%$ vs. G-BL), because G-BL is a weaker reference point.
+approach Pareto-optimal coverage and may be preferable. Indeed, the
+MOEA-2 coverage gap relative to the coverage-only anchor is at most
+$2\%$ at $N \geq 300$ (Table~\ref{tab:scale-sensitivity}); since GA-P-BL
+output is identical to G-BL, no separate gap exists.
 
 % ── 7.4 Limitations ──
 \subsection{Limitations}\label{sec:limitations}
