@@ -593,7 +593,8 @@ for oi, obj in enumerate(objectives):
                               edgecolor='#B0B0B0', linewidth=0.5, alpha=0.85))
 
     # Row label (shared y-axis label)
-    fig.text(0.01, 0.5 * (gs[oi, 0].y0 + gs[oi, 0].y1),
+    pos = gs[oi, 0].get_position(fig)
+    fig.text(0.01, 0.5 * (pos.y0 + pos.y1),
              obj_labels[obj], fontsize=9, ha='left', va='center', rotation=90)
 
 # ── Bottom panel: Logistic regression for f1* deficit ──
