@@ -1001,8 +1001,10 @@ effects. We therefore use four control experiments.
 On 10 S1, 4 S2, 5 S3, and 5 S4 scenarios (3 seeds each), random-initialized MOEA-2 yields
 $f_1^*$ deficits of approximately $-0.245 \pm 0.107$, $-0.486 \pm 0.071$, $-0.678 \pm 0.020$, and $-0.540 \pm 0.042$
 (mean $\pm$ SD across runs) relative to hot-start MOEA-2, respectively. G-BL seeding therefore materially
-improves coverage convergence at every tested density; notably, the deficit is largest in the dense S3 class
-rather than the sparsest one, indicating that high target density does not by itself make random initialization
+improves coverage convergence at every tested density. The deficit peaks at
+the dense S3 class ($-0.68$ at $N=300$), is smallest at the sparsest S1
+($-0.25$ at $N=20$), and moderates slightly at the densest S4 ($-0.54$ at
+$N=500$), so high target density does not by itself make random initialization
 sufficient. This constrains the
 coverage-ceiling claim: proximity to G-BL is initialization-dependent. By
 contrast, random-init $f_2$ is essentially unchanged at every density
