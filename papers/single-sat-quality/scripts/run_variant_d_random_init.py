@@ -9,7 +9,7 @@ f2 = mean(sin(theta)*cos(psi)) over selected tasks (post-hoc geometric).
 high-psi -> cos(psi) small -> f2 small. If random-init D f2 ~= 0.594 (hot-start D
 value) -> (i) objective-neutrality survives. If << 0.594 -> (ii) hot-start residue.
 """
-import pickle, json, sys, time
+import pickle, json, sys, time, hashlib, subprocess
 from pathlib import Path
 import numpy as np
 
@@ -19,6 +19,7 @@ sys.path.insert(0, str(_PROJ.parent.parent))
 sys.path.insert(0, str(_PROJ / "experiments"))
 
 from sar_sim.solver.baselines import baseline_b1
+from sar_sim.solver.types import build_agile_instance, precompute_geometry
 from run_moea_3obj_no_physics import moea_solver_no_physics
 
 PROJECT = _PROJ
@@ -33,13 +34,30 @@ N_SEEDS = 3
 GROUPS = ["S3", "S4"]
 
 
+def _git_commit() -> str:
+    try:
+        return subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=str(PROJECT), text=True).strip()[:8]
+    except Exception:
+        return "unknown"
+
+
+def _pkl_sha1(p: Path) -> str:
+    sha = hashlib.sha1()
+    with open(p, "rb") as f:
+        while c := f.read(8192):
+            sha.update(c)
+    return sha.hexdigest()
+
+
 def run_one(pkl_path, seed):
     with open(pkl_path, "rb") as f:
         data = pickle.load(f)
     windows = data.get("windows", [])
     targets = data.get("targets", [])
-    from sar_sim.solver.types import build_agile_instance, precompute_geometry
-    gbl = baseline_b1(windows, targets)
+    instance = build_agile_instance(windows, targets, max_slew_rate=SLEW_RATE, settle_time=SETTLE_TIME)
+    precompute_geometry(instance, step_s=10.0)
+    gbl = baseline_b1(windows, targets, max_slew_rate=SLEW_RATE, settle_time=SETTLE_TIME,
+                      geom_cache=instance.geom_cache, instance=instance)
     gbl_f1 = max(float(gbl.f1), 1.0)
     t0 = time.time()
     result = moea_solver_no_physics(
@@ -48,15 +66,19 @@ def run_one(pkl_path, seed):
         n_obj=3, n_ref_dirs=12,
         max_slew_rate=SLEW_RATE, settle_time=SETTLE_TIME,
         hotstart_individual=None, seed=seed, f1_gbl=gbl_f1,
+        instance=instance, scenario=data,
     )
     rt = time.time() - t0
     meta = result.metadata
     return {
         "seed": seed,
+        "pkl_sha1": _pkl_sha1(pkl_path),
+        "git_commit": _git_commit(),
         "f1": float(meta.get("f1", 0)),
         "f2": float(meta.get("f2", 0)),
         "f3": float(meta.get("f3", 0)),
         "n_selected": int(meta.get("n_selected", 0)),
+        "constraint_feasible": bool(meta.get("constraint_feasible", True)),
         "runtime_s": round(rt, 1),
     }
 

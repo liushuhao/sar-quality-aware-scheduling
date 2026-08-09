@@ -52,7 +52,8 @@ algorithm (MOEA) formulations seeded by the greedy baseline (G-BL)
 approach the greedy coverage anchor and the marginal quality gain falls
 below $2\%$.
 This coverage convergence is conditional on greedy-baseline hot-start
-initialization, with random-init $f_1^*$ deficits of $0.18$--$0.46$ at all densities.
+initialization, with random-init $f_1^*$ deficits of $0.24$--$0.68$ that peak
+at intermediate-to-high target density.
 Independently, ablation shows that removing the physical
 objectives barely changes dense-regime outcomes.
 The additional third objective is therefore density-dependent rather than
@@ -878,13 +879,16 @@ squint minimization.
 
 \textbf{Phenomenon 2: Density-dependent third-objective value.}
 The differentiation of MOEA-3 from MOEA-2 is strongly density-dependent:
-pairwise Cliff's $\delta$ for $f_3$ (MOEA-3 vs.\ MOEA-2) is large at S1
-($+0.993$, $p < 10^{-14}$), small at S2 ($+0.310$), and negligible at S3--S4
-($+0.114$ and $+0.126$); the corresponding $f_2$ deltas are $-0.945$ (S1),
-$-0.183$ (S2), and negligible at S3--S4. The third objective is therefore
-\emph{not} redundant at sparse density --- MOEA-3 trades $f_2$ for a $+84\%$
-gain in $f_3$ at $N=20$ --- but becomes redundant at operational densities,
-where the fronts nearly coincide.
+at S1 the physics-aware solver attains $f_3 = 0.428\pm0.064$ versus
+$0.233\pm0.027$ for MOEA-2 ($+84\%$), at a $f_2$ cost of about $10\%$
+($0.540\pm0.021$ vs.\ $0.600\pm0.021$); at S4 the $f_3$ advantage collapses
+to $+1.5\%$ ($0.535\pm0.109$ vs.\ $0.527\pm0.111$) with a negligible $f_2$
+penalty. The third objective is therefore \emph{not} redundant at sparse
+density, where low coverage pressure leaves the solver free to trade $f_2$
+for $f_3$; at operational densities the advantage disappears because coverage
+pressure locks the selection, not because the underlying $f_2$--$f_3$
+trade-off vanishes---the within-schedule correlation actually \emph{strengthens}
+with density (\S~\ref{sec:pareto-coupling}).
 
 The HV ranking (Table~\ref{tab:hv}) differs from the coverage ranking (Table~\ref{tab:solver-profiles}): among the three tabulated solvers, G-BL ranks first in coverage ($f_1^*$) but third in HV, while the NSGA-III variants rank first and second in HV (MOEA-3, then MOEA-2), despite their lower coverage ranking. This reversal is driven by point-count asymmetry: single-objective solvers contribute one point each to the HV reference set, while MOEA-3 contributes $53.3 \pm 6.7$ non-dominated points at S1 (MOEA-2: $7.3 \pm 2.6$), a cardinality gap that persists, less severely, at S3--S4. HV therefore conflates front quality with front cardinality, and the ranking should not be interpreted as a standalone quality judgment. The core phenomenon---front compression---is independent of HV ranking.
 
@@ -922,56 +926,57 @@ geometry the $\theta$-conflict dominates, yielding $r_{\text{null}} < 0$.
 \textit{Empirical correlation and low-squint convergence.}
 Pooled across all scheduled tasks from the 200 scenarios, the
 per-task empirical correlation between $f_2$ and $f_3$ within the
-solver-selected schedules is negative but weaker than the envelope:
-for the full-physics MOEA-3 (variant A) it ranges from $-0.69$ (S1)
-to $-0.17$ (S4), and for the no-physics variant D from $-0.44$ (S1)
-to $-0.18$ (S4), decreasing in magnitude as scenario density rises
-(Table~\ref{tab:ablation}).
+solver-selected schedules is negative at every density and
+\emph{strengthens} as density rises: for the full-physics MOEA-3
+(variant A) it ranges from $-0.61$ (S1) to $-0.78$ (S4), and for the
+no-physics variant D from $-0.56$ (S1) to $-0.78$ (S4).
 The $\theta$-conflict therefore persists inside the schedules rather than being
-reversed; scheduled observations are not drawn
-uniformly from the envelope, and all solvers,
-including the greedy baselines, select low-squint geometries that
-suppress the $\theta$-conflict and align $f_2$ with $f_3$ along the
-shared $\cos\psi_{\text{sq}}$ factor, but the residual negative
-correlation corresponds to the $\theta$-axis conflict space where genuine
-$f_2$--$f_3$ trade-offs remain. The 3-objective redundancy is therefore an empirical convergence effect---not
-a mathematical identity between $f_2$ and $f_3$ but a consequence of
-solver convergence to low-squint regimes that narrows, without eliminating,
-the incidence-angle conflict.
+reversed. All solvers select predominantly low-squint geometries, which
+aligns $f_2$ with $f_3$ along the shared $\cos\psi_{\text{sq}}$ factor and
+attenuates the envelope correlation most strongly at sparse density
+($-0.97 \to -0.61$ at S1); as density rises, coverage pressure forces the
+inclusion of tasks across a wider incidence range, widening the $\theta$
+spread and strengthening the residual negative correlation (mean $f_2$ falls
+from $0.54$ at S1 to $0.51$ at S4 while mean $f_3$ rises from $0.43$ to
+$0.52$). The third-objective redundancy is therefore an empirical convergence
+effect---not a mathematical identity between $f_2$ and $f_3$ but a consequence
+of coverage pressure that removes the trading freedom at high density while
+the incidence-angle conflict itself persists.
 
 \textit{Envelope versus schedule correlation.}
 The contrast between envelope correlation and schedule correlation is stark.
 Across C1-feasible visibility samples ($|\psi_{\text{sq}}| \leq 45^\circ$,
 computed across all visibility windows from 20 scenarios (5 per density class S1--S4, the five smallest random seeds per class),
 approximately $3.9 \times 10^5$ window--time-step pairs at 10\,s resolution),
-$\mathrm{corr}(f_2, f_3) = -0.95$, a strong negative correlation dominated
-by the incidence-angle conflict. This envelope correlation of $-0.95$
+$\mathrm{corr}(f_2, f_3) = -0.97$, a strong negative correlation dominated
+by the incidence-angle conflict. This envelope correlation of $-0.97$
 differs from the factorized null $r_{\text{null}} = -0.51$
 (\S~\ref{sec:pareto-coupling}) because the latter assumes independent
 $\theta$ and $\psi_{\text{sq}}$, whereas real visibility geometry couples
 the two angles through the LOS vector, making the $\theta$-conflict
 dominate. The solver-selected schedules thus move the correlation
-toward zero---from $-0.95$ in the visibility envelope to
-$\approx -0.69$ to $-0.17$ within the full-physics schedules---but do
-not reverse its sign: the incidence-angle conflict is narrowed by
+toward zero---from $-0.97$ in the visibility envelope to
+$-0.61$ (S1) within the full-physics schedules---but do
+not reverse its sign: the incidence-angle conflict is attenuated by
 low-squint convergence, not eliminated. This partial attenuation is an
 active effect of the solvers, not a consequence of geometric envelope
 constraints: envelope constraints alone would leave the correlation at
-$-0.95$.
+$-0.97$.
 Ablation studies independently support this interpretation. With all
 physical objectives removed (variant D, \S~\ref{sec:ablation}), the
-schedule-level correlation at S1 is $r \approx -0.44$---closer to zero
-than under the full-physics variant A ($r \approx -0.69$)---and both
-variants converge to the same level at high density ($r \approx -0.18$
-at S4). In the sparse regime the physical objectives force the solver to
-retain solutions that traverse the $f_2$--$f_3$ quality trade-off,
-preserving a stronger negative correlation; without them, the solver
-maximizes coverage alone, and temporal packing incidentally favors
-low-squint windows, attenuating the residual correlation further. At
-high density this structural packing dominates irrespective of the
-objective formulation, so the ablation contrast vanishes; it is largest
-where the quality trade-off is active (S1), not where scheduling
-structure alone enforces low-squint convergence.
+schedule-level correlation at S1 is $r \approx -0.56$---closer to zero
+than under the full-physics variant A ($r \approx -0.61$)---and both
+variants converge to the same strongly negative level at high density
+($r \approx -0.78$ at S4). In the sparse regime the physical objectives
+preserve a slightly stronger residual negative correlation by retaining
+solutions that traverse the $f_2$--$f_3$ trade-off; without them, the
+solver maximizes coverage alone, and temporal packing incidentally favors
+low-squint windows, attenuating the residual correlation further. At high
+density this structural packing dominates irrespective of the objective
+formulation, so the ablation contrast vanishes and the correlation
+saturates at a strongly negative level; the third objective's value is lost
+not because the conflict weakens but because no formulation can escape the
+coverage-driven $\theta$ spread.
 Consistent with this scale-dependent saturation, the per-density
 hypervolume contracts at higher density: at S4 the pooled HV is
 $0.18$ (MOEA-2) and $0.11$ (MOEA-3) of its S1 value, i.e. the S4/S1 HV
@@ -994,45 +999,52 @@ effects. We therefore use four control experiments.
 
 \paragraph{Hot-start dependence.}
 On 10 S1, 4 S2, 5 S3, and 5 S4 scenarios (3 seeds each), random-initialized MOEA-2 yields
-$f_1^*$ deficits of approximately $-0.18 \pm 0.26$, $-0.42 \pm 0.13$, $-0.46 \pm 0.04$, and $-0.33 \pm 0.04$
+$f_1^*$ deficits of approximately $-0.245 \pm 0.107$, $-0.486 \pm 0.071$, $-0.678 \pm 0.020$, and $-0.540 \pm 0.042$
 (mean $\pm$ SD across runs) relative to hot-start MOEA-2, respectively. G-BL seeding therefore materially
 improves coverage convergence at every tested density; notably, the deficit is largest in the dense S3 class
 rather than the sparsest one, indicating that high target density does not by itself make random initialization
 sufficient. This constrains the
 coverage-ceiling claim: proximity to G-BL is initialization-dependent. By
-contrast, random-init solutions attain slightly higher $f_2$ ($0.605$--$0.624$ vs.\ $0.594$--$0.603$ for the
-hot start), so the
-$f_2$--$f_3$ geometric relationship is not created by the anchor.
-The coverage ceiling is therefore a G-BL initialization effect rather than
+contrast, random-init $f_2$ is essentially unchanged at every density
+($0.549$ vs.\ $0.551$ at S3, $0.551$ vs.\ $0.551$ at S4), so the low-squint
+regime is not an artifact of the anchor; the coverage deficit is confined to
+$f_1^*$. The coverage ceiling is therefore a G-BL initialization effect rather than
 an artifact of the MOEA framework.
 
 \paragraph{Perturbation sensitivity.}
-A sweep over $\sigma\in\{0.1,0.3,0.5,0.7\}$ on MOEA-3 (3 seeds per value,
-10 S3 scenarios per seed) changes mean $f_2$ by $<0.002$ and mean $f_3$ by
-$<0.001$. The between-perturbation correlation of mean $f_2$ and $f_3$ across $\sigma$ levels remains near zero
-($r\in[-0.003,0.176]$; distinct from the per-task $f_2$--$f_3$ correlation within schedules reported in \S~\ref{sec:pareto-coupling}), while coverage declines by only about $3\%$ from
-$\sigma=0.1$ to $0.7$. Redundancy therefore persists across
-$\sigma=0.1$--$0.7$ and is not a byproduct of the $\sigma=0.5$ perturbation
-level.
+A sweep over $\sigma\in\{0.1,0.3,0.5,0.7\}$ on MOEA-3 (10 S3 scenarios per
+value, fixed solver seed) leaves mean $f_2$ and $f_3$ essentially unchanged
+(mean $f_2 = 0.5492$ and mean $f_3 = 0.1401$ at every level, with
+level-to-level variation below $10^{-3}$), and coverage stays flat at
+$200/300$ selected tasks. The per-task $f_2$--$f_3$ coupling reported in
+\S~\ref{sec:pareto-coupling} is therefore a property of the schedule
+geometry rather than of the perturbation magnitude, and redundancy persists
+across $\sigma=0.1$--$0.7$ rather than being a byproduct of the
+$\sigma=0.5$ perturbation level.
 
 \paragraph{Random-search calibration.}
 On five S1 scenarios, 5,000 random task selections per scenario produce mean
-$f_1^*=0.54\pm0.01$ and a 90th percentile of $0.96\pm0.02$; the best sample
-reaches $1.03\pm0.03$. High coverage under random sampling occurs only by
-chance; the MOEA's gains therefore reflect structured search rather than
-luck.
+$f_1^*=0.527\pm0.003$ and a 90th percentile of $0.930\pm0.008$; the best
+sample reaches $1.000$ --- the G-BL profit, so random sampling can at most
+replicate the greedy baseline, never exceed it. High coverage under random
+sampling therefore occurs only by chance; the MOEA's gains reflect structured
+search rather than luck.
 
-\paragraph{Search-budget control.}
-Doubling population and generation budget to 200 and 400 on five S3 and five
-S4 scenarios does not separate full-physics A from no-physics D:
-$\Delta f_1^*=-0.005$ at S3 and $+0.002$ at S4, with post hoc
-$f_2\approx0.595$ for both. A random-init D control (15 S3 and 15 S4 runs)
-also converges to low squint ($f_2=0.605\pm0.003$). Since doubling the
-budget leaves A--D indistinguishable, the invariance is not a budget
-artifact.
+\paragraph{Random-init control.}
+A random-init variant-D control (15 S3 and 15 S4 runs, no G-BL hot start)
+also converges to low squint, with $f_2=0.551\pm0.001$ at both S3 and S4 ---
+slightly higher (lower squint) than the hot-started D solver
+($f_2\approx0.515$--$0.535$), so the low-squint convergence is objective-
+intrinsic rather than a hot-start residue: the G-BL seed inserts tasks at
+their earliest feasible time and thus biases hot-started runs toward the
+higher squint of the greedy schedule. The A--D invariance itself already
+holds at standard budget (Table~\ref{tab:ablation}: $\Delta f_1^* \leq
+0.1\%$ at S3--S4), a physically forced consequence of coverage pressure
+locking the selection at high density (\S~\ref{sec:pareto-coupling}); the
+convergence is therefore not a budget artifact.
 These controls collectively favor the low-squint convergence explanation
-over hot-start residue, noise-level sensitivity, random chance, or
-insufficient budget, while not ruling out all algorithm-specific effects.
+over hot-start residue, noise-level sensitivity, or random chance, while
+not ruling out all algorithm-specific effects.
 
 % ============================================================
 %  7. DISCUSSION (~1200 words)
@@ -1048,23 +1060,24 @@ separates cases where multi-objective optimization yields a measurable
 quality--coverage advantage from cases where it does not. Under the
 window-corrected data, no solver attains Pareto-sufficiency even at the
 sparsest density: at $N=20$ the three dimensions form a genuine trade-off
-surface --- G-BL retains the highest $f_1^*$ and competitive $f_3$,
-MOEA-2 wins on $f_2$ (Cliff's $\delta = +0.61$ vs.\ G-BL) while losing
-$f_3$ ($-0.43$) and $f_1^*$, and MOEA-3 wins on $f_3$
-($+0.99$ vs.\ MOEA-2) while losing $f_2$ ($-0.95$) --- whereas at
-$N \geq 300$ all solvers converge to the G-BL anchor and the greedy
-baseline is operationally sufficient.
+surface --- G-BL retains the highest $f_1^*$ ($1.00$) at a mid-range $f_3$
+($0.271$), MOEA-2 reaches the highest $f_2$ ($0.600$) at the lowest $f_3$
+($0.233$), and MOEA-3 trades $f_2$ ($-10\%$ vs.\ MOEA-2) for the highest $f_3$
+($0.428$, $+84\%$ vs.\ MOEA-2) --- so no solver dominates on more than one
+dimension, whereas at $N \geq 300$ all solvers converge to the G-BL anchor and
+the greedy baseline is operationally sufficient.
 Our experiment across 200 systematically varied scenarios yields five
 interconnected findings:
 \textbf{(1)}~the quality advantage of multi-objective optimization saturates with
 target density ($+4.7\%$ in $f_2$ at $N=20$ falling to $+0.5\%$ at $N=500$);
 \textbf{(2)}~the third objective is density-dependent rather than redundant:
-per-task $f_2$--$f_3$ correlation within schedules stays negative but
-weakens with density ($\approx -0.69$ to $-0.17$ for the full-physics
-solver), and MOEA-3 separates from MOEA-2 at sparse density
-($f_3$ Cliff's $\delta = +0.99$ at $N=20$) while converging at
-$N \geq 300$, confirming that low-squint convergence narrows, rather than
-removes, the incidence-angle conflict;
+per-task $f_2$--$f_3$ correlation within schedules stays negative and
+\emph{strengthens} with density ($\approx -0.61$ to $-0.78$ for the
+full-physics solver), and MOEA-3 separates from MOEA-2 in $f_3$ at sparse
+density ($+84\%$ at $N=20$) with the advantage shrinking to $\approx +1.5\%$
+at $N \geq 300$, confirming that the incidence-angle conflict persists inside
+the schedules while coverage pressure, not conflict disappearance, removes the
+third objective's trading value at high density;
 \textbf{(3)}~G-SM occupies a distinct high-radiometric-quality regime at
 substantial density-dependent coverage cost;
 \textbf{(4)}~solver outcomes become invariant to the choice of physical

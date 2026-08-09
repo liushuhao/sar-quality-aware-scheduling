@@ -1,0 +1,84 @@
+{
+  "params": {
+    "n_samples": 5000,
+    "scenarios": "S1-A_seed00..04 (5)",
+    "rng_seed": 42,
+    "priority_basis": "real task priorities",
+    "sleuth": "current scenarios"
+  },
+  "results": {
+    "S1-A_seed00.pkl": {
+      "scenario": "S1-A_seed00.pkl",
+      "n": 20,
+      "n_targets_data": 20,
+      "f1_gbl": 96.0,
+      "n_samples": 5000,
+      "runtime_s": 0.106,
+      "pkl_sha1": "64498d4febf20c8c7c11945a80266edebbfca6e1",
+      "f1_star_best": 1.0,
+      "f1_star_mean": 0.523125,
+      "f1_star_std": 0.29363812881580015,
+      "f1_star_p90": 0.9375
+    },
+    "S1-A_seed01.pkl": {
+      "scenario": "S1-A_seed01.pkl",
+      "n": 19,
+      "n_targets_data": 20,
+      "f1_gbl": 99.0,
+      "n_samples": 5000,
+      "runtime_s": 0.113,
+      "pkl_sha1": "1044706aba8cac8983cb9500ed5b82b9c6e3bca5",
+      "f1_star_best": 1.0,
+      "f1_star_mean": 0.5300121212121212,
+      "f1_star_std": 0.2942162552140177,
+      "f1_star_p90": 0.9292929292929293
+    },
+    "S1-A_seed02.pkl": {
+      "scenario": "S1-A_seed02.pkl",
+      "n": 20,
+      "n_targets_data": 20,
+      "f1_gbl": 133.0,
+      "n_samples": 5000,
+      "runtime_s": 0.111,
+      "pkl_sha1": "262f588de9507da1183a2710b7ce77ee6f2efac8",
+      "f1_star_best": 1.0,
+      "f1_star_mean": 0.5274842105263159,
+      "f1_star_std": 0.29473074748570594,
+      "f1_star_p90": 0.9323308270676691
+    },
+    "S1-A_seed03.pkl": {
+      "scenario": "S1-A_seed03.pkl",
+      "n": 20,
+      "n_targets_data": 20,
+      "f1_gbl": 119.0,
+      "n_samples": 5000,
+      "runtime_s": 0.098,
+      "pkl_sha1": "46b4af1bf0bf582ab069e607f77959024c41e0ab",
+      "f1_star_best": 1.0,
+      "f1_star_mean": 0.5239764705882353,
+      "f1_star_std": 0.2906397067624328,
+      "f1_star_p90": 0.9159663865546218
+    },
+    "S1-A_seed04.pkl": {
+      "scenario": "S1-A_seed04.pkl",
+      "n": 20,
+      "n_targets_data": 20,
+      "f1_gbl": 107.0,
+      "n_samples": 5000,
+      "runtime_s": 0.122,
+      "pkl_sha1": "ea3ee9b6e6b7c7076cba29d7493add71a141b942",
+      "f1_star_best": 1.0,
+      "f1_star_mean": 0.5303831775700935,
+      "f1_star_std": 0.291966057005831,
+      "f1_star_p90": 0.9345794392523364
+    }
+  },
+  "summary": {
+    "f1_star_best_mean": 1.0,
+    "f1_star_best_std": 0.0,
+    "f1_star_p90_mean": 0.9299339164335112,
+    "f1_star_p90_std": 0.008367712333958372,
+    "f1_star_mean_mean": 0.5269961959793531,
+    "f1_star_mean_std": 0.0033507651085994583
+  }
+}

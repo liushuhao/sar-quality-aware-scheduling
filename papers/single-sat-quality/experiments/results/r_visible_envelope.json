@@ -1,0 +1,236 @@
+{
+  "r_null": -0.51,
+  "results": {
+    "S1": {
+      "r_visible_all_mean": -0.9297464486854216,
+      "r_visible_c7_mean": -0.9785994781435543,
+      "n_scenarios": 5,
+      "per_scenario": [
+        {
+          "n_points_all": 1481,
+          "n_points_c7": 986,
+          "r_visible_all": -0.9319702054560544,
+          "r_visible_c7": -0.9759582142021631,
+          "psi_abs_deg_p95_all": 62.96007055115332,
+          "psi_abs_deg_p95_c7": 41.94761470878146,
+          "theta_deg_mean": 37.31166760396112
+        },
+        {
+          "n_points_all": 1464,
+          "n_points_c7": 970,
+          "r_visible_all": -0.9333650669328902,
+          "r_visible_c7": -0.977075289938178,
+          "psi_abs_deg_p95_all": 63.13256192522831,
+          "psi_abs_deg_p95_c7": 42.030800413187094,
+          "theta_deg_mean": 37.213249821469255
+        },
+        {
+          "n_points_all": 332,
+          "n_points_c7": 332,
+          "r_visible_all": -0.9993708351328537,
+          "r_visible_c7": -0.9993708351328537,
+          "psi_abs_deg_p95_all": 25.2378052072424,
+          "psi_abs_deg_p95_c7": 25.2378052072424,
+          "theta_deg_mean": 26.19538739985255
+        },
+        {
+          "n_points_all": 2071,
+          "n_points_c7": 1328,
+          "r_visible_all": -0.8930157622259843,
+          "r_visible_c7": -0.9721337180727568,
+          "psi_abs_deg_p95_all": 63.439968913517006,
+          "psi_abs_deg_p95_c7": 43.46732641469974,
+          "theta_deg_mean": 45.113241405657156
+        },
+        {
+          "n_points_all": 4410,
+          "n_points_c7": 2675,
+          "r_visible_all": -0.891010373679325,
+          "r_visible_c7": -0.9684593333718199,
+          "psi_abs_deg_p95_all": 63.336043777808214,
+          "psi_abs_deg_p95_c7": 43.333903681385536,
+          "theta_deg_mean": 44.95700566339305
+        }
+      ]
+    },
+    "S2": {
+      "r_visible_all_mean": -0.8902769878066856,
+      "r_visible_c7_mean": -0.9679232562682725,
+      "n_scenarios": 5,
+      "per_scenario": [
+        {
+          "n_points_all": 12610,
+          "n_points_c7": 7920,
+          "r_visible_all": -0.8904459697687227,
+          "r_visible_c7": -0.9674620135220271,
+          "psi_abs_deg_p95_all": 63.065809050821706,
+          "psi_abs_deg_p95_c7": 43.39494135354051,
+          "theta_deg_mean": 45.18554289762787
+        },
+        {
+          "n_points_all": 11460,
+          "n_points_c7": 7263,
+          "r_visible_all": -0.8892180425583023,
+          "r_visible_c7": -0.9687417849408837,
+          "psi_abs_deg_p95_all": 63.13430972996807,
+          "psi_abs_deg_p95_c7": 42.59736697500098,
+          "theta_deg_mean": 45.02818557408394
+        },
+        {
+          "n_points_all": 11478,
+          "n_points_c7": 7277,
+          "r_visible_all": -0.891548069962208,
+          "r_visible_c7": -0.9693613088021081,
+          "psi_abs_deg_p95_all": 63.30006363383931,
+          "psi_abs_deg_p95_c7": 43.4255416911675,
+          "theta_deg_mean": 45.15206415080648
+        },
+        {
+          "n_points_all": 15633,
+          "n_points_c7": 9706,
+          "r_visible_all": -0.8903462172433936,
+          "r_visible_c7": -0.9673392170890267,
+          "psi_abs_deg_p95_all": 63.18721039264785,
+          "psi_abs_deg_p95_c7": 43.41839165643112,
+          "theta_deg_mean": 45.12467699201207
+        },
+        {
+          "n_points_all": 20254,
+          "n_points_c7": 12358,
+          "r_visible_all": -0.8898266395008013,
+          "r_visible_c7": -0.9667119569873169,
+          "psi_abs_deg_p95_all": 63.22980794774616,
+          "psi_abs_deg_p95_c7": 43.37028658257601,
+          "theta_deg_mean": 45.054804403114346
+        }
+      ]
+    },
+    "S3": {
+      "r_visible_all_mean": -0.8905310584721159,
+      "r_visible_c7_mean": -0.9675379721189021,
+      "n_scenarios": 5,
+      "per_scenario": [
+        {
+          "n_points_all": 40819,
+          "n_points_c7": 25517,
+          "r_visible_all": -0.8903946484842925,
+          "r_visible_c7": -0.967509092581977,
+          "psi_abs_deg_p95_all": 63.13682028294769,
+          "psi_abs_deg_p95_c7": 43.415459470193326,
+          "theta_deg_mean": 45.15719956845099
+        },
+        {
+          "n_points_all": 32180,
+          "n_points_c7": 20613,
+          "r_visible_all": -0.8904035442398092,
+          "r_visible_c7": -0.966828240040981,
+          "psi_abs_deg_p95_all": 62.99949406629015,
+          "psi_abs_deg_p95_c7": 43.48087523826101,
+          "theta_deg_mean": 45.31739068275371
+        },
+        {
+          "n_points_all": 39882,
+          "n_points_c7": 25088,
+          "r_visible_all": -0.8905095004954193,
+          "r_visible_c7": -0.9674162207835442,
+          "psi_abs_deg_p95_all": 63.137497642368494,
+          "psi_abs_deg_p95_c7": 43.451512500356806,
+          "theta_deg_mean": 45.18389082009284
+        },
+        {
+          "n_points_all": 45571,
+          "n_points_c7": 28279,
+          "r_visible_all": -0.8906132258003696,
+          "r_visible_c7": -0.9677704793648748,
+          "psi_abs_deg_p95_all": 63.225475241348,
+          "psi_abs_deg_p95_c7": 43.408755000437594,
+          "theta_deg_mean": 45.09329879176716
+        },
+        {
+          "n_points_all": 43784,
+          "n_points_c7": 27229,
+          "r_visible_all": -0.8907343733406888,
+          "r_visible_c7": -0.9681658278231333,
+          "psi_abs_deg_p95_all": 63.251177925400505,
+          "psi_abs_deg_p95_c7": 43.40117035067047,
+          "theta_deg_mean": 45.10748536401155
+        }
+      ]
+    },
+    "S4": {
+      "r_visible_all_mean": -0.8905186856344848,
+      "r_visible_c7_mean": -0.9676225337219166,
+      "n_scenarios": 5,
+      "per_scenario": [
+        {
+          "n_points_all": 69186,
+          "n_points_c7": 43251,
+          "r_visible_all": -0.8907505471349305,
+          "r_visible_c7": -0.9681827903243676,
+          "psi_abs_deg_p95_all": 63.204384537589306,
+          "psi_abs_deg_p95_c7": 43.438040018698025,
+          "theta_deg_mean": 45.136743120283946
+        },
+        {
+          "n_points_all": 62140,
+          "n_points_c7": 39220,
+          "r_visible_all": -0.8902969618909045,
+          "r_visible_c7": -0.9670107440459667,
+          "psi_abs_deg_p95_all": 63.06891901392516,
+          "psi_abs_deg_p95_c7": 43.4417682660457,
+          "theta_deg_mean": 45.22695010913176
+        },
+        {
+          "n_points_all": 78068,
+          "n_points_c7": 48487,
+          "r_visible_all": -0.8901350861693766,
+          "r_visible_c7": -0.9669421165274364,
+          "psi_abs_deg_p95_all": 63.168185559749624,
+          "psi_abs_deg_p95_c7": 43.41812973791244,
+          "theta_deg_mean": 45.136895535723575
+        },
+        {
+          "n_points_all": 77962,
+          "n_points_c7": 48334,
+          "r_visible_all": -0.8903240844608922,
+          "r_visible_c7": -0.9672812460397477,
+          "psi_abs_deg_p95_all": 63.189371721302784,
+          "psi_abs_deg_p95_c7": 43.411793888903944,
+          "theta_deg_mean": 45.11160610232277
+        },
+        {
+          "n_points_all": 64559,
+          "n_points_c7": 40590,
+          "r_visible_all": -0.8910867485163203,
+          "r_visible_c7": -0.9686957716720656,
+          "psi_abs_deg_p95_all": 63.24176667651116,
+          "psi_abs_deg_p95_c7": 43.43069899938941,
+          "theta_deg_mean": 45.15195313097067
+        }
+      ]
+    }
+  },
+  "summary": {
+    "S1": {
+      "r_visible_all_mean": -0.9297464486854216,
+      "r_visible_c7_mean": -0.9785994781435543,
+      "n_scenarios": 5
+    },
+    "S2": {
+      "r_visible_all_mean": -0.8902769878066856,
+      "r_visible_c7_mean": -0.9679232562682725,
+      "n_scenarios": 5
+    },
+    "S3": {
+      "r_visible_all_mean": -0.8905310584721159,
+      "r_visible_c7_mean": -0.9675379721189021,
+      "n_scenarios": 5
+    },
+    "S4": {
+      "r_visible_all_mean": -0.8905186856344848,
+      "r_visible_c7_mean": -0.9676225337219166,
+      "n_scenarios": 5
+    }
+  },
+  "note": "r_visible_c7 = |psi|<=45deg (C7-feasible), pooled across scenarios (~3.9e5 observation pairs at 10 s resolution). r_visible_c7 ~= -0.95 (strongly negative) reflects the incidence-angle geometry envelope. r_visible_c7 ~= r_null (-0.51) -> active selection (solver converges low-squint from wide C7-feasible envelope). The former r_solver_empirical=[0.93,0.98] was an unreproducible hardcoded constant, removed per RDR-002 (see REVIEW_INDEX.md)."
+}
