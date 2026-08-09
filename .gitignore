@@ -88,5 +88,31 @@ papers/single-sat-quality/.workbuddy/
 skills-lock.json
 archive/
 
+# Ch3 session scratch launchers
+papers/single-sat-quality/experiments/_check_control.ps1
+papers/single-sat-quality/experiments/_final_audit_launcher.ps1
+papers/single-sat-quality/experiments/_launch_controls_rerun.ps1
+papers/single-sat-quality/experiments/_ps.ps1
+
+# Ch3 runtime logs
+papers/single-sat-quality/experiments/logs/
+
+# Ch3 smoke-test output
+papers/single-sat-quality/experiments/results/_smoke_rerun_20260806/
+
+# Ch3 intermediate / historical snapshots (final *_snapshot_final_*.json are tracked)
+papers/single-sat-quality/experiments/_snapshot_moea2obj.json
+papers/single-sat-quality/experiments/_snapshot_moea3.json
+papers/single-sat-quality/experiments/results/_snapshot_gapbl.json
+papers/single-sat-quality/experiments/results/_snapshot_moea2obj.json
+papers/single-sat-quality/experiments/results/_snapshot_moea2obj_full300.json
+papers/single-sat-quality/experiments/results/_snapshot_moea3.json
+
+# Ch3 pre-fix / partial-run / obsolete progress backups (raw rerun history)
+papers/single-sat-quality/experiments/results/**/_progress_pre_*.json
+papers/single-sat-quality/experiments/results/**/_progress_partial*_*.json
+papers/single-sat-quality/experiments/results/**/_progress_dirty*_*.json
+papers/single-sat-quality/experiments/results/**/_progress_repro*_*.json
+
 # Internal submission strategy (local only)
 papers/single-sat-quality/journal_recommendation_plan.md
