@@ -377,6 +377,9 @@ f_2 = \frac{1}{|\mathcal{S}|} \sum_{i \in \mathcal{S}} \sin\theta_i \cdot \cos\p
 \label{eq:f2}
 \end{equation}
 Higher $f_2$ indicates smaller ground pixel area (better geometric resolution).
+The quality indices are unweighted means over the scheduled set, orthogonal to
+the priority weights used in $f_1$: they reflect the average imaging geometry
+of the selected tasks rather than biasing quality toward high-priority targets.
 \paragraph{Objective 3: NESZ Radiometric Quality.}
 Noise-Equivalent Sigma Zero (NESZ) measures the minimum detectable backscatter.
 For Stripmap SAR, NESZ degrades with the cube of slant range,
@@ -410,7 +413,7 @@ a geometric (not algebraic) coupling between the two angles, creating a
 two-axis $[\theta, \psi_{\text{sq}}]$ trade-off structure that limits
 multi-objective gain once solvers converge to lower-squint regimes
 (Eq.~\ref{eq:rnull} in \S~\ref{sec:pareto-coupling} and its
-axis decomposition for the exact partition into definitional and
+axis decomposition for the separation into definitional and
 scheduler-induced components).
 
 Because $\theta$ and $\psi_{\text{sq}}$ are derived from the same LOS vector
@@ -434,7 +437,9 @@ inline by every solver.
 Each selected acquisition must satisfy the platform incidence-angle range,
 $\theta^{\min} \leq |\theta_i| \leq \theta^{\max}$, and the squint-angle limit
 $|\psi_{\text{sq},i}| \leq \psi_{\text{sq}}^{\max}$, where $\psi_{\text{sq}}^{\max}$
-is the satellite's maximum achievable squint (typically $45^\circ$).
+is the satellite's maximum achievable squint (assumed $\leq 45^\circ$; real
+agile SAR platforms typically slew only a few degrees, so this is a
+conservative envelope for the tested agility).
 Both are observation-geometry limits applied before scheduling.
 
 \paragraph{C2: Attitude Maneuver and Non-Overlap.}
@@ -920,7 +925,7 @@ density, where low coverage pressure leaves the solver free to trade $f_2$
 for $f_3$; at operational densities the advantage disappears because coverage
 pressure locks the selection, not because the underlying $f_2$--$f_3$
 trade-off vanishes---the within-schedule correlation actually \emph{strengthens}
-with density (\S~\ref{sec:pareto-coupling}).
+with density.
 
 The HV ranking (Table~\ref{tab:hv}) differs from the coverage ranking (Table~\ref{tab:solver-profiles}): among the three tabulated solvers, G-BL ranks first in tabulated $f_1^*$ but third in HV, while the NSGA-III variants rank first and second in HV (MOEA-3, then MOEA-2), despite their lower coverage ranking. Notably, G-SM --- omitted from the
 table because its single-point HV is dominated by point location rather than
@@ -929,7 +934,7 @@ from its low-coverage, high-$f_3$ operating point
 ($f_1^* \approx 0.37$, $f_3 \approx 0.70$ at S4), so the HV ranking would
 invert if it were included. This is precisely the point-count confound: HV
 rewards an extreme single point more than a dense front near full coverage. A
-few sparse-density MOEA solutions exceed $f_1^*=1.00$ (three of 200 scenarios, up to $+6\%$; \S\ref{sec:pareto-coupling}), so G-BL is a near-optimal rather than a strict coverage anchor. This reversal is driven by point-count asymmetry: single-objective solvers contribute one point each to the HV reference set, while MOEA-3 contributes $53.3 \pm 6.7$ non-dominated points at S1 (MOEA-2: $7.3 \pm 2.6$), a cardinality gap that persists, less severely, at S3--S4. HV therefore conflates front quality with front cardinality, and the ranking should not be interpreted as a standalone quality judgment. The core phenomenon---front compression---is independent of HV ranking.
+few sparse-density MOEA solutions exceed $f_1^*=1.00$ (three of 200 scenarios, up to $+6\%$), so G-BL is a near-optimal rather than a strict coverage anchor. This reversal is driven by point-count asymmetry: single-objective solvers contribute one point each to the HV reference set, while MOEA-3 contributes $53.3 \pm 6.7$ non-dominated points at S1 (MOEA-2: $7.3 \pm 2.6$), a cardinality gap that persists, less severely, at S3--S4. HV therefore conflates front quality with front cardinality, and the ranking should not be interpreted as a standalone quality judgment. The core phenomenon---front compression---is independent of HV ranking.
 
 \textbf{Mechanism: geometric coupling and lower-squint convergence.}
 
@@ -999,7 +1004,7 @@ $\mathrm{corr}(f_2, f_3) = -0.97$, a strong negative correlation dominated
 by the incidence-angle conflict; the value is essentially unchanged ($-0.97$) if
 the C1 incidence interval $[18^\circ, 47^\circ]$ is additionally imposed. This envelope correlation of $-0.97$
 differs from the factorized null $r_{\text{null}} = -0.51$
-(\S~\ref{sec:pareto-coupling}) because the latter assumes independent
+(Eq.~\ref{eq:rnull}) because the latter assumes independent
 $\theta$ and $\psi_{\text{sq}}$, whereas real visibility geometry couples
 the two angles through the LOS vector, making the $\theta$-conflict
 dominate. The solver-selected schedules thus move the correlation
