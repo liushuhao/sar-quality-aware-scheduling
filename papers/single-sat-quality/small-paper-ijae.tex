@@ -207,10 +207,11 @@ Despite their methodological diversity, most prior
 works treat quality as a fixed property determined at observation-window
 generation. In contrast, SAR imaging quality varies continuously with acquisition
 geometry and is directly optimizable within the scheduling window. \citet{Chang2022Gaofen}
-propose an early MOEA for SAR satellite scheduling using two adaptive
-NSGA-II variants on a Gaofen-12 X-band SAR platform; their bi-objective
-formulation (profit + energy consumption) represents the closest prior
-work to ours, but it omits imaging quality dimensions. \citet{Wei2025MONP}
+propose early MOEAs for SAR satellite scheduling that combine an adaptive large
+neighborhood search with NSGA-II and NSGA-III selection; their three-objective
+model (ground-target loss rate, invalid observations, and sensor-activation
+count) targets operational metrics --- the closest prior work to ours --- but
+it omits imaging quality dimensions. \citet{Wei2025MONP}
 introduce a neural-policy-guided MOEA that incorporates a composite image
 quality score as an optimization objective. \citet{Kramer2025SARVis}
 schedule SAR constellation observations with a hybrid metaheuristic using a
