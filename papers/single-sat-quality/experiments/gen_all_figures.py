@@ -644,9 +644,10 @@ for _ in range(n_bootstrap):
         res = minimize(neg_log_likelihood, x0=[-2.0, 0.01], args=(x_boot, y_boot),
                        method='Nelder-Mead')
         a, b = res.x
-        if b > 0:  # Only valid if slope is positive
+        if abs(b) > 1e-6:  # non-degenerate slope (deficit falls with N => b < 0)
             n50 = -a / b
-            n50_samples.append(n50)
+            if 0 < n50 < 2000:
+                n50_samples.append(n50)
     except Exception:
         pass
 
