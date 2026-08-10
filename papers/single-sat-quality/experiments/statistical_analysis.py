@@ -298,7 +298,10 @@ print(f"\nPairwise Wilcoxon (Bonferroni α={alpha_bonf:.5f}):")
 wilcoxon_results = {}
 for s1, s2 in combinations(SOLVERS, 2):
     d = [hv_by_scenario[k].get(s1, 0) - hv_by_scenario[k].get(s2, 0) for k in common]
-    stat, p = scipy_stats.wilcoxon(d, zero_method="zsplit")
+    # zero out floating-point noise (G-BL vs GA-P-BL differ by ~1e-17) so it
+    # is not treated as a real signed difference
+    d = [x if abs(x) > 1e-9 else 0.0 for x in d]
+    stat, p = scipy_stats.wilcoxon(d, zero_method="wilcox")
     # Cliff's delta
     n = len(d)
     greater = sum(1 for x in d if x > 0)

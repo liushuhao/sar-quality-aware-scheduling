@@ -803,8 +803,11 @@ where the $f_1$ penalty grows rapidly.
 The radiometric advantage narrows with density ($+138\%$ at S1 to
 $+32\%$ at S4) as tightly packed time windows constrain how far each
 acquisition can be moved toward the squint-minimizing time, while the
-coverage cost remains large at every density (G-SM schedules at most
-$44\%$ of the tasks G-BL selects, falling to $\sim$20--27\% at $N \geq 100$).
+coverage cost remains large at every density (G-SM schedules, on average,
+$44\%$ of the tasks G-BL selects at S1, falling to $\sim$20--27\% at
+$N \geq 100$; these are means of the per-scenario scheduled-task-count
+ratios, the profit-side analogue of which appears in
+Table~\ref{tab:solver-profiles}).
 \begin{figure}[H]
     \centering
     \includegraphics[width=\textwidth]{fig2_squint_effect.pdf}
@@ -919,7 +922,14 @@ pressure locks the selection, not because the underlying $f_2$--$f_3$
 trade-off vanishes---the within-schedule correlation actually \emph{strengthens}
 with density (\S~\ref{sec:pareto-coupling}).
 
-The HV ranking (Table~\ref{tab:hv}) differs from the coverage ranking (Table~\ref{tab:solver-profiles}): among the three tabulated solvers, G-BL ranks first in tabulated $f_1^*$ but third in HV, while the NSGA-III variants rank first and second in HV (MOEA-3, then MOEA-2), despite their lower coverage ranking. A few sparse-density MOEA solutions exceed $f_1^*=1.00$ (three of 200 scenarios, up to $+6\%$; \S\ref{sec:pareto-coupling}), so G-BL is a near-optimal rather than a strict coverage anchor. This reversal is driven by point-count asymmetry: single-objective solvers contribute one point each to the HV reference set, while MOEA-3 contributes $53.3 \pm 6.7$ non-dominated points at S1 (MOEA-2: $7.3 \pm 2.6$), a cardinality gap that persists, less severely, at S3--S4. HV therefore conflates front quality with front cardinality, and the ranking should not be interpreted as a standalone quality judgment. The core phenomenon---front compression---is independent of HV ranking.
+The HV ranking (Table~\ref{tab:hv}) differs from the coverage ranking (Table~\ref{tab:solver-profiles}): among the three tabulated solvers, G-BL ranks first in tabulated $f_1^*$ but third in HV, while the NSGA-III variants rank first and second in HV (MOEA-3, then MOEA-2), despite their lower coverage ranking. Notably, G-SM --- omitted from the
+table because its single-point HV is dominated by point location rather than
+front quality --- actually attains the highest HV of any solver ($0.1023$)
+from its low-coverage, high-$f_3$ operating point
+($f_1^* \approx 0.37$, $f_3 \approx 0.70$ at S4), so the HV ranking would
+invert if it were included. This is precisely the point-count confound: HV
+rewards an extreme single point more than a dense front near full coverage. A
+few sparse-density MOEA solutions exceed $f_1^*=1.00$ (three of 200 scenarios, up to $+6\%$; \S\ref{sec:pareto-coupling}), so G-BL is a near-optimal rather than a strict coverage anchor. This reversal is driven by point-count asymmetry: single-objective solvers contribute one point each to the HV reference set, while MOEA-3 contributes $53.3 \pm 6.7$ non-dominated points at S1 (MOEA-2: $7.3 \pm 2.6$), a cardinality gap that persists, less severely, at S3--S4. HV therefore conflates front quality with front cardinality, and the ranking should not be interpreted as a standalone quality judgment. The core phenomenon---front compression---is independent of HV ranking.
 
 \textbf{Mechanism: geometric coupling and lower-squint convergence.}
 
@@ -959,6 +969,12 @@ solver-selected schedules is negative at every density and
 \emph{strengthens} as density rises: for the full-physics MOEA-3
 (variant A) it ranges from $-0.61$ (S1) to $-0.78$ (S4), and for the
 no-physics variant D from $-0.56$ (S1) to $-0.78$ (S4).
+Because the pooled statistic mixes between-schedule and within-schedule
+variance, we also computed per-schedule correlations: the Fisher-z mean of the
+per-schedule values tracks the pooled value closely (e.g.\ $-0.64$ vs.\
+$-0.61$ at S1 for the full-physics variant), while individual schedules span a
+wide range (S1 $r \in [-0.97, +0.25]$), so the pooled value is representative
+but not uniform across schedules.
 The $\theta$-conflict therefore persists inside the schedules rather than being
 reversed. All solvers select geometries shifted toward lower squint than the
 visibility envelope (mean $|\psi_{\text{sq}}|$ $16$--$24^\circ$; \S\ref{sec:system-model}), which
@@ -1043,7 +1059,13 @@ contrast, random-init $f_2$ is essentially unchanged at every density
 ($0.549$ vs.\ $0.551$ at S3, $0.551$ vs.\ $0.551$ at S4), so the lower-squint
 regime is not an artifact of the anchor; the coverage deficit is confined to
 $f_1^*$. The coverage ceiling is therefore a G-BL initialization effect rather than
-an artifact of the MOEA framework.
+an artifact of the MOEA framework. Two caveats qualify this control: the
+deficit sample is small (10/4/5/5 scenarios per class $\times$ 3 seeds, and 15
+runs for the variant-D control), and the comparison is expressed on the
+G-BL-normalized $f_1^*$ scale, on which the greedy anchor itself reads exactly
+$1.0$ by construction; both argue for reading the deficit magnitudes as
+indicative of the initialization effect rather than as precise coverage
+bounds.
 
 \paragraph{Perturbation sensitivity.}
 A sweep over $\sigma\in\{0.1,0.3,0.5,0.7\}$ on MOEA-3 (10 S3 scenarios per
@@ -1123,8 +1145,10 @@ geometric properties of the single-pass observation geometry
 properties, \S~\ref{sec:pareto-coupling}); the fifth reflects solver
 initialization.
 
-The Friedman test confirms overall differences among the five solvers across
-all 200 scenarios ($\chi^2=552.91$, $p\approx0$). Pairwise Wilcoxon
+The Friedman test on pooled HV confirms overall differences among the five
+solvers across all 200 scenarios ($\chi^2=552.91$, $p\approx0$; G-BL and
+GA-P-BL tie by construction, so the statistic is conservative toward fewer
+distinct rankings). Pairwise Wilcoxon
 signed-rank tests use the Bonferroni threshold $\alpha=0.005$; interpretation
 relies on Cliff's $\delta$ given the large sample size.
 MOEA-2 and MOEA-3 differ on pooled HV with $\delta = -0.58$

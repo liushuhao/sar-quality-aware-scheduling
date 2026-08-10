@@ -43,13 +43,13 @@
       "equal": 0
     },
     "G-BL_vs_GA-P-BL": {
-      "statistic": 8634.0,
-      "p_value": 0.08374417211079925,
+      "statistic": 0.0,
+      "p_value": NaN,
       "significant": false,
-      "cliffs_delta": -0.115,
-      "greater": 74,
-      "less": 97,
-      "equal": 29
+      "cliffs_delta": 0.0,
+      "greater": 0,
+      "less": 0,
+      "equal": 200
     },
     "G-BL_vs_MOEA-2": {
       "statistic": 525.0,
