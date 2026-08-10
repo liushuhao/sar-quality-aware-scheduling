@@ -101,6 +101,7 @@ def run_one(pkl_path: Path) -> dict:
         windows, targets,
         population_size=GA_PARAMS["population_size"],
         n_generations=GA_PARAMS["n_generations"],
+        seed=seed + 100,  # fixed solver seed, aligned with MOEA main-run scheme
         max_slew_rate=SLEW_RATE,
         settle_time=SETTLE_TIME,
         orbit_raan_rad=orbit_raan_rad,
@@ -131,6 +132,7 @@ def run_one(pkl_path: Path) -> dict:
         "phis_off_nadir": meta.get("phis_off_nadir", []),
         "constraint_feasible": meta.get("constraint_feasible", True),
         "n_constraints_failed": meta.get("n_constraints_failed", 0),
+        "used_gbl_fallback": meta.get("used_gbl_fallback", False),
     }
 
 def main():
