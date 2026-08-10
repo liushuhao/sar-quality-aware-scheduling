@@ -137,7 +137,7 @@ radiometric gains at little coverage cost (MOEA-3 raises $f_3$ by $+58\%$
 relative to G-BL at only $2\%$ coverage cost) alongside modest geometric
 gains (MOEA-2, $+4.5\%$ in $f_2$ at $13\%$ coverage cost).
 In dense scenarios, the multi-objective advantage diminishes to negligible
-levels: greedy methods approach Pareto-optimal coverage, and the
+levels: greedy methods attain the tested family's coverage ceiling, and the
 squint-minimized heuristic offers competitive radiometric quality.
 Section~\ref{sec:summary} provides a detailed synthesis of these findings.
 The specific contributions of the paper are:
@@ -645,7 +645,7 @@ resulting windows are approximately evenly split between left- and
 right-looking opportunities ($\sim$50\% each).
 % ── 5.2 Solver Configuration ──
 \subsection{Solver Configuration}
-All five solvers run on a single CPU core to ensure a uniform computational environment.
+All five solvers run on a single CPU core to ensure a uniform computational environment. We do not report wall-clock runtimes: the greedy heuristics complete in milliseconds while the evolutionary solvers take minutes on the densest scenarios, and the study's claims concern solution quality rather than computational efficiency.
 G-BL and G-SM are deterministic greedy heuristics with no tunable
 hyperparameters. GA-P-BL and the MOEA variants use the population size,
 generation budget, and genetic operators described in \S\ref{sec:ga-p-bl}
@@ -1157,11 +1157,11 @@ the dense-regime convergence and is inflated by the HV point-count
 asymmetry (\S~\ref{sec:pareto-coupling}); contrasts involving
 G-SM are large because it occupies an extreme radiometric-quality regime.
 
-Independently of the multi-objective question, GA-P-BL output is identical
-to G-BL, because its never-worse-than-baseline guard always triggers on the
-single profit objective (Table~\ref{tab:solver-profiles}), delimiting the
-present claims to the marginal value of adding physical objectives rather
-than to profit-oriented search alone.
+Independently of the multi-objective question, GA-P-BL output is numerically
+identical to G-BL, because its never-worse-than-baseline guard
+(Sec.~\ref{sec:ga-p-bl}) returns the greedy schedule on the single profit
+objective; the present claims therefore concern the marginal value of adding
+physical objectives rather than profit-oriented search alone.
 
 \subsection{Operational Implications}
 \label{sec:operational-implications}
@@ -1187,7 +1187,7 @@ for sparse observation requests ($N \lesssim 100$), MOEA-2 may provide
 geometric quality gains that outweigh the coverage penalty in specific
 contexts; for dense monitoring campaigns ($N \gtrsim 300$), greedy
 methods (G-SM for radiometric priority, G-BL for coverage priority)
-approach Pareto-optimal coverage and may be preferable. Indeed, the
+attain the tested family's coverage ceiling and may be preferable. Indeed, the
 MOEA-2 coverage gap relative to the coverage-only anchor is at most
 $2\%$ at $N \geq 300$ (Table~\ref{tab:scale-sensitivity}); since GA-P-BL
 output is identical to G-BL, no separate gap exists.
@@ -1218,7 +1218,15 @@ the MOEA can independently discover high-coverage solutions without greedy
 seeding remains an open question. Similarly, the NSGA-III
 crowding-distance explanation for the S1 variant-D reversal
 (\S~\ref{sec:ablation}) awaits verification with alternative crowding
-operators. Finally, we do not benchmark against learning-based
+operators. Two further scope notes bound the operational reading: the energy
+and memory budgets (C3--C4) are deliberately set far below their caps, so the
+saturation result holds in the resource-unconstrained regime and may not
+transfer when energy or downlink capacity is the binding constraint; and the
+dwell time is fixed at 30\,s, removing the dwell-versus-SNR trade-off that an
+agile scheduler could otherwise exploit. The reference-point counts of MOEA-2
+($H=13$) and MOEA-3 ($H=91$) also differ by construction, so the sparse-regime
+third-objective advantage is partly entangled with reference-direction
+density. Finally, we do not benchmark against learning-based
 schedulers (e.g., \citet{Chen2025NeuralPriority}), which represent an alternative
 methodological family; a systematic comparison of physics-aware
 heuristic methods against data-driven approaches is left to
@@ -1254,7 +1262,7 @@ This saturation boundary applies to the evaluated target-density range ($N=20$--
 For mission planning, the operational implication is conditional:
 multi-objective optimization provides measurable benefit only when
 observation requests are sparse; at dense monitoring cadences, greedy
-methods approach Pareto-optimal coverage. These findings establish an
+methods attain the tested family's coverage ceiling. These findings establish an
 empirical saturation boundary for what physics-aware multi-objective scheduling can
 contribute to single-satellite SAR operations, and provide a baseline
 against which multi-satellite, multi-pass, and multi-mode extensions
