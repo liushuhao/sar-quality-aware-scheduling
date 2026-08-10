@@ -94,7 +94,7 @@ for g in groups:
                         s["n_unhostable_after_tail_trim"] += 1
 
 print("="*78)
-print(f"{'grp':<4}{'wins':>6}{'viol':>6}{'%':>6}  {'viol_len[min/med/max]':<26}  pos{head/tail/int}")
+print(f"{'grp':<4}{'wins':>6}{'viol':>6}{'%':>6}  {'viol_len[min/med/max]':<26}  pos head/tail/interior")
 for g in groups:
     s = stats[g]
     vl = s["viol_lens"]
@@ -107,7 +107,7 @@ tot_w = sum(stats[g]["n_windows"] for g in groups)
 tot_v = sum(stats[g]["n_viol_windows"] for g in groups)
 print(f"TOTAL windows: {tot_w}, with C1-violating segment: {tot_v} ({100*tot_v/tot_w:.1f}%)")
 tot_unhost = sum(stats[g]["n_unhostable_after_tail_trim"] for g in groups)
-alltrim = sum((stats[g]["trimmed_lens"]) for g in groups)
+alltrim = [x for g in groups for x in stats[g]["trimmed_lens"]]
 print(f"Windows that become <30s (unhostable) after tail-trim: {tot_unhost}")
 if alltrim:
     import numpy as _np

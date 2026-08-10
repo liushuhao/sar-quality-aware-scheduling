@@ -4,6 +4,8 @@ from pathlib import Path
 from datetime import datetime, timedelta
 from collections import Counter, defaultdict
 
+sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "src"))
+
 SCENARIOS_DIR = Path(__file__).resolve().parent / "scenarios"
 
 GROUPS_EXPECTED = {
