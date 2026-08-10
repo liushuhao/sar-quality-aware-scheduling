@@ -87,12 +87,16 @@ papers/single-sat-quality/.workbuddy/
 .agents/
 skills-lock.json
 archive/
+.scratch/
 
 # Ch3 session scratch launchers
 papers/single-sat-quality/experiments/_check_control.ps1
 papers/single-sat-quality/experiments/_final_audit_launcher.ps1
 papers/single-sat-quality/experiments/_launch_controls_rerun.ps1
 papers/single-sat-quality/experiments/_ps.ps1
+papers/single-sat-quality/experiments/_resume_*.bat
+papers/single-sat-quality/experiments/_resume_*.ps1
+papers/single-sat-quality/experiments/_setup_*.bat
 
 # Ch3 runtime logs
 papers/single-sat-quality/experiments/logs/
