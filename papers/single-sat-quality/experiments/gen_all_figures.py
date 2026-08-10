@@ -405,7 +405,7 @@ if rep_key:
                         bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.7))
                 break
 
-    save_figure(fig, "fig4_solver_profiles")
+    save_figure(fig, "fig4_pareto_front")
 else:
     print("  ⚠ No data for Fig 3 — skipping")
 

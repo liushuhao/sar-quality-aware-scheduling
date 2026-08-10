@@ -578,10 +578,10 @@ G-BL    & 0.0186 & 0.0033 \\
     \centering
     \includegraphics[width=\textwidth]{fig1_hypervolume.pdf}
     \caption{统计验证：（左）超体积分布；（右）配对 Cliff's $\delta$ 效应量。灰色波段标记可忽略效应（$|\delta|<0.147$）。}
-    \label{fig:fig4}
+    \label{fig:fig1}
 \end{figure}
 
-如图~\ref{fig:fig4} 所示，上述求解器比较经超体积分布与配对 Cliff's $\delta$ 效应量统计验证。
+如图~\ref{fig:fig1} 所示，上述求解器比较经超体积分布与配对 Cliff's $\delta$ 效应量统计验证。
 以下各节从五个角度深化这一总体分析：\S\ref{sec:squint-special} 聚焦斜视感知调度的特殊权衡，
 \S\ref{sec:scale-sensitivity} 考察尺度敏感性（多目标优势如何随目标密度变化），
 \S\ref{sec:pareto-coupling} 揭示帕累托压缩的几何机制，
@@ -601,7 +601,7 @@ G-BL    & 0.0186 & 0.0033 \\
 （相对于 G-BL 的 $1.00$ 下降 $-49\%$），同时将 $f_3$ 从 $0.271 \pm 0.057$ 提高到 $0.644 \pm 0.058$（$+138\%$）。
 在密集场景（S4, $N = 500$）中，$f_1$ 成本升级：
 G-SM 实现 $f_1^* = 0.37 \pm 0.12$（$-63\%$），$f_3$ 从 $0.53 \pm 0.11$ 上升到 $0.700 \pm 0.058$（$+32\%$）。
-图~\ref{fig:fig1} 可视化这种密度依赖的权衡：面板 (c) 中的 LOESS 趋势识别了 $N = 100$ 附近的过渡区域，
+图~\ref{fig:fig2} 可视化这种密度依赖的权衡：面板 (c) 中的 LOESS 趋势识别了 $N = 100$ 附近的过渡区域，
 其中 $f_1$ 惩罚快速增长。
 辐射优势随密度收窄（从 S1 的 $+138\%$ 到 S4 的 $+32\%$），因为紧密排列的时间窗口限制了每次获取向斜视最小化时刻移动的程度；
 而覆盖率成本在每个密度下都保持较大（G-SM 排定的任务至多为 G-BL 选择的 $44\%$，在 $N \geq 100$ 时降至约 $20$--$27\%$）。
@@ -609,13 +609,13 @@ G-SM 实现 $f_1^* = 0.37 \pm 0.12$（$-63\%$），$f_3$ 从 $0.53 \pm 0.11$ 上
     \centering
     \includegraphics[width=\textwidth]{fig2_squint_effect.pdf}
     \caption{斜视感知调度的效果：(a) $f_3$ 散点图；(b) $\Delta f_1^*$ 直方图；(c) $\Delta f_1^*$ 与 $N$ 的关系及 LOESS 趋势}
-    \label{fig:fig1}
+    \label{fig:fig2}
 \end{figure}
 
 % ── 6.3 尺度敏感性（图 5）──
 \subsection{尺度敏感性}
 \label{sec:scale-sensitivity}
-MOEA-2 与 G-BL 之间的差距随目标密度系统性地变化（图~\ref{fig:fig5}，表~\ref{tab:scale-sensitivity}）。
+MOEA-2 与 G-BL 之间的差距随目标密度系统性地变化（图~\ref{fig:fig3}，表~\ref{tab:scale-sensitivity}）。
 MOEA-2 相对于 G-BL 的覆盖率差距仅限于稀疏密度：
 从 S1（$N = 20$）的 $f_1^* = 0.87 \pm 0.08$ 升至 S2（$N = 100$）的 $0.985 \pm 0.03$，
 在 $N \geq 150$（S7--S3）达到 $0.998$--$0.999$，并在 S4（$0.996$）保持 G-BL 的 $1\%$ 以内。
@@ -628,7 +628,7 @@ MOEA-2 覆盖率显著低于 G-BL 的场景比例（$f_1^* < 0.95$，即覆盖�
     \centering
     \includegraphics[width=0.75\textwidth]{fig3_scale_sensitivity.pdf}
     \caption{按场景组和求解器划分的几何质量（$f_2$）}
-    \label{fig:fig5}
+    \label{fig:fig3}
 \end{figure}
 \begin{table}[H]
 \centering
@@ -659,7 +659,7 @@ $N_{50}$ 应被视为"过渡限于 $N \in [20, 100]$"的粗略指示，而非精
 
 本节从两个现象和一个机制的角度分析帕累托前沿的结构。
 
-现象一：前沿压缩。图~\ref{fig:fig2} 可视化了代表性 S4 场景上的帕累托前沿。
+现象一：前沿压缩。图~\ref{fig:fig4} 可视化了代表性 S4 场景上的帕累托前沿。
 前沿包含 $20.5 \pm 9.9$ 个 MOEA-3 非支配解（MOEA-2: $1.8 \pm 1.0$），
 但是压缩的：仅跨越约 $0.06$ 的 $f_1^*$ 和 $0.003$ 的 $f_2$，
 而稀疏 S1 场景中 $\Delta f_2 \approx 0.12$，确认了
@@ -670,9 +670,9 @@ $N_{50}$ 应被视为"过渡限于 $N \in [20, 100]$"的粗略指示，而非精
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.75\textwidth]{fig4_solver_profiles.pdf}
+    \includegraphics[width=0.75\textwidth]{fig4_pareto_front.pdf}
     \caption{代表性 S4 场景（$N=500$）上的帕累托前沿：MOEA-3 前沿叠加 MOEA-2 和基线求解器标记。面板 (a): $f_1^*$--$f_2$；面板 (b): $f_1^*$--$f_3$。}
-    \label{fig:fig2}
+    \label{fig:fig4}
 \end{figure}
 
 $f_1^*$--$f_2$ 投影（面板 a）显示极度压缩的曲面：
