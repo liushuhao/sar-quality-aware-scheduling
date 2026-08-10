@@ -20,10 +20,11 @@ import glob
 from collections import defaultdict
 from datetime import datetime
 
-PROJ = "D:/hermes/my-workspace/projects/planning paper"
-TEX_PATH = os.path.join(PROJ, "docs", "small-paper-ijae.tex")
+_SQS_EXP = os.path.dirname(os.path.abspath(__file__))
+PROJ = os.path.dirname(_SQS_EXP)          # papers/single-sat-quality
+TEX_PATH = os.path.join(PROJ, "small-paper-ijae.tex")
 RESULTS = os.path.join(PROJ, "experiments", "results")
-OUT_DIR = os.path.join(PROJ, "handoffs")
+OUT_DIR = os.path.join(PROJ, "review")
 TOLERANCE = 0.015  # 1.5% relative tolerance for floating comparisons
 
 # ── Group definitions ──
