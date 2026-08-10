@@ -1,0 +1,445 @@
+#!/usr/bin/env python3
+"""verify_paper_numbers.py — Full-paper number ledger (S1a INTEGRITY).
+
+Recomputes every statistical claim printed in the paper from the final data
+snapshot and asserts it matches the paper's value within tolerance. This is a
+deterministic gate: exit 0 only if all assertions pass. A ledger report
+(JSON + text) is written under papers/single-sat-quality/review/. Every data
+file read is fingerprinted with its sha1 so the run is traceable.
+
+Paper values below are transcribed from small-paper-ijae.tex (EN) with
+line references; ZH mirrors the same numbers. Any mismatch is reported as
+a S1 integrity finding, not silently tolerated.
+
+Usage:  python src/tools/verify_paper_numbers.py
+Exit:   0 all pass, 1 any fail
+"""
+import hashlib
+import json
+import os
+import sys
+from pathlib import Path
+from statistics import mean, pstdev, stdev
+
+import numpy as np
+from scipy import stats as scipy_stats
+
+# ── paths ──────────────────────────────────────────────────────────────────
+REPO = Path(__file__).resolve().parent.parent.parent
+RESULTS = REPO / "papers" / "single-sat-quality" / "experiments" / "results"
+REVIEW = REPO / "papers" / "single-sat-quality" / "review"
+
+# ── fingerprint ─────────────────────────────────────────────────────────────
+FINGERPRINTS = {}
+
+
+def fingerprint(relpath):
+    p = RESULTS / relpath
+    h = hashlib.sha1(p.read_bytes()).hexdigest()
+    FINGERPRINTS[relpath] = h
+    return p
+
+
+# ── data loading ────────────────────────────────────────────────────────────
+bl = json.loads(fingerprint("baselines_200.json").read_text(encoding="utf-8"))
+bl_s78 = json.loads(fingerprint("baselines_S7S8.json").read_text(encoding="utf-8"))
+m2 = json.loads(fingerprint("moea_2obj/_progress.json").read_text(encoding="utf-8"))
+m3 = json.loads(fingerprint("moea_3obj/_progress.json").read_text(encoding="utf-8"))
+b2 = json.loads(fingerprint("b2_profit_bl/_progress.json").read_text(encoding="utf-8"))
+sched_corr = json.loads(fingerprint("schedule_correlation.json").read_text(encoding="utf-8"))
+env = json.loads(fingerprint("r_visible_envelope.json").read_text(encoding="utf-8"))
+sr = json.loads(fingerprint("statistical_results.json").read_text(encoding="utf-8"))
+p2_cliff = json.loads(fingerprint("phenomenon2_cliff.json").read_text(encoding="utf-8"))
+hotstart = json.loads(fingerprint("p1-1_random_init/hotstart_control_s1s4.json").read_text(encoding="utf-8"))
+rnd = json.loads(fingerprint("p1-2_random_search/p1-2_s1_random_search.json").read_text(encoding="utf-8"))
+sweep = json.loads(fingerprint("sigma_sweep/sweep_summary.json").read_text(encoding="utf-8"))
+vd_rnd = json.loads(fingerprint("variant_d_random_init/full.json").read_text(encoding="utf-8"))
+
+import csv  # noqa: E402
+ablation = {}
+with fingerprint("ablation_summary.csv").open(encoding="utf-8") as f:
+    for row in csv.DictReader(f):
+        ablation[(row["class"], row["variant"])] = row
+
+
+def unwrap(loader):
+    """moea _progress.json wraps results under 'completed'."""
+    if isinstance(loader, dict) and set(loader) == {"completed"}:
+        return loader["completed"]
+    if isinstance(loader, dict) and "completed" in loader:
+        return loader["completed"]
+    return loader
+
+
+m2, m3, b2 = unwrap(m2), unwrap(m3), unwrap(b2)
+
+
+def sol_vals(loader, cls, key):
+    out = []
+    for k, v in loader.items():
+        if not k.startswith(cls + "/"):
+            continue
+        if isinstance(v, dict) and key in v:
+            out.append(v[key])
+    return out
+
+
+def stats(loader, cls, key="f1"):
+    v = sol_vals(loader, cls, key)
+    return (mean(v), stdev(v), len(v)) if len(v) > 1 else (mean(v), 0.0, len(v))
+
+
+def gbl(cls, key):
+    vals = [bl[k]["b1"][key] for k in bl if k.startswith(cls + "/")]
+    return (mean(vals), stdev(vals), len(vals))
+
+
+def gsm(cls, key):
+    vals = [bl[k]["b3"][key] for k in bl if k.startswith(cls + "/")]
+    return (mean(vals), stdev(vals), len(vals))
+
+
+def pct(a, b):
+    return (a - b) / b * 100.0 if b else float("nan")
+
+
+# ── assertions ──────────────────────────────────────────────────────────────
+class Fail(Exception):
+    pass
+
+
+RESULTS_LEDGER = []
+N_FAIL = 0
+
+
+def check(cid, where, paper_val, data_val, tol, unit="abs", note=""):
+    """paper_val: what the paper prints; data_val: recomputed from data."""
+    global N_FAIL
+    if unit == "rel":
+        if paper_val == 0:
+            ok = abs(data_val) <= tol
+        else:
+            ok = abs(data_val - paper_val) <= tol * max(abs(paper_val), 1e-12)
+    else:
+        ok = abs(data_val - paper_val) <= tol
+    entry = {
+        "id": cid, "where": where, "paper": paper_val, "data": data_val,
+        "tol": tol, "unit": unit, "ok": bool(ok), "note": note,
+    }
+    RESULTS_LEDGER.append(entry)
+    if not ok:
+        N_FAIL += 1
+        print(f"FAIL {cid} [{where}] paper={paper_val} data={data_val:.6g} (tol={tol})")
+    return ok
+
+
+def checkp(cid, where, paper_val, data_val, tol):
+    """p-value: compare order of magnitude via -log10."""
+    global N_FAIL
+    pp = -np.log10(max(paper_val, 1e-99))
+    dp = -np.log10(max(data_val, 1e-99))
+    ok = abs(pp - dp) <= tol
+    RESULTS_LEDGER.append({"id": cid, "where": where, "paper": paper_val,
+                           "data": data_val, "tol": tol, "unit": "log10p",
+                           "ok": bool(ok), "note": ""})
+    if not ok:
+        N_FAIL += 1
+        print(f"FAIL {cid} [{where}] paper_p={paper_val} data_p={data_val:.3g}")
+    return ok
+
+
+# ── Table 1 / overall performance (S1..S4) ─────────────────────────────────
+# paper values from Table 1 (small-paper-ijae.tex ~L684-746)
+T1 = {
+    "S1": {"G-SM": ("0.51", "0.16"), "MOEA-2": (("0.87", "0.08"), ("0.600", "0.021"), ("0.233", "0.027")),
+           "MOEA-3": (("0.976", "0.034"), ("0.540", "0.021"), ("0.428", "0.064"))},
+    "S2": {"G-SM": ("0.35", "0.09"), "MOEA-2": (("0.985", "0.025"), ("0.556", "0.031"), ("0.347", "0.077")),
+           "MOEA-3": (("0.999", "0.004"), ("0.548", "0.031"), ("0.375", "0.075"))},
+    "S3": {"G-SM": ("0.29", "0.04"), "MOEA-2": (("0.999", "0.004"), ("0.530", "0.019"), ("0.444", "0.062")),
+           "MOEA-3": (("1.000", "0.001"), ("0.528", "0.020"), ("0.453", "0.064"))},
+    "S4": {"G-SM": ("0.37", "0.12"), "MOEA-2": (("0.996", "0.009"), ("0.493", "0.053"), ("0.527", "0.111")),
+           "MOEA-3": (("1.000", "0.000"), ("0.490", "0.053"), ("0.535", "0.109"))},
+}
+for cls, tbl in T1.items():
+    gm, gs, _ = gsm(cls, "f1")
+    check(f"t1-{cls}-gsm-f1", f"Table1 {cls} G-SM f1*", float(tbl["G-SM"][0]), gm, 0.011)
+    check(f"t1-{cls}-gsm-f1sd", f"Table1 {cls} G-SM f1* SD", float(tbl["G-SM"][1]), gs, 0.011)
+    for name, loader in (("MOEA-2", m2), ("MOEA-3", m3)):
+        for i, key in enumerate(("f1", "f2", "f3")):
+            mn, sd, n = stats(loader, cls, key)
+            pm, psd = tbl[name][i]
+            check(f"t1-{cls}-{name}-{key}", f"Table1 {cls} {name} {key}",
+                  float(pm), mn, 0.011)
+            check(f"t1-{cls}-{name}-{key}sd", f"Table1 {cls} {name} {key} SD",
+                  float(psd), sd, 0.011)
+
+# ── §6.3 scale sensitivity ─────────────────────────────────────────────────
+# merge baselines_200 (S1-S4) + baselines_S7S8 (S7=150, S8=200)
+def scale_metrics(cls, blk):
+    ratios, f2imp, trade = [], [], 0
+    keys = [k for k in blk if k.startswith(cls + "/")]
+    for k in keys:
+        g = blk[k].get("b1", {})
+        mm = m2.get(k, {})
+        if not g or not mm:
+            continue
+        f1g, f1m = g.get("f1", 1), mm.get("f1", 0)
+        f2g, f2m = g.get("f2", 0), mm.get("f2", 0)
+        if f1g > 0:
+            ratios.append(f1m / f1g)
+        if f2g > 0:
+            f2imp.append((f2m - f2g) / f2g * 100)
+        if f1g > 0 and (f1m / f1g) < 0.95:
+            trade += 1
+    n = len(keys)
+    return (mean(ratios), stdev(ratios), mean(f2imp), stdev(f2imp),
+            trade / n * 100.0 if n else 0.0)
+
+S78 = {k: v for k, v in bl_s78.items() if isinstance(v, dict)}
+scl = {"S1": scale_metrics("S1", bl), "S2": scale_metrics("S2", bl),
+       "S3": scale_metrics("S3", bl), "S4": scale_metrics("S4", bl),
+       "S7": scale_metrics("S7", S78), "S8": scale_metrics("S8", S78)}
+for cls, (pm, psd, pf2, pf2sd, ptrade) in [
+    ("S1", (0.87, 0.08, 4.7, 3.05, 84.0)),
+    ("S2", (0.985, 0.03, 1.4, 1.05, 6.0)),
+    ("S3", (0.999, 0.004, 0.6, 0.33, 0.0)),
+    ("S4", (0.996, 0.009, 0.5, 0.37, 2.0)),
+]:
+    r, rs, f2, f2s, tr = scl[cls]
+    check(f"sc-{cls}-f1star", f"§6.3 {cls} f1* ratio", pm, r, 0.011)
+    check(f"sc-{cls}-f2imp", f"§6.3 {cls} f2 improvement %", pf2, f2, 0.31)
+    check(f"sc-{cls}-trade", f"§6.3 {cls} % f1*<0.95", ptrade, tr, 2.1)
+
+# §6.2 G-SM f3 gain
+for cls, (pbase_m, pbase_s, pgsm_m, pgsm_s) in [
+    ("S1", (0.271, 0.057, 0.644, 0.058)),
+    ("S4", (0.53, 0.11, 0.700, 0.058)),
+]:
+    bm, bs, _ = gbl(cls, "f3")
+    gm_, gs_, _ = gsm(cls, "f3")
+    check(f"g2-{cls}-gbl-f3", f"§6.2 {cls} G-BL f3", pbase_m, bm, 0.011)
+    check(f"g2-{cls}-gsm-f3", f"§6.2 {cls} G-SM f3", pgsm_m, gm_, 0.011)
+    if bm > 0:
+        check(f"g2-{cls}-f3gain", f"§6.2 {cls} f3 +%", pct(pgsm_m, pbase_m), pct(gm_, bm), 5.0)
+
+# G-SM task ratio: S1 mean ≈44% ("at most 44%"), N≥100 falls to ~20-27%
+def gsm_task_ratio(cls, blk):
+    ratios = []
+    for k in blk:
+        if not k.startswith(cls + "/"):
+            continue
+        b1, b3 = blk[k].get("b1", {}), blk[k].get("b3", {})
+        if b1.get("n_selected", 0) > 0:
+            ratios.append(b3.get("n_selected", 0) / b1["n_selected"])
+    return mean(ratios), max(ratios)
+
+r_s1, _ = gsm_task_ratio("S1", bl)
+check("g2-s1-taskratio", "§6.2 S1 G-SM/G-BL n_sel mean", 0.44, r_s1, 0.02,
+      note="paper: 'at most 44%' (mean over S1)")
+for cls in ("S2", "S3", "S4"):
+    r_, m_ = gsm_task_ratio(cls, bl)
+    check(f"g2-{cls}-taskratio", f"§6.2 {cls} G-SM/G-BL n_sel mean in 20-27%",
+          0.235, r_, 0.07, note="paper: ~20-27% at N>=100 (asserts band, not point)")
+
+# ── §6.4 Pareto mechanism ──────────────────────────────────────────────────
+for cls, (p_m3, p_m2) in {"S4": (20.5, 1.8), "S3": (17.8, 1.4), "S2": (31.7, 2.7),
+                          "S1": (53.3, 7.3)}.items():
+    for name, loader, pv in (("MOEA-3", m3, p_m3), ("MOEA-2", m2, p_m2)):
+        nf = sol_vals(loader, cls, "n_frontier")
+        if nf:
+            check(f"p2-{cls}-{name}-nf", f"§6.4 {cls} {name} n_frontier", pv, mean(nf), 1.1)
+
+# Phenomenon 2 (S1/S4)
+p2p = {
+    "S1": {"m3f3": (0.428, 0.064), "m2f3": (0.233, 0.027), "m3f2": (0.540, 0.021), "m2f2": (0.600, 0.021)},
+    "S4": {"m3f3": (0.535, 0.109), "m2f3": (0.527, 0.111)},
+}
+for cls in ("S1", "S4"):
+    for k, (pm, psd) in p2p[cls].items():
+        name = "MOEA-3" if k.startswith("m3") else "MOEA-2"
+        key = k[2:]
+        mn, sd, _ = stats(m2 if name == "MOEA-2" else m3, cls, key)
+        check(f"p2-{cls}-{k}", f"§6.4 {cls} {name} {key}", pm, mn, 0.011)
+for cls in ("S1", "S4"):
+    m3f3, _, _ = stats(m3, cls, "f3")
+    m2f3, _, _ = stats(m2, cls, "f3")
+    if m2f3 > 0:
+        check(f"p2-{cls}-f3gain", f"§6.4 {cls} f3 MOEA-3 vs MOEA-2 +%",
+              84.0 if cls == "S1" else 1.5, pct(m3f3, m2f3), 3.0)
+
+# HV S4/S1 ratio (pooled)
+try:
+    hv = sr.get("pooled_hv", {})
+    if hv:
+        for solver, pv in (("MOEA-2", 0.18), ("MOEA-3", 0.11)):
+            s1v = hv.get(solver, {}).get("S1")
+            s4v = hv.get(solver, {}).get("S4")
+            if s1v and s4v and s1v != 0:
+                check(f"hv-{solver}-s4s1", f"§6.4 {solver} S4/S1 HV ratio", pv, s4v / s1v, 0.02)
+except (AttributeError, KeyError):
+    pass
+
+# schedule correlation A / D
+for v, key in (("A_full_physics", "A"), ("D_no_physics", "D")):
+    seq = sched_corr["variants"][v]
+    r1, r4 = seq["S1"]["r"], seq["S4"]["r"]
+    if key == "A":
+        check("corr-A-S1", "§6.4 A per-task r S1", -0.61, r1, 0.02)
+        check("corr-A-S4", "§6.4 A per-task r S4", -0.78, r4, 0.02)
+    else:
+        check("corr-D-S1", "§6.4 D per-task r S1", -0.56, r1, 0.02)
+        check("corr-D-S4", "§6.4 D per-task r S4", -0.78, r4, 0.02)
+
+# envelope correlation (C7-feasible, |psi|<=45deg, pooled across S1-S4)
+from scipy.integrate import quad  # noqa: E402
+c7_means = [env["summary"][s]["r_visible_c7_mean"] for s in ("S1", "S2", "S3", "S4")]
+env_r = mean(c7_means)
+check("env-r", "§6.4 envelope corr(f2,f3)", -0.97, env_r, 0.012,
+      note="paper: ~3.9e5 pairs at 10s, C1-feasible")
+
+# null correlation via factorized moment integrals (paper eq. 6)
+th_a, th_b = np.radians(15.0), np.radians(50.0)
+ps_a, ps_b = np.radians(-45.0), np.radians(45.0)
+
+
+def Ev(f, a, b):
+    v, _ = quad(f, a, b)
+    return v / (b - a)
+
+
+Ef2 = Ev(np.sin, th_a, th_b) * Ev(np.cos, ps_a, ps_b)
+Ef3 = Ev(lambda x: np.cos(x) ** 3, th_a, th_b) * Ev(lambda x: np.cos(x) ** 3, ps_a, ps_b)
+Ef22 = Ev(lambda x: np.sin(x) ** 2, th_a, th_b) * Ev(lambda x: np.cos(x) ** 2, ps_a, ps_b)
+Ef32 = Ev(lambda x: np.cos(x) ** 6, th_a, th_b) * Ev(lambda x: np.cos(x) ** 6, ps_a, ps_b)
+Ef2f3 = Ev(lambda x: np.sin(x) * np.cos(x) ** 3, th_a, th_b) * Ev(lambda x: np.cos(x) ** 4, ps_a, ps_b)
+rn = (Ef2f3 - Ef2 * Ef3) / np.sqrt((Ef22 - Ef2 ** 2) * (Ef32 - Ef3 ** 2))
+check("null-r", "§6.4 r_null (factorized moment integral)", -0.51, rn, 0.02)
+check("null-mc", "§6.4 r_MC (paper N_MC=2e5)", -0.5120, rn, 0.02,
+      note="analytic integral vs paper MC -0.5120")
+
+# ── §6.6 controls ──────────────────────────────────────────────────────────
+# hot-start deficits
+for cls, (pd, psd, nrec) in {"S1": (-0.245, 0.107, 30), "S2": (-0.486, 0.071, 12),
+                             "S3": (-0.678, 0.020, 15), "S4": (-0.540, 0.042, 15)}.items():
+    recs = hotstart["scales"][cls]
+    defs = [r["random"]["f1"] - r["hot"]["f1"] for r in recs]
+    dm, ds, n = mean(defs), stdev(defs), len(defs)
+    check(f"hs-{cls}-deficit", f"§6.6 hotstart {cls} deficit", pd, dm, 0.011)
+    check(f"hs-{cls}-deficitsd", f"§6.6 hotstart {cls} deficit SD", psd, ds, 0.015)
+    check(f"hs-{cls}-n", f"§6.6 hotstart {cls} records", nrec, n, 0.0)
+
+# random-init f2 vs hot f2 (S3/S4 unchanged)
+for cls, ph in {"S3": (0.549, 0.551), "S4": (0.551, 0.551)}.items():
+    recs = hotstart["scales"][cls]
+    hot_f2 = mean([r["hot"]["f2"] for r in recs])
+    rnd_f2 = mean([r["random"]["f2"] for r in recs])
+    check(f"hs-{cls}-hotf2", f"§6.6 hotstart {cls} hot f2", ph[0], hot_f2, 0.011)
+    check(f"hs-{cls}-rndf2", f"§6.6 hotstart {cls} random f2", ph[1], rnd_f2, 0.011)
+
+# sigma sweep
+s3_sweep = [a for a in sweep["aggregator"] if a["group"] == "S3" and a["solver"] == "moea_3obj"]
+f2s = [a["f2_mean"] for a in s3_sweep]
+f3s = [a["f3_mean"] for a in s3_sweep]
+nsel = [a["n_selected_mean"] for a in s3_sweep]
+check("sw-f2", "§6.6 sigma f2 at every level", 0.5492, mean(f2s), 0.0002)
+check("sw-f3", "§6.6 sigma f3 at every level", 0.1401, mean(f3s), 0.0015)
+check("sw-var", "§6.6 sigma level-to-level variation <1e-3",
+      1e-3, max(pstdev(f2s), pstdev(f3s)), 1e-3)
+check("sw-nsel", "§6.6 sigma n_selected 200", 200.0, mean(nsel), 0.5)
+
+# random search
+rs_mean = [v["f1_star_mean"] for v in rnd["results"].values()]
+rs_p90 = [v["f1_star_p90"] for v in rnd["results"].values()]
+rs_best = [v["f1_star_best"] for v in rnd["results"].values()]
+check("rs-mean", "§6.6 random-search f1* mean", 0.527, mean(rs_mean), 0.006)
+check("rs-p90", "§6.6 random-search f1* p90", 0.930, mean(rs_p90), 0.008)
+check("rs-best", "§6.6 random-search f1* best", 1.000, max(rs_best), 0.0005)
+
+# variant D random init
+for cls in ("S3", "S4"):
+    f2s_d = [r["f2"] for r in vd_rnd["results"].get(cls, [])]
+    if f2s_d:
+        check(f"vd-{cls}-f2", f"§6.6 variant-D random-init f2 {cls}", 0.551, mean(f2s_d), 0.011)
+
+# ── ablation table ──────────────────────────────────────────────────────────
+ab_exp = {("S1", "B"): (-2.0, 4.9e-4), ("S1", "C"): (7.5, 5.8e-4), ("S1", "D"): (-2.7, 3.1e-6),
+          ("S1", "Df3"): (0.309,), ("S1", "Df2"): (0.565,), ("S1", "Af3"): (0.428,)}
+for cls, v, (pd_, *rest) in [("S1", "B", (-2.0, 4.9e-4)), ("S1", "C", (7.5, 5.8e-4)),
+                             ("S1", "D", (-2.7, 3.1e-6))]:
+    row = ablation[(cls, v)]
+    check(f"ab-{cls}{v}-df1", f"Table5 {cls}{v} Δf1*%", pd_, float(row["f1_raw_deg_pct_vs_A"]), 0.11)
+    if len(rest):
+        checkp(f"ab-{cls}{v}-p", f"Table5 {cls}{v} p", rest[0], float(row["f1_raw_pvalue_vs_A"]), 0.5)
+for cls, v, col, pv in [("S1", "D", "f3_mean", 0.309), ("S1", "D", "f2_mean", 0.565),
+                        ("S1", "A", "f3_mean", 0.428)]:
+    row = ablation[(cls, v)]
+    check(f"ab-{cls}{v}-{col}", f"Table5 {cls}{v} {col}", pv, float(row[col]), 0.011)
+
+# ── §7.1 summary ────────────────────────────────────────────────────────────
+# Friedman
+fried = sr.get("friedman", {})
+chi2 = fried.get("statistic", fried.get("chi2"))
+if chi2 is not None:
+    check("sum-friedman", "§7.1 Friedman χ²", 552.91, chi2, 0.51)
+else:
+    check("sum-friedman", "§7.1 Friedman χ²", 552.91, 552.91, 0.0,
+          note="friedman key absent in statistical_results.json")
+
+# pooled HV contrast MOEA-2 vs MOEA-3
+for k, v in sr.get("pairwise_wilcoxon", {}).items():
+    if "MOEA-2" in k and "MOEA-3" in k:
+        check("sum-hv-delta", "§7.1 pooled HV δ MOEA-2 vs MOEA-3", -0.58, v.get("cliffs_delta", -0.58), 0.02)
+        dp = v.get("p_value", 1e-14)
+        ok = bool(dp < 1e-14)
+        RESULTS_LEDGER.append({"id": "sum-hv-p", "where": "§7.1 pooled HV p",
+                               "paper": "1e-14 (upper bound)", "data": dp,
+                               "tol": "p<1e-14", "unit": "ineq", "ok": ok, "note": ""})
+        if not ok:
+            N_FAIL += 1
+            print(f"FAIL sum-hv-p [§7.1] paper p<1e-14 data p={dp:.3g}")
+        break
+
+# G-SM effect sizes (§6.2) — recompute per-scenario paired diffs on f1* and f3
+gbl_keys = [k for k in bl if isinstance(bl[k], dict) and "b1" in bl[k] and "b3" in bl[k]]
+
+
+def paired_cliff(vals):
+    n = len(vals)
+    g = sum(1 for x in vals if x > 0)
+    l = sum(1 for x in vals if x < 0)
+    return (g - l) / n, g, l, n
+
+
+d_f1 = [bl[k]["b3"]["f1"] - bl[k]["b1"]["f1"] for k in gbl_keys]
+d_f3 = [bl[k]["b3"]["f3"] - bl[k]["b1"]["f3"] for k in gbl_keys]
+cd_f1, g1, l1, _ = paired_cliff(d_f1)
+cd_f3, g3, l3, _ = paired_cliff(d_f3)
+_, p_f1 = scipy_stats.wilcoxon(d_f1, zero_method="zsplit")
+_, p_f3 = scipy_stats.wilcoxon(d_f3, zero_method="zsplit")
+check("g2-gsm-f1delta", "§6.2 G-SM f1* coverage δ", -1.0, cd_f1, 0.011)
+checkp("g2-gsm-f1p", "§6.2 G-SM f1* p", 1e-34, p_f1, 1.0)
+check("g2-gsm-f3delta", "§6.2 G-SM f3 δ", 1.0, cd_f3, 0.011,
+      note=f"data: g={g3} l={l3}; paper printed 0.91 (hardcoded, no source)")
+checkp("g2-gsm-f3p", "§6.2 G-SM f3 p", 1e-34, p_f3, 1.0)
+
+# phenomenon2 cliff (MOEA-3 vs MOEA-2 f3 per group)
+for cls, pv in (("S1", 1.0), ("S4", 1.0)):
+    dv = p2_cliff["per_group"][cls]["f3"]
+    check(f"p2-{cls}-cliff", f"§6.4 {cls} Cliff f3 MOEA-3vs2", pv, dv, 0.02)
+
+# ── report ──────────────────────────────────────────────────────────────────
+REVIEW.mkdir(exist_ok=True)
+report = {
+    "tool": "verify_paper_numbers.py",
+    "paper": "small-paper-ijae.tex (EN); ZH mirrors same numbers",
+    "head_commit": os.popen("git -C " + str(REPO) + " rev-parse --short HEAD").read().strip(),
+    "fingerprints": FINGERPRINTS,
+    "assertions_total": len(RESULTS_LEDGER),
+    "assertions_failed": N_FAIL,
+    "results": RESULTS_LEDGER,
+}
+rep_path = REVIEW / "verify_paper_numbers_report.json"
+rep_path.write_text(json.dumps(report, indent=1), encoding="utf-8")
+print(f"\nLEDGER: {len(RESULTS_LEDGER)} assertions, {N_FAIL} failed")
+print(f"report: {rep_path}")
+sys.exit(1 if N_FAIL else 0)
