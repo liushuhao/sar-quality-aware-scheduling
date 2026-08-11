@@ -89,11 +89,11 @@ $\Delta\% = (\text{A} - \text{V})/\text{A} \times 100$，
 \begin{figure}[H]
     \centering
     \includegraphics[width=\textwidth]{fig5_ablation.pdf}
-    \caption{四种目标函数变体（B--D）与四类场景（S1--S4）下的消融结果。柱状图表示相对完整物理基线 A 的退化（负值表示变体优于 A）；星号标记与 A 配对 Wilcoxon 比较 $p<0.005$（Bonferroni 阈值）。}
+    \caption{四种目标函数变体（B--D）与四类场景（S1--S4）下的消融结果。柱状图表示相对完整物理基线 A 的归一化收益 $f_1^*$ 与事后几何质量指标 $f_2$、$f_3$ 的退化（负值表示变体优于 A）；星号标记与 A 配对 Wilcoxon 比较 $p<0.005$（Bonferroni 阈值）。}
     \label{fig:fig5}
 \end{figure}
 
-表~\ref{tab:ablation} 中的消融结果表明，物理目标建模的影响
+表~\ref{tab:ablation} 与图~\ref{fig:fig5} 中的消融结果表明，物理目标建模的影响
 集中在稀疏场景中，并随场景密度的增大而消失 ---
 这与我们的尺度敏感性分析（\S~\ref{sec:scale-sensitivity}）模式一致。
 
@@ -116,7 +116,7 @@ $\Delta\% = (\text{A} - \text{V})/\text{A} \times 100$，
 
 在 S3--S4（$N \geq 300$）下，每种变体在 $f_1^*$ 上
 均收敛到基线 $0.2\%$ 以内，在 $f_2$ 上均收敛到 $0.6\%$ 以内；
-逐任务质量指标（$5.62$--$5.83$）与选取任务数在所有变体间小数点后两位完全一致。
+逐任务质量指标（$5.62$--$5.83$）与选取任务数在所有变体间相差不超过 $0.2$。
 这种数值不变性正是 \S~\ref{sec:scale-sensitivity} 中讨论的
 尺度依赖饱和的直接表征：一旦候选观测窗口的密度饱和了调度，
 目标函数便仅惩罚不可行的解，而不再区分可行的解。

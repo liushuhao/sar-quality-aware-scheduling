@@ -1088,7 +1088,7 @@ $f_1^*=0.527\pm0.003$ and a 90th percentile of $0.930\pm0.008$; the best
 sample reaches $1.000$ --- the G-BL profit, so random sampling can at most
 replicate the greedy baseline, never exceed it. High coverage under random
 sampling therefore occurs only by chance; the MOEA's gains reflect structured
-search rather than luck.
+search.
 
 \paragraph{Random-init control.}
 A random-init variant-D control (15 S3 and 15 S4 runs, no G-BL hot start)
@@ -1135,9 +1135,8 @@ per-task $f_2$--$f_3$ correlation within schedules stays negative and
 \emph{strengthens} with density ($\approx -0.61$ to $-0.78$ for the
 full-physics solver), and MOEA-3 separates from MOEA-2 in $f_3$ at sparse
 density ($+84\%$ at $N=20$) with the advantage shrinking to $\approx +1.5$--$2\%$
-at $N \geq 300$, confirming that the incidence-angle conflict persists inside
-the schedules while coverage pressure, not conflict disappearance, removes the
-third objective's trading value at high density;
+at $N \geq 300$, confirming the coverage-pressure mechanism detailed in
+\S~\ref{sec:pareto-coupling};
 \textbf{(3)}~G-SM occupies a distinct high-radiometric-quality regime at
 substantial density-dependent coverage cost;
 \textbf{(4)}~solver outcomes become invariant to the choice of physical
