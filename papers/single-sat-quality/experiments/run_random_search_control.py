@@ -17,7 +17,7 @@ import numpy as np
 _PROJ = Path(__file__).resolve().parent.parent.parent.parent
 sys.path.insert(0, str(_PROJ / "src"))
 
-from sar_sim.solver.types import build_agile_instance, precompute_geometry
+from sar_sim.solver.types import build_agile_instance_from_scenario, precompute_geometry
 from sar_sim.solver.baselines import baseline_b1
 
 PROJECT = _PROJ / "papers" / "single-sat-quality"
@@ -50,7 +50,7 @@ def main():
         windows = data.get("windows", [])
         targets = data.get("targets", [])
 
-        instance = build_agile_instance(windows, targets, max_slew_rate=SLEW_RATE, settle_time=SETTLE_TIME)
+        instance = build_agile_instance_from_scenario(data, max_slew_rate=SLEW_RATE, settle_time=SETTLE_TIME)
         precompute_geometry(instance, step_s=10.0)
 
         gbl = baseline_b1(windows, targets, max_slew_rate=SLEW_RATE, settle_time=SETTLE_TIME,

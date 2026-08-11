@@ -26,7 +26,7 @@ sys.path.insert(0, str(REPO_ROOT / "src"))
 
 from sar_sim.solver.moea import moea_solver
 from sar_sim.solver.baselines import baseline_b1
-from sar_sim.solver.types import build_agile_instance, precompute_geometry
+from sar_sim.solver.types import build_agile_instance_from_scenario, precompute_geometry
 
 SCENARIOS_DIR = PROJECT / "experiments" / "scenarios"
 RESULTS_DIR = PROJECT / "experiments" / "results" / "sigma_sweep"
@@ -111,8 +111,11 @@ def run_one(pkl_path: Path, sigma: float, n_obj: int) -> dict:
     n_targets = data.get("n_targets", len(targets))
     scenario_seed = data.get("seed", 0)
 
-    # Build instance
-    instance = build_agile_instance(windows, targets, max_slew_rate=SLEW_RATE, settle_time=SETTLE_TIME)
+    # Build instance from the scenario's real orbit params (inclination/RAAN/
+    # epoch).  build_agile_instance defaults (RAAN=0, epoch=0) would misalign the
+    # ECI->ECEF geometry and give wrong incidence/squint, breaking the f2/f3
+    # values and the low-squint convergence seen in the main experiment.
+    instance = build_agile_instance_from_scenario(data, max_slew_rate=SLEW_RATE, settle_time=SETTLE_TIME)
     precompute_geometry(instance, step_s=10.0)
 
     # Build hot-start

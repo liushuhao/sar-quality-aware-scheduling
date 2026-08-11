@@ -30,7 +30,7 @@ RESULTS_DIR.mkdir(parents=True, exist_ok=True)
 
 from sar_sim.solver.moea import moea_solver
 from sar_sim.solver.baselines import baseline_b1
-from sar_sim.solver.types import build_agile_instance, precompute_geometry
+from sar_sim.solver.types import build_agile_instance_from_scenario, precompute_geometry
 
 SLEW_RATE = 0.0524
 SETTLE_TIME = 5.0
@@ -76,8 +76,8 @@ def run_one(pkl_path, scenario_seed, mode, extra_seed):
     targets = data.get("targets", [])
     n_targets = data.get("n_targets", len(targets))
 
-    instance = build_agile_instance(
-        windows, targets,
+    instance = build_agile_instance_from_scenario(
+        data,
         max_slew_rate=SLEW_RATE, settle_time=SETTLE_TIME,
     )
     precompute_geometry(instance, step_s=10.0)
