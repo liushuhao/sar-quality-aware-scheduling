@@ -242,19 +242,20 @@ def moea_solver_no_squint(windows, targets, **kwargs):
     if hotstart_individual is not None:
         from pymoo.core.sampling import Sampling
         class _HotStart(Sampling):
-            def __init__(self, x0, n_pop):
+            def __init__(self, x0, n_pop, seed):
                 super().__init__()
                 self.x0 = x0
                 self.n_pop = n_pop
+                self.seed = seed
             def _do(self, problem, n_samples, **kwargs):
                 pop = np.zeros((self.n_pop, problem.n_var))
                 pop[0] = self.x0
-                rng = np.random.RandomState()
+                rng = np.random.RandomState(self.seed)
                 for i in range(1, self.n_pop):
                     noise = rng.normal(0, 0.5, problem.n_var)
                     pop[i] = np.clip(self.x0 + noise, 0.0, 1.0)
                 return pop
-        sampling = _HotStart(hotstart_individual, population_size)
+        sampling = _HotStart(hotstart_individual, population_size, seed if seed is not None else 1)
 
     algorithm = NSGA3(
         pop_size=population_size,

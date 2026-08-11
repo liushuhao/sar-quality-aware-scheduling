@@ -32,37 +32,28 @@
 %  ABSTRACT (~200 words)
 % ============================================================
 \begin{abstract}
-In agile SAR scheduling, observation timing determines not only feasibility
-but also imaging quality through radar-specific geometric and radiometric effects.
-We characterize an empirical saturation regime for multi-objective SAR quality
-optimization in single-pass, single-satellite Stripmap operation by integrating
-two physical quality dimensions, Noise-Equivalent Sigma Zero (NESZ,
-radiometric) and geometric resolution, as decomposed optimization
-objectives within a Non-dominated Sorting Genetic Algorithm III
-(NSGA-III) framework, distinct from scalar visibility
-composites used in prior SAR scheduling.
-Experiments spanning target densities from 20 to 500 show a scale-dependent
-saturation: at the sparsest density ($N = 20$), multi-objective optimization
-extracts a $+4.5\%$ gain in geometric quality $f_2$ (MOEA-2) at a $13\%$
-coverage cost, and adding the NESZ objective $f_3$ yields a further $+58\%$
-radiometric gain relative to G-BL at only $2\%$ coverage cost (and a
-$\sim6\%$ geometric-quality cost) for MOEA-3, while at
-operational densities ($N \geq 300$), multi-objective evolutionary
-algorithm (MOEA) formulations seeded by the greedy baseline (G-BL)
-approach the greedy coverage anchor and the marginal quality gain falls
-below $2\%$.
-This coverage convergence is conditional on greedy-baseline hot-start
-initialization, with random-init $f_1^*$ deficits of $0.24$--$0.68$ that peak
-at intermediate-to-high target density.
-Independently, ablation shows that removing the physical
-objectives barely changes dense-regime outcomes.
-The additional third objective is therefore density-dependent rather than
-redundant: MOEA-3 differs markedly from MOEA-2 at sparse density
-($+84\%$ $f_3$ relative to MOEA-2) and converges at operational
-densities, reflecting the geometric coupling of the lower-squint regime rather
-than a mathematical identity between objectives. Rather than identifying a
-superior solver, our results establish an empirical saturation boundary for
-physics-aware multi-objective scheduling under the tested single-satellite, single-pass, Stripmap, G-BL-seeded NSGA-III conditions.
+In agile SAR scheduling, observation timing determines imaging quality
+through radar-specific geometric and radiometric effects. We characterize an
+empirical saturation regime for multi-objective SAR quality optimization in
+single-pass, single-satellite Stripmap operation by integrating
+Noise-Equivalent Sigma Zero (NESZ, radiometric) and geometric resolution as
+decomposed objectives within an NSGA-III framework. Across densities 20--500,
+saturation is scale-dependent: at $N=20$, MOEA-2 extracts a $+4.5\%$ gain in
+geometric quality $f_2$ at a $13\%$ coverage cost, and adding the NESZ
+objective $f_3$ yields a further $+58\%$ radiometric gain over the greedy
+baseline (G-BL) at $2\%$ coverage cost (and $\sim6\%$ geometric-quality cost)
+for MOEA-3; at operational densities ($N \geq 300$), multi-objective
+evolutionary algorithm (MOEA) formulations seeded by G-BL approach the coverage
+anchor and the marginal quality gain falls below $2\%$. This convergence is
+conditional on G-BL hot-start initialization, with random-init $f_1^*$ deficits
+of $0.24$--$0.68$ peaking at intermediate densities; ablation shows removing
+the physical objectives barely changes dense-regime outcomes. The third
+objective is therefore density-dependent rather than redundant: MOEA-3 differs
+markedly from MOEA-2 at sparse density ($+84\%$ $f_3$) and converges at
+operational densities, reflecting lower-squint geometric coupling rather than a
+mathematical identity. Rather than identifying a superior solver, our results
+establish an empirical saturation boundary for physics-aware multi-objective
+scheduling.
 \end{abstract}
 \begin{keyword}
 agile SAR \sep satellite scheduling \sep multi-objective optimization \sep NSGA-III \sep noise-equivalent sigma zero (NESZ) \sep geometric resolution

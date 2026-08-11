@@ -2,9 +2,9 @@
 """r_visible: corr(f2, f3) over visible geometry envelope, with C7 filter.
 
 Reports r_visible_all (all points) AND r_visible_c7 (|psi_sq|<=45deg only,
-C7-feasible). Both are strongly negative (~-0.84 / ~-0.95), reflecting the
-incidence-angle geometry envelope; comparison against r_null=-0.51 supports
-the active-selection narrative.
+C7-feasible). Both are strongly negative (r_all ~= -0.89 to -0.93, r_c7
+~= -0.97), reflecting the incidence-angle geometry envelope; comparison
+against r_null=-0.51 supports the active-selection narrative.
 
 NOTE: the previously reported r_solver_empirical=[0.93, 0.98] was a hardcoded,
 unreproducible constant; it has been removed (see REVIEW_INDEX.md, RDR-002
@@ -110,7 +110,7 @@ for group in GROUPS:
 summary = {g: {k: v for k, v in s.items() if k != "per_scenario"} for g, s in results.items()}
 out = {"r_null": -0.51,
        "results": results, "summary": summary,
-       "note": "r_visible_c7 = |psi|<=45deg (C7-feasible), pooled across scenarios (~3.9e5 observation pairs at 10 s resolution). r_visible_c7 ~= -0.95 (strongly negative) reflects the incidence-angle geometry envelope. r_visible_c7 ~= r_null (-0.51) -> active selection (solver converges low-squint from wide C7-feasible envelope). The former r_solver_empirical=[0.93,0.98] was an unreproducible hardcoded constant, removed per RDR-002 (see REVIEW_INDEX.md)."}
+       "note": "r_visible_c7 = |psi|<=45deg (C7-feasible), pooled across scenarios (~3.9e5 observation pairs at 10 s resolution). r_visible_c7 ~= -0.97 (S1 mean-of-per-scenario -0.9786; pooled -0.9714) reflects the incidence-angle geometry envelope. r_visible_c7 ~= r_null (-0.51) -> active selection (solver converges low-squint from wide C7-feasible envelope). The former r_solver_empirical=[0.93,0.98] was an unreproducible hardcoded constant, removed per RDR-002 (see REVIEW_INDEX.md)."}
 json.dump(out, open(OUT, "w"), indent=2)
 print(f"\n=== SUMMARY ===")
 print(f"r_null=-0.51")

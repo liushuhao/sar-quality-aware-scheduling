@@ -165,15 +165,15 @@ def moea_solver_no_incidence(windows, targets, **kwargs):
     sampling = None
     if hotstart_individual is not None:
         class _HS(Sampling):
-            def __init__(self, x0, n_pop): super().__init__(); self.x0, self.n_pop = x0, n_pop
+            def __init__(self, x0, n_pop, seed): super().__init__(); self.x0, self.n_pop, self.seed = x0, n_pop, seed
             def _do(self, problem, n_samples, **kwargs):
                 pop = np.zeros((self.n_pop, problem.n_var))
                 pop[0] = self.x0
-                rng = np.random.RandomState()
+                rng = np.random.RandomState(self.seed)
                 for i in range(1, self.n_pop):
                     pop[i] = np.clip(self.x0 + rng.normal(0, 0.5, problem.n_var), 0, 1)
                 return pop
-        sampling = _HS(hotstart_individual, population_size)
+        sampling = _HS(hotstart_individual, population_size, seed if seed is not None else 1)
 
     algorithm = NSGA3(pop_size=population_size, ref_dirs=ref_dirs, sampling=sampling, crossover=SBX(prob=0.9, eta=20), mutation=PM(prob=0.1, eta=20)) if sampling else NSGA3(pop_size=population_size, ref_dirs=ref_dirs, crossover=SBX(prob=0.9, eta=20), mutation=PM(prob=0.1, eta=20))
     res = minimize(problem, algorithm, get_termination("n_gen", n_generations), seed=(seed if seed is not None else 1), verbose=False, save_history=False)
