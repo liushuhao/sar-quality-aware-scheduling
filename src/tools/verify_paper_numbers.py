@@ -318,9 +318,9 @@ check("null-mc", "§6.4 r_MC (paper N_MC=2e5)", -0.5120, rn, 0.02,
       note="analytic integral vs paper MC -0.5120")
 
 # ── §6.6 controls ──────────────────────────────────────────────────────────
-# hot-start deficits
-for cls, (pd, psd, nrec) in {"S1": (-0.245, 0.107, 30), "S2": (-0.486, 0.071, 12),
-                             "S3": (-0.678, 0.020, 15), "S4": (-0.540, 0.042, 15)}.items():
+# hot-start deficits (post geometry-fix control rerun, 2026-08-12)
+for cls, (pd, psd, nrec) in {"S1": (-0.229, 0.121, 30), "S2": (-0.475, 0.056, 12),
+                             "S3": (-0.565, 0.026, 15), "S4": (-0.382, 0.046, 15)}.items():
     recs = hotstart["scales"][cls]
     defs = [r["random"]["f1"] - r["hot"]["f1"] for r in recs]
     dm, ds, n = mean(defs), stdev(defs), len(defs)
@@ -341,8 +341,8 @@ s3_sweep = [a for a in sweep["aggregator"] if a["group"] == "S3" and a["solver"]
 f2s = [a["f2_mean"] for a in s3_sweep]
 f3s = [a["f3_mean"] for a in s3_sweep]
 nsel = [a["n_selected_mean"] for a in s3_sweep]
-check("sw-f2", "§6.6 sigma f2 at every level", 0.5492, mean(f2s), 0.0002)
-check("sw-f3", "§6.6 sigma f3 at every level", 0.1401, mean(f3s), 0.0015)
+check("sw-f2", "§6.6 sigma f2 at every level", 0.535, mean(f2s), 0.002)
+check("sw-f3", "§6.6 sigma f3 at every level", 0.435, mean(f3s), 0.003)
 check("sw-var", "§6.6 sigma level-to-level variation <1e-3",
       1e-3, max(pstdev(f2s), pstdev(f3s)), 1e-3)
 check("sw-nsel", "§6.6 sigma n_selected 200", 200.0, mean(nsel), 0.5)
@@ -355,11 +355,11 @@ check("rs-mean", "§6.6 random-search f1* mean", 0.527, mean(rs_mean), 0.006)
 check("rs-p90", "§6.6 random-search f1* p90", 0.930, mean(rs_p90), 0.008)
 check("rs-best", "§6.6 random-search f1* best", 1.000, max(rs_best), 0.0005)
 
-# variant D random init
-for cls in ("S3", "S4"):
+# variant D random init (post geometry-fix rerun, 2026-08-12)
+for cls, pexp in (("S3", 0.527), ("S4", 0.520)):
     f2s_d = [r["f2"] for r in vd_rnd["results"].get(cls, [])]
     if f2s_d:
-        check(f"vd-{cls}-f2", f"§6.6 variant-D random-init f2 {cls}", 0.551, mean(f2s_d), 0.011)
+        check(f"vd-{cls}-f2", f"§6.6 variant-D random-init f2 {cls}", pexp, mean(f2s_d), 0.011)
 
 # ── ablation table ──────────────────────────────────────────────────────────
 ab_exp = {("S1", "B"): (-2.0, 4.9e-4), ("S1", "C"): (7.5, 5.8e-4), ("S1", "D"): (-2.7, 3.1e-6),

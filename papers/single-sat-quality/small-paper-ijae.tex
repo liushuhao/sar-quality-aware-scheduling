@@ -46,7 +46,7 @@ for MOEA-3; at operational densities ($N \geq 300$), multi-objective
 evolutionary algorithm (MOEA) formulations seeded by G-BL approach the coverage
 anchor and the marginal quality gain falls below $2\%$. This convergence is
 conditional on G-BL hot-start initialization, with random-init $f_1^*$ deficits
-of $0.24$--$0.62$ peaking at intermediate densities; ablation shows removing
+of $0.23$--$0.57$ peaking at intermediate densities; ablation shows removing
 the physical objectives barely changes dense-regime outcomes. The third
 objective is therefore density-dependent rather than redundant: MOEA-3 differs
 markedly from MOEA-2 at sparse density ($+84\%$ $f_3$) and converges at
@@ -1052,11 +1052,11 @@ effects. We therefore use four control experiments.
 
 \paragraph{Hot-start dependence.}
 On 10 S1, 4 S2, 5 S3, and 5 S4 scenarios (3 seeds each), random-initialized MOEA-2 yields
-$f_1^*$ deficits of approximately $-0.237 \pm 0.114$, $-0.480 \pm 0.063$, $-0.622 \pm 0.062$, and $-0.461 \pm 0.092$
+$f_1^*$ deficits of approximately $-0.229 \pm 0.121$, $-0.475 \pm 0.056$, $-0.565 \pm 0.026$, and $-0.382 \pm 0.046$
 (mean $\pm$ SD across runs) relative to hot-start MOEA-2, respectively. G-BL seeding therefore materially
 improves coverage convergence at every tested density. The deficit peaks at
-the dense S3 class ($-0.62$ at $N=300$), is smallest at the sparsest S1
-($-0.24$ at $N=20$), and moderates at the densest S4 ($-0.46$ at
+the dense S3 class ($-0.57$ at $N=300$), is smallest at the sparsest S1
+($-0.23$ at $N=20$), and moderates at the densest S4 ($-0.38$ at
 $N=500$), so high target density does not by itself make random initialization
 sufficient. This constrains the
 coverage-ceiling claim: proximity to G-BL is initialization-dependent. By

@@ -148,7 +148,13 @@ def main():
                     "random": rnd_res,
                 })
                 state.setdefault("done", {})[key] = True
-                scales.setdefault(scale, []).append(results[-1])
+                # Replace (not append): a pre-existing record with the same key from an
+                # earlier runner version must be overwritten, else resume doubles counts.
+                scales.setdefault(scale, [])
+                scales[scale] = [r for r in scales[scale]
+                                 if not (r["scenario"] == pkl.name
+                                         and r["seed"] == idx and r["extra_seed"] == extra)]
+                scales[scale].append(results[-1])
                 json.dump(state, open(OUT_PATH, "w", encoding="utf-8"), ensure_ascii=False, indent=2)
                 print(f"[{scale}-{idx:02d}] x{extra} hot={hot_res['f1']:.3f} rnd={rnd_res['f1']:.3f} d={hot_res['f1']-rnd_res['f1']:+.3f}", flush=True)
 
