@@ -1,0 +1,324 @@
+{
+  "results": {
+    "S3": [
+      {
+        "scenario": "S3-A_seed00.pkl",
+        "pkl_sha1": "59b7b3bb8225d004b9dc842316063cc3c9031301",
+        "git_commit": "681ced6b",
+        "A": {
+          "variant": "A_full_physics",
+          "f1": 0.9897084048027445,
+          "f1_raw": 1154.0,
+          "f2": 0.3551654208866298,
+          "f3": 0.6200286601463851,
+          "n_selected": 197,
+          "constraint_feasible": true,
+          "all_infeasible": false,
+          "runtime_s": 2027.8
+        },
+        "D": {
+          "variant": "D_no_physics",
+          "f1": 1.0,
+          "f1_raw": 1166.0,
+          "f2": 0.3513070228582128,
+          "f3": 0.609452317328408,
+          "n_selected": 200,
+          "constraint_feasible": true,
+          "all_infeasible": false,
+          "runtime_s": 1802.9
+        },
+        "delta_f1": -0.010291595197255532
+      },
+      {
+        "scenario": "S3-A_seed01.pkl",
+        "pkl_sha1": "75f1290a4702c81105917d0806ed1c22f5cb4598",
+        "git_commit": "f96674f6",
+        "A": {
+          "variant": "A_full_physics",
+          "f1": 1.0,
+          "f1_raw": 1208.0,
+          "f2": 0.3420757316862566,
+          "f3": 0.6278801056585694,
+          "n_selected": 200,
+          "constraint_feasible": true,
+          "all_infeasible": false,
+          "runtime_s": 1824.1
+        },
+        "D": {
+          "variant": "D_no_physics",
+          "f1": 1.0,
+          "f1_raw": 1208.0,
+          "f2": 0.33955147321501294,
+          "f3": 0.6148400729718948,
+          "n_selected": 200,
+          "constraint_feasible": true,
+          "all_infeasible": false,
+          "runtime_s": 1464.2
+        },
+        "delta_f1": 0.0
+      },
+      {
+        "scenario": "S3-A_seed02.pkl",
+        "pkl_sha1": "97e90a049c1b5c7caea458dd3ea97191c947728f",
+        "git_commit": "f96674f6",
+        "A": {
+          "variant": "A_full_physics",
+          "f1": 1.0,
+          "f1_raw": 1168.0,
+          "f2": 0.33624019075912087,
+          "f3": 0.61819196615286,
+          "n_selected": 200,
+          "constraint_feasible": true,
+          "all_infeasible": false,
+          "runtime_s": 1469.4
+        },
+        "D": {
+          "variant": "D_no_physics",
+          "f1": 1.0,
+          "f1_raw": 1168.0,
+          "f2": 0.3331691117704977,
+          "f3": 0.6026686361600568,
+          "n_selected": 200,
+          "constraint_feasible": true,
+          "all_infeasible": false,
+          "runtime_s": 1393.7
+        },
+        "delta_f1": 0.0
+      },
+      {
+        "scenario": "S3-A_seed03.pkl",
+        "pkl_sha1": "dbd0f8c25051ecbee53ebf9083c0a017c6ad19cd",
+        "git_commit": "f96674f6",
+        "A": {
+          "variant": "A_full_physics",
+          "f1": 1.0,
+          "f1_raw": 1163.0,
+          "f2": 0.3311312476676162,
+          "f3": 0.61604460604886,
+          "n_selected": 200,
+          "constraint_feasible": true,
+          "all_infeasible": false,
+          "runtime_s": 1284.6
+        },
+        "D": {
+          "variant": "D_no_physics",
+          "f1": 1.0,
+          "f1_raw": 1163.0,
+          "f2": 0.3273981104417536,
+          "f3": 0.6007284663346699,
+          "n_selected": 200,
+          "constraint_feasible": true,
+          "all_infeasible": false,
+          "runtime_s": 1164.7
+        },
+        "delta_f1": 0.0
+      },
+      {
+        "scenario": "S3-A_seed04.pkl",
+        "pkl_sha1": "40e71d41822cf1582a194eebde4b62a92c5c22d0",
+        "git_commit": "f96674f6",
+        "A": {
+          "variant": "A_full_physics",
+          "f1": 1.0,
+          "f1_raw": 1179.0,
+          "f2": 0.33818308959979937,
+          "f3": 0.6237159088900242,
+          "n_selected": 200,
+          "constraint_feasible": true,
+          "all_infeasible": false,
+          "runtime_s": 1129.7
+        },
+        "D": {
+          "variant": "D_no_physics",
+          "f1": 1.0,
+          "f1_raw": 1179.0,
+          "f2": 0.33465415994034314,
+          "f3": 0.6077654966798647,
+          "n_selected": 200,
+          "constraint_feasible": true,
+          "all_infeasible": false,
+          "runtime_s": 1028.5
+        },
+        "delta_f1": 0.0
+      }
+    ],
+    "S4": [
+      {
+        "scenario": "S4-A_seed00.pkl",
+        "pkl_sha1": "394e897935d74d8551ef19d9b78f7ba524095506",
+        "git_commit": "f96674f6",
+        "A": {
+          "variant": "A_full_physics",
+          "f1": 0.9983221476510067,
+          "f1_raw": 1190.0,
+          "f2": 0.3887282821739301,
+          "f3": 0.6625370710540649,
+          "n_selected": 199,
+          "constraint_feasible": true,
+          "all_infeasible": false,
+          "runtime_s": 1078.6
+        },
+        "D": {
+          "variant": "D_no_physics",
+          "f1": 1.0,
+          "f1_raw": 1192.0,
+          "f2": 0.3862753893756253,
+          "f3": 0.6519003132732744,
+          "n_selected": 200,
+          "constraint_feasible": true,
+          "all_infeasible": false,
+          "runtime_s": 1083.8
+        },
+        "delta_f1": -0.001677852348993314
+      },
+      {
+        "scenario": "S4-A_seed01.pkl",
+        "pkl_sha1": "e3f28a0d482b86dd0295f42fa054d382e0fda2ac",
+        "git_commit": "f96674f6",
+        "A": {
+          "variant": "A_full_physics",
+          "f1": 0.9894815927873779,
+          "f1_raw": 1317.0,
+          "f2": 0.37925123028120666,
+          "f3": 0.675811453134397,
+          "n_selected": 198,
+          "constraint_feasible": true,
+          "all_infeasible": false,
+          "runtime_s": 1126.4
+        },
+        "D": {
+          "variant": "D_no_physics",
+          "f1": 1.0,
+          "f1_raw": 1331.0,
+          "f2": 0.37329180262124995,
+          "f3": 0.6607415185610567,
+          "n_selected": 200,
+          "constraint_feasible": true,
+          "all_infeasible": false,
+          "runtime_s": 1112.0
+        },
+        "delta_f1": -0.010518407212622094
+      },
+      {
+        "scenario": "S4-A_seed02.pkl",
+        "pkl_sha1": "040a94545a2ac14dd5f648d0b5e179d66865bbee",
+        "git_commit": "f96674f6",
+        "A": {
+          "variant": "A_full_physics",
+          "f1": 0.9925124792013311,
+          "f1_raw": 1193.0,
+          "f2": 0.38533981782390914,
+          "f3": 0.6644036922923744,
+          "n_selected": 199,
+          "constraint_feasible": true,
+          "all_infeasible": false,
+          "runtime_s": 1111.4
+        },
+        "D": {
+          "variant": "D_no_physics",
+          "f1": 1.0,
+          "f1_raw": 1202.0,
+          "f2": 0.3831107619034499,
+          "f3": 0.655031443367231,
+          "n_selected": 200,
+          "constraint_feasible": true,
+          "all_infeasible": false,
+          "runtime_s": 1095.6
+        },
+        "delta_f1": -0.0074875207986688785
+      },
+      {
+        "scenario": "S4-A_seed03.pkl",
+        "pkl_sha1": "85c2962c6530049f8748102667f0601f5d4ef78d",
+        "git_commit": "f96674f6",
+        "A": {
+          "variant": "A_full_physics",
+          "f1": 0.9927007299270073,
+          "f1_raw": 1224.0,
+          "f2": 0.3715745625197264,
+          "f3": 0.6762096473566217,
+          "n_selected": 199,
+          "constraint_feasible": true,
+          "all_infeasible": false,
+          "runtime_s": 1109.0
+        },
+        "D": {
+          "variant": "D_no_physics",
+          "f1": 1.0,
+          "f1_raw": 1233.0,
+          "f2": 0.36823530096890067,
+          "f3": 0.6642438564433408,
+          "n_selected": 200,
+          "constraint_feasible": true,
+          "all_infeasible": false,
+          "runtime_s": 1095.2
+        },
+        "delta_f1": -0.007299270072992692
+      },
+      {
+        "scenario": "S4-A_seed04.pkl",
+        "pkl_sha1": "74bdbc468537273dd38bda6e76ef4742ce560de8",
+        "git_commit": "f96674f6",
+        "A": {
+          "variant": "A_full_physics",
+          "f1": 1.0,
+          "f1_raw": 1263.0,
+          "f2": 0.3850380843902541,
+          "f3": 0.6569719409373858,
+          "n_selected": 200,
+          "constraint_feasible": true,
+          "all_infeasible": false,
+          "runtime_s": 1121.9
+        },
+        "D": {
+          "variant": "D_no_physics",
+          "f1": 1.0015835312747428,
+          "f1_raw": 1265.0,
+          "f2": 0.38278595702726087,
+          "f3": 0.6482191426469684,
+          "n_selected": 200,
+          "constraint_feasible": true,
+          "all_infeasible": false,
+          "runtime_s": 1088.3
+        },
+        "delta_f1": -0.0015835312747427555
+      }
+    ]
+  },
+  "summary": {
+    "S3": {
+      "A_f1_mean": 0.9979416809605489,
+      "A_f1_std": 0.004116638078902213,
+      "D_f1_mean": 1.0,
+      "D_f1_std": 0.0,
+      "delta_mean": -0.0020583190394511063,
+      "n": 5,
+      "A_f2_mean": 0.34055913611988453,
+      "D_f2_mean": 0.3372159756451641,
+      "f2_pooled_mean": 0.3388875558825243
+    },
+    "S4": {
+      "A_f1_mean": 0.9946033899133446,
+      "A_f1_std": 0.003928801037660086,
+      "D_f1_mean": 1.0003167062549485,
+      "D_f1_std": 0.0006334125098971023,
+      "delta_mean": -0.005713316341603947,
+      "n": 5,
+      "A_f2_mean": 0.38198639543780527,
+      "D_f2_mean": 0.3787398423792973,
+      "f2_pooled_mean": 0.38036311890855135
+    }
+  },
+  "params": {
+    "pop": 200,
+    "gen": 400,
+    "n_scenarios": 5,
+    "groups": [
+      "S3",
+      "S4"
+    ],
+    "n_obj": 3,
+    "n_ref_dirs": 12,
+    "git_commit": "f96674f6"
+  }
+}

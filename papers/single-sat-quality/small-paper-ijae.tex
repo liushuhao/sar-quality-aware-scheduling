@@ -38,20 +38,20 @@ empirical saturation regime for multi-objective SAR quality optimization in
 single-pass, single-satellite Stripmap operation by integrating
 Noise-Equivalent Sigma Zero (NESZ, radiometric) and geometric resolution as
 decomposed objectives within an NSGA-III framework. Across densities 20--500,
-saturation is scale-dependent: at $N=20$, MOEA-2 extracts a $+4.5\%$ gain in
-geometric quality $f_2$ at a $13\%$ coverage cost, and adding the NESZ
-objective $f_3$ yields a further $+58\%$ radiometric gain over the greedy
-baseline (G-BL) at $2\%$ coverage cost (and $\sim6\%$ geometric-quality cost)
+saturation is scale-dependent: at $N=20$, MOEA-2 extracts a $+34\%$ gain in
+geometric quality $f_2$ at a $14\%$ coverage cost, and adding the NESZ
+objective $f_3$ lifts radiometric quality by $+41\%$ over the greedy
+baseline (G-BL) at a $15\%$ coverage cost
 for MOEA-3; at operational densities ($N \geq 300$), multi-objective
 evolutionary algorithm (MOEA) formulations seeded by G-BL approach the coverage
 anchor and the marginal quality gain falls below $2\%$. This convergence is
 conditional on G-BL hot-start initialization, with random-init $f_1^*$ deficits
-of $0.23$--$0.57$ peaking at intermediate densities; ablation shows removing
+of $0.39$--$0.68$ peaking at intermediate densities; ablation shows removing
 the physical objectives barely changes dense-regime outcomes. The third
-objective is therefore density-dependent rather than redundant: MOEA-3 differs
-markedly from MOEA-2 at sparse density ($+84\%$ $f_3$) and converges at
-operational densities, reflecting lower-squint geometric coupling rather than a
-mathematical identity. Rather than identifying a superior solver, our results
+objective is therefore density-dependent rather than redundant: MOEA-3 attains
+a modest but consistent $f_3$ gain over MOEA-2 at sparse density ($+7\%$) and
+converges at operational densities, reflecting lower-squint geometric coupling
+rather than a mathematical identity. Rather than identifying a superior solver, our results
 establish an empirical saturation boundary for physics-aware multi-objective
 scheduling.
 \end{abstract}
@@ -700,12 +700,15 @@ or parameter choices (\S\ref{sec:robustness-calibration}).
 Table~\ref{tab:solver-profiles} reports all five solvers across all four
 scenario classes. The full-scale view
 shows why the value of multi-objective optimization cannot be judged from S4
-alone. At the sparsest density S1, MOEA-2 improves $f_2$ by $+4.5\%$ relative
-to G-BL while accepting a $13\%$ coverage reduction ($f_1^* = 0.87$), and
-MOEA-3 raises $f_3$ by $+58\%$ at only $2\%$ coverage cost ($f_1^* = 0.98$).
+alone. At the sparsest density S1, MOEA-2 improves $f_2$ by $+34\%$ relative
+to G-BL ($0.394$ vs.\ $0.295$) while accepting a $14\%$ coverage reduction
+($f_1^* = 0.86$), and
+MOEA-3 raises $f_3$ by $+41\%$ ($0.699$ vs.\ $0.497$) at a $15\%$ coverage cost
+($f_1^* = 0.85$).
 At S2 the effects contract, and at S3--S4 MOEA coverage and quality
 converge to the G-BL reference. Across every scale, GA-P-BL output is
-numerically identical to G-BL, because its never-worse-than-baseline guard
+numerically identical to G-BL in the aggregate (mean $f_2$ and $f_3$ within
+$0.001$), because its never-worse-than-baseline guard
 (Sec.~\ref{sec:ga-p-bl}) replaces the GA schedule whenever it fails to beat
 the greedy anchor on the single profit objective. GA-P-BL therefore serves as
 a control that confirms the greedy coverage baseline rather than an
@@ -722,32 +725,32 @@ coverage and $f_2$ for substantially higher $f_3$.
 \textbf{Class} & \textbf{Solver} & $f_1^*$ & $f_2$ & $f_3$ \\
 \midrule
 \multirow{5}{*}{S1 ($N=20$)}
- & G-BL    & $1.00 \pm 0.00$ & $0.574 \pm 0.026$ & $0.271 \pm 0.057$ \\
- & G-SM    & $0.51 \pm 0.16$ & $0.475 \pm 0.057$ & $0.644 \pm 0.058$ \\
- & GA-P-BL & $1.00 \pm 0.00$ & $0.574 \pm 0.026$ & $0.271 \pm 0.057$ \\
- & MOEA-2  & $0.87 \pm 0.08$ & $0.600 \pm 0.021$ & $0.233 \pm 0.027$ \\
- & MOEA-3  & $0.98 \pm 0.03$ & $0.540 \pm 0.021$ & $0.428 \pm 0.064$ \\
+ & G-BL    & $1.00 \pm 0.00$ & $0.295 \pm 0.037$ & $0.497 \pm 0.044$ \\
+ & G-SM    & $0.51 \pm 0.16$ & $0.389 \pm 0.086$ & $0.722 \pm 0.058$ \\
+ & GA-P-BL & $1.00 \pm 0.02$ & $0.295 \pm 0.037$ & $0.498 \pm 0.044$ \\
+ & MOEA-2  & $0.86 \pm 0.14$ & $0.394 \pm 0.059$ & $0.654 \pm 0.038$ \\
+ & MOEA-3  & $0.85 \pm 0.11$ & $0.377 \pm 0.050$ & $0.699 \pm 0.037$ \\
 \midrule
 \multirow{5}{*}{S2 ($N=100$)}
- & G-BL    & $1.00 \pm 0.00$ & $0.549 \pm 0.033$ & $0.366 \pm 0.084$ \\
- & G-SM    & $0.35 \pm 0.09$ & $0.460 \pm 0.054$ & $0.649 \pm 0.052$ \\
- & GA-P-BL & $1.00 \pm 0.00$ & $0.549 \pm 0.033$ & $0.366 \pm 0.084$ \\
- & MOEA-2  & $0.98 \pm 0.03$ & $0.556 \pm 0.031$ & $0.347 \pm 0.077$ \\
- & MOEA-3  & $1.00 \pm 0.00$ & $0.548 \pm 0.031$ & $0.375 \pm 0.075$ \\
+ & G-BL    & $1.00 \pm 0.00$ & $0.317 \pm 0.026$ & $0.561 \pm 0.060$ \\
+ & G-SM    & $0.35 \pm 0.09$ & $0.357 \pm 0.078$ & $0.735 \pm 0.055$ \\
+ & GA-P-BL & $1.00 \pm 0.00$ & $0.317 \pm 0.026$ & $0.561 \pm 0.060$ \\
+ & MOEA-2  & $0.99 \pm 0.03$ & $0.328 \pm 0.030$ & $0.589 \pm 0.045$ \\
+ & MOEA-3  & $0.98 \pm 0.04$ & $0.329 \pm 0.030$ & $0.597 \pm 0.042$ \\
 \midrule
 \multirow{5}{*}{S3 ($N=300$)}
- & G-BL    & $1.00 \pm 0.00$ & $0.527 \pm 0.020$ & $0.452 \pm 0.064$ \\
- & G-SM    & $0.29 \pm 0.04$ & $0.437 \pm 0.036$ & $0.664 \pm 0.035$ \\
- & GA-P-BL & $1.00 \pm 0.00$ & $0.527 \pm 0.020$ & $0.452 \pm 0.064$ \\
- & MOEA-2  & $1.00 \pm 0.00$ & $0.530 \pm 0.019$ & $0.444 \pm 0.062$ \\
- & MOEA-3  & $1.00 \pm 0.00$ & $0.528 \pm 0.020$ & $0.453 \pm 0.064$ \\
+ & G-BL    & $1.00 \pm 0.00$ & $0.342 \pm 0.026$ & $0.616 \pm 0.042$ \\
+ & G-SM    & $0.29 \pm 0.04$ & $0.317 \pm 0.055$ & $0.756 \pm 0.036$ \\
+ & GA-P-BL & $1.00 \pm 0.00$ & $0.342 \pm 0.026$ & $0.616 \pm 0.042$ \\
+ & MOEA-2  & $1.00 \pm 0.00$ & $0.343 \pm 0.026$ & $0.622 \pm 0.040$ \\
+ & MOEA-3  & $1.00 \pm 0.01$ & $0.344 \pm 0.026$ & $0.623 \pm 0.040$ \\
 \midrule
 \multirow{5}{*}{S4 ($N=500$)}
- & G-BL    & $1.00 \pm 0.00$ & $0.490 \pm 0.052$ & $0.53 \pm 0.11$ \\
- & G-SM    & $0.37 \pm 0.12$ & $0.408 \pm 0.045$ & $0.700 \pm 0.058$ \\
- & GA-P-BL & $1.00 \pm 0.00$ & $0.490 \pm 0.052$ & $0.53 \pm 0.11$ \\
- & MOEA-2  & $1.00 \pm 0.01$ & $0.493 \pm 0.053$ & $0.53 \pm 0.11$ \\
- & MOEA-3  & $1.00 \pm 0.00$ & $0.490 \pm 0.053$ & $0.54 \pm 0.11$ \\
+ & G-BL    & $1.00 \pm 0.00$ & $0.336 \pm 0.039$ & $0.675 \pm 0.074$ \\
+ & G-SM    & $0.37 \pm 0.12$ & $0.291 \pm 0.067$ & $0.786 \pm 0.046$ \\
+ & GA-P-BL & $1.00 \pm 0.00$ & $0.336 \pm 0.039$ & $0.675 \pm 0.074$ \\
+ & MOEA-2  & $1.00 \pm 0.01$ & $0.338 \pm 0.038$ & $0.680 \pm 0.073$ \\
+ & MOEA-3  & $1.00 \pm 0.01$ & $0.338 \pm 0.038$ & $0.680 \pm 0.073$ \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -795,17 +798,17 @@ Across all 200 scenarios, this produces a large positive effect on $f_3$
 in coverage (Cliff's $\delta = -1.0$, $p < 10^{-34}$, on $f_1^*$; raw $f_1$ is used here because G-BL yields constant $f_1^* = 1.0$ by definition, for which the normalized-profit comparison degenerates to a one-sample test against a fixed value).
 The trade-off, however, is strongly density-dependent.
 In sparse scenarios (S1, $N = 20$), G-SM drops to $f_1^* = 0.51 \pm 0.16$
-($-49\%$ vs.\ G-BL at $1.00$) while improving $f_3$ from $0.271 \pm 0.057$ to
-$0.644 \pm 0.058$ ($+138\%$).
+($-49\%$ vs.\ G-BL at $1.00$) while improving $f_3$ from $0.497 \pm 0.044$ to
+$0.722 \pm 0.058$ ($+45\%$).
 In dense scenarios (S4, $N = 500$), the $f_1$ cost escalates:
 G-SM achieves $f_1^* = 0.37 \pm 0.12$ ($-63\%$), with $f_3$ rising from
-$0.53 \pm 0.11$ to $0.700 \pm 0.058$ ($+32\%$).
+$0.675 \pm 0.074$ to $0.786 \pm 0.046$ ($+16\%$).
 Figure~\ref{fig:fig2} visualizes this density-dependent trade-off: the
 Locally Estimated Scatterplot Smoothing (LOESS)
 trend in panel (c) identifies a transition region around $N = 100$
 where the $f_1$ penalty grows rapidly.
-The radiometric advantage narrows with density ($+138\%$ at S1 to
-$+32\%$ at S4) as tightly packed time windows constrain how far each
+The radiometric advantage narrows with density ($+45\%$ at S1 to
+$+16\%$ at S4) as tightly packed time windows constrain how far each
 acquisition can be moved toward the squint-minimizing time, while the
 coverage cost remains large at every density (G-SM schedules, on average,
 $44\%$ of the tasks G-BL selects at S1, falling to $\sim$20--27\% at
@@ -914,15 +917,18 @@ lies outside the MOEA-3 Pareto surface, a consequence of G-SM's aggressive
 squint minimization.
 
 \textbf{Phenomenon 2: Density-dependent third-objective value.}
-The differentiation of MOEA-3 from MOEA-2 is strongly density-dependent:
-at S1 the physics-aware solver attains $f_3 = 0.428\pm0.064$ versus
-$0.233\pm0.027$ for MOEA-2 ($+84\%$), at a $f_2$ cost of about $10\%$
-($0.540\pm0.021$ vs.\ $0.600\pm0.021$); at S4 the $f_3$ advantage collapses
-to $+1.5\%$ ($0.535\pm0.109$ vs.\ $0.527\pm0.111$) with a negligible $f_2$
-penalty. The third objective is therefore \emph{not} redundant at sparse
-density, where low coverage pressure leaves the solver free to trade $f_2$
-for $f_3$; at operational densities the advantage disappears because coverage
-pressure locks the selection, not because the underlying $f_2$--$f_3$
+The differentiation of MOEA-3 from MOEA-2 is density-dependent but modest:
+at S1 the physics-aware solver attains $f_3 = 0.699\pm0.037$ versus
+$0.654\pm0.038$ for MOEA-2 ($+7\%$), at a small $f_2$ cost ($0.377\pm0.050$
+vs.\ $0.394\pm0.059$, $-4\%$); at S4 the two solvers coincide
+($0.680\pm0.073$ for both). The third objective thus contributes a modest,
+consistent $f_3$ gain at sparse density rather than a qualitatively distinct
+regime: under the elevation-plane decomposition of \S\ref{sec:objective-functions},
+MOEA-2 already attains high $f_3$ post-hoc, so the marginal value of explicitly
+optimizing $f_3$ is bounded, and the principal quality contrast with the
+profit-only baseline remains MOEA-3's $+41\%$ $f_3$ gain at S1. At operational
+densities the advantage disappears because coverage pressure locks the
+selection, not because the underlying $f_2$--$f_3$
 trade-off vanishes---the within-schedule correlation actually \emph{strengthens}
 with density.
 
@@ -1052,19 +1058,23 @@ effects. We therefore use four control experiments.
 
 \paragraph{Hot-start dependence.}
 On 10 S1, 4 S2, 5 S3, and 5 S4 scenarios (3 seeds each), random-initialized MOEA-2 yields
-$f_1^*$ deficits of approximately $-0.229 \pm 0.121$, $-0.475 \pm 0.056$, $-0.565 \pm 0.026$, and $-0.382 \pm 0.046$
+$f_1^*$ deficits of approximately $-0.393 \pm 0.251$, $-0.551 \pm 0.060$, $-0.684 \pm 0.050$, and $-0.475 \pm 0.067$
 (mean $\pm$ SD across runs) relative to hot-start MOEA-2, respectively. G-BL seeding therefore materially
 improves coverage convergence at every tested density. The deficit peaks at
-the dense S3 class ($-0.57$ at $N=300$), is smallest at the sparsest S1
-($-0.23$ at $N=20$), and moderates at the densest S4 ($-0.38$ at
+the dense S3 class ($-0.68$ at $N=300$), is smallest at the sparsest S1
+($-0.39$ at $N=20$), and moderates at the densest S4 ($-0.48$ at
 $N=500$), so high target density does not by itself make random initialization
 sufficient. This constrains the
-coverage-ceiling claim: proximity to G-BL is initialization-dependent. By
-contrast, random-init $f_2$ is essentially unchanged at every density
-($0.551$ vs.\ $0.550$ at S3, $0.551$ vs.\ $0.551$ at S4), so the lower-squint
-regime is not an artifact of the anchor; the coverage deficit is confined to
-$f_1^*$. The coverage ceiling is therefore a G-BL initialization effect rather than
-an artifact of the MOEA framework. Two caveats qualify this control: the
+coverage-ceiling claim: proximity to G-BL is initialization-dependent. The
+initialization effect is not confined to coverage: random-init $f_2$ is higher
+--- i.e.\ worse geometric quality --- at sparse density ($0.505$ vs.\ $0.395$
+at S1, $0.460$ vs.\ $0.320$ at S2), matches at S3 ($0.349$ vs.\ $0.339$), and
+is slightly lower at the densest S4 ($0.347$ vs.\ $0.380$). Lower-squint
+convergence is therefore not a pure artifact of the G-BL anchor: random
+initialization reaches comparable or better geometric quality once coverage
+saturates at high density, while the anchor materially improves both coverage
+and geometry in the sparse regimes. The coverage ceiling is thus a G-BL
+initialization effect rather than an artifact of the MOEA framework. Two caveats qualify this control: the
 deficit sample is small (10/4/5/5 scenarios per class $\times$ 3 seeds, and 30
 runs for the variant-D control, 15 per class), and the comparison is expressed
 on the G-BL-normalized $f_1^*$ scale, on which the greedy anchor itself reads
@@ -1075,14 +1085,14 @@ bounds.
 \paragraph{Perturbation sensitivity.}
 A sweep over $\sigma\in\{0.1,0.3,0.5,0.7\}$ on MOEA-3 (10 S3 scenarios per
 value, fixed solver seed) leaves mean $f_2$ and $f_3$ essentially unchanged
-(mean $f_2 \approx 0.535$ and mean $f_3 \approx 0.435$ at every level, with
-level-to-level variation of at most $\sim2\times10^{-3}$; MOEA-2 shows the
-same flatness at $f_2 \approx 0.537$ and $f_3 \approx 0.429$), and coverage
-stays flat at $200/300$ selected tasks. The per-task $f_2$--$f_3$ coupling
-reported in \S~\ref{sec:pareto-coupling} is therefore a property of the
-schedule geometry rather than of the perturbation magnitude, and redundancy
-persists across $\sigma=0.1$--$0.7$ rather than being a byproduct of the
-$\sigma=0.5$ perturbation level.
+(mean $f_2 \approx 0.343$ and mean $f_3 \approx 0.610$ at every level, with
+level-to-level variation of at most $\sim1\times10^{-3}$; MOEA-2 shows the
+same flatness at $f_2 \approx 0.343$ and $f_3 \approx 0.609$), and coverage
+stays flat at $200/300$ selected tasks (199.5 at $\sigma=0.7$). The per-task
+$f_2$--$f_3$ coupling reported in \S~\ref{sec:pareto-coupling} is therefore a
+property of the schedule geometry rather than of the perturbation magnitude,
+and redundancy persists across $\sigma=0.1$--$0.7$ rather than being a
+byproduct of the $\sigma=0.5$ perturbation level.
 
 \paragraph{Random-search calibration.}
 On five S1 scenarios, 5,000 random task selections per scenario produce mean

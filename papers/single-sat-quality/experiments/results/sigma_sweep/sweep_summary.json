@@ -21,7 +21,7 @@
     "n_generations": 200,
     "n_ref_dirs": 12
   },
-  "git_commit": "90f7202c",
+  "git_commit": "f96674f6",
   "aggregator": [
     {
       "sigma": 0.1,
@@ -30,10 +30,10 @@
       "n": 10,
       "f1_mean": 1157.1,
       "f1_std": 36.9,
-      "f2_mean": 0.537,
-      "f2_std": 0.0058,
-      "f3_mean": 0.4284,
-      "f3_std": 0.0157,
+      "f2_mean": 0.3427,
+      "f2_std": 0.0082,
+      "f3_mean": 0.6088,
+      "f3_std": 0.0105,
       "n_selected_mean": 200.0,
       "n_selected_std": 0.0
     },
@@ -44,10 +44,10 @@
       "n": 10,
       "f1_mean": 1157.1,
       "f1_std": 36.9,
-      "f2_mean": 0.535,
-      "f2_std": 0.0063,
-      "f3_mean": 0.4354,
-      "f3_std": 0.0167,
+      "f2_mean": 0.3428,
+      "f2_std": 0.0083,
+      "f3_mean": 0.6098,
+      "f3_std": 0.0106,
       "n_selected_mean": 200.0,
       "n_selected_std": 0.0
     },
@@ -58,10 +58,10 @@
       "n": 10,
       "f1_mean": 1157.1,
       "f1_std": 36.9,
-      "f2_mean": 0.537,
-      "f2_std": 0.0058,
-      "f3_mean": 0.4281,
-      "f3_std": 0.016,
+      "f2_mean": 0.3428,
+      "f2_std": 0.0081,
+      "f3_mean": 0.609,
+      "f3_std": 0.0103,
       "n_selected_mean": 200.0,
       "n_selected_std": 0.0
     },
@@ -72,10 +72,10 @@
       "n": 10,
       "f1_mean": 1157.1,
       "f1_std": 36.9,
-      "f2_mean": 0.5348,
-      "f2_std": 0.0063,
-      "f3_mean": 0.436,
-      "f3_std": 0.0167,
+      "f2_mean": 0.3428,
+      "f2_std": 0.0082,
+      "f3_mean": 0.6099,
+      "f3_std": 0.0101,
       "n_selected_mean": 200.0,
       "n_selected_std": 0.0
     },
@@ -86,10 +86,10 @@
       "n": 10,
       "f1_mean": 1157.1,
       "f1_std": 36.9,
-      "f2_mean": 0.5368,
-      "f2_std": 0.0057,
-      "f3_mean": 0.4289,
-      "f3_std": 0.0157,
+      "f2_mean": 0.3429,
+      "f2_std": 0.0082,
+      "f3_mean": 0.6086,
+      "f3_std": 0.0107,
       "n_selected_mean": 200.0,
       "n_selected_std": 0.0
     },
@@ -100,10 +100,10 @@
       "n": 10,
       "f1_mean": 1157.1,
       "f1_std": 36.9,
-      "f2_mean": 0.5347,
-      "f2_std": 0.0061,
-      "f3_mean": 0.4364,
-      "f3_std": 0.0165,
+      "f2_mean": 0.3427,
+      "f2_std": 0.0081,
+      "f3_mean": 0.6092,
+      "f3_std": 0.0105,
       "n_selected_mean": 200.0,
       "n_selected_std": 0.0
     },
@@ -112,28 +112,28 @@
       "solver": "moea_2obj",
       "group": "S3",
       "n": 10,
-      "f1_mean": 1157.1,
-      "f1_std": 36.9,
-      "f2_mean": 0.5368,
-      "f2_std": 0.0058,
-      "f3_mean": 0.4287,
-      "f3_std": 0.0159,
-      "n_selected_mean": 200.0,
-      "n_selected_std": 0.0
+      "f1_mean": 1154.8,
+      "f1_std": 38.5,
+      "f2_mean": 0.3431,
+      "f2_std": 0.0082,
+      "f3_mean": 0.6088,
+      "f3_std": 0.011,
+      "n_selected_mean": 199.7,
+      "n_selected_std": 0.5
     },
     {
       "sigma": 0.7,
       "solver": "moea_3obj",
       "group": "S3",
       "n": 10,
-      "f1_mean": 1157.1,
-      "f1_std": 36.9,
-      "f2_mean": 0.535,
-      "f2_std": 0.0063,
-      "f3_mean": 0.4349,
-      "f3_std": 0.017,
-      "n_selected_mean": 200.0,
-      "n_selected_std": 0.0
+      "f1_mean": 1154.0,
+      "f1_std": 38.3,
+      "f2_mean": 0.3432,
+      "f2_std": 0.0083,
+      "f3_mean": 0.6099,
+      "f3_std": 0.0104,
+      "n_selected_mean": 199.5,
+      "n_selected_std": 0.7
     }
   ],
   "correlations": [
@@ -142,56 +142,56 @@
       "solver": "moea_2obj",
       "group": "S3",
       "n": 10,
-      "r_f2f3": -0.8526
+      "r_f2f3": 0.1276
     },
     {
       "sigma": 0.1,
       "solver": "moea_3obj",
       "group": "S3",
       "n": 10,
-      "r_f2f3": -0.8759
+      "r_f2f3": 0.1373
     },
     {
       "sigma": 0.3,
       "solver": "moea_2obj",
       "group": "S3",
       "n": 10,
-      "r_f2f3": -0.8541
+      "r_f2f3": 0.0572
     },
     {
       "sigma": 0.3,
       "solver": "moea_3obj",
       "group": "S3",
       "n": 10,
-      "r_f2f3": -0.8825
+      "r_f2f3": 0.0644
     },
     {
       "sigma": 0.5,
       "solver": "moea_2obj",
       "group": "S3",
       "n": 10,
-      "r_f2f3": -0.8478
+      "r_f2f3": 0.1402
     },
     {
       "sigma": 0.5,
       "solver": "moea_3obj",
       "group": "S3",
       "n": 10,
-      "r_f2f3": -0.871
+      "r_f2f3": 0.0429
     },
     {
       "sigma": 0.7,
       "solver": "moea_2obj",
       "group": "S3",
       "n": 10,
-      "r_f2f3": -0.847
+      "r_f2f3": 0.1127
     },
     {
       "sigma": 0.7,
       "solver": "moea_3obj",
       "group": "S3",
       "n": 10,
-      "r_f2f3": -0.8794
+      "r_f2f3": 0.1274
     }
   ],
   "n_total": 80
