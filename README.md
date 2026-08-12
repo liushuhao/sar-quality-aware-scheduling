@@ -70,7 +70,7 @@ been retracted; all reproducible calibers are negative (see
 ### Generate figures
 
 ```bash
-python papers/single-sat-quality/experiments/gen_all_figures.py     # 5 main figures (Fig1,2,4,5,6)
+python papers/single-sat-quality/experiments/gen_all_figures.py     # 4 main figures (fig1–fig4: HV, squint, scale, Pareto)
 python papers/single-sat-quality/experiments/gen_table1.py          # Table 1 (solver matrix)
 ```
 
