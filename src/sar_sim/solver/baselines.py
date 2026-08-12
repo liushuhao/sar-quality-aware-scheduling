@@ -271,8 +271,8 @@ def _compute_f2_f3_posthoc(
 ) -> Tuple[float, float]:
     """Compute post-hoc f2 (mean geometric resolution) and f3 (mean NESZ radiometric).
 
-    f2 = mean(sin(θ_i) · cos(ψ_sq,i))   — geometric resolution
-    f3 = mean(cos³(θ_i) · cos³(ψ_sq,i)) — NESZ radiometric quality
+    f2 = mean(sin(θ_elev,i) · cos(ψ_sq,i))   — geometric resolution (elevation-plane)
+    f3 = mean(cos³(ξ_i))                 — NESZ radiometric quality (R³ factor)
 
     Uses GeomCache if available; returns (0.0, 0.0) otherwise.
 
@@ -298,11 +298,9 @@ def _compute_f2_f3_posthoc(
         task_idx = target_to_idx[target_id]
         t_act = obs.t_actual_start.timestamp()
         gp = geom_cache.lookup(task_idx, t_act)
-        sin_theta = math.sin(gp.theta)
-        cos_theta_3 = math.cos(gp.theta) ** 3
-        cos_psi_3 = gp.cos_psi ** 3
-        f2 += sin_theta * gp.cos_psi
-        f3 += cos_theta_3 * cos_psi_3
+        cos_xi_3 = math.cos(gp.phi) ** 3
+        f2 += math.sqrt(max(gp.cos_psi ** 2 - math.cos(gp.phi) ** 2, 0.0))
+        f3 += cos_xi_3
         n += 1
     if n > 0:
         f2 /= n

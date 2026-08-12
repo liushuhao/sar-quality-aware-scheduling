@@ -98,6 +98,7 @@ def run_one(pkl_path, scenario_seed, mode, extra_seed):
         max_slew_rate=SLEW_RATE,
         settle_time=SETTLE_TIME,
         seed=rng_seed,
+        instance=instance,  # RDR-066: use scenario orbit geometry, not default (raan=0/epoch=0)
         **kwargs,
     )
     meta = res.metadata

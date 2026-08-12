@@ -404,11 +404,9 @@ def b2_profit_solver(
         n = 0
         for i, t_act in zip(sel, t_acts):
             geom = instance.geom_cache.lookup(i, t_act)
-            sin_theta = math.sin(geom.theta)
-            cos_theta_3 = math.cos(geom.theta) ** 3
-            cos_psi_3 = geom.cos_psi ** 3
-            f2_posthoc += sin_theta * geom.cos_psi
-            f3_posthoc += cos_theta_3 * cos_psi_3
+            cos_xi_3 = math.cos(geom.phi) ** 3
+            f2_posthoc += math.sqrt(max(geom.cos_psi ** 2 - math.cos(geom.phi) ** 2, 0.0))
+            f3_posthoc += cos_xi_3
             n += 1
         if n > 0:
             f2_posthoc /= n
@@ -555,11 +553,9 @@ def ga_hotstart_solver(
         n_sel = 0
         for i, t_act in zip(sel, t_acts):
             geom = instance.geom_cache.lookup(i, t_act)
-            sin_theta = math.sin(geom.theta)
-            cos_theta_3 = math.cos(geom.theta) ** 3
-            cos_psi_3 = geom.cos_psi ** 3
-            f2_posthoc += sin_theta * geom.cos_psi
-            f3_posthoc += cos_theta_3 * cos_psi_3
+            cos_xi_3 = math.cos(geom.phi) ** 3
+            f2_posthoc += math.sqrt(max(geom.cos_psi ** 2 - math.cos(geom.phi) ** 2, 0.0))
+            f3_posthoc += cos_xi_3
             n_sel += 1
         if n_sel > 0:
             f2_posthoc /= n_sel
@@ -627,8 +623,8 @@ def ga_hotstart_solver(
                     t_act_float = t_act.timestamp() if hasattr(t_act, 'timestamp') else float(t_act)
                     if instance.geom_cache is not None:
                         geom = instance.geom_cache.lookup(task_idx, t_act_float)
-                        f2_num += math.sin(geom.theta) * geom.cos_psi
-                        f3_num += (math.cos(geom.theta) ** 3) * (geom.cos_psi ** 3)
+                        f2_num += math.sqrt(max(geom.cos_psi ** 2 - math.cos(geom.phi) ** 2, 0.0))
+                        f3_num += math.cos(geom.phi) ** 3
                     n_repaired += 1
                 if n_repaired > 0:
                     f2_posthoc = f2_num / n_repaired
@@ -767,8 +763,8 @@ def b2_profit_solver_bl_seeded(
             if instance.geom_cache is not None:
                 geom = instance.geom_cache.lookup(task_idx, t_act_float)
                 gbl_phis.append(geom.phi)
-                gbl_f2 += math.sin(geom.theta) * geom.cos_psi
-                gbl_f3 += (math.cos(geom.theta) ** 3) * (geom.cos_psi ** 3)
+                gbl_f2 += math.sqrt(max(geom.cos_psi ** 2 - math.cos(geom.phi) ** 2, 0.0))
+                gbl_f3 += math.cos(geom.phi) ** 3
             gbl_n += 1
         if gbl_n > 0:
             gbl_f2 /= gbl_n

@@ -21,7 +21,7 @@ This replaces the old 3N Plan-A encoding (x + direction + phi_abs).
 Objectives (v2026-06-22: split by physical mechanism, not spatial direction):
   f1 = Σ x_i * p_i                        coverage-weighted profit (O1)
   f2 = Σ x_i * sin(θ_i)·cos(ψ_sq,i)       geometric resolution (ground-range × azimuth) (O2)
-  f3 = Σ x_i * cos³(θ_i)·cos³(ψ_sq,i)     NESZ radiometric quality (O3)
+  f3 = Σ x_i * cos³(ξ_i)             NESZ radiometric quality (O3; ξ = off-nadir, R³ factor)
 
 MOEA-2 optimizes (f1, f2); MOEA-3 optimizes (f1, f2, f3).
 Both depend on θ and ψ_sq via observation time t_i, making them
@@ -170,16 +170,16 @@ class SARSchedulingProblem(Problem):
                         geom = inst.geom_cache.lookup(i, t_act)
                         phi_dict[i] = geom.phi
                         squint_dict[i] = geom.psi_sq
-                        f2_num[p] += math.sin(geom.theta) * geom.cos_psi
-                        f3_num[p] += (math.cos(geom.theta) ** 3) * (geom.cos_psi ** 3)
+                        f2_num[p] += math.sqrt(max(geom.cos_psi ** 2 - math.cos(geom.phi) ** 2, 0.0))
+                        f3_num[p] += math.cos(geom.phi) ** 3
                     else:
                         roll, _, psi_sq = compute_full_attitude(task, t_act, 1.0, inst)
                         phi_dict[i] = abs(roll)
                         squint_dict[i] = psi_sq
                         theta_i = off_nadir_to_incidence(phi_dict[i], inst.altitude_m)
                         cos_psi_i = math.cos(squint_dict[i])
-                        f2_num[p] += math.sin(theta_i) * cos_psi_i
-                        f3_num[p] += (math.cos(theta_i) ** 3) * (cos_psi_i ** 3)
+                        f2_num[p] += math.sqrt(max(cos_psi_i ** 2 - math.cos(phi_dict[i]) ** 2, 0.0))
+                        f3_num[p] += math.cos(phi_dict[i]) ** 3
 
             # ── Constraints ─────────────────────────────────────────
             g = 0.0
@@ -414,14 +414,14 @@ def decode_solution(
             if instance.geom_cache is not None:
                 geom = instance.geom_cache.lookup(i, t_act)
                 phis.append(geom.phi)
-                f2_num += math.sin(geom.theta) * geom.cos_psi
-                f3_num += (math.cos(geom.theta) ** 3) * (geom.cos_psi ** 3)
+                f2_num += math.sqrt(max(geom.cos_psi ** 2 - math.cos(geom.phi) ** 2, 0.0))
+                f3_num += math.cos(geom.phi) ** 3
             else:
                 roll, _, psi_sq = compute_full_attitude(task, t_act, 1.0, instance)
                 phis.append(abs(roll))
                 theta = off_nadir_to_incidence(abs(roll), instance.altitude_m)
-                f2_num += math.sin(theta) * math.cos(psi_sq)
-                f3_num += (math.cos(theta) ** 3) * (math.cos(psi_sq) ** 3)
+                f2_num += math.sqrt(max(math.cos(psi_sq) ** 2 - math.cos(abs(roll)) ** 2, 0.0))
+                f3_num += math.cos(abs(roll)) ** 3
 
             f1_raw += task.priority
 

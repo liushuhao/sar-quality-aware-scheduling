@@ -3,16 +3,23 @@
 Implements the incidence-angle-dependent NESZ model from the problem
 formalization (Eq. 2):
 
-    NESZ(θ, ψ_sq) = K_NESZ / (cos³θ · cos³ψ_sq)
+    NESZ(θ) = K_NESZ / cos³θ
 
-where θ is the incidence angle and ψ_sq the squint angle (both in radians).
+where θ is the incidence angle derived from the full 3-D off-nadir angle
+(the squint/along-track component is contained in θ, so no separate
+squint factor is needed; see RDR-066).
 The normalized quality score (diagnostic only, NOT used as optimization target):
 
     q(θ) = cos³θ / cos³θ_ref
 
 The actual optimization targets (O2, O3) use separate formulas:
-  f2 = Σ sinθ_i · cosψ_sq,i     geometric resolution
-  f3 = Σ cos³θ_i · cos³ψ_sq,i   NESZ radiometric quality
+  f2 = Σ sinθ_elev,i · cosψ_sq,i     geometric resolution (elevation-plane incidence)
+  f3 = Σ cos³ξ_i                      NESZ radiometric quality (ξ = full off-nadir, R³ factor)
+
+f3 = cos³ξ equals cos³θ_elev·cos³ψ (elevation-plane incidence × squint) by
+the exact identity cosθ_elev·cosψ = cosξ; using the full off-nadir angle
+avoids double-counting the squint contribution. f2 uses the elevation-plane
+angle θ_elev for the cross-track ground-range projection (see RDR-066).
 """
 
 import numpy as np

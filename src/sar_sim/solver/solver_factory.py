@@ -137,8 +137,8 @@ class ConstraintFreeSARSchedulingProblem(SARSchedulingProblem):
                     n_sel[p] += 1
                     theta_i = off_nadir_to_incidence(phi_dict[i], inst.altitude_m)
                     cos_psi = math.cos(squint_dict[i])
-                    f2_num[p] += math.sin(theta_i) * cos_psi
-                    f3_num[p] += (math.cos(theta_i) ** 3) * (cos_psi ** 3)
+                    f2_num[p] += math.sqrt(max(cos_psi ** 2 - math.cos(phi_dict[i]) ** 2, 0.0))
+                    f3_num[p] += math.cos(phi_dict[i]) ** 3
 
             # Constraints (penalty-based, aligned with paper §3 C1–C4).
             # C1 (incidence + squint) is enforced during visibility-window
