@@ -1,0 +1,274 @@
+{
+  "completed": {
+    "S3/S3-A_seed00.pkl": {
+      "scenario_seed": 0,
+      "n_targets": 300,
+      "n_selected": 200,
+      "f1": 1.0,
+      "f1_raw": 1166.0,
+      "f1_gbl": 1166.0,
+      "f2": 0.5364381078426351,
+      "f3": 0.43808171210876423,
+      "runtime_s": 298.543,
+      "n_frontier": 1,
+      "frontier_f1": [
+        1.0
+      ],
+      "frontier_f2": [
+        0.5364381078426351
+      ],
+      "frontier_f3": [
+        0.43808171210876423
+      ],
+      "n_obj": 2,
+      "sigma": 0.7,
+      "solver_version": "90f7202c",
+      "pkl_sha1": "59b7b3bb8225d004b9dc842316063cc3c9031301"
+    },
+    "S3/S3-A_seed01.pkl": {
+      "scenario_seed": 1,
+      "n_targets": 300,
+      "n_selected": 200,
+      "f1": 1.0,
+      "f1_raw": 1208.0,
+      "f1_gbl": 1208.0,
+      "f2": 0.5304146531204951,
+      "f3": 0.4445497329702742,
+      "runtime_s": 309.271,
+      "n_frontier": 1,
+      "frontier_f1": [
+        1.0
+      ],
+      "frontier_f2": [
+        0.5304146531204951
+      ],
+      "frontier_f3": [
+        0.4445497329702742
+      ],
+      "n_obj": 2,
+      "sigma": 0.7,
+      "solver_version": "90f7202c",
+      "pkl_sha1": "75f1290a4702c81105917d0806ed1c22f5cb4598"
+    },
+    "S3/S3-A_seed02.pkl": {
+      "scenario_seed": 2,
+      "n_targets": 300,
+      "n_selected": 200,
+      "f1": 1.0,
+      "f1_raw": 1168.0,
+      "f1_gbl": 1168.0,
+      "f2": 0.5383256366654092,
+      "f3": 0.42001427024998295,
+      "runtime_s": 293.218,
+      "n_frontier": 1,
+      "frontier_f1": [
+        1.0
+      ],
+      "frontier_f2": [
+        0.5383256366654092
+      ],
+      "frontier_f3": [
+        0.42001427024998295
+      ],
+      "n_obj": 2,
+      "sigma": 0.7,
+      "solver_version": "90f7202c",
+      "pkl_sha1": "97e90a049c1b5c7caea458dd3ea97191c947728f"
+    },
+    "S3/S3-A_seed03.pkl": {
+      "scenario_seed": 3,
+      "n_targets": 300,
+      "n_selected": 200,
+      "f1": 1.0,
+      "f1_raw": 1163.0,
+      "f1_gbl": 1163.0,
+      "f2": 0.5336353888340534,
+      "f3": 0.41782392275398095,
+      "runtime_s": 325.854,
+      "n_frontier": 1,
+      "frontier_f1": [
+        1.0
+      ],
+      "frontier_f2": [
+        0.5336353888340534
+      ],
+      "frontier_f3": [
+        0.41782392275398095
+      ],
+      "n_obj": 2,
+      "sigma": 0.7,
+      "solver_version": "90f7202c",
+      "pkl_sha1": "dbd0f8c25051ecbee53ebf9083c0a017c6ad19cd"
+    },
+    "S3/S3-A_seed04.pkl": {
+      "scenario_seed": 4,
+      "n_targets": 300,
+      "n_selected": 200,
+      "f1": 1.0,
+      "f1_raw": 1179.0,
+      "f1_gbl": 1179.0,
+      "f2": 0.5330505087665158,
+      "f3": 0.4326052820795458,
+      "runtime_s": 314.843,
+      "n_frontier": 2,
+      "frontier_f1": [
+        1.0,
+        0.993214588634436
+      ],
+      "frontier_f2": [
+        0.5330505087665158,
+        0.5338705573507746
+      ],
+      "frontier_f3": [
+        0.4326052820795458,
+        0.4315900070042043
+      ],
+      "n_obj": 2,
+      "sigma": 0.7,
+      "solver_version": "90f7202c",
+      "pkl_sha1": "40e71d41822cf1582a194eebde4b62a92c5c22d0"
+    },
+    "S3/S3-A_seed05.pkl": {
+      "scenario_seed": 5,
+      "n_targets": 300,
+      "n_selected": 200,
+      "f1": 1.0,
+      "f1_raw": 1169.0,
+      "f1_gbl": 1169.0,
+      "f2": 0.5321055171302267,
+      "f3": 0.4375565445640017,
+      "runtime_s": 229.903,
+      "n_frontier": 1,
+      "frontier_f1": [
+        1.0
+      ],
+      "frontier_f2": [
+        0.5321055171302267
+      ],
+      "frontier_f3": [
+        0.4375565445640017
+      ],
+      "n_obj": 2,
+      "sigma": 0.7,
+      "solver_version": "90f7202c",
+      "pkl_sha1": "eb18f172703733181dde7bc810f58256ede5edef"
+    },
+    "S3/S3-A_seed06.pkl": {
+      "scenario_seed": 6,
+      "n_targets": 300,
+      "n_selected": 200,
+      "f1": 1.0,
+      "f1_raw": 1160.0,
+      "f1_gbl": 1160.0,
+      "f2": 0.5338369150025197,
+      "f3": 0.4475227165514011,
+      "runtime_s": 231.574,
+      "n_frontier": 1,
+      "frontier_f1": [
+        1.0
+      ],
+      "frontier_f2": [
+        0.5338369150025197
+      ],
+      "frontier_f3": [
+        0.4475227165514011
+      ],
+      "n_obj": 2,
+      "sigma": 0.7,
+      "solver_version": "90f7202c",
+      "pkl_sha1": "08b999339b4918ddefdaca95c7c9b9eb110b52ae"
+    },
+    "S3/S3-A_seed07.pkl": {
+      "scenario_seed": 7,
+      "n_targets": 300,
+      "n_selected": 200,
+      "f1": 1.0,
+      "f1_raw": 1161.0,
+      "f1_gbl": 1161.0,
+      "f2": 0.537874770684344,
+      "f3": 0.43255951395392583,
+      "runtime_s": 234.929,
+      "n_frontier": 1,
+      "frontier_f1": [
+        1.0
+      ],
+      "frontier_f2": [
+        0.537874770684344
+      ],
+      "frontier_f3": [
+        0.43255951395392583
+      ],
+      "n_obj": 2,
+      "sigma": 0.7,
+      "solver_version": "90f7202c",
+      "pkl_sha1": "8395b183de892563c86ef13e370856c6604d6ac1"
+    },
+    "S3/S3-A_seed08.pkl": {
+      "scenario_seed": 8,
+      "n_targets": 300,
+      "n_selected": 200,
+      "f1": 1.0,
+      "f1_raw": 1139.0,
+      "f1_gbl": 1139.0,
+      "f2": 0.5517473308000665,
+      "f3": 0.38953915457657395,
+      "runtime_s": 232.508,
+      "n_frontier": 1,
+      "frontier_f1": [
+        1.0
+      ],
+      "frontier_f2": [
+        0.5517473308000665
+      ],
+      "frontier_f3": [
+        0.38953915457657395
+      ],
+      "n_obj": 2,
+      "sigma": 0.7,
+      "solver_version": "90f7202c",
+      "pkl_sha1": "1ea0797ac9d8ec102335985ab098cbf8cf18f38f"
+    },
+    "S3/S3-A_seed09.pkl": {
+      "scenario_seed": 9,
+      "n_targets": 300,
+      "n_selected": 200,
+      "f1": 1.0,
+      "f1_raw": 1058.0,
+      "f1_gbl": 1058.0,
+      "f2": 0.5408266758703716,
+      "f3": 0.426657709566346,
+      "runtime_s": 226.777,
+      "n_frontier": 1,
+      "frontier_f1": [
+        1.0
+      ],
+      "frontier_f2": [
+        0.5408266758703716
+      ],
+      "frontier_f3": [
+        0.426657709566346
+      ],
+      "n_obj": 2,
+      "sigma": 0.7,
+      "solver_version": "90f7202c",
+      "pkl_sha1": "d2736f80be02ad186d944dbe31906a2221f8610f"
+    }
+  },
+  "stats": {
+    "sigma": 0.7,
+    "solver": "moea_2obj",
+    "n_obj": 2,
+    "groups": [
+      "S3"
+    ],
+    "total_scenarios": 10,
+    "completed": 10,
+    "params": {
+      "population_size": 100,
+      "n_generations": 200,
+      "n_ref_dirs": 12
+    },
+    "solver_seed": 42,
+    "git_commit": "90f7202c"
+  }
+}

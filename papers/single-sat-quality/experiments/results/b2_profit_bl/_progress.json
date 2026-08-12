@@ -9,10 +9,10 @@
       "f1_gbl": 96.0,
       "f2": 0.5902069184563115,
       "f3": 0.25136479229003067,
-      "runtime_s": 19.629,
+      "runtime_s": 38.848,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "90de261f",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -85,7 +85,8 @@
         0.6748936876086787
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S1/S1-A_seed01.pkl": {
       "seed": 1,
@@ -96,10 +97,10 @@
       "f1_gbl": 99.0,
       "f2": 0.6054571786248684,
       "f3": 0.21216361472804315,
-      "runtime_s": 18.359,
+      "runtime_s": 33.996,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "90de261f",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -169,7 +170,8 @@
         0.7028888517184511
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S1/S1-A_seed02.pkl": {
       "seed": 2,
@@ -180,10 +182,10 @@
       "f1_gbl": 133.0,
       "f2": 0.5874207099038858,
       "f3": 0.21136041898278787,
-      "runtime_s": 20.099,
+      "runtime_s": 38.562,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "90de261f",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -256,7 +258,8 @@
         0.6855114386215067
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S1/S1-A_seed03.pkl": {
       "seed": 3,
@@ -267,10 +270,10 @@
       "f1_gbl": 119.0,
       "f2": 0.5891110564562434,
       "f3": 0.19923421434302568,
-      "runtime_s": 20.207,
+      "runtime_s": 34.025,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "90de261f",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -343,7 +346,8 @@
         0.675465248542238
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S1/S1-A_seed04.pkl": {
       "seed": 4,
@@ -354,10 +358,10 @@
       "f1_gbl": 107.0,
       "f2": 0.5721474058094639,
       "f3": 0.2619755863603061,
-      "runtime_s": 18.871,
+      "runtime_s": 29.859,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "90de261f",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -430,7 +434,8 @@
         0.6777640751126247
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S1/S1-A_seed05.pkl": {
       "seed": 5,
@@ -441,10 +446,10 @@
       "f1_gbl": 91.0,
       "f2": 0.5852548824829739,
       "f3": 0.23812162597019282,
-      "runtime_s": 24.442,
+      "runtime_s": 25.535,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "90de261f",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -517,7 +522,8 @@
         0.6723919139182298
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S1/S1-A_seed06.pkl": {
       "seed": 6,
@@ -528,10 +534,10 @@
       "f1_gbl": 124.0,
       "f2": 0.5881996455907822,
       "f3": 0.23182666684637848,
-      "runtime_s": 20.944,
+      "runtime_s": 26.124,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "90de261f",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -604,7 +610,8 @@
         0.7142831636645334
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S1/S1-A_seed07.pkl": {
       "seed": 7,
@@ -615,10 +622,10 @@
       "f1_gbl": 115.0,
       "f2": 0.5801424044660053,
       "f3": 0.23898351683512367,
-      "runtime_s": 34.351,
+      "runtime_s": 27.807,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "90de261f",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -691,7 +698,8 @@
         0.6997313668659622
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S1/S1-A_seed08.pkl": {
       "seed": 8,
@@ -702,10 +710,10 @@
       "f1_gbl": 122.0,
       "f2": 0.5852678015442854,
       "f3": 0.19010940618843045,
-      "runtime_s": 24.081,
+      "runtime_s": 24.09,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "90de261f",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -778,7 +786,8 @@
         0.7045947938334057
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S1/S1-A_seed09.pkl": {
       "seed": 9,
@@ -789,10 +798,10 @@
       "f1_gbl": 89.0,
       "f2": 0.5884387918861264,
       "f3": 0.21721982677196344,
-      "runtime_s": 21.712,
+      "runtime_s": 21.403,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "90de261f",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -865,7 +874,8 @@
         0.719076555346275
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S1/S1-B_seed00.pkl": {
       "seed": 100,
@@ -876,10 +886,10 @@
       "f1_gbl": 89.0,
       "f2": 0.5380817157584072,
       "f3": 0.3082671209421044,
-      "runtime_s": 23.869,
+      "runtime_s": 21.941,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "90de261f",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -946,7 +956,8 @@
         0.6722072048128337
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S1/S1-B_seed01.pkl": {
       "seed": 101,
@@ -957,10 +968,10 @@
       "f1_gbl": 117.0,
       "f2": 0.5498794898616919,
       "f3": 0.3268856266121182,
-      "runtime_s": 26.571,
+      "runtime_s": 26.683,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "90de261f",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -1030,7 +1041,8 @@
         0.6781804124424317
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S1/S1-B_seed02.pkl": {
       "seed": 102,
@@ -1041,10 +1053,10 @@
       "f1_gbl": 130.0,
       "f2": 0.49436100660251714,
       "f3": 0.3985049739932177,
-      "runtime_s": 30.85,
+      "runtime_s": 35.787,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "90de261f",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -1117,7 +1129,8 @@
         0.6663647509028567
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S1/S1-B_seed03.pkl": {
       "seed": 103,
@@ -1128,10 +1141,10 @@
       "f1_gbl": 130.0,
       "f2": 0.5398255040270817,
       "f3": 0.3118213146938424,
-      "runtime_s": 30.327,
+      "runtime_s": 32.301,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "90de261f",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -1204,7 +1217,8 @@
         0.5816625529119989
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S1/S1-B_seed04.pkl": {
       "seed": 104,
@@ -1215,10 +1229,10 @@
       "f1_gbl": 111.0,
       "f2": 0.5597940945966836,
       "f3": 0.3079572267755367,
-      "runtime_s": 32.024,
+      "runtime_s": 30.968,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "90de261f",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -1288,7 +1302,8 @@
         0.6007038707406505
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S1/S1-B_seed05.pkl": {
       "seed": 105,
@@ -1299,10 +1314,10 @@
       "f1_gbl": 124.0,
       "f2": 0.5597415785363539,
       "f3": 0.34384470325320826,
-      "runtime_s": 35.786,
+      "runtime_s": 33.357,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "90de261f",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -1375,7 +1390,8 @@
         0.7058689993886808
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S1/S1-B_seed06.pkl": {
       "seed": 106,
@@ -1386,10 +1402,10 @@
       "f1_gbl": 85.0,
       "f2": 0.5039534727705554,
       "f3": 0.3998906205040735,
-      "runtime_s": 32.147,
+      "runtime_s": 34.548,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "90de261f",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -1456,7 +1472,8 @@
         0.4050783798220889
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S1/S1-B_seed07.pkl": {
       "seed": 107,
@@ -1467,10 +1484,10 @@
       "f1_gbl": 105.0,
       "f2": 0.529983084104462,
       "f3": 0.3526562381004583,
-      "runtime_s": 32.379,
+      "runtime_s": 30.914,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "90de261f",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -1543,7 +1560,8 @@
         0.7193310290205326
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S1/S1-B_seed08.pkl": {
       "seed": 108,
@@ -1554,10 +1572,10 @@
       "f1_gbl": 91.0,
       "f2": 0.5304782356682529,
       "f3": 0.4330488261633991,
-      "runtime_s": 23.994,
+      "runtime_s": 22.996,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "90de261f",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -1621,7 +1639,8 @@
         0.7187812727558605
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S1/S1-B_seed09.pkl": {
       "seed": 109,
@@ -1632,10 +1651,10 @@
       "f1_gbl": 122.0,
       "f2": 0.5542331488104031,
       "f3": 0.2966773859996421,
-      "runtime_s": 24.369,
+      "runtime_s": 20.901,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "90de261f",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -1702,7 +1721,8 @@
         0.6255007714566624
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S1/S1-C_seed00.pkl": {
       "seed": 200,
@@ -1713,10 +1733,10 @@
       "f1_gbl": 90.0,
       "f2": 0.5645713405829647,
       "f3": 0.24606424244987327,
-      "runtime_s": 23.737,
+      "runtime_s": 17.726,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "90de261f",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -1786,7 +1806,8 @@
         0.7033777215901873
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S1/S1-C_seed01.pkl": {
       "seed": 201,
@@ -1797,10 +1818,10 @@
       "f1_gbl": 122.0,
       "f2": 0.5456172745210652,
       "f3": 0.3656367107253943,
-      "runtime_s": 25.278,
+      "runtime_s": 24.88,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "90de261f",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -1873,7 +1894,8 @@
         0.6646215120562116
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S1/S1-C_seed02.pkl": {
       "seed": 202,
@@ -1884,10 +1906,10 @@
       "f1_gbl": 112.0,
       "f2": 0.5677697234658365,
       "f3": 0.33500578214787213,
-      "runtime_s": 23.917,
+      "runtime_s": 26.607,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "90de261f",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -1960,7 +1982,8 @@
         0.6330224521296715
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S1/S1-C_seed03.pkl": {
       "seed": 203,
@@ -1971,10 +1994,10 @@
       "f1_gbl": 100.0,
       "f2": 0.5876797919386673,
       "f3": 0.262914730978969,
-      "runtime_s": 26.221,
+      "runtime_s": 29.056,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "90de261f",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -2047,7 +2070,8 @@
         0.6068807049832274
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S1/S1-C_seed04.pkl": {
       "seed": 204,
@@ -2058,10 +2082,10 @@
       "f1_gbl": 113.0,
       "f2": 0.5616279776546034,
       "f3": 0.31116562649804125,
-      "runtime_s": 26.311,
+      "runtime_s": 27.657,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "90de261f",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -2134,7 +2158,8 @@
         0.42754606879471235
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S1/S1-C_seed05.pkl": {
       "seed": 205,
@@ -2145,10 +2170,10 @@
       "f1_gbl": 106.0,
       "f2": 0.5725744210195423,
       "f3": 0.2774928070224843,
-      "runtime_s": 23.257,
+      "runtime_s": 26.851,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "90de261f",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -2218,7 +2243,8 @@
         0.6813952475431208
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S1/S1-C_seed06.pkl": {
       "seed": 206,
@@ -2229,10 +2255,10 @@
       "f1_gbl": 113.0,
       "f2": 0.5813153663361086,
       "f3": 0.26705535451854656,
-      "runtime_s": 28.093,
+      "runtime_s": 23.526,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "90de261f",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -2302,7 +2328,8 @@
         0.672274008718576
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S1/S1-C_seed07.pkl": {
       "seed": 207,
@@ -2313,10 +2340,10 @@
       "f1_gbl": 121.0,
       "f2": 0.5479347907768112,
       "f3": 0.28966697568652977,
-      "runtime_s": 30.54,
+      "runtime_s": 21.342,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "90de261f",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -2386,7 +2413,8 @@
         0.7190855200056865
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S1/S1-C_seed08.pkl": {
       "seed": 208,
@@ -2397,10 +2425,10 @@
       "f1_gbl": 96.0,
       "f2": 0.5647443227194452,
       "f3": 0.3202975621226266,
-      "runtime_s": 29.505,
+      "runtime_s": 21.48,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "90de261f",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -2473,7 +2501,8 @@
         0.560885519533199
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S1/S1-C_seed09.pkl": {
       "seed": 209,
@@ -2484,10 +2513,10 @@
       "f1_gbl": 111.0,
       "f2": 0.5522383807392949,
       "f3": 0.32690872696032813,
-      "runtime_s": 22.474,
+      "runtime_s": 19.703,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "90de261f",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -2554,7 +2583,8 @@
         0.42402067945039135
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S1/S1-D_seed00.pkl": {
       "seed": 300,
@@ -2565,10 +2595,10 @@
       "f1_gbl": 110.0,
       "f2": 0.5668474529002983,
       "f3": 0.31916280806380687,
-      "runtime_s": 24.776,
+      "runtime_s": 21.597,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "90de261f",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -2641,7 +2671,8 @@
         0.7053158407628619
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S1/S1-D_seed01.pkl": {
       "seed": 301,
@@ -2652,10 +2683,10 @@
       "f1_gbl": 124.0,
       "f2": 0.5781444982526865,
       "f3": 0.24011490866573276,
-      "runtime_s": 31.219,
+      "runtime_s": 22.595,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "90de261f",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -2728,7 +2759,8 @@
         0.36546156967598153
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S1/S1-D_seed02.pkl": {
       "seed": 302,
@@ -2739,10 +2771,10 @@
       "f1_gbl": 93.0,
       "f2": 0.5823106127178869,
       "f3": 0.24821893692368663,
-      "runtime_s": 29.535,
+      "runtime_s": 29.554,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "90de261f",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -2809,7 +2841,8 @@
         0.6975152815935671
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S1/S1-D_seed03.pkl": {
       "seed": 303,
@@ -2820,10 +2853,10 @@
       "f1_gbl": 93.0,
       "f2": 0.570813354340825,
       "f3": 0.2698366937194853,
-      "runtime_s": 29.326,
+      "runtime_s": 28.531,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "90de261f",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -2896,21 +2929,22 @@
         0.7091760927288948
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S1/S1-D_seed04.pkl": {
       "seed": 304,
       "n_targets": 20,
-      "n_selected": 19,
-      "f1": 1.0,
-      "f1_raw": 74.0,
+      "n_selected": 20,
+      "f1": 1.135135135135135,
+      "f1_raw": 84.0,
       "f1_gbl": 74.0,
-      "f2": 0.5646292058374116,
-      "f3": 0.2587851644025219,
-      "runtime_s": 31.273,
+      "f2": 0.5635923316059195,
+      "f3": 0.305055140576608,
+      "runtime_s": 31.54,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "90de261f",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -2934,53 +2968,57 @@
         14,
         15,
         16,
+        17,
         18,
         19
       ],
       "t_actuals": [
-        1781454110.0,
-        1781453308.002864,
-        1781455210.0,
-        1781453270.0,
+        1781454112.1603725,
+        1781453369.32285,
+        1781455210.9987593,
+        1781453270.0004487,
         1781455800.0,
-        1781457400.0,
-        1781455860.0,
-        1781453780.0,
-        1781456770.0,
-        1781456310.0,
-        1781456640.0,
+        1781457400.0717018,
+        1781455879.1006513,
+        1781453798.8926528,
+        1781456791.91162,
+        1781456310.029016,
+        1781456695.4389746,
         1781452810.0,
-        1781456890.0,
-        1781456080.0,
-        1781452940.0,
-        1781454350.0,
-        1781453040.0,
+        1781456919.128571,
+        1781456219.0831993,
+        1781452940.2604356,
+        1781454350.4788208,
+        1781453042.5611517,
+        1781456640.0,
         1781455730.0,
-        1781457840.0
+        1781457840.0677102
       ],
       "phis_off_nadir": [
-        0.6895287707160985,
-        0.6629160560592265,
-        0.6957093485273104,
-        0.7001388133281208,
+        0.6802770877385848,
+        0.4120483866077942,
+        0.6905574976065663,
+        0.7001366596027759,
         0.6849266139396846,
-        0.6714936249430107,
-        0.7112450795824835,
-        0.6950023971148693,
-        0.688132266491356,
-        0.716948955167509,
-        0.7068157757409954,
+        0.6710902195086634,
+        0.6109003586630508,
+        0.6215814851819199,
+        0.5723175891566707,
+        0.716804134806732,
+        0.6421293368939442,
         0.29074789869727496,
-        0.3420909547275255,
-        0.7022361454551252,
-        0.7036838735476967,
-        0.7120961231198817,
-        0.7033717828801882,
+        0.538783026263431,
+        0.5721857963620749,
+        0.702585261608994,
+        0.7102244919602975,
+        0.6977866041283204,
+        0.7063828744068893,
         0.7133239168529117,
-        0.6924808957093552
+        0.6922536154189641
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S1/S1-D_seed05.pkl": {
       "seed": 305,
@@ -2991,10 +3029,10 @@
       "f1_gbl": 126.0,
       "f2": 0.5880447725120327,
       "f3": 0.24325020003062758,
-      "runtime_s": 37.747,
+      "runtime_s": 27.871,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "90de261f",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -3067,7 +3105,8 @@
         0.6838470900769391
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S1/S1-D_seed06.pkl": {
       "seed": 306,
@@ -3078,10 +3117,10 @@
       "f1_gbl": 122.0,
       "f2": 0.5998737915674461,
       "f3": 0.23254609826496173,
-      "runtime_s": 30.221,
+      "runtime_s": 25.518,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "90de261f",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -3154,7 +3193,8 @@
         0.6980077401456172
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S1/S1-D_seed07.pkl": {
       "seed": 307,
@@ -3165,10 +3205,10 @@
       "f1_gbl": 114.0,
       "f2": 0.5738348469591552,
       "f3": 0.17946558921868946,
-      "runtime_s": 32.387,
+      "runtime_s": 29.544,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "90de261f",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -3241,7 +3281,8 @@
         0.7132682000604081
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S1/S1-D_seed08.pkl": {
       "seed": 308,
@@ -3252,10 +3293,10 @@
       "f1_gbl": 112.0,
       "f2": 0.5945004270128124,
       "f3": 0.2269850738250374,
-      "runtime_s": 27.83,
+      "runtime_s": 23.759,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "90de261f",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -3325,7 +3366,8 @@
         0.6892982179698549
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S1/S1-D_seed09.pkl": {
       "seed": 309,
@@ -3336,10 +3378,10 @@
       "f1_gbl": 95.0,
       "f2": 0.6129275453938314,
       "f3": 0.21586891441182407,
-      "runtime_s": 29.042,
+      "runtime_s": 23.656,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "90de261f",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -3409,7 +3451,8 @@
         0.6847588166834763
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S1/S1-E_seed00.pkl": {
       "seed": 400,
@@ -3420,10 +3463,10 @@
       "f1_gbl": 112.0,
       "f2": 0.603681136018134,
       "f3": 0.24058079713144975,
-      "runtime_s": 25.559,
+      "runtime_s": 26.94,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "90de261f",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -3496,7 +3539,8 @@
         0.43825471796785564
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S1/S1-E_seed01.pkl": {
       "seed": 401,
@@ -3507,10 +3551,10 @@
       "f1_gbl": 121.0,
       "f2": 0.5720327146868439,
       "f3": 0.2653918453203901,
-      "runtime_s": 29.965,
+      "runtime_s": 28.573,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "90de261f",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -3583,7 +3627,8 @@
         0.7059115879030268
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S1/S1-E_seed02.pkl": {
       "seed": 402,
@@ -3594,10 +3639,10 @@
       "f1_gbl": 121.0,
       "f2": 0.6008239203550977,
       "f3": 0.2285657936473216,
-      "runtime_s": 31.575,
+      "runtime_s": 26.332,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "90de261f",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -3670,7 +3715,8 @@
         0.556859925709635
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S1/S1-E_seed03.pkl": {
       "seed": 403,
@@ -3681,10 +3727,10 @@
       "f1_gbl": 121.0,
       "f2": 0.5993191847128838,
       "f3": 0.2502016799213181,
-      "runtime_s": 31.702,
+      "runtime_s": 25.513,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "90de261f",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -3757,7 +3803,8 @@
         0.6754962649391534
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S1/S1-E_seed04.pkl": {
       "seed": 404,
@@ -3768,10 +3815,10 @@
       "f1_gbl": 129.0,
       "f2": 0.5968540468605371,
       "f3": 0.24925731546410593,
-      "runtime_s": 25.233,
+      "runtime_s": 22.979,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "90de261f",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -3844,7 +3891,8 @@
         0.6896759147383696
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S1/S1-E_seed05.pkl": {
       "seed": 405,
@@ -3855,10 +3903,10 @@
       "f1_gbl": 115.0,
       "f2": 0.5965057737442552,
       "f3": 0.20099569867979508,
-      "runtime_s": 22.451,
+      "runtime_s": 21.873,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "90de261f",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -3928,7 +3976,8 @@
         0.7094778584626287
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S1/S1-E_seed06.pkl": {
       "seed": 406,
@@ -3939,10 +3988,10 @@
       "f1_gbl": 129.0,
       "f2": 0.6168842917264975,
       "f3": 0.24323425288786282,
-      "runtime_s": 29.193,
+      "runtime_s": 24.362,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "90de261f",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -4015,7 +4064,8 @@
         0.7175189742138536
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S1/S1-E_seed07.pkl": {
       "seed": 407,
@@ -4026,10 +4076,10 @@
       "f1_gbl": 116.0,
       "f2": 0.5980718958674085,
       "f3": 0.21901938643724855,
-      "runtime_s": 28.35,
+      "runtime_s": 22.584,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "90de261f",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -4102,7 +4152,8 @@
         0.7019794570958864
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S1/S1-E_seed08.pkl": {
       "seed": 408,
@@ -4113,10 +4164,10 @@
       "f1_gbl": 99.0,
       "f2": 0.6031081940592851,
       "f3": 0.21323622410604914,
-      "runtime_s": 31.859,
+      "runtime_s": 18.98,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "90de261f",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -4186,7 +4237,8 @@
         0.7115821229269619
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S1/S1-E_seed09.pkl": {
       "seed": 409,
@@ -4197,10 +4249,10 @@
       "f1_gbl": 101.0,
       "f2": 0.5795630715509765,
       "f3": 0.2465780931715913,
-      "runtime_s": 29.963,
+      "runtime_s": 21.665,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "90de261f",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -4273,7 +4325,8 @@
         0.7198128414787176
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S2/S2-A_seed00.pkl": {
       "seed": 0,
@@ -4284,10 +4337,10 @@
       "f1_gbl": 507.0,
       "f2": 0.5779011624318262,
       "f3": 0.2783173366355164,
-      "runtime_s": 143.402,
+      "runtime_s": 113.878,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "90de261f",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -4585,7 +4638,8 @@
         0.6834389130452032
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S2/S2-A_seed01.pkl": {
       "seed": 1,
@@ -4596,10 +4650,10 @@
       "f1_gbl": 541.0,
       "f2": 0.5927408547960866,
       "f3": 0.2398154999150703,
-      "runtime_s": 136.59,
+      "runtime_s": 87.503,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "90de261f",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -4903,7 +4957,8 @@
         0.7150977826743327
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S2/S2-A_seed02.pkl": {
       "seed": 2,
@@ -4914,10 +4969,10 @@
       "f1_gbl": 544.0,
       "f2": 0.5746109414140883,
       "f3": 0.28679950220375455,
-      "runtime_s": 119.839,
+      "runtime_s": 103.86,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "90de261f",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -5230,7 +5285,8 @@
         0.7079216672043518
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S2/S2-A_seed03.pkl": {
       "seed": 3,
@@ -5241,10 +5297,10 @@
       "f1_gbl": 569.0,
       "f2": 0.5649160583230786,
       "f3": 0.2954802085461484,
-      "runtime_s": 148.41,
+      "runtime_s": 113.076,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "90de261f",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -5554,7 +5610,8 @@
         0.7045191811605549
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S2/S2-A_seed04.pkl": {
       "seed": 4,
@@ -5565,10 +5622,10 @@
       "f1_gbl": 544.0,
       "f2": 0.5752187359916142,
       "f3": 0.2640303212723086,
-      "runtime_s": 113.232,
+      "runtime_s": 98.76,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "90de261f",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -5878,7 +5935,8 @@
         0.5079923082126604
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S2/S2-A_seed05.pkl": {
       "seed": 5,
@@ -5889,10 +5947,10 @@
       "f1_gbl": 563.0,
       "f2": 0.5595649159169583,
       "f3": 0.3085139401213601,
-      "runtime_s": 131.117,
+      "runtime_s": 96.827,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "90de261f",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -6202,7 +6260,8 @@
         0.7141245436273357
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S2/S2-A_seed06.pkl": {
       "seed": 6,
@@ -6213,10 +6272,10 @@
       "f1_gbl": 549.0,
       "f2": 0.570957242857966,
       "f3": 0.2968510132362963,
-      "runtime_s": 135.533,
+      "runtime_s": 87.225,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "90de261f",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -6517,7 +6576,8 @@
         0.7022091806355633
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S2/S2-A_seed07.pkl": {
       "seed": 7,
@@ -6528,10 +6588,10 @@
       "f1_gbl": 517.0,
       "f2": 0.5698259470172976,
       "f3": 0.28568035519392526,
-      "runtime_s": 122.09,
+      "runtime_s": 88.525,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "90de261f",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -6832,7 +6892,8 @@
         0.6189843149391883
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S2/S2-A_seed08.pkl": {
       "seed": 8,
@@ -6843,10 +6904,10 @@
       "f1_gbl": 543.0,
       "f2": 0.5743866906176213,
       "f3": 0.2618525334063763,
-      "runtime_s": 146.248,
+      "runtime_s": 85.742,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "90de261f",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -7147,7 +7208,8 @@
         0.716099189711904
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S2/S2-A_seed09.pkl": {
       "seed": 9,
@@ -7158,10 +7220,10 @@
       "f1_gbl": 499.0,
       "f2": 0.5759810392115428,
       "f3": 0.2914820829285149,
-      "runtime_s": 131.882,
+      "runtime_s": 90.136,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "90de261f",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -7465,7 +7527,8 @@
         0.7043743035732236
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S2/S2-B_seed00.pkl": {
       "seed": 100,
@@ -7476,10 +7539,10 @@
       "f1_gbl": 291.0,
       "f2": 0.5099111384315824,
       "f3": 0.4746883526454115,
-      "runtime_s": 80.212,
+      "runtime_s": 68.481,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "90de261f",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -7666,7 +7729,8 @@
         0.5490072650686072
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S2/S2-B_seed01.pkl": {
       "seed": 101,
@@ -7677,10 +7741,10 @@
       "f1_gbl": 314.0,
       "f2": 0.5270649615411083,
       "f3": 0.4381782681700804,
-      "runtime_s": 94.224,
+      "runtime_s": 69.798,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "90de261f",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -7876,7 +7940,8 @@
         0.7074824323208765
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S2/S2-B_seed02.pkl": {
       "seed": 102,
@@ -7887,10 +7952,10 @@
       "f1_gbl": 408.0,
       "f2": 0.4955105057060311,
       "f3": 0.48309021062504204,
-      "runtime_s": 129.911,
+      "runtime_s": 79.874,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "90de261f",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -8116,7 +8181,8 @@
         0.699401196832334
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S2/S2-B_seed03.pkl": {
       "seed": 103,
@@ -8127,10 +8193,10 @@
       "f1_gbl": 261.0,
       "f2": 0.5017585436766686,
       "f3": 0.4888241470826085,
-      "runtime_s": 84.767,
+      "runtime_s": 52.926,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "90de261f",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -8290,7 +8356,8 @@
         0.33487693042317035
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S2/S2-B_seed04.pkl": {
       "seed": 104,
@@ -8301,10 +8368,10 @@
       "f1_gbl": 347.0,
       "f2": 0.5174221314908183,
       "f3": 0.4488125522351699,
-      "runtime_s": 107.986,
+      "runtime_s": 71.679,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "90de261f",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -8515,7 +8582,8 @@
         0.4089159363355219
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S2/S2-B_seed05.pkl": {
       "seed": 105,
@@ -8526,10 +8594,10 @@
       "f1_gbl": 285.0,
       "f2": 0.5037475692747533,
       "f3": 0.47414867133496097,
-      "runtime_s": 83.537,
+      "runtime_s": 64.128,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "90de261f",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -8701,7 +8769,8 @@
         0.4690867935301142
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S2/S2-B_seed06.pkl": {
       "seed": 106,
@@ -8712,10 +8781,10 @@
       "f1_gbl": 267.0,
       "f2": 0.5067441784521423,
       "f3": 0.437686081067063,
-      "runtime_s": 73.551,
+      "runtime_s": 61.408,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "90de261f",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -8896,7 +8965,8 @@
         0.5430874012730201
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S2/S2-B_seed07.pkl": {
       "seed": 107,
@@ -8907,10 +8977,10 @@
       "f1_gbl": 275.0,
       "f2": 0.5070392195066356,
       "f3": 0.46987812845867394,
-      "runtime_s": 110.628,
+      "runtime_s": 93.907,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "486b60a7",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -9082,7 +9152,8 @@
         0.6379835332387626
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S2/S2-B_seed08.pkl": {
       "seed": 108,
@@ -9093,10 +9164,10 @@
       "f1_gbl": 284.0,
       "f2": 0.530793662974365,
       "f3": 0.4331528444369362,
-      "runtime_s": 67.018,
+      "runtime_s": 84.822,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "486b60a7",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -9280,7 +9351,8 @@
         0.7109442155574865
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S2/S2-B_seed09.pkl": {
       "seed": 109,
@@ -9291,10 +9363,10 @@
       "f1_gbl": 301.0,
       "f2": 0.5001812927536584,
       "f3": 0.4625025280828497,
-      "runtime_s": 70.107,
+      "runtime_s": 66.147,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "486b60a7",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -9475,7 +9547,8 @@
         0.34043490125458625
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S2/S2-C_seed00.pkl": {
       "seed": 200,
@@ -9486,10 +9559,10 @@
       "f1_gbl": 364.0,
       "f2": 0.5538745509518337,
       "f3": 0.31746920769668674,
-      "runtime_s": 85.674,
+      "runtime_s": 69.03,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "486b60a7",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -9712,7 +9785,8 @@
         0.5452446772730382
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S2/S2-C_seed01.pkl": {
       "seed": 201,
@@ -9723,10 +9797,10 @@
       "f1_gbl": 390.0,
       "f2": 0.5548704951306909,
       "f3": 0.33101224749345315,
-      "runtime_s": 114.861,
+      "runtime_s": 76.054,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "486b60a7",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -9955,7 +10029,8 @@
         0.5478264907982819
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S2/S2-C_seed02.pkl": {
       "seed": 202,
@@ -9966,10 +10041,10 @@
       "f1_gbl": 373.0,
       "f2": 0.5681611002036153,
       "f3": 0.3052620664636454,
-      "runtime_s": 91.826,
+      "runtime_s": 64.842,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "486b60a7",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -10183,7 +10258,8 @@
         0.4831346481464556
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S2/S2-C_seed03.pkl": {
       "seed": 203,
@@ -10194,10 +10270,10 @@
       "f1_gbl": 320.0,
       "f2": 0.5770773044770183,
       "f3": 0.30315702180680515,
-      "runtime_s": 79.623,
+      "runtime_s": 59.451,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "486b60a7",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -10396,7 +10472,8 @@
         0.3928768584282146
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S2/S2-C_seed04.pkl": {
       "seed": 204,
@@ -10407,10 +10484,10 @@
       "f1_gbl": 416.0,
       "f2": 0.5755501965710336,
       "f3": 0.33329833353511973,
-      "runtime_s": 84.522,
+      "runtime_s": 68.641,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "486b60a7",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -10621,7 +10698,8 @@
         0.5497498625509705
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S2/S2-C_seed05.pkl": {
       "seed": 205,
@@ -10632,10 +10710,10 @@
       "f1_gbl": 327.0,
       "f2": 0.5777747760770222,
       "f3": 0.31810652400070966,
-      "runtime_s": 62.514,
+      "runtime_s": 84.64,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "486b60a7",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -10828,7 +10906,8 @@
         0.5236194292898528
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S2/S2-C_seed06.pkl": {
       "seed": 206,
@@ -10839,10 +10918,10 @@
       "f1_gbl": 325.0,
       "f2": 0.5595367427692421,
       "f3": 0.32394962674584854,
-      "runtime_s": 61.731,
+      "runtime_s": 98.09,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "486b60a7",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -11032,7 +11111,8 @@
         0.3704162050184249
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S2/S2-C_seed07.pkl": {
       "seed": 207,
@@ -11043,10 +11123,10 @@
       "f1_gbl": 363.0,
       "f2": 0.5645928241617697,
       "f3": 0.30402402590626204,
-      "runtime_s": 73.756,
+      "runtime_s": 98.808,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "486b60a7",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -11248,7 +11328,8 @@
         0.5262596928574415
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S2/S2-C_seed08.pkl": {
       "seed": 208,
@@ -11259,10 +11340,10 @@
       "f1_gbl": 382.0,
       "f2": 0.5561245172183629,
       "f3": 0.3396556572154534,
-      "runtime_s": 90.291,
+      "runtime_s": 104.708,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "486b60a7",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -11473,7 +11554,8 @@
         0.5559691970574957
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S2/S2-C_seed09.pkl": {
       "seed": 209,
@@ -11484,10 +11566,10 @@
       "f1_gbl": 312.0,
       "f2": 0.5576423123575854,
       "f3": 0.3051889927728111,
-      "runtime_s": 105.148,
+      "runtime_s": 81.08,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "486b60a7",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -11680,7 +11762,8 @@
         0.6852320948116536
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S2/S2-D_seed00.pkl": {
       "seed": 300,
@@ -11691,10 +11774,10 @@
       "f1_gbl": 302.0,
       "f2": 0.5168305346114066,
       "f3": 0.4466034995786858,
-      "runtime_s": 108.942,
+      "runtime_s": 93.89,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "486b60a7",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -11881,7 +11964,8 @@
         0.6911085280006176
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S2/S2-D_seed01.pkl": {
       "seed": 301,
@@ -11892,10 +11976,10 @@
       "f1_gbl": 343.0,
       "f2": 0.4980656834096202,
       "f3": 0.5244264997219397,
-      "runtime_s": 89.46,
+      "runtime_s": 98.812,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "486b60a7",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -12082,7 +12166,8 @@
         0.41353206483636407
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S2/S2-D_seed02.pkl": {
       "seed": 302,
@@ -12093,10 +12178,10 @@
       "f1_gbl": 304.0,
       "f2": 0.4941206016359499,
       "f3": 0.49003587132351406,
-      "runtime_s": 79.515,
+      "runtime_s": 104.353,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "486b60a7",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -12274,7 +12359,8 @@
         0.40666747045697366
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S2/S2-D_seed03.pkl": {
       "seed": 303,
@@ -12285,10 +12371,10 @@
       "f1_gbl": 299.0,
       "f2": 0.4979521572953901,
       "f3": 0.4741950172156539,
-      "runtime_s": 82.042,
+      "runtime_s": 148.378,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "486b60a7",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -12484,7 +12570,8 @@
         0.4895103554813852
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S2/S2-D_seed04.pkl": {
       "seed": 304,
@@ -12495,10 +12582,10 @@
       "f1_gbl": 349.0,
       "f2": 0.5228485239724642,
       "f3": 0.4560608038895802,
-      "runtime_s": 75.289,
+      "runtime_s": 146.58,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "486b60a7",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -12679,7 +12766,8 @@
         0.5475472536013966
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S2/S2-D_seed05.pkl": {
       "seed": 305,
@@ -12690,10 +12778,10 @@
       "f1_gbl": 288.0,
       "f2": 0.5276247077766435,
       "f3": 0.43512146796364887,
-      "runtime_s": 78.823,
+      "runtime_s": 116.051,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "486b60a7",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -12859,7 +12947,8 @@
         0.6130576778661065
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S2/S2-D_seed06.pkl": {
       "seed": 306,
@@ -12870,10 +12959,10 @@
       "f1_gbl": 379.0,
       "f2": 0.5239299897934159,
       "f3": 0.4534302747002615,
-      "runtime_s": 92.166,
+      "runtime_s": 117.464,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "486b60a7",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -13075,7 +13164,8 @@
         0.5648901929046216
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S2/S2-D_seed07.pkl": {
       "seed": 307,
@@ -13086,10 +13176,10 @@
       "f1_gbl": 376.0,
       "f2": 0.5294187722752562,
       "f3": 0.44643860193670165,
-      "runtime_s": 99.361,
+      "runtime_s": 144.774,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "486b60a7",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -13297,7 +13387,8 @@
         0.5193769570875935
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S2/S2-D_seed08.pkl": {
       "seed": 308,
@@ -13308,10 +13399,10 @@
       "f1_gbl": 342.0,
       "f2": 0.503428119990966,
       "f3": 0.4639382242119981,
-      "runtime_s": 78.777,
+      "runtime_s": 112.646,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "486b60a7",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -13501,7 +13592,8 @@
         0.6100313925391699
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S2/S2-D_seed09.pkl": {
       "seed": 309,
@@ -13512,10 +13604,10 @@
       "f1_gbl": 322.0,
       "f2": 0.5262655357209329,
       "f3": 0.4539958561371402,
-      "runtime_s": 80.624,
+      "runtime_s": 129.07,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "486b60a7",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -13702,7 +13794,8 @@
         0.7075388300579335
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S2/S2-E_seed00.pkl": {
       "seed": 400,
@@ -13713,10 +13806,10 @@
       "f1_gbl": 298.0,
       "f2": 0.597457231091774,
       "f3": 0.3087238404482039,
-      "runtime_s": 62.589,
+      "runtime_s": 111.04,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "486b60a7",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -13879,7 +13972,8 @@
         0.7045646389627502
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S2/S2-E_seed01.pkl": {
       "seed": 401,
@@ -13890,10 +13984,10 @@
       "f1_gbl": 277.0,
       "f2": 0.5554378447606986,
       "f3": 0.33265367509342486,
-      "runtime_s": 64.447,
+      "runtime_s": 79.264,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "486b60a7",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -14035,7 +14129,8 @@
         0.639117782389744
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S2/S2-E_seed02.pkl": {
       "seed": 402,
@@ -14046,10 +14141,10 @@
       "f1_gbl": 252.0,
       "f2": 0.590331873609301,
       "f3": 0.322840251803193,
-      "runtime_s": 71.457,
+      "runtime_s": 78.397,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "486b60a7",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -14197,7 +14292,8 @@
         0.6933243025084221
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S2/S2-E_seed03.pkl": {
       "seed": 403,
@@ -14208,10 +14304,10 @@
       "f1_gbl": 226.0,
       "f2": 0.5722934178090245,
       "f3": 0.2932978818289309,
-      "runtime_s": 51.107,
+      "runtime_s": 55.5,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "486b60a7",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -14335,7 +14431,8 @@
         0.624518878815962
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S2/S2-E_seed04.pkl": {
       "seed": 404,
@@ -14346,10 +14443,10 @@
       "f1_gbl": 201.0,
       "f2": 0.585438535507623,
       "f3": 0.23398772587834293,
-      "runtime_s": 48.862,
+      "runtime_s": 58.315,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "486b60a7",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -14476,7 +14573,8 @@
         0.7148305216842634
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S2/S2-E_seed05.pkl": {
       "seed": 405,
@@ -14487,10 +14585,10 @@
       "f1_gbl": 267.0,
       "f2": 0.588051179685202,
       "f3": 0.30072786934944606,
-      "runtime_s": 66.903,
+      "runtime_s": 84.674,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "486b60a7",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -14644,7 +14742,8 @@
         0.5762164101372028
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S2/S2-E_seed06.pkl": {
       "seed": 406,
@@ -14655,10 +14754,10 @@
       "f1_gbl": 245.0,
       "f2": 0.5856371165499122,
       "f3": 0.32700984189345095,
-      "runtime_s": 72.284,
+      "runtime_s": 83.205,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "486b60a7",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -14815,7 +14914,8 @@
         0.5366356952629125
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S2/S2-E_seed07.pkl": {
       "seed": 407,
@@ -14826,10 +14926,10 @@
       "f1_gbl": 194.0,
       "f2": 0.5924772652496431,
       "f3": 0.32145708096210096,
-      "runtime_s": 46.801,
+      "runtime_s": 71.224,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "486b60a7",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -14950,7 +15050,8 @@
         0.7120646760209792
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S2/S2-E_seed08.pkl": {
       "seed": 408,
@@ -14961,10 +15062,10 @@
       "f1_gbl": 244.0,
       "f2": 0.5711967489386082,
       "f3": 0.30024986556077843,
-      "runtime_s": 50.836,
+      "runtime_s": 89.263,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "486b60a7",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -15100,7 +15201,8 @@
         0.6176780717168892
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S2/S2-E_seed09.pkl": {
       "seed": 409,
@@ -15111,10 +15213,10 @@
       "f1_gbl": 266.0,
       "f2": 0.5688898140253246,
       "f3": 0.3054229768914019,
-      "runtime_s": 59.369,
+      "runtime_s": 101.509,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "486b60a7",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -15256,7 +15358,8 @@
         0.7127049698774757
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S3/S3-A_seed00.pkl": {
       "seed": 0,
@@ -15267,10 +15370,10 @@
       "f1_gbl": 1166.0,
       "f2": 0.5339945426155438,
       "f3": 0.44531861649713167,
-      "runtime_s": 288.316,
+      "runtime_s": 579.951,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "486b60a7",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -15883,7 +15986,8 @@
         0.5280575837610456
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S3/S3-A_seed01.pkl": {
       "seed": 1,
@@ -15894,10 +15998,10 @@
       "f1_gbl": 1208.0,
       "f2": 0.5282033419901362,
       "f3": 0.45023789973447825,
-      "runtime_s": 426.323,
+      "runtime_s": 474.159,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "486b60a7",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -16510,7 +16614,8 @@
         0.4395025228619729
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S3/S3-A_seed02.pkl": {
       "seed": 2,
@@ -16521,10 +16626,10 @@
       "f1_gbl": 1168.0,
       "f2": 0.5350753077520426,
       "f3": 0.4295609059383559,
-      "runtime_s": 379.634,
+      "runtime_s": 429.242,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "486b60a7",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -17137,7 +17242,8 @@
         0.5089619714961674
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S3/S3-A_seed03.pkl": {
       "seed": 3,
@@ -17148,10 +17254,10 @@
       "f1_gbl": 1163.0,
       "f2": 0.5311191338447169,
       "f3": 0.4252067423451713,
-      "runtime_s": 384.817,
+      "runtime_s": 513.662,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "486b60a7",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -17764,7 +17870,8 @@
         0.46807271169610337
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S3/S3-A_seed04.pkl": {
       "seed": 4,
@@ -17775,10 +17882,10 @@
       "f1_gbl": 1179.0,
       "f2": 0.5311475273058496,
       "f3": 0.4383293231152448,
-      "runtime_s": 341.424,
+      "runtime_s": 505.344,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "486b60a7",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -18391,7 +18498,8 @@
         0.4168919426043362
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S3/S3-A_seed05.pkl": {
       "seed": 5,
@@ -18402,10 +18510,10 @@
       "f1_gbl": 1169.0,
       "f2": 0.5284705917251216,
       "f3": 0.4468702794266005,
-      "runtime_s": 575.861,
+      "runtime_s": 501.3,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "486b60a7",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -19018,7 +19126,8 @@
         0.6239157955593679
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S3/S3-A_seed06.pkl": {
       "seed": 6,
@@ -19029,10 +19138,10 @@
       "f1_gbl": 1160.0,
       "f2": 0.5318209263775819,
       "f3": 0.45288640306280875,
-      "runtime_s": 607.045,
+      "runtime_s": 459.891,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "486b60a7",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -19645,7 +19754,8 @@
         0.6155087827616754
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S3/S3-A_seed07.pkl": {
       "seed": 7,
@@ -19656,10 +19766,10 @@
       "f1_gbl": 1161.0,
       "f2": 0.5358974702807874,
       "f3": 0.4376629551048079,
-      "runtime_s": 694.86,
+      "runtime_s": 589.018,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "486b60a7",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -20272,7 +20382,8 @@
         0.6907702628960778
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S3/S3-A_seed08.pkl": {
       "seed": 8,
@@ -20283,10 +20394,10 @@
       "f1_gbl": 1139.0,
       "f2": 0.5509417603530967,
       "f3": 0.39183293921985524,
-      "runtime_s": 451.57,
+      "runtime_s": 502.405,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "486b60a7",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -20899,7 +21010,8 @@
         0.5336193367887345
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S3/S3-A_seed09.pkl": {
       "seed": 9,
@@ -20910,10 +21022,10 @@
       "f1_gbl": 1058.0,
       "f2": 0.5386783879405759,
       "f3": 0.43193598042510145,
-      "runtime_s": 22175.964,
+      "runtime_s": 468.497,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "486b60a7",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -21526,7 +21638,8 @@
         0.7016480692605037
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S3/S3-B_seed00.pkl": {
       "seed": 100,
@@ -21537,10 +21650,10 @@
       "f1_gbl": 627.0,
       "f2": 0.4995368472187328,
       "f3": 0.4721173220839137,
-      "runtime_s": 138.86,
+      "runtime_s": 276.882,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "486b60a7",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -21883,7 +21996,8 @@
         0.4960093005769788
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S3/S3-B_seed01.pkl": {
       "seed": 101,
@@ -21894,10 +22008,10 @@
       "f1_gbl": 643.0,
       "f2": 0.506289012244178,
       "f3": 0.49252841499801286,
-      "runtime_s": 158.467,
+      "runtime_s": 337.562,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "486b60a7",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -22243,7 +22357,8 @@
         0.41029627021920717
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S3/S3-B_seed02.pkl": {
       "seed": 102,
@@ -22254,10 +22369,10 @@
       "f1_gbl": 649.0,
       "f2": 0.514176477098236,
       "f3": 0.4959892383676718,
-      "runtime_s": 234.356,
+      "runtime_s": 410.535,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "486b60a7",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -22630,7 +22745,8 @@
         0.3390984515476122
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S3/S3-B_seed03.pkl": {
       "seed": 103,
@@ -22641,10 +22757,10 @@
       "f1_gbl": 556.0,
       "f2": 0.5067648625944376,
       "f3": 0.47806707835544804,
-      "runtime_s": 261.692,
+      "runtime_s": 264.467,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "486b60a7",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -22963,7 +23079,8 @@
         0.49918814226423647
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S3/S3-B_seed04.pkl": {
       "seed": 104,
@@ -22974,10 +23091,10 @@
       "f1_gbl": 587.0,
       "f2": 0.5061863802043105,
       "f3": 0.4829720054867556,
-      "runtime_s": 251.283,
+      "runtime_s": 277.947,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "486b60a7",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -23317,7 +23434,8 @@
         0.49756104271327395
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S3/S3-B_seed05.pkl": {
       "seed": 105,
@@ -23328,10 +23446,10 @@
       "f1_gbl": 553.0,
       "f2": 0.49350256324284186,
       "f3": 0.49664126762864974,
-      "runtime_s": 199.354,
+      "runtime_s": 276.62,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "486b60a7",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -23644,7 +23762,8 @@
         0.5174537542190538
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S3/S3-B_seed06.pkl": {
       "seed": 106,
@@ -23655,10 +23774,10 @@
       "f1_gbl": 569.0,
       "f2": 0.5005248551299646,
       "f3": 0.49759720053307305,
-      "runtime_s": 181.849,
+      "runtime_s": 372.302,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "486b60a7",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -24031,7 +24150,8 @@
         0.5629636837086943
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S3/S3-B_seed07.pkl": {
       "seed": 107,
@@ -24042,10 +24162,10 @@
       "f1_gbl": 547.0,
       "f2": 0.5153590649915163,
       "f3": 0.47762956093867626,
-      "runtime_s": 178.124,
+      "runtime_s": 311.099,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "486b60a7",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -24361,7 +24481,8 @@
         0.40497517578127057
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S3/S3-B_seed08.pkl": {
       "seed": 108,
@@ -24372,10 +24493,10 @@
       "f1_gbl": 584.0,
       "f2": 0.49344233889300065,
       "f3": 0.49097017804146303,
-      "runtime_s": 161.635,
+      "runtime_s": 299.758,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "486b60a7",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -24700,7 +24821,8 @@
         0.4168858166243121
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S3/S3-B_seed09.pkl": {
       "seed": 109,
@@ -24711,10 +24833,10 @@
       "f1_gbl": 580.0,
       "f2": 0.5041036283901043,
       "f3": 0.502536452350859,
-      "runtime_s": 175.917,
+      "runtime_s": 282.396,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "486b60a7",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -25039,7 +25161,8 @@
         0.49381649744238937
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S3/S3-C_seed00.pkl": {
       "seed": 200,
@@ -25050,10 +25173,10 @@
       "f1_gbl": 828.0,
       "f2": 0.554826871981367,
       "f3": 0.32746800228037853,
-      "runtime_s": 241.427,
+      "runtime_s": 355.697,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "486b60a7",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -25519,7 +25642,8 @@
         0.4819940749611842
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S3/S3-C_seed01.pkl": {
       "seed": 201,
@@ -25530,10 +25654,10 @@
       "f1_gbl": 860.0,
       "f2": 0.5432252709484939,
       "f3": 0.384183292828204,
-      "runtime_s": 254.635,
+      "runtime_s": 350.891,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "486b60a7",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -26008,7 +26132,8 @@
         0.7157551755167989
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S3/S3-C_seed02.pkl": {
       "seed": 202,
@@ -26019,10 +26144,10 @@
       "f1_gbl": 785.0,
       "f2": 0.5511782175667824,
       "f3": 0.34723883425966334,
-      "runtime_s": 228.667,
+      "runtime_s": 211.835,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "486b60a7",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -26467,7 +26592,8 @@
         0.40855165646090974
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S3/S3-C_seed03.pkl": {
       "seed": 203,
@@ -26478,10 +26604,10 @@
       "f1_gbl": 802.0,
       "f2": 0.5652224113757965,
       "f3": 0.3341309404734806,
-      "runtime_s": 213.005,
+      "runtime_s": 260.555,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "486b60a7",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -26932,7 +27058,8 @@
         0.41868981386787185
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S3/S3-C_seed04.pkl": {
       "seed": 204,
@@ -26943,10 +27070,10 @@
       "f1_gbl": 846.0,
       "f2": 0.5581994607543365,
       "f3": 0.3354989196326215,
-      "runtime_s": 209.154,
+      "runtime_s": 310.622,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "486b60a7",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -27388,7 +27515,8 @@
         0.5668614792666242
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S3/S3-C_seed05.pkl": {
       "seed": 205,
@@ -27399,10 +27527,10 @@
       "f1_gbl": 788.0,
       "f2": 0.5620545998960113,
       "f3": 0.364736941185121,
-      "runtime_s": 210.849,
+      "runtime_s": 215.615,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "486b60a7",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -27856,7 +27984,8 @@
         0.40097326003427974
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S3/S3-C_seed06.pkl": {
       "seed": 206,
@@ -27867,10 +27996,10 @@
       "f1_gbl": 795.0,
       "f2": 0.5503315396507973,
       "f3": 0.3613810648496045,
-      "runtime_s": 228.953,
+      "runtime_s": 248.359,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "486b60a7",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -28336,7 +28465,8 @@
         0.5386542602737666
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S3/S3-C_seed07.pkl": {
       "seed": 207,
@@ -28347,10 +28477,10 @@
       "f1_gbl": 878.0,
       "f2": 0.5552370456585383,
       "f3": 0.3448129828099156,
-      "runtime_s": 223.475,
+      "runtime_s": 238.629,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "486b60a7",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -28819,7 +28949,8 @@
         0.5451580382402512
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S3/S3-C_seed08.pkl": {
       "seed": 208,
@@ -28830,10 +28961,10 @@
       "f1_gbl": 797.0,
       "f2": 0.5580252233088242,
       "f3": 0.37199979697260316,
-      "runtime_s": 298.04,
+      "runtime_s": 23754.247,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "486b60a7",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -29269,7 +29400,8 @@
         0.5680086699337504
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S3/S3-C_seed09.pkl": {
       "seed": 209,
@@ -29280,10 +29412,10 @@
       "f1_gbl": 749.0,
       "f2": 0.5579531677869297,
       "f3": 0.3529873816655346,
-      "runtime_s": 271.173,
+      "runtime_s": 245.215,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "486b60a7",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -29722,7 +29854,8 @@
         0.471300045293467
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S3/S3-D_seed00.pkl": {
       "seed": 300,
@@ -29733,10 +29866,10 @@
       "f1_gbl": 622.0,
       "f2": 0.5208749572256158,
       "f3": 0.5329414383952111,
-      "runtime_s": 281.503,
+      "runtime_s": 274.889,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "486b60a7",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -30109,7 +30242,8 @@
         0.5765359788340567
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S3/S3-D_seed01.pkl": {
       "seed": 301,
@@ -30120,10 +30254,10 @@
       "f1_gbl": 649.0,
       "f2": 0.5100857286138777,
       "f3": 0.5385855586463546,
-      "runtime_s": 291.839,
+      "runtime_s": 171.571,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "486b60a7",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -30484,7 +30618,8 @@
         0.48558885826154563
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S3/S3-D_seed02.pkl": {
       "seed": 302,
@@ -30495,10 +30630,10 @@
       "f1_gbl": 673.0,
       "f2": 0.5056194530392845,
       "f3": 0.5354045282312383,
-      "runtime_s": 248.461,
+      "runtime_s": 176.771,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "486b60a7",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -30865,7 +31000,8 @@
         0.4106193848538889
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S3/S3-D_seed03.pkl": {
       "seed": 303,
@@ -30876,10 +31012,10 @@
       "f1_gbl": 594.0,
       "f2": 0.5022624135288035,
       "f3": 0.5246625348184042,
-      "runtime_s": 866.199,
+      "runtime_s": 209.85,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "486b60a7",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -31258,7 +31394,8 @@
         0.5241188697021605
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S3/S3-D_seed04.pkl": {
       "seed": 304,
@@ -31269,10 +31406,10 @@
       "f1_gbl": 641.0,
       "f2": 0.4930598507071775,
       "f3": 0.5749289927825513,
-      "runtime_s": 184.742,
+      "runtime_s": 176.933,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "dd77836a",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -31633,7 +31770,8 @@
         0.5155418928716504
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S3/S3-D_seed05.pkl": {
       "seed": 305,
@@ -31644,10 +31782,10 @@
       "f1_gbl": 598.0,
       "f2": 0.5030050476544071,
       "f3": 0.5575644199261696,
-      "runtime_s": 282.426,
+      "runtime_s": 158.604,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "dd77836a",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -32008,7 +32146,8 @@
         0.5236517697463049
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S3/S3-D_seed06.pkl": {
       "seed": 306,
@@ -32019,10 +32158,10 @@
       "f1_gbl": 642.0,
       "f2": 0.5175927810384731,
       "f3": 0.5392594089156739,
-      "runtime_s": 248.043,
+      "runtime_s": 168.62,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "dd77836a",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -32383,7 +32522,8 @@
         0.46475106715929826
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S3/S3-D_seed07.pkl": {
       "seed": 307,
@@ -32394,10 +32534,10 @@
       "f1_gbl": 629.0,
       "f2": 0.5140095569897306,
       "f3": 0.5208009697725838,
-      "runtime_s": 221.524,
+      "runtime_s": 189.917,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "dd77836a",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -32755,7 +32895,8 @@
         0.6803860053974444
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S3/S3-D_seed08.pkl": {
       "seed": 308,
@@ -32766,10 +32907,10 @@
       "f1_gbl": 673.0,
       "f2": 0.5088927532765549,
       "f3": 0.5385640549133828,
-      "runtime_s": 208.152,
+      "runtime_s": 191.211,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "dd77836a",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -33133,7 +33274,8 @@
         0.6229618642352757
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S3/S3-D_seed09.pkl": {
       "seed": 309,
@@ -33144,10 +33286,10 @@
       "f1_gbl": 656.0,
       "f2": 0.5063021984162325,
       "f3": 0.5361741361184309,
-      "runtime_s": 168.753,
+      "runtime_s": 196.999,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "dd77836a",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -33511,7 +33653,8 @@
         0.6961637482434069
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S3/S3-E_seed00.pkl": {
       "seed": 400,
@@ -33522,10 +33665,10 @@
       "f1_gbl": 1203.0,
       "f2": 0.5440708155321562,
       "f3": 0.4359088274194547,
-      "runtime_s": 331.254,
+      "runtime_s": 337.162,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "dd77836a",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -34138,7 +34281,8 @@
         0.6137141820688918
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S3/S3-E_seed01.pkl": {
       "seed": 401,
@@ -34149,10 +34293,10 @@
       "f1_gbl": 1156.0,
       "f2": 0.5273126425282917,
       "f3": 0.44260854751092915,
-      "runtime_s": 296.157,
+      "runtime_s": 403.543,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "dd77836a",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -34765,7 +34909,8 @@
         0.6486596516855156
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S3/S3-E_seed02.pkl": {
       "seed": 402,
@@ -34776,10 +34921,10 @@
       "f1_gbl": 1236.0,
       "f2": 0.5327570253865711,
       "f3": 0.4313168672471735,
-      "runtime_s": 310.08,
+      "runtime_s": 365.272,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "dd77836a",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -35392,7 +35537,8 @@
         0.4072734225864981
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S3/S3-E_seed03.pkl": {
       "seed": 403,
@@ -35403,10 +35549,10 @@
       "f1_gbl": 1173.0,
       "f2": 0.532287077290606,
       "f3": 0.43669593245737837,
-      "runtime_s": 268.425,
+      "runtime_s": 447.38,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "dd77836a",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -36019,7 +36165,8 @@
         0.47309583074019884
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S3/S3-E_seed04.pkl": {
       "seed": 404,
@@ -36030,10 +36177,10 @@
       "f1_gbl": 1182.0,
       "f2": 0.5305537922964583,
       "f3": 0.4610357701714328,
-      "runtime_s": 390.759,
+      "runtime_s": 453.141,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "dd77836a",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -36646,7 +36793,8 @@
         0.3512674843907867
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S3/S3-E_seed05.pkl": {
       "seed": 405,
@@ -36657,10 +36805,10 @@
       "f1_gbl": 1169.0,
       "f2": 0.5455747681845073,
       "f3": 0.4373558353962108,
-      "runtime_s": 282.613,
+      "runtime_s": 430.106,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "dd77836a",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -37273,7 +37421,8 @@
         0.5502404352239745
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S3/S3-E_seed06.pkl": {
       "seed": 406,
@@ -37284,10 +37433,10 @@
       "f1_gbl": 1219.0,
       "f2": 0.5337423939648922,
       "f3": 0.4326336173648629,
-      "runtime_s": 270.255,
+      "runtime_s": 393.414,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "dd77836a",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -37900,7 +38049,8 @@
         0.5879758146982634
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S3/S3-E_seed07.pkl": {
       "seed": 407,
@@ -37911,10 +38061,10 @@
       "f1_gbl": 1174.0,
       "f2": 0.5273215186889246,
       "f3": 0.4542618833594437,
-      "runtime_s": 414.309,
+      "runtime_s": 340.824,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "dd77836a",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -38527,7 +38677,8 @@
         0.5416702489273915
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S3/S3-E_seed08.pkl": {
       "seed": 408,
@@ -38538,10 +38689,10 @@
       "f1_gbl": 1173.0,
       "f2": 0.5345679890454943,
       "f3": 0.4535399448626675,
-      "runtime_s": 373.077,
+      "runtime_s": 342.801,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "dd77836a",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -39154,7 +39305,8 @@
         0.5744679512822612
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S3/S3-E_seed09.pkl": {
       "seed": 409,
@@ -39165,10 +39317,10 @@
       "f1_gbl": 1147.0,
       "f2": 0.541966997848076,
       "f3": 0.4438288019664698,
-      "runtime_s": 273.434,
+      "runtime_s": 342.598,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "dd77836a",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -39781,7 +39933,8 @@
         0.5241696971142571
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S4/S4-A_seed00.pkl": {
       "seed": 0,
@@ -39792,10 +39945,10 @@
       "f1_gbl": 1192.0,
       "f2": 0.5199436495795576,
       "f3": 0.5185293558334407,
-      "runtime_s": 265.516,
+      "runtime_s": 375.601,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "dd77836a",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -40408,7 +40561,8 @@
         0.5135704236827566
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S4/S4-A_seed01.pkl": {
       "seed": 1,
@@ -40419,10 +40573,10 @@
       "f1_gbl": 1331.0,
       "f2": 0.5123344339603662,
       "f3": 0.5253465081135299,
-      "runtime_s": 267.681,
+      "runtime_s": 388.034,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "dd77836a",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -41035,7 +41189,8 @@
         0.3922283852675704
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S4/S4-A_seed02.pkl": {
       "seed": 2,
@@ -41046,10 +41201,10 @@
       "f1_gbl": 1202.0,
       "f2": 0.5176276915285729,
       "f3": 0.5219395501949434,
-      "runtime_s": 309.023,
+      "runtime_s": 387.341,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "dd77836a",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -41662,7 +41817,8 @@
         0.3776575738776986
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S4/S4-A_seed03.pkl": {
       "seed": 3,
@@ -41673,10 +41829,10 @@
       "f1_gbl": 1233.0,
       "f2": 0.5078895642463638,
       "f3": 0.5290799238548074,
-      "runtime_s": 291.466,
+      "runtime_s": 415.944,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "dd77836a",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -42289,7 +42445,8 @@
         0.5517755241065156
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S4/S4-A_seed04.pkl": {
       "seed": 4,
@@ -42300,10 +42457,10 @@
       "f1_gbl": 1263.0,
       "f2": 0.5221256243391899,
       "f3": 0.5107924146717011,
-      "runtime_s": 398.203,
+      "runtime_s": 309.463,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "dd77836a",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -42916,7 +43073,8 @@
         0.4073078839978693
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S4/S4-A_seed05.pkl": {
       "seed": 5,
@@ -42927,10 +43085,10 @@
       "f1_gbl": 1248.0,
       "f2": 0.5197407443388059,
       "f3": 0.5098147319931869,
-      "runtime_s": 308.272,
+      "runtime_s": 332.168,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "dd77836a",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -43543,7 +43701,8 @@
         0.6398121691683444
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S4/S4-A_seed06.pkl": {
       "seed": 6,
@@ -43554,10 +43713,10 @@
       "f1_gbl": 1132.0,
       "f2": 0.5120914821490773,
       "f3": 0.5280023455233074,
-      "runtime_s": 314.989,
+      "runtime_s": 328.477,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "dd77836a",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -44170,7 +44329,8 @@
         0.5438235511199788
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S4/S4-A_seed07.pkl": {
       "seed": 7,
@@ -44181,10 +44341,10 @@
       "f1_gbl": 1242.0,
       "f2": 0.5172206891232609,
       "f3": 0.5115548362357292,
-      "runtime_s": 411.887,
+      "runtime_s": 355.656,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "dd77836a",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -44797,7 +44957,8 @@
         0.5738882777798185
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S4/S4-A_seed08.pkl": {
       "seed": 8,
@@ -44808,10 +44969,10 @@
       "f1_gbl": 1213.0,
       "f2": 0.5071179353128857,
       "f3": 0.5257357321726817,
-      "runtime_s": 466.211,
+      "runtime_s": 344.586,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "dd77836a",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -45424,7 +45585,8 @@
         0.5000398903563892
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S4/S4-A_seed09.pkl": {
       "seed": 9,
@@ -45435,10 +45597,10 @@
       "f1_gbl": 1179.0,
       "f2": 0.5169027515110723,
       "f3": 0.5224208407609631,
-      "runtime_s": 392.004,
+      "runtime_s": 319.975,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "dd77836a",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -46051,7 +46213,8 @@
         0.5424039983224173
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S4/S4-B_seed00.pkl": {
       "seed": 100,
@@ -46062,10 +46225,10 @@
       "f1_gbl": 157.0,
       "f2": 0.4838152068581814,
       "f3": 0.47929381571505014,
-      "runtime_s": 79.084,
+      "runtime_s": 63.951,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "dd77836a",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -46174,7 +46337,8 @@
         0.49811484828418884
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S4/S4-B_seed01.pkl": {
       "seed": 101,
@@ -46185,10 +46349,10 @@
       "f1_gbl": 209.0,
       "f2": 0.5057926175666869,
       "f3": 0.45456438306085556,
-      "runtime_s": 69.614,
+      "runtime_s": 57.644,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "dd77836a",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -46306,7 +46470,8 @@
         0.4433779578633941
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S4/S4-B_seed02.pkl": {
       "seed": 102,
@@ -46317,10 +46482,10 @@
       "f1_gbl": 195.0,
       "f2": 0.4922908649067829,
       "f3": 0.4669778738868247,
-      "runtime_s": 94.089,
+      "runtime_s": 66.249,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "dd77836a",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -46441,7 +46606,8 @@
         0.452482986830163
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S4/S4-B_seed03.pkl": {
       "seed": 103,
@@ -46452,10 +46618,10 @@
       "f1_gbl": 178.0,
       "f2": 0.4861940663916424,
       "f3": 0.47634846401165853,
-      "runtime_s": 98.234,
+      "runtime_s": 72.717,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "dd77836a",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -46573,7 +46739,8 @@
         0.7174121641101974
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S4/S4-B_seed04.pkl": {
       "seed": 104,
@@ -46584,10 +46751,10 @@
       "f1_gbl": 200.0,
       "f2": 0.4907322627874563,
       "f3": 0.47396792064637533,
-      "runtime_s": 65.265,
+      "runtime_s": 82.367,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "dd77836a",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -46711,7 +46878,8 @@
         0.5226980333958415
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S4/S4-B_seed05.pkl": {
       "seed": 105,
@@ -46722,10 +46890,10 @@
       "f1_gbl": 255.0,
       "f2": 0.4969283410806894,
       "f3": 0.47478873343554373,
-      "runtime_s": 69.692,
+      "runtime_s": 87.304,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "dd77836a",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -46861,7 +47029,8 @@
         0.42017143192702083
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S4/S4-B_seed06.pkl": {
       "seed": 106,
@@ -46872,10 +47041,10 @@
       "f1_gbl": 185.0,
       "f2": 0.4997912647293459,
       "f3": 0.483653820997959,
-      "runtime_s": 51.028,
+      "runtime_s": 78.517,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "dd77836a",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -46990,7 +47159,8 @@
         0.6983189385689667
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S4/S4-B_seed07.pkl": {
       "seed": 107,
@@ -47001,10 +47171,10 @@
       "f1_gbl": 182.0,
       "f2": 0.500919825488582,
       "f3": 0.45113107327669694,
-      "runtime_s": 91.235,
+      "runtime_s": 94.169,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "dd77836a",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -47119,7 +47289,8 @@
         0.49561263569350145
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S4/S4-B_seed08.pkl": {
       "seed": 108,
@@ -47130,10 +47301,10 @@
       "f1_gbl": 183.0,
       "f2": 0.5112244761834733,
       "f3": 0.4641384058872533,
-      "runtime_s": 77.888,
+      "runtime_s": 77.234,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "dd77836a",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -47248,7 +47419,8 @@
         0.6938747792274979
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S4/S4-B_seed09.pkl": {
       "seed": 109,
@@ -47259,10 +47431,10 @@
       "f1_gbl": 203.0,
       "f2": 0.49862778228682897,
       "f3": 0.48690989515209837,
-      "runtime_s": 101.904,
+      "runtime_s": 96.171,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "dd77836a",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -47389,7 +47561,8 @@
         0.53029537180358
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S4/S4-C_seed00.pkl": {
       "seed": 200,
@@ -47400,10 +47573,10 @@
       "f1_gbl": 1112.0,
       "f2": 0.5271052386312342,
       "f3": 0.43376736572328817,
-      "runtime_s": 689.584,
+      "runtime_s": 400.601,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "dd77836a",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -48016,7 +48189,8 @@
         0.5534031257683742
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S4/S4-C_seed01.pkl": {
       "seed": 201,
@@ -48027,10 +48201,10 @@
       "f1_gbl": 1117.0,
       "f2": 0.5392929880042525,
       "f3": 0.4236495150450038,
-      "runtime_s": 489.063,
+      "runtime_s": 454.653,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "dd77836a",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -48643,7 +48817,8 @@
         0.3436047639968184
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S4/S4-C_seed02.pkl": {
       "seed": 202,
@@ -48654,10 +48829,10 @@
       "f1_gbl": 1112.0,
       "f2": 0.5379789513131956,
       "f3": 0.39888548790567735,
-      "runtime_s": 475.086,
+      "runtime_s": 469.748,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "dd77836a",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -49270,7 +49445,8 @@
         0.5309060362010618
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S4/S4-C_seed03.pkl": {
       "seed": 203,
@@ -49281,10 +49457,10 @@
       "f1_gbl": 1092.0,
       "f2": 0.5330566268928669,
       "f3": 0.43630670561803214,
-      "runtime_s": 456.741,
+      "runtime_s": 391.192,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "dd77836a",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -49897,7 +50073,8 @@
         0.5088706454892231
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S4/S4-C_seed04.pkl": {
       "seed": 204,
@@ -49908,10 +50085,10 @@
       "f1_gbl": 1165.0,
       "f2": 0.537232275649044,
       "f3": 0.42221995407771173,
-      "runtime_s": 443.354,
+      "runtime_s": 305.962,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "dd77836a",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -50524,7 +50701,8 @@
         0.4460349774097465
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S4/S4-C_seed05.pkl": {
       "seed": 205,
@@ -50535,10 +50713,10 @@
       "f1_gbl": 1098.0,
       "f2": 0.5460952346296191,
       "f3": 0.41303613051821825,
-      "runtime_s": 371.3,
+      "runtime_s": 307.39,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "dd77836a",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -51139,7 +51317,8 @@
         0.3408751094226503
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S4/S4-C_seed06.pkl": {
       "seed": 206,
@@ -51150,10 +51329,10 @@
       "f1_gbl": 1126.0,
       "f2": 0.5279233681052663,
       "f3": 0.4431751473544729,
-      "runtime_s": 328.288,
+      "runtime_s": 333.568,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "dd77836a",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -51766,7 +51945,8 @@
         0.5079004152918738
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S4/S4-C_seed07.pkl": {
       "seed": 207,
@@ -51777,10 +51957,10 @@
       "f1_gbl": 1149.0,
       "f2": 0.5376445244724993,
       "f3": 0.3968493712537592,
-      "runtime_s": 336.829,
+      "runtime_s": 292.584,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "dd77836a",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -52393,7 +52573,8 @@
         0.47275732126243397
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S4/S4-C_seed08.pkl": {
       "seed": 208,
@@ -52404,10 +52585,10 @@
       "f1_gbl": 1113.0,
       "f2": 0.533799489995201,
       "f3": 0.442993156572024,
-      "runtime_s": 391.631,
+      "runtime_s": 334.011,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "dd77836a",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -53005,7 +53186,8 @@
         0.4915781492823758
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S4/S4-C_seed09.pkl": {
       "seed": 209,
@@ -53016,10 +53198,10 @@
       "f1_gbl": 1054.0,
       "f2": 0.549806432017399,
       "f3": 0.39430489025611687,
-      "runtime_s": 424.676,
+      "runtime_s": 285.972,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "dd77836a",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -53629,7 +53811,8 @@
         0.5401407275919701
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S4/S4-D_seed00.pkl": {
       "seed": 300,
@@ -53640,10 +53823,10 @@
       "f1_gbl": 406.0,
       "f2": 0.39242891594829243,
       "f3": 0.7305188690898519,
-      "runtime_s": 135.604,
+      "runtime_s": 99.397,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "dd77836a",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -53896,7 +54079,8 @@
         0.3804035598045159
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S4/S4-D_seed01.pkl": {
       "seed": 301,
@@ -53907,10 +54091,10 @@
       "f1_gbl": 446.0,
       "f2": 0.38988644461462185,
       "f3": 0.7310676899124313,
-      "runtime_s": 122.54,
+      "runtime_s": 96.218,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "dd77836a",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -54151,7 +54335,8 @@
         0.38498022734413867
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S4/S4-D_seed02.pkl": {
       "seed": 302,
@@ -54162,10 +54347,10 @@
       "f1_gbl": 497.0,
       "f2": 0.38853873186182314,
       "f3": 0.7335712304394378,
-      "runtime_s": 137.978,
+      "runtime_s": 103.686,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "dd77836a",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -54439,7 +54624,8 @@
         0.3555569185891171
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S4/S4-D_seed03.pkl": {
       "seed": 303,
@@ -54450,10 +54636,10 @@
       "f1_gbl": 418.0,
       "f2": 0.389992891617292,
       "f3": 0.734675328534236,
-      "runtime_s": 145.69,
+      "runtime_s": 95.158,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "dd77836a",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -54694,7 +54880,8 @@
         0.35572815195536384
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S4/S4-D_seed04.pkl": {
       "seed": 304,
@@ -54705,10 +54892,10 @@
       "f1_gbl": 399.0,
       "f2": 0.3932798135071126,
       "f3": 0.7304883034584615,
-      "runtime_s": 95.674,
+      "runtime_s": 87.226,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "dd77836a",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -54925,7 +55112,8 @@
         0.38644133242911044
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S4/S4-D_seed05.pkl": {
       "seed": 305,
@@ -54936,10 +55124,10 @@
       "f1_gbl": 467.0,
       "f2": 0.3892243618909253,
       "f3": 0.7329613156716474,
-      "runtime_s": 180.762,
+      "runtime_s": 95.659,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "dd77836a",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -55201,7 +55389,8 @@
         0.3492568383692154
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S4/S4-D_seed06.pkl": {
       "seed": 306,
@@ -55212,10 +55401,10 @@
       "f1_gbl": 421.0,
       "f2": 0.38870117592994735,
       "f3": 0.736781867024419,
-      "runtime_s": 146.533,
+      "runtime_s": 101.718,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "dd77836a",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -55474,7 +55663,8 @@
         0.3584293337700703
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S4/S4-D_seed07.pkl": {
       "seed": 307,
@@ -55485,10 +55675,10 @@
       "f1_gbl": 418.0,
       "f2": 0.3941209807083123,
       "f3": 0.7264354433987207,
-      "runtime_s": 137.475,
+      "runtime_s": 115.069,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "dd77836a",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -55729,7 +55919,8 @@
         0.3647710764879762
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S4/S4-D_seed08.pkl": {
       "seed": 308,
@@ -55740,10 +55931,10 @@
       "f1_gbl": 442.0,
       "f2": 0.3898372909510614,
       "f3": 0.7382061612620235,
-      "runtime_s": 140.234,
+      "runtime_s": 104.628,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "dd77836a",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -55993,7 +56184,8 @@
         0.3783796428252411
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S4/S4-D_seed09.pkl": {
       "seed": 309,
@@ -56004,10 +56196,10 @@
       "f1_gbl": 478.0,
       "f2": 0.390478184692781,
       "f3": 0.7344158963684072,
-      "runtime_s": 134.415,
+      "runtime_s": 84.152,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "dd77836a",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -56263,7 +56455,8 @@
         0.3635474865354394
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S4/S4-E_seed00.pkl": {
       "seed": 400,
@@ -56274,10 +56467,10 @@
       "f1_gbl": 1250.0,
       "f2": 0.506549424999293,
       "f3": 0.5385991769053335,
-      "runtime_s": 540.397,
+      "runtime_s": 320.34,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "dd77836a",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -56890,7 +57083,8 @@
         0.44921060741447305
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S4/S4-E_seed01.pkl": {
       "seed": 401,
@@ -56901,10 +57095,10 @@
       "f1_gbl": 1266.0,
       "f2": 0.5079538241045752,
       "f3": 0.5123173895534769,
-      "runtime_s": 411.361,
+      "runtime_s": 233.98,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "dd77836a",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -57517,7 +57711,8 @@
         0.5116840531939288
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S4/S4-E_seed02.pkl": {
       "seed": 402,
@@ -57528,10 +57723,10 @@
       "f1_gbl": 1295.0,
       "f2": 0.5099323258966911,
       "f3": 0.5235605831548338,
-      "runtime_s": 469.132,
+      "runtime_s": 247.707,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "dd77836a",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -58144,7 +58339,8 @@
         0.6138734596853155
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S4/S4-E_seed03.pkl": {
       "seed": 403,
@@ -58155,10 +58351,10 @@
       "f1_gbl": 1268.0,
       "f2": 0.5100052143615682,
       "f3": 0.5328126463444348,
-      "runtime_s": 396.921,
+      "runtime_s": 236.975,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "dd77836a",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -58771,7 +58967,8 @@
         0.5104375388413929
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S4/S4-E_seed04.pkl": {
       "seed": 404,
@@ -58782,10 +58979,10 @@
       "f1_gbl": 1325.0,
       "f2": 0.5149505829571165,
       "f3": 0.5365034349280386,
-      "runtime_s": 423.309,
+      "runtime_s": 237.054,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "dd77836a",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -59398,7 +59595,8 @@
         0.4867977230686994
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S4/S4-E_seed05.pkl": {
       "seed": 405,
@@ -59409,10 +59607,10 @@
       "f1_gbl": 1311.0,
       "f2": 0.5230166358925409,
       "f3": 0.49953013052649586,
-      "runtime_s": 432.799,
+      "runtime_s": 282.809,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "dd77836a",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -60025,7 +60223,8 @@
         0.5916476504865921
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S4/S4-E_seed06.pkl": {
       "seed": 406,
@@ -60036,10 +60235,10 @@
       "f1_gbl": 1259.0,
       "f2": 0.5115893100516512,
       "f3": 0.5349086563295044,
-      "runtime_s": 431.477,
+      "runtime_s": 344.945,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "dd77836a",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -60652,7 +60851,8 @@
         0.32166184077328436
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S4/S4-E_seed07.pkl": {
       "seed": 407,
@@ -60663,10 +60863,10 @@
       "f1_gbl": 1259.0,
       "f2": 0.506359861128876,
       "f3": 0.5455051369711055,
-      "runtime_s": 358.604,
+      "runtime_s": 366.414,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "dd77836a",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -61279,7 +61479,8 @@
         0.46638269156347884
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S4/S4-E_seed08.pkl": {
       "seed": 408,
@@ -61290,10 +61491,10 @@
       "f1_gbl": 1207.0,
       "f2": 0.5112514112992352,
       "f3": 0.5276208475693348,
-      "runtime_s": 345.168,
+      "runtime_s": 379.969,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "dd77836a",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -61906,7 +62107,8 @@
         0.5031776851830242
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     },
     "S4/S4-E_seed09.pkl": {
       "seed": 409,
@@ -61917,10 +62119,10 @@
       "f1_gbl": 1321.0,
       "f2": 0.5220427902744101,
       "f3": 0.5207933587365866,
-      "runtime_s": 322.885,
+      "runtime_s": 509.318,
       "n_frontier": 1,
       "solver": "b2_profit_bl_seeded",
-      "solver_version": "dd77836a",
+      "solver_version": "c92d2ec2",
       "params": {
         "population_size": 100,
         "n_generations": 200
@@ -62533,7 +62735,8 @@
         0.34700872629325435
       ],
       "constraint_feasible": true,
-      "n_constraints_failed": 0
+      "n_constraints_failed": 0,
+      "used_gbl_fallback": false
     }
   }
 }

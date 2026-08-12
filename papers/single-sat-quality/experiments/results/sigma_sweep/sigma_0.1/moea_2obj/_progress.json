@@ -1,0 +1,271 @@
+{
+  "completed": {
+    "S3/S3-A_seed00.pkl": {
+      "scenario_seed": 0,
+      "n_targets": 300,
+      "n_selected": 200,
+      "f1": 1.0,
+      "f1_raw": 1166.0,
+      "f1_gbl": 1166.0,
+      "f2": 0.5375666535613912,
+      "f3": 0.43580942797409683,
+      "runtime_s": 414.416,
+      "n_frontier": 1,
+      "frontier_f1": [
+        1.0
+      ],
+      "frontier_f2": [
+        0.5375666535613912
+      ],
+      "frontier_f3": [
+        0.43580942797409683
+      ],
+      "n_obj": 2,
+      "sigma": 0.1,
+      "solver_version": "3e18b169",
+      "pkl_sha1": "59b7b3bb8225d004b9dc842316063cc3c9031301"
+    },
+    "S3/S3-A_seed01.pkl": {
+      "scenario_seed": 1,
+      "n_targets": 300,
+      "n_selected": 200,
+      "f1": 1.0,
+      "f1_raw": 1208.0,
+      "f1_gbl": 1208.0,
+      "f2": 0.5313071879165907,
+      "f3": 0.44237297644366175,
+      "runtime_s": 566.638,
+      "n_frontier": 1,
+      "frontier_f1": [
+        1.0
+      ],
+      "frontier_f2": [
+        0.5313071879165907
+      ],
+      "frontier_f3": [
+        0.44237297644366175
+      ],
+      "n_obj": 2,
+      "sigma": 0.1,
+      "solver_version": "3e18b169",
+      "pkl_sha1": "75f1290a4702c81105917d0806ed1c22f5cb4598"
+    },
+    "S3/S3-A_seed02.pkl": {
+      "scenario_seed": 2,
+      "n_targets": 300,
+      "n_selected": 200,
+      "f1": 1.0,
+      "f1_raw": 1168.0,
+      "f1_gbl": 1168.0,
+      "f2": 0.5378331138928822,
+      "f3": 0.4214845853781467,
+      "runtime_s": 548.35,
+      "n_frontier": 1,
+      "frontier_f1": [
+        1.0
+      ],
+      "frontier_f2": [
+        0.5378331138928822
+      ],
+      "frontier_f3": [
+        0.4214845853781467
+      ],
+      "n_obj": 2,
+      "sigma": 0.1,
+      "solver_version": "4006dd68",
+      "pkl_sha1": "97e90a049c1b5c7caea458dd3ea97191c947728f"
+    },
+    "S3/S3-A_seed03.pkl": {
+      "scenario_seed": 3,
+      "n_targets": 300,
+      "n_selected": 200,
+      "f1": 1.0,
+      "f1_raw": 1163.0,
+      "f1_gbl": 1163.0,
+      "f2": 0.5336792221484769,
+      "f3": 0.4180533221702894,
+      "runtime_s": 450.224,
+      "n_frontier": 1,
+      "frontier_f1": [
+        1.0
+      ],
+      "frontier_f2": [
+        0.5336792221484769
+      ],
+      "frontier_f3": [
+        0.4180533221702894
+      ],
+      "n_obj": 2,
+      "sigma": 0.1,
+      "solver_version": "4006dd68",
+      "pkl_sha1": "dbd0f8c25051ecbee53ebf9083c0a017c6ad19cd"
+    },
+    "S3/S3-A_seed04.pkl": {
+      "scenario_seed": 4,
+      "n_targets": 300,
+      "n_selected": 200,
+      "f1": 1.0,
+      "f1_raw": 1179.0,
+      "f1_gbl": 1179.0,
+      "f2": 0.5333491568433876,
+      "f3": 0.43295428115535345,
+      "runtime_s": 514.669,
+      "n_frontier": 1,
+      "frontier_f1": [
+        1.0
+      ],
+      "frontier_f2": [
+        0.5333491568433876
+      ],
+      "frontier_f3": [
+        0.43295428115535345
+      ],
+      "n_obj": 2,
+      "sigma": 0.1,
+      "solver_version": "4006dd68",
+      "pkl_sha1": "40e71d41822cf1582a194eebde4b62a92c5c22d0"
+    },
+    "S3/S3-A_seed05.pkl": {
+      "scenario_seed": 5,
+      "n_targets": 300,
+      "n_selected": 200,
+      "f1": 1.0,
+      "f1_raw": 1169.0,
+      "f1_gbl": 1169.0,
+      "f2": 0.5318366346678064,
+      "f3": 0.4379368049530219,
+      "runtime_s": 525.839,
+      "n_frontier": 1,
+      "frontier_f1": [
+        1.0
+      ],
+      "frontier_f2": [
+        0.5318366346678064
+      ],
+      "frontier_f3": [
+        0.4379368049530219
+      ],
+      "n_obj": 2,
+      "sigma": 0.1,
+      "solver_version": "4006dd68",
+      "pkl_sha1": "eb18f172703733181dde7bc810f58256ede5edef"
+    },
+    "S3/S3-A_seed06.pkl": {
+      "scenario_seed": 6,
+      "n_targets": 300,
+      "n_selected": 200,
+      "f1": 1.0,
+      "f1_raw": 1160.0,
+      "f1_gbl": 1160.0,
+      "f2": 0.5340366872140424,
+      "f3": 0.4469056854295056,
+      "runtime_s": 510.859,
+      "n_frontier": 1,
+      "frontier_f1": [
+        1.0
+      ],
+      "frontier_f2": [
+        0.5340366872140424
+      ],
+      "frontier_f3": [
+        0.4469056854295056
+      ],
+      "n_obj": 2,
+      "sigma": 0.1,
+      "solver_version": "4006dd68",
+      "pkl_sha1": "08b999339b4918ddefdaca95c7c9b9eb110b52ae"
+    },
+    "S3/S3-A_seed07.pkl": {
+      "scenario_seed": 7,
+      "n_targets": 300,
+      "n_selected": 200,
+      "f1": 1.0,
+      "f1_raw": 1161.0,
+      "f1_gbl": 1161.0,
+      "f2": 0.5374821222377626,
+      "f3": 0.4323633118022104,
+      "runtime_s": 492.636,
+      "n_frontier": 1,
+      "frontier_f1": [
+        1.0
+      ],
+      "frontier_f2": [
+        0.5374821222377626
+      ],
+      "frontier_f3": [
+        0.4323633118022104
+      ],
+      "n_obj": 2,
+      "sigma": 0.1,
+      "solver_version": "4006dd68",
+      "pkl_sha1": "8395b183de892563c86ef13e370856c6604d6ac1"
+    },
+    "S3/S3-A_seed08.pkl": {
+      "scenario_seed": 8,
+      "n_targets": 300,
+      "n_selected": 200,
+      "f1": 1.0,
+      "f1_raw": 1139.0,
+      "f1_gbl": 1139.0,
+      "f2": 0.5522228126990977,
+      "f3": 0.38836296163774725,
+      "runtime_s": 559.788,
+      "n_frontier": 1,
+      "frontier_f1": [
+        1.0
+      ],
+      "frontier_f2": [
+        0.5522228126990977
+      ],
+      "frontier_f3": [
+        0.38836296163774725
+      ],
+      "n_obj": 2,
+      "sigma": 0.1,
+      "solver_version": "4006dd68",
+      "pkl_sha1": "1ea0797ac9d8ec102335985ab098cbf8cf18f38f"
+    },
+    "S3/S3-A_seed09.pkl": {
+      "scenario_seed": 9,
+      "n_targets": 300,
+      "n_selected": 200,
+      "f1": 1.0,
+      "f1_raw": 1058.0,
+      "f1_gbl": 1058.0,
+      "f2": 0.5402362082037933,
+      "f3": 0.4275993686027432,
+      "runtime_s": 545.824,
+      "n_frontier": 1,
+      "frontier_f1": [
+        1.0
+      ],
+      "frontier_f2": [
+        0.5402362082037933
+      ],
+      "frontier_f3": [
+        0.4275993686027432
+      ],
+      "n_obj": 2,
+      "sigma": 0.1,
+      "solver_version": "90f7202c",
+      "pkl_sha1": "d2736f80be02ad186d944dbe31906a2221f8610f"
+    }
+  },
+  "stats": {
+    "sigma": 0.1,
+    "solver": "moea_2obj",
+    "n_obj": 2,
+    "groups": [
+      "S3"
+    ],
+    "total_scenarios": 10,
+    "completed": 10,
+    "params": {
+      "population_size": 100,
+      "n_generations": 200,
+      "n_ref_dirs": 12
+    },
+    "solver_seed": 42,
+    "git_commit": "90f7202c"
+  }
+}
