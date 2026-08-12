@@ -92,7 +92,7 @@ When the scheduler can choose \emph{when} within a visibility window to observe
 each target (the defining feature of agile satellites), it simultaneously
 chooses the imaging quality at which each target is acquired.
 Despite this tight coupling between scheduling and imaging physics,
-with few exceptions \citep{Wei2025MONP,Kramer2025SARVis}, existing
+with few exceptions \citep{Kramer2025SARVis}, existing
 agile SAR scheduling methods either reduce SAR to a coverage-only objective
 or apply post hoc quality checks on schedules produced by
 coverage-maximizing solvers.
@@ -216,7 +216,7 @@ with a bi-objective image-quality-loss/energy model in which quality enters as
 an attitude-angle proxy attached to each observation opportunity, and
 \citet{Wu2019NSGA3Formation} apply NSGA-III to satellite-formation imaging
 scheduling with coverage- and timeliness-type objectives; both are
-representative of Chinese-language and Chinese-affiliated scheduling research
+representative of Chinese-affiliated scheduling research
 in which imaging quality is a scalar attribute or coarse proxy rather than a
 decomposed physical objective.
 The common limitation of this prior work is that SAR physical quality
@@ -663,8 +663,8 @@ overall differences across 5 solvers $\times$ 200 scenarios, followed by
 pairwise Wilcoxon signed-rank comparisons with Bonferroni correction
 ($\alpha = 0.05 / 10 = 0.005$). Per-objective and ablation comparisons are
 reported with raw $p$-values alongside the Bonferroni threshold. Effect
-sizes are measured by Cliff's $\delta$, classified following Romano,
-Kromrey, Coraggio, and Skowronek (2006) ($|\delta| < 0.147$ negligible,
+sizes are measured by Cliff's $\delta$, classified following
+\citet{Romano2006} ($|\delta| < 0.147$ negligible,
 $< 0.33$ small, $< 0.474$ medium, $\geq 0.474$ large).
 Hypervolume is computed with reference point $(0, 0, 0)$ in the
 min--max-normalized objective space, where the min/max bounds are pooled
