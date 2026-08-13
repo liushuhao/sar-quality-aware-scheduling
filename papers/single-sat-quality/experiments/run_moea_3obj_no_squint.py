@@ -2,16 +2,19 @@
 """
 MOEA-3 ablation variant B: NO SQUINT (squint component removed from f2/f3).
 
-Differences from baseline (run_moea_3obj.py):
-  - f2 = Σ sin(θ_i)                 (no cos(ψ_sq) term)
-  - f3 = Σ cos³(θ_i)                (no cos³(ψ_sq) term)
+Differences from baseline (run_moea_3obj.py), RDR-066 elevation-plane caliber:
+  - f2 = Σ sin(θ_elev,i)              (no cos(ψ_sq) term)
+  - f3 = Σ cos³(θ_elev,i)             (no cos³(ψ_sq) term)
+where cos(θ_elev) = cos(ξ)/cos(ψ) is the elevation-plane incidence angle
+(θ_elev excludes the along-track/squint contribution, unlike the full
+3-D incidence angle θ = off_nadir_to_incidence(ξ)).
 
 This isolates the contribution of squint-angle modeling to f2/f3.
 Compared to baseline, if squint modeling matters, f2/f3 should drop.
 
-DOES NOT MODIFY main moea.py. Solver is implemented in a new module
-(sar_sim.solver.moea_no_squint) that imports the original class and
-overrides _evaluate() with a modified f2/f3.
+DOES NOT MODIFY main moea.py. Variant B is implemented as a local
+SARSchedulingProblemNoSquint class in this file that overrides _evaluate()
+with the modified f2/f3.
 
 See handoffs/ablation-study-naming.md for full naming convention.
 """
@@ -61,10 +64,10 @@ SETTLE_TIME = 5.0
 MAX_SQUINT_RAD = np.radians(45.0)
 
 
-# ─── Variant B: SARSchedulingProblem with f2=sinθ, f3=cos³θ ──────
+# ─── Variant B: SARSchedulingProblem with f2=sinθ_elev, f3=cos³θ_elev ──────
 
 class SARSchedulingProblemNoSquint(Problem):
-    """Variant B: f2 = Σ sin(θ), f3 = Σ cos³(θ). No squint component.
+    """Variant B: f2 = Σ sin(θ_elev), f3 = Σ cos³(θ_elev). No squint component.
 
     All other logic (encoding, constraints, decoding) is identical to
     SARSchedulingProblem — only the f2/f3 numerators are changed.
@@ -93,14 +96,14 @@ class SARSchedulingProblemNoSquint(Problem):
         return task.t_earliest + tau_i * task.time_span
 
     def _evaluate(self, X, out, *args, **kwargs):
-        """Identical to baseline except f2 = Σ sin(θ), f3 = Σ cos³(θ)."""
+        """Identical to baseline except f2 = Σ sin(θ_elev), f3 = Σ cos³(θ_elev)."""
         n_pop = X.shape[0]
         N = self.instance.N
         inst = self.instance
 
         f1 = np.zeros(n_pop)
-        f2_num = np.zeros(n_pop)   # VARIANT: sin(θ) only
-        f3_num = np.zeros(n_pop)   # VARIANT: cos³(θ) only
+        f2_num = np.zeros(n_pop)   # VARIANT: sin(θ_elev) only
+        f3_num = np.zeros(n_pop)   # VARIANT: cos³(θ_elev) only
         n_sel = np.zeros(n_pop)
         G = np.zeros(n_pop)
 
@@ -126,16 +129,19 @@ class SARSchedulingProblemNoSquint(Problem):
                         geom = inst.geom_cache.lookup(i, t_act)
                         phi_dict[i] = geom.phi
                         squint_dict[i] = geom.psi_sq
-                        # VARIANT B: f2 = sin(θ) only, f3 = cos³(θ) only
-                        f2_num[p] += math.sin(geom.theta)
-                        f3_num[p] += math.cos(geom.theta) ** 3
+                        # VARIANT B (RDR-066): f2 = sin(θ_elev), f3 = cos³(θ_elev)
+                        # where cos(θ_elev) = cos(ξ)/cos(ψ) excludes squint.
+                        cos_te = math.cos(geom.phi) / geom.cos_psi if geom.cos_psi > 1e-9 else 0.0
+                        f2_num[p] += math.sqrt(max(1.0 - cos_te ** 2, 0.0))
+                        f3_num[p] += cos_te ** 3
                     else:
                         roll, _, psi_sq = compute_full_attitude(task, t_act, 1.0, inst)
                         phi_dict[i] = abs(roll)
                         squint_dict[i] = psi_sq
-                        theta_i = off_nadir_to_incidence(phi_dict[i], inst.altitude_m)
-                        f2_num[p] += math.sin(theta_i)
-                        f3_num[p] += math.cos(theta_i) ** 3
+                        cos_psi_i = math.cos(psi_sq)
+                        cos_te = math.cos(phi_dict[i]) / cos_psi_i if cos_psi_i > 1e-9 else 0.0
+                        f2_num[p] += math.sqrt(max(1.0 - cos_te ** 2, 0.0))
+                        f3_num[p] += cos_te ** 3
 
             # Constraints (identical to baseline)
             g = 0.0
@@ -191,7 +197,7 @@ class SARSchedulingProblemNoSquint(Problem):
 
 
 def moea_solver_no_squint(windows, targets, **kwargs):
-    """Variant B solver: f2=sinθ, f3=cos³θ, identical to baseline otherwise.
+    """Variant B solver: f2=sinθ_elev, f3=cos³θ_elev, identical to baseline otherwise.
 
     Inlines the optimization loop to use SARSchedulingProblemNoSquint.
     Reuses all frontier-decoding logic from the original moea_solver.
