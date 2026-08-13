@@ -194,15 +194,19 @@ def compute_hv(frontier, ref_point):
         if not np.any(mask):
             continue
         subset = pts[mask]
-        # 2D HV for this f3 slice: sort by f1 desc, integrate f2
+        # 2D HV for this f3 slice: sort by f1 desc, integrate running-max f2
+        # (a point dominated in (f1,f2) by a higher-f1 point adds no area)
         sorted_idx = subset[:, 0].argsort()[::-1]
         f1_prev = 1.0
+        f2_prev = ref_point[1]
         area = 0.0
         for idx in sorted_idx:
             f1_cur = subset[idx, 0]
             f2_cur = subset[idx, 1]
-            area += (f1_prev - f1_cur) * (f2_cur - ref_point[1])
+            f2_eff = max(f2_cur, f2_prev)
+            area += (f1_prev - f1_cur) * (f2_eff - ref_point[1])
             f1_prev = f1_cur
+            f2_prev = f2_eff
         f3_next = unique_f3[i+1] if i+1 < len(unique_f3) else ref_point[2]
         hv += area * (f3_val - f3_next)
     return hv
@@ -210,8 +214,8 @@ def compute_hv(frontier, ref_point):
 def normalize_objectives(all_results, common_keys):
     """Normalize f1, f2, f3 to [0,1] where 1 = best.
     f1: maximize → direct normalize
-    f2: minimize → flip
-    f3: minimize → flip
+    f2: maximize → direct normalize (Higher f2 = better geometric resolution)
+    f3: maximize → direct normalize (Higher f3 = better NESZ)
     """
     # Find global min/max for each objective
     all_f1, all_f2, all_f3 = [], [], []
@@ -235,9 +239,9 @@ def normalize_objectives(all_results, common_keys):
     def norm_f1(x):
         return (x - f1_min) / (f1_max - f1_min) if f1_max > f1_min else 0.5
     def norm_f2(x):
-        return 1.0 - (x - f2_min) / (f2_max - f2_min) if f2_max > f2_min else 0.5
+        return (x - f2_min) / (f2_max - f2_min) if f2_max > f2_min else 0.5
     def norm_f3(x):
-        return 1.0 - (x - f3_min) / (f3_max - f3_min) if f3_max > f3_min else 0.5
+        return (x - f3_min) / (f3_max - f3_min) if f3_max > f3_min else 0.5
 
     normalized = {}
     for key in common_keys:
