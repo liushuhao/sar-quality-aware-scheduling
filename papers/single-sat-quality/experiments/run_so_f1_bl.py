@@ -174,7 +174,7 @@ def main():
     for group_name, files in groups.items():
         for fpath in files:
             key = f"{group_name}/{fpath.name}"
-            if key in completed and completed[key].get("pkl_sha1") == _pkl_sha1(fpath):
+            if key in completed and completed[key].get("pkl_sha1") == _pkl_sha1(fpath) and completed[key].get("solver_version") == GIT_COMMIT:
                 continue
             try:
                 result = run_one(fpath)

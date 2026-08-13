@@ -352,7 +352,7 @@ def main():
         print(f"\n=== {gname}: {len(files)} scenarios ===")
         for fpath in files:
             key = f"{gname}/{fpath.name}"
-            if key in completed and completed[key].get("pkl_sha1") == _pkl_sha1(fpath): continue
+            if key in completed and completed[key].get("pkl_sha1") == _pkl_sha1(fpath) and completed[key].get("solver_version") == GIT_COMMIT: continue
             try:
                 r = run_one(fpath)
                 if r is not None: completed[key] = r; total_run += 1
