@@ -773,9 +773,9 @@ coverage and $f_2$ for substantially higher $f_3$.
 \toprule
 \textbf{Solver} & \textbf{HV} & \textbf{SD} \\
 \midrule
-MOEA-3  & 0.0593 & 0.0681 \\
-MOEA-2  & 0.0417 & 0.0398 \\
-G-BL    & 0.0186 & 0.0033 \\
+MOEA-3  & 0.0921 & 0.1079 \\
+MOEA-2  & 0.0684 & 0.0642 \\
+G-BL    & 0.0247 & 0.0159 \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -891,14 +891,14 @@ the advantage is effectively absent.
 
 \textbf{Phenomenon 1: Front compression.}
 Fig.~\ref{fig:fig4} visualizes the Pareto front on a representative S4
-scenario. The front contains $20.5 \pm 9.9$ MOEA-3 non-dominated solutions
-(MOEA-2: $1.8 \pm 1.0$) but is compressed: the found front spans only about
-$0.06$ in $f_1^*$ and $0.003$ in $f_2$, against a total span of $\Delta f_2 \approx 0.12$
+scenario. The front contains $5.4 \pm 6.2$ MOEA-3 non-dominated solutions
+(MOEA-2: $1.6 \pm 0.9$) but is compressed: the found front spans only about
+$0.08$ in $f_1^*$ and $0.014$ in $f_2$, against a total span of $\Delta f_2 \approx 0.14$
 in sparse S1 scenarios, confirming the scale-dependent saturation documented
 in \S\ref{sec:scale-sensitivity}. This compression is a property of the found
 front under G-BL-seeded search rather than of the full feasible trade-off
 surface: the squint-minimizing heuristic G-SM reaches feasible high-$f_3$
-operating points ($f_3 \approx 0.70$ at S4, \S\ref{sec:squint-special}) outside
+operating points ($f_3 \approx 0.79$ at S4, \S\ref{sec:squint-special}) outside
 the MOEA-3 surface, so the dense-regime redundancy is established near the
 full-coverage working point rather than over the entire feasible surface. In
 dense regimes, solver convergence to
@@ -916,11 +916,11 @@ objective produces little additional differentiation in the dense setting.
 
 The $f_1^*$--$f_2$ projection (panel a) shows an extremely compressed
 surface: even for the S4 scenario with the widest $f_1^*$ spread, the
-frontier spans only $f_1^* \in [0.94, 1.00]$ and $f_2 \in [0.500, 0.503]$
+frontier spans only $f_1^* \in [0.92, 1.00]$ and $f_2 \in [0.306, 0.320]$
 --- a near-vertical segment at full coverage.
 Overlaying the single-point baseline solutions shows that G-BL sits at the
 ``full-coverage, moderate-quality'' corner of the frontier, while G-SM occupies
-a qualitatively different region ($f_1^* \approx 0.37$, $f_3 \approx 0.70$) that
+a qualitatively different region ($f_1^* \approx 0.37$, $f_3 \approx 0.79$) that
 lies outside the MOEA-3 Pareto surface, a consequence of G-SM's aggressive
 squint minimization.
 
@@ -944,12 +944,12 @@ moderate $\approx -0.2$ to $-0.15$ at higher density
 
 The HV ranking (Table~\ref{tab:hv}) differs from the coverage ranking (Table~\ref{tab:solver-profiles}): among the three tabulated solvers, G-BL ranks first in tabulated $f_1^*$ but third in HV, while the NSGA-III variants rank first and second in HV (MOEA-3, then MOEA-2), despite their lower coverage ranking. Notably, G-SM --- omitted from the
 table because its single-point HV is dominated by point location rather than
-front quality --- actually attains the highest HV of any solver ($0.1023$)
+front quality --- actually attains the highest HV of any solver ($0.2351$)
 from its low-coverage, high-$f_3$ operating point
-($f_1^* \approx 0.37$, $f_3 \approx 0.70$ at S4), so the HV ranking would
+($f_1^* \approx 0.37$, $f_3 \approx 0.79$ at S4), so the HV ranking would
 invert if it were included. This is precisely the point-count confound: HV
 rewards an extreme single point more than a dense front near full coverage. A
-few sparse-density MOEA solutions exceed $f_1^*=1.00$ (three of 200 scenarios, up to $+6\%$), so G-BL is a near-optimal rather than a strict coverage anchor. This reversal is driven by point-count asymmetry: single-objective solvers contribute one point each to the HV reference set, while MOEA-3 contributes $34.3 \pm 8.4$ non-dominated points at S1 (MOEA-2: $6.7 \pm 2.0$), a cardinality gap that persists, less severely, at S3--S4. HV therefore conflates front quality with front cardinality, and the ranking should not be interpreted as a standalone quality judgment. The core phenomenon---front compression---is independent of HV ranking.
+few sparse-density MOEA solutions exceed $f_1^*=1.00$ (one of 200 scenarios, up to $+10.8\%$), so G-BL is a near-optimal rather than a strict coverage anchor. This reversal is driven by point-count asymmetry: single-objective solvers contribute one point each to the HV reference set, while MOEA-3 contributes $34.3 \pm 8.4$ non-dominated points at S1 (MOEA-2: $6.7 \pm 2.0$), a cardinality gap that persists, less severely, at S3--S4. HV therefore conflates front quality with front cardinality, and the ranking should not be interpreted as a standalone quality judgment. The core phenomenon---front compression---is independent of HV ranking.
 
 \textbf{Mechanism: geometric coupling and lower-squint convergence.}
 
@@ -1046,7 +1046,7 @@ the sparse regime but because the $f_3$ margins between solvers become
 negligible while the residual correlation stays moderate.
 Consistent with this scale-dependent saturation, the per-density
 hypervolume contracts at higher density: at S4 the pooled HV is
-$0.18$ (MOEA-2) and $0.11$ (MOEA-3) of its S1 value, i.e. the S4/S1 HV
+$0.26$ (MOEA-2) and $0.18$ (MOEA-3) of its S1 value, i.e. the S4/S1 HV
 ratio is well below unity, reflecting the near-point front compression
 documented in \S\ref{sec:pareto-coupling} (S4 fronts span only
 $\Delta f_1^* \approx 0.06$) rather than a degradation of solution
