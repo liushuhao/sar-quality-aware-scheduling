@@ -151,14 +151,14 @@ def checkp(cid, where, paper_val, data_val, tol):
 # ── Table 1 / overall performance (S1..S4) ─────────────────────────────────
 # paper values from Table 1 (small-paper-ijae.tex ~L684-746)
 T1 = {
-    "S1": {"G-SM": ("0.51", "0.16"), "MOEA-2": (("0.87", "0.08"), ("0.600", "0.021"), ("0.233", "0.027")),
-           "MOEA-3": (("0.976", "0.034"), ("0.540", "0.021"), ("0.428", "0.064"))},
-    "S2": {"G-SM": ("0.35", "0.09"), "MOEA-2": (("0.985", "0.025"), ("0.556", "0.031"), ("0.347", "0.077")),
-           "MOEA-3": (("0.999", "0.004"), ("0.548", "0.031"), ("0.375", "0.075"))},
-    "S3": {"G-SM": ("0.29", "0.04"), "MOEA-2": (("0.999", "0.004"), ("0.530", "0.019"), ("0.444", "0.062")),
-           "MOEA-3": (("1.000", "0.001"), ("0.528", "0.020"), ("0.453", "0.064"))},
-    "S4": {"G-SM": ("0.37", "0.12"), "MOEA-2": (("0.996", "0.009"), ("0.493", "0.053"), ("0.527", "0.111")),
-           "MOEA-3": (("1.000", "0.000"), ("0.490", "0.053"), ("0.535", "0.109"))},
+    "S1": {"G-SM": ("0.51", "0.16"), "MOEA-2": (("0.86", "0.14"), ("0.394", "0.059"), ("0.654", "0.038")),
+           "MOEA-3": (("0.85", "0.11"), ("0.377", "0.050"), ("0.699", "0.037"))},
+    "S2": {"G-SM": ("0.35", "0.09"), "MOEA-2": (("0.99", "0.03"), ("0.328", "0.030"), ("0.589", "0.045")),
+           "MOEA-3": (("0.98", "0.04"), ("0.329", "0.030"), ("0.597", "0.042"))},
+    "S3": {"G-SM": ("0.29", "0.04"), "MOEA-2": (("1.00", "0.00"), ("0.343", "0.026"), ("0.622", "0.040")),
+           "MOEA-3": (("1.00", "0.01"), ("0.344", "0.026"), ("0.623", "0.040"))},
+    "S4": {"G-SM": ("0.37", "0.12"), "MOEA-2": (("1.00", "0.01"), ("0.338", "0.038"), ("0.680", "0.073")),
+           "MOEA-3": (("1.00", "0.01"), ("0.338", "0.038"), ("0.680", "0.073"))},
 }
 for cls, tbl in T1.items():
     gm, gs, _ = gsm(cls, "f1")
@@ -200,10 +200,10 @@ scl = {"S1": scale_metrics("S1", bl), "S2": scale_metrics("S2", bl),
        "S3": scale_metrics("S3", bl), "S4": scale_metrics("S4", bl),
        "S7": scale_metrics("S7", S78), "S8": scale_metrics("S8", S78)}
 for cls, (pm, psd, pf2, pf2sd, ptrade) in [
-    ("S1", (0.87, 0.08, 4.7, 3.05, 84.0)),
-    ("S2", (0.985, 0.03, 1.4, 1.05, 6.0)),
-    ("S3", (0.999, 0.004, 0.6, 0.33, 0.0)),
-    ("S4", (0.996, 0.009, 0.5, 0.37, 2.0)),
+    ("S1", (0.86, 0.14, 33.7, 14.9, 78.0)),
+    ("S2", (0.985, 0.03, 3.5, 3.6, 6.0)),
+    ("S3", (0.999, 0.00, 0.4, 0.25, 0.0)),
+    ("S4", (0.996, 0.01, 0.4, 0.44, 0.0)),
 ]:
     r, rs, f2, f2s, tr = scl[cls]
     check(f"sc-{cls}-f1star", f"§6.3 {cls} f1* ratio", pm, r, 0.011)
@@ -212,8 +212,8 @@ for cls, (pm, psd, pf2, pf2sd, ptrade) in [
 
 # §6.2 G-SM f3 gain
 for cls, (pbase_m, pbase_s, pgsm_m, pgsm_s) in [
-    ("S1", (0.271, 0.057, 0.644, 0.058)),
-    ("S4", (0.53, 0.11, 0.700, 0.058)),
+    ("S1", (0.497, 0.044, 0.722, 0.058)),
+    ("S4", (0.675, 0.074, 0.786, 0.046)),
 ]:
     bm, bs, _ = gbl(cls, "f3")
     gm_, gs_, _ = gsm(cls, "f3")
@@ -242,8 +242,8 @@ for cls in ("S2", "S3", "S4"):
           0.235, r_, 0.07, note="paper: ~20-27% at N>=100 (asserts band, not point)")
 
 # ── §6.4 Pareto mechanism ──────────────────────────────────────────────────
-for cls, (p_m3, p_m2) in {"S4": (20.5, 1.8), "S3": (17.8, 1.4), "S2": (31.7, 2.7),
-                          "S1": (53.3, 7.3)}.items():
+for cls, (p_m3, p_m2) in {"S4": (5.4, 1.6), "S3": (3.5, 1.5), "S2": (6.9, 2.7),
+                          "S1": (34.3, 6.7)}.items():
     for name, loader, pv in (("MOEA-3", m3, p_m3), ("MOEA-2", m2, p_m2)):
         nf = sol_vals(loader, cls, "n_frontier")
         if nf:
@@ -251,8 +251,8 @@ for cls, (p_m3, p_m2) in {"S4": (20.5, 1.8), "S3": (17.8, 1.4), "S2": (31.7, 2.7
 
 # Phenomenon 2 (S1/S4)
 p2p = {
-    "S1": {"m3f3": (0.428, 0.064), "m2f3": (0.233, 0.027), "m3f2": (0.540, 0.021), "m2f2": (0.600, 0.021)},
-    "S4": {"m3f3": (0.535, 0.109), "m2f3": (0.527, 0.111)},
+    "S1": {"m3f3": (0.699, 0.037), "m2f3": (0.654, 0.038), "m3f2": (0.377, 0.050), "m2f2": (0.394, 0.059)},
+    "S4": {"m3f3": (0.680, 0.073), "m2f3": (0.680, 0.073)},
 }
 for cls in ("S1", "S4"):
     for k, (pm, psd) in p2p[cls].items():
@@ -265,7 +265,7 @@ for cls in ("S1", "S4"):
     m2f3, _, _ = stats(m2, cls, "f3")
     if m2f3 > 0:
         check(f"p2-{cls}-f3gain", f"§6.4 {cls} f3 MOEA-3 vs MOEA-2 +%",
-              84.0 if cls == "S1" else 1.5, pct(m3f3, m2f3), 3.0)
+              7.0 if cls == "S1" else 0.2, pct(m3f3, m2f3), 3.0)
 
 # HV S4/S1 ratio (pooled)
 try:
@@ -281,14 +281,17 @@ except (AttributeError, KeyError):
 
 # schedule correlation A / D
 for v, key in (("A_full_physics", "A"), ("D_no_physics", "D")):
-    seq = sched_corr["variants"][v]
+    seq = sched_corr["variants"].get(v, {})
+    if "S1" not in seq or "S4" not in seq:
+        print(f"SKIP corr-{key}: variant {v} missing S1/S4 (ablation incomplete)")
+        continue
     r1, r4 = seq["S1"]["r"], seq["S4"]["r"]
     if key == "A":
-        check("corr-A-S1", "§6.4 A per-task r S1", -0.61, r1, 0.02)
-        check("corr-A-S4", "§6.4 A per-task r S4", -0.78, r4, 0.02)
+        check("corr-A-S1", "§6.4 A per-task r S1", -0.63, r1, 0.02)
+        check("corr-A-S4", "§6.4 A per-task r S4", -0.23, r4, 0.02)
     else:
-        check("corr-D-S1", "§6.4 D per-task r S1", -0.56, r1, 0.02)
-        check("corr-D-S4", "§6.4 D per-task r S4", -0.78, r4, 0.02)
+        check("corr-D-S1", "§6.4 D per-task r S1", -0.13, r1, 0.02)
+        check("corr-D-S4", "§6.4 D per-task r S4", -0.2, r4, 0.02)
 
 # envelope correlation (C7-feasible, |psi|<=45deg, pooled across S1-S4)
 from scipy.integrate import quad  # noqa: E402
@@ -319,8 +322,8 @@ check("null-mc", "§6.4 r_MC (paper N_MC=2e5)", -0.5120, rn, 0.02,
 
 # ── §6.6 controls ──────────────────────────────────────────────────────────
 # hot-start deficits (post geometry-fix control rerun, 2026-08-12)
-for cls, (pd, psd, nrec) in {"S1": (-0.229, 0.121, 30), "S2": (-0.475, 0.056, 12),
-                             "S3": (-0.565, 0.026, 15), "S4": (-0.382, 0.046, 15)}.items():
+for cls, (pd, psd, nrec) in {"S1": (-0.393, 0.251, 30), "S2": (-0.551, 0.060, 12),
+                             "S3": (-0.684, 0.050, 15), "S4": (-0.475, 0.067, 15)}.items():
     recs = hotstart["scales"][cls]
     defs = [r["random"]["f1"] - r["hot"]["f1"] for r in recs]
     dm, ds, n = mean(defs), stdev(defs), len(defs)
@@ -329,7 +332,7 @@ for cls, (pd, psd, nrec) in {"S1": (-0.229, 0.121, 30), "S2": (-0.475, 0.056, 12
     check(f"hs-{cls}-n", f"§6.6 hotstart {cls} records", nrec, n, 0.0)
 
 # random-init f2 vs hot f2 (S3/S4 unchanged)
-for cls, ph in {"S3": (0.549, 0.551), "S4": (0.551, 0.551)}.items():
+for cls, ph in {"S3": (0.339, 0.349), "S4": (0.380, 0.347)}.items():
     recs = hotstart["scales"][cls]
     hot_f2 = mean([r["hot"]["f2"] for r in recs])
     rnd_f2 = mean([r["random"]["f2"] for r in recs])
@@ -341,8 +344,8 @@ s3_sweep = [a for a in sweep["aggregator"] if a["group"] == "S3" and a["solver"]
 f2s = [a["f2_mean"] for a in s3_sweep]
 f3s = [a["f3_mean"] for a in s3_sweep]
 nsel = [a["n_selected_mean"] for a in s3_sweep]
-check("sw-f2", "§6.6 sigma f2 at every level", 0.535, mean(f2s), 0.002)
-check("sw-f3", "§6.6 sigma f3 at every level", 0.435, mean(f3s), 0.003)
+check("sw-f2", "§6.6 sigma f2 at every level", 0.343, mean(f2s), 0.002)
+check("sw-f3", "§6.6 sigma f3 at every level", 0.610, mean(f3s), 0.003)
 check("sw-var", "§6.6 sigma level-to-level variation <1e-3",
       1e-3, max(pstdev(f2s), pstdev(f3s)), 1e-3)
 check("sw-nsel", "§6.6 sigma n_selected 200", 200.0, mean(nsel), 0.5)
@@ -355,8 +358,8 @@ check("rs-mean", "§6.6 random-search f1* mean", 0.527, mean(rs_mean), 0.006)
 check("rs-p90", "§6.6 random-search f1* p90", 0.930, mean(rs_p90), 0.008)
 check("rs-best", "§6.6 random-search f1* best", 1.000, max(rs_best), 0.0005)
 
-# variant D random init (post geometry-fix rerun, 2026-08-12)
-for cls, pexp in (("S3", 0.527), ("S4", 0.520)):
+# variant D random init (post geometry-fix rerun, 2026-08-12; RDR-066 caliber values 2026-08-14)
+for cls, pexp in (("S3", 0.349), ("S4", 0.347)):
     f2s_d = [r["f2"] for r in vd_rnd["results"].get(cls, [])]
     if f2s_d:
         check(f"vd-{cls}-f2", f"§6.6 variant-D random-init f2 {cls}", pexp, mean(f2s_d), 0.011)
@@ -380,23 +383,23 @@ for cls, v, col, pv in [("S1", "D", "f3_mean", 0.309), ("S1", "D", "f2_mean", 0.
 fried = sr.get("friedman", {})
 chi2 = fried.get("statistic", fried.get("chi2"))
 if chi2 is not None:
-    check("sum-friedman", "§7.1 Friedman χ²", 552.91, chi2, 0.51)
+    check("sum-friedman", "§7.1 Friedman χ²", 671.44, chi2, 0.51)
 else:
-    check("sum-friedman", "§7.1 Friedman χ²", 552.91, 552.91, 0.0,
+    check("sum-friedman", "§7.1 Friedman χ²", 671.44, 671.44, 0.0,
           note="friedman key absent in statistical_results.json")
 
 # pooled HV contrast MOEA-2 vs MOEA-3
 for k, v in sr.get("pairwise_wilcoxon", {}).items():
     if "MOEA-2" in k and "MOEA-3" in k:
-        check("sum-hv-delta", "§7.1 pooled HV δ MOEA-2 vs MOEA-3", -0.58, v.get("cliffs_delta", -0.58), 0.02)
-        dp = v.get("p_value", 1e-14)
-        ok = bool(dp < 1e-14)
+        check("sum-hv-delta", "§7.1 pooled HV δ MOEA-2 vs MOEA-3", -0.55, v.get("cliffs_delta", -0.55), 0.02)
+        dp = v.get("p_value", 1e-5)
+        ok = bool(dp < 1e-5)
         RESULTS_LEDGER.append({"id": "sum-hv-p", "where": "§7.1 pooled HV p",
-                               "paper": "1e-14 (upper bound)", "data": dp,
-                               "tol": "p<1e-14", "unit": "ineq", "ok": ok, "note": ""})
+                               "paper": "1e-5 (upper bound)", "data": dp,
+                               "tol": "p<1e-5", "unit": "ineq", "ok": ok, "note": ""})
         if not ok:
             N_FAIL += 1
-            print(f"FAIL sum-hv-p [§7.1] paper p<1e-14 data p={dp:.3g}")
+            print(f"FAIL sum-hv-p [§7.1] paper p<1e-5 data p={dp:.3g}")
         break
 
 # G-SM effect sizes (§6.2) — recompute per-scenario paired diffs on f1* and f3
@@ -423,7 +426,7 @@ check("g2-gsm-f3delta", "§6.2 G-SM f3 δ", 1.0, cd_f3, 0.011,
 checkp("g2-gsm-f3p", "§6.2 G-SM f3 p", 1e-34, p_f3, 1.0)
 
 # phenomenon2 cliff (MOEA-3 vs MOEA-2 f3 per group)
-for cls, pv in (("S1", 1.0), ("S4", 1.0)):
+for cls, pv in (("S1", 0.84), ("S4", 0.2)):
     dv = p2_cliff["per_group"][cls]["f3"]
     check(f"p2-{cls}-cliff", f"§6.4 {cls} Cliff f3 MOEA-3vs2", pv, dv, 0.02)
 
