@@ -10,10 +10,10 @@ import json
 from pathlib import Path
 
 # ── Path setup: add source workspace ───────────────────────────────────
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent / "src"))
 
 # ── Test data paths ─────────────────────────────────────────────────────
-PROJECT = Path(__file__).resolve().parent.parent
+PROJECT = Path(__file__).resolve().parent.parent.parent / "papers" / "single-sat-quality"
 SCENARIOS_DIR = PROJECT / "experiments" / "scenarios"
 
 # ═══════════════════════════════════════════════════════════════════════════

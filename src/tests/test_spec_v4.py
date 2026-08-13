@@ -2,7 +2,7 @@
 
 import sys, os, pickle, math, numpy as np, pathlib
 
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', 'src'))
 
 from sar_sim.solver.baselines import baseline_b1
 from sar_sim.solver.so_f1 import _HotStartSampling, ga_hotstart_solver, b2_profit_solver_bl_seeded
@@ -11,7 +11,8 @@ from collections import Counter
 
 
 def _load(name):
-    pkl = sorted(pathlib.Path(f'experiments/scenarios/{name}').glob('*.pkl'))[0]
+    pkl = sorted(pathlib.Path(pathlib.Path(__file__).resolve().parent.parent.parent /
+                              'papers/single-sat-quality/experiments/scenarios' / name).glob('*.pkl'))[0]
     with open(str(pkl), 'rb') as f:
         data = pickle.load(f)
     return data['targets'], data['windows']
@@ -69,7 +70,8 @@ def test_moea_hotstart_first_individual_is_gbl():
 
 def test_s3_scenarios_exist_and_valid():
     """S3(N=300) scenarios: 50 .pkl files, N in [280, 320]."""
-    s3_dir = pathlib.Path('experiments/scenarios/S3')
+    s3_dir = pathlib.Path(pathlib.Path(__file__).resolve().parent.parent.parent /
+                          'papers/single-sat-quality/experiments/scenarios/S3')
     pkgs = sorted(s3_dir.glob('*.pkl'))
     assert len(pkgs) >= 50, f"Expected 50 scenarios, found {len(pkgs)}"
     from collections import Counter

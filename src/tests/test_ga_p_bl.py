@@ -5,7 +5,7 @@ RED phase: tests must fail before implementation exists.
 
 import sys, os, pickle, numpy as np, pathlib
 
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', 'src'))
 
 from sar_sim.solver.so_f1 import b2_profit_solver_bl_seeded, B2ProfitProblem
 from sar_sim.solver.baselines import baseline_b1
@@ -15,8 +15,8 @@ from sar_sim.types import SolverResult
 
 def _load_s5():
     pkl = sorted(
-        (pathlib.Path(__file__).parent.parent /
-         'experiments/scenarios/S5').glob('*.pkl'))[0]
+        (pathlib.Path(__file__).resolve().parent.parent.parent /
+         'papers/single-sat-quality/experiments/scenarios/S5').glob('*.pkl'))[0]
     with open(str(pkl), 'rb') as f:
         data = pickle.load(f)
     return data['targets'], data['windows']

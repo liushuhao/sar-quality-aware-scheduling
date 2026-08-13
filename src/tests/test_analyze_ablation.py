@@ -208,32 +208,32 @@ def test_compare_variants_aligns_by_scenario_key(fixture_a, fixture_b):
 
 def test_paired_ttest_significant_difference(fixture_a, fixture_b):
     """Paired t-test should detect that B's f1_raw is significantly different from A's."""
-    from analyze_ablation import paired_ttest_pvalue
+    from analyze_ablation import wilcoxon_pvalue
     a_vals = [fixture_a[k]["f1_raw"] for k in fixture_a]
     b_vals = [fixture_b[k]["f1_raw"] for k in fixture_b]
-    p = paired_ttest_pvalue(a_vals, b_vals)
+    p = wilcoxon_pvalue(a_vals, b_vals)
     # Should be very small (significant)
     assert p < 0.001
 
 
 def test_paired_ttest_no_difference():
     """Paired t-test should give high p-value when two arrays are identical."""
-    from analyze_ablation import paired_ttest_pvalue
+    from analyze_ablation import wilcoxon_pvalue
     a = [1.0, 2.0, 3.0, 4.0, 5.0]
-    p = paired_ttest_pvalue(a, a)
+    p = wilcoxon_pvalue(a, a)
     # Identical arrays → p = 1.0 (or NaN if std=0, but not < 0.05)
     assert p > 0.5 or math.isnan(p) or math.isinf(p)
 
 
 def test_paired_ttest_handles_empty_arrays():
     """Empty input should return 1.0 (no evidence of difference)."""
-    from analyze_ablation import paired_ttest_pvalue
-    p = paired_ttest_pvalue([], [])
+    from analyze_ablation import wilcoxon_pvalue
+    p = wilcoxon_pvalue([], [])
     assert p == 1.0
 
 
 def test_paired_ttest_handles_mismatched_lengths():
     """Mismatched lengths should raise ValueError."""
-    from analyze_ablation import paired_ttest_pvalue
+    from analyze_ablation import wilcoxon_pvalue
     with pytest.raises(ValueError, match="length"):
-        paired_ttest_pvalue([1, 2, 3], [1, 2])
+        wilcoxon_pvalue([1, 2, 3], [1, 2])

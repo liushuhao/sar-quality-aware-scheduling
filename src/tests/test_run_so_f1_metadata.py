@@ -12,14 +12,14 @@ import sys
 from pathlib import Path
 
 # ── Path setup ─────────────────────────────────────────────────────────
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent / "src"))
 
-PROJECT = Path(__file__).resolve().parent.parent
+PROJECT = Path(__file__).resolve().parent.parent.parent / "papers" / "single-sat-quality"
 SCENARIOS_DIR = PROJECT / "experiments" / "scenarios"
 
 # Import the runner's run_one function
 sys.path.insert(0, str(PROJECT / "experiments"))
-from run_so_f1 import run_one
+from run_so_f1_bl import run_one
 
 
 def test_b2_ga_output_has_schedule_metadata():

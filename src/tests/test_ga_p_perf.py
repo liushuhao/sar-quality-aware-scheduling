@@ -10,7 +10,7 @@ GREEN phase: after optimization, output must match exactly.
 import sys, os, pickle, numpy as np
 import pathlib
 
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', 'src'))
 
 from sar_sim.solver.types import (
     build_agile_instance, precompute_geometry,
@@ -24,8 +24,8 @@ from sar_sim.solver.so_f1 import B2ProfitProblem
 def _load_s1():
     """Load smallest S1 scenario for fast testing."""
     pkl = sorted(
-        (pathlib.Path(__file__).parent.parent /
-         'experiments/scenarios/S1').glob('*.pkl'))
+        (pathlib.Path(__file__).resolve().parent.parent.parent /
+         'papers/single-sat-quality/experiments/scenarios/S1').glob('*.pkl'))
     pkl = str(list(pkl)[0])
     with open(pkl, 'rb') as f:
         data = pickle.load(f)

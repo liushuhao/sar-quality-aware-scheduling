@@ -9,7 +9,7 @@ from pathlib import Path
 from datetime import datetime, timezone, timedelta
 
 # ── Path setup ────────────────────────────────────────────────────────
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent / "src"))
 
 from sar_sim.types import GroundTarget, ObservationWindow, ScheduledObservation
 from sar_sim.solver.types import (

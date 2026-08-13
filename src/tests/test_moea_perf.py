@@ -6,7 +6,7 @@ and path unification (O4) produce IDENTICAL output.
 
 import sys, os, pickle, numpy as np, pathlib
 
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', 'src'))
 
 from sar_sim.solver.moea import SARSchedulingProblem, decode_solution
 from sar_sim.solver.types import build_agile_instance, precompute_geometry, AgileTask
@@ -17,8 +17,8 @@ from sar_sim.solver.types import build_agile_instance, precompute_geometry, Agil
 def _load_s2():
     """Load one S2 scenario (N=100) for representative testing."""
     pkl = sorted(
-        (pathlib.Path(__file__).parent.parent /
-         'experiments/scenarios/S2').glob('*.pkl'))[0]
+        (pathlib.Path(__file__).resolve().parent.parent.parent /
+         'papers/single-sat-quality/experiments/scenarios/S2').glob('*.pkl'))[0]
     with open(str(pkl), 'rb') as f:
         data = pickle.load(f)
     return data['targets'], data['windows']

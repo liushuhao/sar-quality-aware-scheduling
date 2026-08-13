@@ -8,7 +8,7 @@ import numpy as np
 from pathlib import Path
 
 # ── Path setup: add source workspace ───────────────────────────────────
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent / "src"))
 
 from sar_sim.types import GroundTarget, ObservationWindow
 from sar_sim.solver.types import (
@@ -115,8 +115,8 @@ def test_c1_optimizes_f1_and_f2():
         t_act = task.t_earliest + 0.6 * (
             task.t_latest - task.duration - task.t_earliest)
         geom = instance.geom_cache.lookup(i, t_act)
-        sin_theta = np.sin(geom.theta)
-        f2_expected += sin_theta * geom.cos_psi
+        # RDR-066 elevation-plane caliber: f2 = sqrt(cos²ψ − cos²ξ)
+        f2_expected += np.sqrt(max(geom.cos_psi ** 2 - np.cos(geom.phi) ** 2, 0.0))
 
     pop = np.ones((1, 2 * N)) * 0.6
 

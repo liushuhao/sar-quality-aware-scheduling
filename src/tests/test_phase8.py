@@ -16,7 +16,7 @@ import math
 from pathlib import Path
 
 # ── Path setup: add source workspace ───────────────────────────────────
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent / "src"))
 
 import numpy as np
 from sar_sim.types import SARInstrument

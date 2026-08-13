@@ -17,7 +17,7 @@ import sys
 import numpy as np
 import pytest
 
-sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent / "src"))
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent.parent / "src"))
 
 from sar_sim.solver.types import (
     build_agile_instance_from_scenario,

@@ -9,13 +9,13 @@ Test that run_one() output includes schedule metadata fields:
 import sys
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent / "src"))
 
-PROJECT = Path(__file__).resolve().parent.parent
+PROJECT = Path(__file__).resolve().parent.parent.parent / "papers" / "single-sat-quality"
 SCENARIOS_DIR = PROJECT / "experiments" / "scenarios"
 
 sys.path.insert(0, str(PROJECT / "experiments"))
-from run_baselines_300 import run_one
+from run_baselines_v4 import run_scenario as run_one
 
 
 def test_b1_output_has_schedule_metadata():
