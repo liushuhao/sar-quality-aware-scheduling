@@ -199,7 +199,7 @@ def moea_solver_no_incidence(windows, targets, **kwargs):
         feasible = [sol for sol, rpt in verified if rpt.overall_pass]
         n_infeasible = len(frontier) - len(feasible)
         if feasible:
-            feasible_indices = [i for i, (_, rpt) in enumerate(verified) if rpt.overall_pass]
+            feasible_indices = [sol["row"] for sol, rpt in verified if rpt.overall_pass]
             x_source = x_source[feasible_indices] if x_source is not None else None
             frontier = feasible
         else:

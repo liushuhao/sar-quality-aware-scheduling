@@ -20,13 +20,15 @@ This replaces the old 3N Plan-A encoding (x + direction + phi_abs).
 
 Objectives (v2026-06-22: split by physical mechanism, not spatial direction):
   f1 = Σ x_i * p_i                        coverage-weighted profit (O1)
-  f2 = Σ x_i * sin(θ_i)·cos(ψ_sq,i)       geometric resolution (ground-range × azimuth) (O2)
+  f2 = Σ x_i * sin(θ_elev,i)·cos(ψ_sq,i)  geometric resolution (ground-range × azimuth) (O2)
   f3 = Σ x_i * cos³(ξ_i)             NESZ radiometric quality (O3; ξ = off-nadir, R³ factor)
 
 MOEA-2 optimizes (f1, f2); MOEA-3 optimizes (f1, f2, f3).
-Both depend on θ and ψ_sq via observation time t_i, making them
-geometrically coupled but physically orthogonal (f2 resists small θ
-via sinθ, f3 favors small θ via cos³θ).
+Both depend on θ_elev and ψ_sq via observation time t_i, making them
+geometrically coupled but physically orthogonal (f2 resists small θ_elev
+via sinθ_elev, f3 favors small off-nadir via cos³ξ).
+Note: f2 = sin(θ_elev)·cos(ψ_sq) = sqrt(cos²ψ_sq − cos²ξ) with
+cos(θ_elev) = cos(ξ)/cos(ψ_sq); f3 = cos³ξ = cos³(θ_elev)·cos³(ψ_sq).
 
 Constraints (penalty-based, aligned with paper §3 C1–C4):
   C1 (incidence + squint): enforced during visibility-window generation
@@ -88,9 +90,9 @@ class SARSchedulingProblem(Problem):
 
     Three objectives (maximized via negation for pymoo minimization):
       f1 = Σ x_i · p_i                          coverage profit (O1)
-      f2 = Σ x_i · sin(θ_i)·cos(ψ_sq,i)        geometric resolution (O2)
-      f3 = Σ x_i · cos³(θ_i)·cos³(ψ_sq,i)      NESZ radiometric (O3)
-    where φ_i, θ_i, ψ_sq_i come from compute_full_attitude(task, t_actual, ...)
+      f2 = Σ x_i · sin(θ_elev,i)·cos(ψ_sq,i)   geometric resolution (O2)
+      f3 = Σ x_i · cos³(ξ_i)                    NESZ radiometric (O3; ξ = full off-nadir)
+    where φ_i (=ξ), ψ_sq_i, θ_elev,i (=cosξ/cosψ) come from compute_full_attitude(task, t_actual, ...)
     """
 
     def __init__(self, instance: AgileSARInstance, penalty_coeff: float = 1e5,
@@ -451,6 +453,7 @@ def solutions_to_frontier(
     for p in range(X_pop.shape[0]):
         sel, phis, f1, f2, f3, _sat_ids, t_acts = decode_solution(X_pop[p], instance, getattr(instance, 'f1_gbl', 1.0))
         frontier.append({
+            "row": p,
             "selected": sel,
             "phis": phis.tolist() if isinstance(phis, np.ndarray) else list(phis),
             "t_actuals": t_acts,
@@ -634,7 +637,7 @@ def moea_solver(
         n_infeasible = len(frontier) - len(feasible)
         if feasible:
             # Filter x_source to match feasible frontier
-            feasible_indices = [i for i, (_, rpt) in enumerate(verified) if rpt.overall_pass]
+            feasible_indices = [sol["row"] for sol, rpt in verified if rpt.overall_pass]
             x_source = x_source[feasible_indices] if x_source is not None else None
             frontier = feasible
         else:
