@@ -1,15 +1,13 @@
 #!/usr/bin/env python3
-"""§6.4 schedule-level f2-f3 correlation from FINAL corrected snapshots.
+"""§6.4 schedule-level f2-f3 correlation from post-RDR-066 progress files.
 
-Reproduces scripts/reproduce_A_r.py + reproduce_variant_d_r.py methodology
-(per-task f2/f3 within the knee schedule, pooled Pearson per group) WITHOUT
-re-running the solver: reads the final audited snapshots
-(_snapshot_final_moea_3obj.json for variant A, _snapshot_final_moea_3obj_no_physics
-for variant D), which store the knee solution's selected/t_actuals, and
-recomputes per-task f2/f3 via geom_cache.
+Per-task f2/f3 within the knee schedule, pooled Pearson per group, computed
+from the completed entries of the current-code progress files (which store
+selected/t_actuals), NOT the pre-RDR-066 snapshots.
 
-f2 = sin(theta)*cos(psi), f3 = cos(theta)^3 * cos(psi)^3 — same caliber as the
-original scripts.
+New-caliber objectives (Option 2, RDR-066):
+  f2 = sin(theta_elev)*cos(psi)  = sqrt(cos^2 psi - cos^2 xi)
+  f3 = cos^3(xi)                  (xi = full off-nadir; no separate squint factor)
 
 Output:
   experiments/results/schedule_correlation.json
@@ -32,8 +30,8 @@ GROUPS = ["S1", "S2", "S3", "S4"]
 SLEW_RATE, SETTLE_TIME = 0.0524, 5.0
 
 VARIANTS = [
-    ("A_full_physics", "_snapshot_final_moea_3obj.json"),
-    ("D_no_physics", "_snapshot_final_moea_3obj_no_physics.json"),
+    ("A_full_physics", "moea_3obj/_progress.json"),
+    ("D_no_physics", "moea_3obj_no_physics/_progress.json"),
 ]
 
 
@@ -50,13 +48,13 @@ def pearson(x, y):
 
 def main():
     out = {"git_commit": _git_commit(), "variants": {}}
-    for variant, snap_name in VARIANTS:
-        snap_path = RESULTS_DIR / snap_name
-        if not snap_path.exists():
-            print(f"WARN missing {snap_path}")
+    for variant, prog_rel in VARIANTS:
+        prog_path = RESULTS_DIR / prog_rel
+        if not prog_path.exists():
+            print(f"WARN missing {prog_path}")
             continue
-        snap = json.load(open(snap_path))
-        completed = snap.get("completed", {})
+        prog = json.load(open(prog_path))
+        completed = prog.get("completed", {})
         variant_out = {}
         for group in GROUPS:
             F2, F3 = [], []
@@ -78,8 +76,8 @@ def main():
                     continue
                 for i, t in zip(sel, t_acts):
                     g = inst.geom_cache.lookup(int(i), float(t))
-                    F2.append(math_sin_theta_cospsi(g))
-                    F3.append(math_cos3_cospsi3(g))
+                    F2.append(f2_new(g))
+                    F3.append(f3_new(g))
                 n_sched += 1
             if not F2:
                 print(f"  {variant} {group}: no data")
@@ -90,19 +88,20 @@ def main():
             }
             print(f"{variant} {group}: r={variant_out[group]['r']:+.4f} n_tasks={len(F2)} n_sched={n_sched}", flush=True)
         out["variants"][variant] = variant_out
-    out["sources"] = {v: snap_name for v, snap_name in VARIANTS}
+    out["sources"] = {v: prog_rel for v, prog_rel in VARIANTS}
     json.dump(out, open(OUT_PATH, "w", encoding="utf-8"), indent=2)
     print(f"\nWrote {OUT_PATH}")
 
 
-def math_sin_theta_cospsi(g):
+def f2_new(g):
     import math
-    return math.sin(g.theta) * g.cos_psi
+    # Option 2: f2 = sqrt(cos^2 psi - cos^2 xi); xi = full off-nadir = geom.phi
+    return math.sqrt(max(g.cos_psi ** 2 - math.cos(g.phi) ** 2, 0.0))
 
 
-def math_cos3_cospsi3(g):
+def f3_new(g):
     import math
-    return (math.cos(g.theta) ** 3) * (g.cos_psi ** 3)
+    return math.cos(g.phi) ** 3
 
 
 if __name__ == "__main__":

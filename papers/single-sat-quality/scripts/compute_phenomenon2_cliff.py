@@ -45,8 +45,8 @@ def cliff_delta(a, b):
 
 
 def main():
-    m3 = load("_snapshot_final_moea_3obj.json")
-    m2 = load("_snapshot_final_moea_2obj.json")
+    m3 = load("moea_3obj/_progress.json")
+    m2 = load("moea_2obj/_progress.json")
     out = {"git_commit": _git_commit(), "per_group": {}, "pooled": {}}
 
     for group in GROUPS:
