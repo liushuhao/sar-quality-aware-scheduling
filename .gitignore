@@ -117,6 +117,9 @@ papers/single-sat-quality/experiments/results/**/_progress_pre_*.json
 papers/single-sat-quality/experiments/results/**/_progress_partial*_*.json
 papers/single-sat-quality/experiments/results/**/_progress_dirty*_*.json
 papers/single-sat-quality/experiments/results/**/_progress_repro*_*.json
+papers/single-sat-quality/experiments/results/**/_progress.backup_*.json
+papers/single-sat-quality/experiments/results/_moea*_rerun_*.err
+papers/single-sat-quality/experiments/results/_moea*_rerun_*.log
 
 # Internal submission strategy (local only)
 papers/single-sat-quality/journal_recommendation_plan.md
