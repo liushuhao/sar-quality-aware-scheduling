@@ -41,6 +41,27 @@ def _pkl_sha1(pkl_path: Path) -> str:
             sha.update(chunk)
     return sha.hexdigest()
 
+
+_REPO_ROOT = Path(__file__).resolve().parents[3]
+_SOLVER_CODE = "src/sar_sim/solver/moea.py"
+
+
+def _solver_code_identical(ver: str) -> bool:
+    """True iff moea.py at stamp ver is byte-identical to current HEAD.
+
+    Used instead of `ver == GIT_COMMIT` so an unrelated commit (docs, tests,
+    dead-code removal) does not force a full recompute of still-current results
+    on resume. Only a real change to the value-defining solver code invalidates
+    a completed entry."""
+    if not ver or ver == "unknown":
+        return False
+    r = subprocess.run(
+        ["git", "-C", str(_REPO_ROOT), "diff", "--quiet",
+         ver, "HEAD", "--", _SOLVER_CODE],
+        capture_output=True,
+    )
+    return r.returncode == 0
+
 GIT_COMMIT = _git_commit()
 
 def get_all_scenarios():
@@ -197,7 +218,7 @@ def main():
 
         for fpath in files:
             key = f"{group_name}/{fpath.name}"
-            if key in completed and completed[key].get("pkl_sha1") == _pkl_sha1(fpath) and completed[key].get("solver_version") == GIT_COMMIT:
+            if key in completed and completed[key].get("pkl_sha1") == _pkl_sha1(fpath) and _solver_code_identical(completed[key].get("solver_version", "")):
                 continue
 
             try:

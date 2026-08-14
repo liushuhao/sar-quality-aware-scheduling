@@ -17,6 +17,7 @@ Exit:   0 all pass, 1 any fail
 import hashlib
 import json
 import os
+import subprocess
 import sys
 from pathlib import Path
 from statistics import mean, pstdev, stdev
@@ -72,6 +73,86 @@ def unwrap(loader):
 
 
 m2, m3, b2 = unwrap(m2), unwrap(m3), unwrap(b2)
+
+
+# ── caliber gate (S1): reject stale/mixed solver outputs ──────────────────
+# Headline numbers come from m2/m3. The RDR-066 objective fix (NESZ
+# double-count) and the B1 knee-selection fix mean any output stamped before
+# this commit is stale. A mixed _progress.json (old + new entries) once
+# silently built bogus cross-family comparisons; this gate refuses to verify
+# such data rather than emit dozens of misleading number failures.
+def _git_head8():
+    try:
+        return subprocess.check_output(
+            ["git", "rev-parse", "HEAD"], cwd=str(REPO), text=True
+        ).strip()[:8]
+    except Exception:
+        return "unknown"
+
+
+HEAD8 = _git_head8()
+KNOWN_BAD_CALIBER = {"681ced6b"}  # pre-RDR066 f2/f3 NESZ double-count
+# Value-defining solver code. m2/m3 f-values change iff this file changes
+# (RDR-066 objective formula and the B1 knee-selection fix both live here).
+SOLVER_CODE = "src/sar_sim/solver/moea.py"
+
+
+def _solver_code_identical(ver):
+    """True iff moea.py at stamp ver is byte-identical to current HEAD.
+
+    Content identity (not stamp == HEAD) means an unrelated commit
+    (docs, tests, dead-code removal) does not falsely invalidate solver
+    output that is still numerically current."""
+    if ver in KNOWN_BAD_CALIBER or ver in ("MISSING", "unknown"):
+        return False
+    r = subprocess.run(
+        ["git", "diff", "--quiet", ver, "HEAD", "--", SOLVER_CODE],
+        cwd=str(REPO), capture_output=True,
+    )
+    return r.returncode == 0
+
+
+def _version_counts(completed):
+    from collections import Counter
+    return Counter(
+        v.get("solver_version", "MISSING")
+        for v in completed.values() if isinstance(v, dict)
+    )
+
+
+_caliber_errors = []
+for _name, _completed in (("moea_2obj", m2), ("moea_3obj", m3)):
+    _vc = _version_counts(_completed)
+    _stale = {v: n for v, n in _vc.items() if not _solver_code_identical(v)}
+    if _stale:
+        _caliber_errors.append(
+            f"{_name}: {dict(_stale)} entries stamped at a version where "
+            f"{SOLVER_CODE} differs from HEAD (rerun required)"
+        )
+
+# Ablation f-value table: the f2/f3 objective formula has been identical
+# since RDR-066 (f96674f..b107e97 do not touch moea.py; B1 changed knee
+# schedule mapping, not frontier f-values). no_squint uses an intentionally
+# different elevation-plane formula, so reject only the known-bad stamp.
+for _abl_dir in ("moea_3obj_no_incidence", "moea_3obj_no_physics", "moea_3obj_no_squint"):
+    _p = RESULTS / _abl_dir / "_progress.json"
+    if not _p.exists():
+        continue
+    _abl = json.loads(_p.read_text(encoding="utf-8")).get("completed", {})
+    _bad = {v: n for v, n in _version_counts(_abl).items()
+            if v in KNOWN_BAD_CALIBER or v == "MISSING"}
+    if _bad:
+        _caliber_errors.append(f"{_abl_dir}: stale/missing versions: {_bad}")
+
+if _caliber_errors:
+    print("CALIBER GATE FAIL - solver output does not match current code; "
+          "refusing to verify paper numbers:")
+    for _line in _caliber_errors:
+        print(f"  - {_line}")
+    print("Fix: rerun the affected solver(s).")
+    sys.exit(1)
+print(f"CALIBER OK: m2/m3 solver code identical to HEAD ({HEAD8}); "
+      f"ablation calibers verified.")
 
 
 def sol_vals(loader, cls, key):
