@@ -7,13 +7,14 @@ To quantify the contribution of incidence-angle ($\theta$) and squint-angle
 experiment with four objective-function variants:
 %
 \begin{description}
-\item[A. Full physical (baseline)] $f_2 = \frac{1}{|\mathcal{S}|}\sum \sin\theta_i \cdot \cos\psi_{\text{sq},i}$,
-      $f_3 = \frac{1}{|\mathcal{S}|}\sum \cos^3\theta_i \cdot \cos^3\psi_{\text{sq},i}$ (identical to the
+\item[A. Full physical (baseline)] $f_2 = \frac{1}{|\mathcal{S}|}\sum \sin\theta_{\text{elev},i} \cdot \cos\psi_{\text{sq},i}$,
+      $f_3 = \frac{1}{|\mathcal{S}|}\sum \cos^3\xi_i$ (identical to the
       standard configuration in \S~\ref{sec:pareto-coupling}).
-\item[B. No squint] $f_2 = \frac{1}{|\mathcal{S}|}\sum \sin\theta_i$,
-      $f_3 = \frac{1}{|\mathcal{S}|}\sum \cos^3\theta_i$ (removes ${\psi_{\text{sq}}}$ component).
+\item[B. No squint] $f_2 = \frac{1}{|\mathcal{S}|}\sum \sin\theta_{\text{elev},i}$,
+      $f_3 = \frac{1}{|\mathcal{S}|}\sum \cos^3\theta_{\text{elev},i}$ (removes ${\psi_{\text{sq}}}$ component;
+      $\theta_{\text{elev}}$ is the elevation-plane incidence angle, $\cos\theta_{\text{elev}}=\cos\xi/\cos\psi_{\text{sq}}$).
 \item[C. No incidence] $f_2 = \frac{1}{|\mathcal{S}|}\sum \cos\psi_{\text{sq},i}$,
-      $f_3 = \frac{1}{|\mathcal{S}|}\sum \cos^3\psi_{\text{sq},i}$ (removes $\theta$ component).
+      $f_3 = \frac{1}{|\mathcal{S}|}\sum \cos^3\psi_{\text{sq},i}$ (removes $\theta_{\text{elev}}$ component).
 \item[D. No physics] $f_2 = f_3 = 1$ (constant per-task objective; solver receives
       no geometric information; $f_2$, $f_3$ shown in Table~\ref{tab:ablation} are post hoc diagnostics
       computed from the actual observation geometry of the resulting schedule).
@@ -24,15 +25,16 @@ experiment with four objective-function variants:
 \end{description}
 %
 All four variants use identical NSGA-III parameters (population $= 100$,
-generations $= 200$, Das-Dennis $p=12$), the same 200 scenario files, and
+generations $= 200$, Das-Dennis $p=12$), the same scenario files, and
 the same G-BL hot-start injection. Only the objective functions differ,
 making this a controlled ablation rather than a retuning experiment.
 Within-solver ablation with identical NSGA-III parameters and the same
 G-BL seed injection controls confounding factors sufficiently that the
 Wilcoxon signed-rank test is appropriate for paired comparison of
 objective-function variants.
-Each variant completes 4 scenario classes $\times$ 50 seeds $= 200$ runs
-(total: 800 runs across A--D). Degradation is reported as
+Each variant completes six scenario classes $\times$ 50 seeds $= 300$ runs
+(total: 1,200 runs across A--D); Table~\ref{tab:ablation} reports the
+density-regime classes S1--S4. Degradation is reported as
 $\Delta\% = (\text{A} - \text{V})/\text{A} \times 100$, where A is the full
 physical baseline and V is the variant; negative values indicate the variant
 outperforms the baseline on $f_1^*$.
@@ -48,44 +50,44 @@ outperforms the baseline on $f_1^*$.
 \textbf{$\Delta f_1^*\%$} \\
 \midrule
 \multirow{4}{*}{S1 ($N=20$)}
- & A & $0.98 \pm 0.03$ & $0.540$ & $0.428$ & $5.94 \pm 0.68$ &
-   $18.1 \pm 1.7$ & (baseline) \\
- & B & $1.00 \pm 0.03$ & $0.539$ & $0.405$ & $5.79 \pm 0.67$ &
-   $19.0 \pm 1.1$ & $\mathbf{-2.0\%}$ \\
- & C & $0.90 \pm 0.11$ & $0.503$ & $0.544$ & $5.83 \pm 0.79$ &
-   $17.2 \pm 2.4$ & $\mathbf{+7.5\%}$ \\
- & D & $1.01 \pm 0.02$ & $0.565$ & $0.309$ & $5.66 \pm 0.64$ &
-   $19.5 \pm 0.7$ & $\mathbf{-2.7\%}$ \\
+ & A & $0.850 \pm 0.123$ & $0.376$ & $0.698$ & $5.99 \pm 0.73$ &
+   $15.6 \pm 2.6$ & (baseline) \\
+ & B & $0.852 \pm 0.152$ & $0.353$ & $0.574$ & $6.01 \pm 0.83$ &
+   $15.7 \pm 3.1$ & $-0.8\%$ \\
+ & C & $0.845 \pm 0.095$ & $0.375$ & $0.703$ & $5.86 \pm 0.80$ &
+   $16.0 \pm 2.2$ & $+0.1\%$ \\
+ & D & $1.002 \pm 0.011$ & $0.302$ & $0.525$ & $5.65 \pm 0.66$ &
+   $19.5 \pm 0.7$ & $\mathbf{-18.0\%}$ \\
 \midrule
 \multirow{4}{*}{S2 ($N=100$)}
- & A & $1.00 \pm 0.00$ & $0.548$ & $0.375$ & $5.55 \pm 0.38$ &
-   $64.0 \pm 18.7$ & (baseline) \\
- & B & $1.00 \pm 0.01$ & $0.548$ & $0.372$ & $5.56 \pm 0.38$ &
-   $64.0 \pm 19.0$ & $+0.0\%$ \\
- & C & $0.99 \pm 0.03$ & $0.537$ & $0.412$ & $5.55 \pm 0.39$ &
-   $63.3 \pm 19.1$ & $+1.2\%$ \\
- & D & $1.00 \pm 0.00$ & $0.549$ & $0.367$ & $5.54 \pm 0.37$ &
-   $64.2 \pm 18.8$ & $-0.1\%$ \\
+ & A & $0.976 \pm 0.040$ & $0.329$ & $0.597$ & $5.58 \pm 0.42$ &
+   $62.7 \pm 19.3$ & (baseline) \\
+ & B & $0.990 \pm 0.022$ & $0.321$ & $0.570$ & $5.55 \pm 0.37$ &
+   $63.6 \pm 19.1$ & $\mathbf{-1.2\%}$ \\
+ & C & $0.977 \pm 0.033$ & $0.328$ & $0.599$ & $5.57 \pm 0.40$ &
+   $62.8 \pm 19.3$ & $+0.0\%$ \\
+ & D & $1.000 \pm 0.000$ & $0.317$ & $0.562$ & $5.54 \pm 0.37$ &
+   $64.2 \pm 18.8$ & $\mathbf{-2.0\%}$ \\
 \midrule
 \multirow{4}{*}{S3 ($N=300$)}
- & A & $1.00 \pm 0.00$ & $0.528$ & $0.453$ & $5.63 \pm 0.29$ &
-   $154.5 \pm 39.9$ & (baseline) \\
- & B & $1.00 \pm 0.00$ & $0.528$ & $0.453$ & $5.63 \pm 0.29$ &
-   $154.5 \pm 39.9$ & $+0.0\%$ \\
- & C & $1.00 \pm 0.00$ & $0.525$ & $0.461$ & $5.62 \pm 0.29$ &
-   $154.4 \pm 39.9$ & $+0.1\%$ \\
- & D & $1.00 \pm 0.00$ & $0.528$ & $0.452$ & $5.63 \pm 0.29$ &
-   $154.5 \pm 39.9$ & $+0.0\%$ \\
+ & A & $0.998 \pm 0.005$ & $0.344$ & $0.623$ & $5.63 \pm 0.30$ &
+   $154.2 \pm 39.9$ & (baseline) \\
+ & B & $0.998 \pm 0.005$ & $0.343$ & $0.618$ & $5.63 \pm 0.29$ &
+   $154.2 \pm 40.0$ & $+0.0\%$ \\
+ & C & $0.998 \pm 0.004$ & $0.344$ & $0.623$ & $5.63 \pm 0.30$ &
+   $154.2 \pm 39.9$ & $+0.0\%$ \\
+ & D & $1.000 \pm 0.000$ & $0.342$ & $0.616$ & $5.63 \pm 0.29$ &
+   $154.5 \pm 39.9$ & $\mathbf{-0.2\%}$ \\
 \midrule
 \multirow{4}{*}{S4 ($N=500$)}
- & A & $1.00 \pm 0.00$ & $0.490$ & $0.535$ & $5.83 \pm 0.44$ &
-   $142.7 \pm 71.9$ & (baseline) \\
- & B & $1.00 \pm 0.00$ & $0.490$ & $0.535$ & $5.83 \pm 0.44$ &
-   $142.7 \pm 71.9$ & $+0.0\%$ \\
- & C & $1.00 \pm 0.01$ & $0.487$ & $0.543$ & $5.82 \pm 0.45$ &
-   $142.5 \pm 71.9$ & $+0.1\%$ \\
- & D & $1.00 \pm 0.00$ & $0.490$ & $0.535$ & $5.83 \pm 0.44$ &
-   $142.7 \pm 71.9$ & $+0.0\%$ \\
+ & A & $0.997 \pm 0.008$ & $0.338$ & $0.680$ & $5.83 \pm 0.44$ &
+   $142.3 \pm 72.1$ & (baseline) \\
+ & B & $0.999 \pm 0.003$ & $0.337$ & $0.677$ & $5.84 \pm 0.44$ &
+   $142.5 \pm 72.0$ & $-0.1\%$ \\
+ & C & $0.998 \pm 0.006$ & $0.337$ & $0.680$ & $5.83 \pm 0.44$ &
+   $142.4 \pm 72.0$ & $+0.0\%$ \\
+ & D & $1.000 \pm 0.000$ & $0.336$ & $0.675$ & $5.83 \pm 0.45$ &
+   $142.7 \pm 71.9$ & $\mathbf{-0.2\%}$ \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -102,43 +104,41 @@ of physical objective modeling is concentrated in sparse scenarios and
 vanishes as scenario density increases --- a pattern consistent with our
 scale-sensitivity analysis (\S~\ref{sec:scale-sensitivity}).
 
-At S1 ($N = 20$), all three ablations differ significantly from baseline A
-at the manuscript's $p<0.005$ threshold (paired Wilcoxon). Variant C (no
-incidence) degrades $f_1^*$ by $+7.5\%$ ($p=5.8\times10^{-4}$) while
-raising post hoc $f_3$ from $0.428$ to $0.544$: removing $\theta$ leaves
-both objectives as functions of $\psi_{\text{sq}}$ alone, maximized at zero
-squint, so C behaves like a near-G-SM strategy that trades coverage for
-radiometric quality. Conversely, Variant D (no physics) improves $f_1^*$ by
-$-2.7\%$ ($p=3.1\times10^{-6}$) by selecting about $1.4$ more tasks
-($19.5$ vs.\ $18.1$), but its post hoc $f_3$ drops to $0.309$
-($-28\%$ vs.\ $0.428$ for A) with $f_2$ slightly higher ($0.565$ vs.\
-$0.540$): with no physical guidance the solver maximizes profit and
-schedules more tasks, sacrificing the radiometric quality that the
-full-physics baseline purchases in the sparse regime. Variant B (no squint)
-yields a small coverage gain ($-2.0\%$, $p=4.9\times10^{-4}$) with
-negligible quality change. Thus physical objectives materially alter solver
-behavior in the sparse regime, but the direction of the coverage change
-depends on which component is removed.
+At S1 ($N = 20$), only variant D (no physics) differs significantly from
+baseline A at the manuscript's $p<0.005$ threshold: its $f_1^*$ rises to
+$1.002$ ($-18.0\%$, $p=3.4\times10^{-9}$) by scheduling $3.9$ more tasks
+($19.5$ vs.\ $15.6$) at a substantial radiometric cost, with post hoc $f_3$
+falling from $0.698$ to $0.525$ ($-25\%$). Variant B (no squint) leaves
+$f_1^*$ unchanged ($-0.8\%$, $p=0.46$) but lowers $f_3$ to $0.574$
+($-18\%$): without squint penalization the solver tolerates higher-squint
+views, sacrificing the radiometric quality that the full-physics baseline
+purchases in the sparse regime. Variant C (no incidence) produces no
+measurable change in any reported metric. Thus the physical content of the
+objectives acts on sparse-regime outcomes chiefly through radiometric
+quality ($f_3$) and through the full-removal coverage contrast, while
+partially removing either geometric component leaves coverage unaffected.
 
-At S2 ($N = 100$), all variants lie within $1.2\%$ of baseline A in
-$f_1^*$, and their per-task profit ($5.54$--$5.56$) and selected-task counts
-($63.3$--$64.2$) are similar: the physical-objective signal is already much
-weaker than at S1.
+At S2 ($N = 100$), variants B and D remain significantly different from A
+but the effects are small ($-1.2\%$, $p=5.3\times10^{-4}$ and $-2.0\%$,
+$p=1.7\times10^{-6}$): removing squint or all physics still changes coverage
+modestly. Variant C remains indistinguishable from A.
 
-At S3--S4 ($N \geq 300$), every variant converges to within $0.2\%$ of the
-baseline for $f_1^*$ and to within $0.6\%$ for $f_2$; the per-task quality
-metrics ($5.62$--$5.83$) and selected-task counts agree to within
-$0.2$. This numerical invariance is the direct signature of the
-scale-dependent saturation discussed in \S~\ref{sec:scale-sensitivity}:
-once the density of candidate observation windows saturates the schedule,
-the objective function only penalizes infeasible solutions rather than
-differentiating among feasible ones. In this regime, the NSGA-III solver
-acts as a constraint-filtered profit maximizer regardless of whether
-$f_2$ and $f_3$ carry geometric meaning (A) or serve as constant
-placeholders (D).
+At S3--S4 ($N \geq 300$), every variant lies within $0.2\%$ of the baseline
+for $f_1^*$ and within $0.6\%$ for $f_2$; D's paired-test significance
+reflects a consistent but negligible effect ($-0.2\%$). This numerical
+invariance is the direct signature of the scale-dependent saturation
+discussed in \S~\ref{sec:scale-sensitivity}: once the density of candidate
+observation windows saturates the schedule, the objective function only
+penalizes infeasible solutions rather than differentiating among feasible
+ones. In this regime, the NSGA-III solver acts as a constraint-filtered
+profit maximizer regardless of whether $f_2$ and $f_3$ carry geometric
+meaning (A) or serve as constant placeholders (D).
 
-Taken together, the physical quality objectives add value only in the
-sparse regime: at S1 the full-physics A attains $+38\%$ higher $f_3$ than
-the no-physics D ($0.428$ vs.\ $0.309$) at a $2.7\%$ coverage cost, a
-signal already weakened by S2 ($N=100$) and numerically absent at
-$N \geq 300$.
+Taken together, the physical quality objectives add value mainly in the
+sparse regime, and primarily through radiometric quality: at S1 the
+full-physics A attains $25\%$ higher $f_3$ than the no-physics D
+($0.698$ vs.\ $0.525$) at an $18\%$ coverage disadvantage, and removing
+only the squint component (B) already sacrifices $18\%$ of $f_3$ while
+preserving $f_1^*$. The coverage effect of partially removing the
+objectives is minimal in every regime, and by $N \geq 300$ the choice of
+physical objectives is numerically irrelevant to outcomes.

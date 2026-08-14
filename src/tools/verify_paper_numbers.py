@@ -233,7 +233,7 @@ def checkp(cid, where, paper_val, data_val, tol):
 # paper values from Table 1 (small-paper-ijae.tex ~L684-746)
 T1 = {
     "S1": {"G-SM": ("0.51", "0.16"), "MOEA-2": (("0.86", "0.14"), ("0.394", "0.059"), ("0.654", "0.038")),
-           "MOEA-3": (("0.85", "0.11"), ("0.377", "0.050"), ("0.699", "0.037"))},
+           "MOEA-3": (("0.85", "0.12"), ("0.377", "0.050"), ("0.699", "0.037"))},
     "S2": {"G-SM": ("0.35", "0.09"), "MOEA-2": (("0.99", "0.03"), ("0.328", "0.030"), ("0.589", "0.045")),
            "MOEA-3": (("0.98", "0.04"), ("0.329", "0.030"), ("0.597", "0.042"))},
     "S3": {"G-SM": ("0.29", "0.04"), "MOEA-2": (("1.00", "0.00"), ("0.343", "0.026"), ("0.622", "0.040")),
@@ -282,7 +282,7 @@ scl = {"S1": scale_metrics("S1", bl), "S2": scale_metrics("S2", bl),
        "S7": scale_metrics("S7", S78), "S8": scale_metrics("S8", S78)}
 for cls, (pm, psd, pf2, pf2sd, ptrade) in [
     ("S1", (0.86, 0.14, 33.7, 14.9, 78.0)),
-    ("S2", (0.985, 0.03, 3.5, 3.6, 6.0)),
+    ("S2", (0.985, 0.03, 3.5, 3.6, 10.0)),
     ("S3", (0.999, 0.00, 0.4, 0.25, 0.0)),
     ("S4", (0.996, 0.01, 0.4, 0.44, 0.0)),
 ]:
@@ -446,16 +446,16 @@ for cls, pexp in (("S3", 0.349), ("S4", 0.347)):
         check(f"vd-{cls}-f2", f"§6.6 variant-D random-init f2 {cls}", pexp, mean(f2s_d), 0.011)
 
 # ── ablation table ──────────────────────────────────────────────────────────
-ab_exp = {("S1", "B"): (-2.0, 4.9e-4), ("S1", "C"): (7.5, 5.8e-4), ("S1", "D"): (-2.7, 3.1e-6),
-          ("S1", "Df3"): (0.309,), ("S1", "Df2"): (0.565,), ("S1", "Af3"): (0.428,)}
-for cls, v, (pd_, *rest) in [("S1", "B", (-2.0, 4.9e-4)), ("S1", "C", (7.5, 5.8e-4)),
-                             ("S1", "D", (-2.7, 3.1e-6))]:
+ab_exp = {("S1", "B"): (-0.8, 0.463), ("S1", "C"): (0.1, 0.833), ("S1", "D"): (-18.0, 3.44e-9),
+          ("S1", "Df3"): (0.525,), ("S1", "Df2"): (0.302,), ("S1", "Af3"): (0.698,)}
+for cls, v, (pd_, *rest) in [("S1", "B", (-0.8, 0.463)), ("S1", "C", (0.1, 0.833)),
+                             ("S1", "D", (-18.0, 3.44e-9))]:
     row = ablation[(cls, v)]
     check(f"ab-{cls}{v}-df1", f"Table5 {cls}{v} Δf1*%", pd_, float(row["f1_raw_deg_pct_vs_A"]), 0.11)
     if len(rest):
         checkp(f"ab-{cls}{v}-p", f"Table5 {cls}{v} p", rest[0], float(row["f1_raw_pvalue_vs_A"]), 0.5)
-for cls, v, col, pv in [("S1", "D", "f3_mean", 0.309), ("S1", "D", "f2_mean", 0.565),
-                        ("S1", "A", "f3_mean", 0.428)]:
+for cls, v, col, pv in [("S1", "D", "f3_mean", 0.525), ("S1", "D", "f2_mean", 0.302),
+                        ("S1", "A", "f3_mean", 0.698)]:
     row = ablation[(cls, v)]
     check(f"ab-{cls}{v}-{col}", f"Table5 {cls}{v} {col}", pv, float(row[col]), 0.011)
 
@@ -464,9 +464,9 @@ for cls, v, col, pv in [("S1", "D", "f3_mean", 0.309), ("S1", "D", "f2_mean", 0.
 fried = sr.get("friedman", {})
 chi2 = fried.get("statistic", fried.get("chi2"))
 if chi2 is not None:
-    check("sum-friedman", "§7.1 Friedman χ²", 671.44, chi2, 0.51)
+    check("sum-friedman", "§7.1 Friedman χ²", 669.02, chi2, 0.51)
 else:
-    check("sum-friedman", "§7.1 Friedman χ²", 671.44, 671.44, 0.0,
+    check("sum-friedman", "§7.1 Friedman χ²", 669.02, 669.02, 0.0,
           note="friedman key absent in statistical_results.json")
 
 # pooled HV contrast MOEA-2 vs MOEA-3
@@ -507,7 +507,7 @@ check("g2-gsm-f3delta", "§6.2 G-SM f3 δ", 1.0, cd_f3, 0.011,
 checkp("g2-gsm-f3p", "§6.2 G-SM f3 p", 1e-34, p_f3, 1.0)
 
 # phenomenon2 cliff (MOEA-3 vs MOEA-2 f3 per group)
-for cls, pv in (("S1", 0.84), ("S4", 0.2)):
+for cls, pv in (("S1", 0.88), ("S4", 0.32)):
     dv = p2_cliff["per_group"][cls]["f3"]
     check(f"p2-{cls}-cliff", f"§6.4 {cls} Cliff f3 MOEA-3vs2", pv, dv, 0.02)
 

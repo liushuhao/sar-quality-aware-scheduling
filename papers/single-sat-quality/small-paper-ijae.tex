@@ -738,7 +738,7 @@ coverage and $f_2$ for substantially higher $f_3$.
  & G-SM    & $0.51 \pm 0.16$ & $0.389 \pm 0.086$ & $0.722 \pm 0.058$ \\
  & GA-P-BL & $1.00 \pm 0.02$ & $0.295 \pm 0.037$ & $0.498 \pm 0.044$ \\
  & MOEA-2  & $0.86 \pm 0.14$ & $0.394 \pm 0.059$ & $0.654 \pm 0.038$ \\
- & MOEA-3  & $0.85 \pm 0.11$ & $0.377 \pm 0.050$ & $0.699 \pm 0.037$ \\
+ & MOEA-3  & $0.85 \pm 0.12$ & $0.377 \pm 0.050$ & $0.699 \pm 0.037$ \\
 \midrule
 \multirow{5}{*}{S2 ($N=100$)}
  & G-BL    & $1.00 \pm 0.00$ & $0.317 \pm 0.026$ & $0.561 \pm 0.060$ \\
@@ -864,7 +864,7 @@ $N = 150$ the deficit is effectively zero.
 \textbf{Class} & $N$ & $f_1^*$ (MOEA-2) & $f_2$ improvement & \% $f_1^* < 0.95$ \\
 \midrule
 S1 & 20   & $0.86 \pm 0.14$ & +33.7\% & 78\% \\
-S2 & 100  & $0.985 \pm 0.03$ & +3.5\% & 6\% \\
+S2 & 100  & $0.985 \pm 0.03$ & +3.5\% & 10\% \\
 S7 & 150  & $0.997 \pm 0.01$ & +1.3\% & 0\% \\
 S8 & 200  & $0.996 \pm 0.01$ & +0.8\% & 0\% \\
 S3 & 300  & $0.999 \pm 0.00$ & +0.4\% & 0\% \\
@@ -876,7 +876,7 @@ Fitting a logistic regression to the proportion of scenarios with
 $f_1^* < 0.95$ across the six density points ($N=20, 100, 150, 200, 300, 500$)
 yields a transition midpoint $N_{50} \approx 50$ targets. This estimate is
 weakly constrained: only the two sparse densities ($N=20, 100$) carry
-informative deficit proportions ($78\%$ and $6\%$), while the four denser
+informative deficit proportions ($78\%$ and $10\%$), while the four denser
 points are all at most $1\%$, so the bootstrap confidence interval is wide
 ($N_{50} \in [30, 62]$). $N_{50}$ should therefore be read as a coarse indicator that the
 transition is confined to $N \in [20, 100]$, not as a precise threshold.
@@ -991,8 +991,8 @@ rises: for the full-physics MOEA-3 (variant A) the pooled correlation is
 $-0.63$ at S1 and falls to $-0.15$ (S2), $-0.13$ (S3), and $-0.23$ (S4).
 Because the pooled statistic mixes between-schedule and within-schedule
 variance, we also computed per-schedule correlations: the per-schedule
-mean is $-0.71$ at S1 and $-0.15$/$-0.16$/$-0.18$ at S2/S3/S4
-(Fisher-z means $-0.78$/$-0.16$/$-0.16$/$-0.18$), and individual
+mean is $-0.72$ at S1 and $-0.15$/$-0.16$/$-0.18$ at S2/S3/S4
+(Fisher-z means $-1.09$/$-0.16$/$-0.16$/$-0.19$), and individual
 schedules span a wide range (S1 $r \in [-0.97, +0.25]$), so the pooled
 value is representative but not uniform across schedules.
 The $\theta$-conflict therefore persists inside the schedules rather than being
@@ -1120,7 +1120,7 @@ residue: the G-BL seed inserts tasks at their earliest feasible time and thus
 biases hot-started runs toward the higher squint of the greedy schedule, most
 visibly at high density. The A--D invariance itself already
 holds at standard budget (Table~\ref{tab:ablation}: $\Delta f_1^* \leq
-0.1\%$ at S3--S4), a physically forced consequence of coverage pressure
+0.2\%$ at S3--S4), a physically forced consequence of coverage pressure
 locking the selection at high density (\S~\ref{sec:pareto-coupling}); the
 convergence is therefore not a budget artifact.
 These controls collectively favor the lower-squint convergence explanation
@@ -1153,7 +1153,7 @@ interconnected findings:
 target density ($+33.7\%$ in $f_2$ at $N=20$ falling to $+0.4\%$ at $N=500$);
 \textbf{(2)}~the third objective is density-dependent rather than redundant:
 per-task $f_2$--$f_3$ correlation within schedules stays negative at every
-density, strongest at sparse density (about $-0.63$ pooled, $-0.71$
+density, strongest at sparse density (about $-0.63$ pooled, $-0.72$
 per-schedule, at S1 for the full-physics solver) and settling to a moderate
 $\approx -0.2$ to $-0.15$ at higher density, and MOEA-3 separates from
 MOEA-2 in $f_3$ at sparse
@@ -1175,7 +1175,7 @@ properties, \S~\ref{sec:pareto-coupling}); the fifth reflects solver
 initialization.
 
 The Friedman test on pooled HV confirms overall differences among the five
-solvers across all 200 scenarios ($\chi^2=671.44$, $p<10^{-140}$; G-BL and
+solvers across all 200 scenarios ($\chi^2=669.02$, $p<10^{-140}$; G-BL and
 GA-P-BL tie by construction, so the statistic is conservative toward fewer
 distinct rankings). Pairwise Wilcoxon
 signed-rank tests use the Bonferroni threshold $\alpha=0.005$; interpretation
