@@ -77,7 +77,6 @@ SHARED_SOLVER_FILES = [
     "src/sar_sim/solver/moea.py",
     "src/sar_sim/solver/baselines.py",
     "src/sar_sim/solver/so_f1.py",
-    "src/sar_sim/solver/solver_factory.py",
 ]
 
 

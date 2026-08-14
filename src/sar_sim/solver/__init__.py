@@ -36,16 +36,6 @@ _LAZY_MOEA = {
     "solutions_to_frontier",
 }
 
-_LAZY_SOLVER_FACTORY = {
-    "multi_moea_solver",
-    "compare_algorithms",
-    "compute_hv",
-    "compute_igd",
-    "build_reference_frontier",
-    "format_comparison_table",
-    "AlgorithmConfig",
-}
-
 _LAZY_SO_F1 = {
     "B2ProfitProblem",
     "b2_profit_solver",
@@ -65,11 +55,6 @@ def __getattr__(name: str):
         # Cache so subsequent lookups don't re-import
         globals()[name] = obj
         return obj
-    if name in _LAZY_SOLVER_FACTORY:
-        import sar_sim.solver.solver_factory as _sf
-        obj = getattr(_sf, name)
-        globals()[name] = obj
-        return obj
     if name in _LAZY_SO_F1:
         import sar_sim.solver.so_f1 as _so_f1
         obj = getattr(_so_f1, name)
@@ -85,4 +70,4 @@ def __getattr__(name: str):
 
 def __dir__() -> list:
     base = dir()  # noqa: F821
-    return sorted(set(base) | _LAZY_MOEA | _LAZY_SOLVER_FACTORY | _LAZY_SO_F1 | _LAZY_CBBA)
+    return sorted(set(base) | _LAZY_MOEA | _LAZY_SO_F1 | _LAZY_CBBA)
