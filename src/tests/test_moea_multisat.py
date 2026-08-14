@@ -86,6 +86,7 @@ def _build_multisat_instance(
             memory=5e8,
             phi_min_res=0.0,
             time_span=t_latest - duration - t_earliest,
+            window_times=[(t_earliest, t_latest)],
         ))
 
     instance = AgileSARInstance(
@@ -217,6 +218,7 @@ def test_c6_removed_no_duplication_penalty():
             memory=5e8,
             phi_min_res=0.0,
             time_span=t_latest - duration - t_earliest,
+            window_times=[(t_earliest, t_latest)],
         ))
 
     # Note: target_map deduplicates by target_id, so T0 appears once

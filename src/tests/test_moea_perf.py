@@ -4,7 +4,7 @@ Verifies that merged geometry+objectives loop (O1), vectorized C3/C4 (O3),
 and path unification (O4) produce IDENTICAL output.
 """
 
-import sys, os, pickle, numpy as np, pathlib
+import sys, os, pickle, math, numpy as np, pathlib
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', 'src'))
 
@@ -91,13 +91,15 @@ def test_o4_decode_uses_time_span():
     N = inst.N
     X = np.ones(2 * N) * 0.6  # all selected, tau=0.6
 
-    sel, phis, f1, f2, f3, _sat = decode_solution(X, inst)
+    sel, phis, f1, f2, f3, _sat, t_actuals = decode_solution(X, inst)
 
-    # Verify time_span consistency: t_act should equal t_earliest + 0.6 * time_span
-    for idx in sel[:5]:  # check first 5
+    # Verify time_span consistency: t_act must equal t_earliest + 0.6 * time_span
+    for pos, idx in enumerate(sel[:5]):  # check first 5
         task = inst.tasks[idx]
         expected_t = task.t_earliest + 0.6 * task.time_span
-        # decode_solution doesn't return t_actuals directly, but we check f1 is reasonable
+        assert math.isclose(t_actuals[pos], expected_t, rel_tol=1e-12, abs_tol=1e-9), (
+            f"Task {idx}: t_act={t_actuals[pos]} != expected {expected_t}"
+        )
         assert task.time_span > 0, f"Task {idx}: time_span={task.time_span}"
 
 

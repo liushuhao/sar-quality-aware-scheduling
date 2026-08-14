@@ -91,29 +91,35 @@ def test_o3_window_times_precomputed():
 # ── O5: O(1) grid lookup ──────────────────────────────────────────────
 
 def test_o5_grid_lookup_matches_binary_search():
-    """O(1) index lookup must produce same interpolation as binary search."""
+    """O(1) bracket index must match binary search, and cubic lookup must
+    approximate the direct orbit to interpolation accuracy."""
     targets, windows = _load_s1()
     inst = _make_instance(targets, windows)
     cache = inst.sat_position_cache
 
-    # Test at grid points and between them
+    from sar_sim.solver.types import _satellite_body_frame
+
     rng = np.random.RandomState(42)
-    test_times = rng.uniform(cache.times[0], cache.times[-1], 100)
+    test_times = rng.uniform(cache.times[0], cache.times[-1], 200)
+    step = cache.step_s
+    t_min = cache.t_min
+    n_pts = len(cache.times)
 
     for t in test_times:
-        pos_o1 = cache.lookup_position(t)
-        # Binary-search reference: we compute manually
+        # O(1) bracket index must agree with binary-search reference.
+        k_o1 = int((t - t_min) / step)
+        k_o1 = max(0, min(k_o1, n_pts - 2))
         k_ref = np.searchsorted(cache.times, t, side='right') - 1
-        k_ref = max(0, min(k_ref, len(cache.times) - 2))
-        t_lo, t_hi = cache.times[k_ref], cache.times[k_ref + 1]
-        if t_hi == t_lo:
-            pos_ref = cache.positions[k_ref].copy()
-        else:
-            alpha = (t - t_lo) / (t_hi - t_lo)
-            pos_ref = (1.0 - alpha) * cache.positions[k_ref] + alpha * cache.positions[k_ref + 1]
+        k_ref = max(0, min(k_ref, n_pts - 2))
+        assert k_o1 == k_ref, f"bracket mismatch at t={t}: O(1)={k_o1}, binary={k_ref}"
 
-        assert np.allclose(pos_o1, pos_ref, rtol=1e-12, atol=1e-12), \
-            f"Mismatch at t={t}: O(1)={pos_o1}, ref={pos_ref}"
+        # Cubic interpolation must match the direct orbit to within its
+        # O(step^4) accuracy (measured ~2 mm at step=10 s; use 1 cm).
+        _, _, _, pos_ref = _satellite_body_frame(t, inst)
+        pos_o1 = cache.lookup_position(t)
+        assert np.allclose(pos_o1, pos_ref, atol=1e-2), (
+            f"position mismatch at t={t}: |d|={np.linalg.norm(pos_o1 - pos_ref):.3e} m"
+        )
 
 
 # ── O6: manual norm/clip/dot ───────────────────────────────────────────
@@ -155,23 +161,16 @@ def test_evaluate_output_identity_after_optimization():
     out = {}
     problem._evaluate(X, out)
 
-    # Shape checks
+    # Shape checks. B2ProfitProblem bakes the constraint penalty into F
+    # (single-objective) and does not emit a separate G array.
     assert out["F"].shape == (100, 1), f"F shape: {out['F'].shape}"
-    assert out["G"].shape == (100, 1), f"G shape: {out['G'].shape}"
-
-    # Sanity: shapes correct, G non-negative
-    assert np.all(out["G"] >= 0), "G should be non-negative"
-    # Note: F = -f1 + penalty_coeff * G, can be positive when constraints violated
 
     # Save reference for comparison (this test IS the baseline)
     # If optimizations change the output, this test will catch it
     # because we will compare against this snapshot
     ref_F = out["F"].copy()
-    ref_G = out["G"].copy()
 
-    # Re-run with same seed — must be deterministic
+    # Re-run with same X — must be deterministic
     out2 = {}
-    X2 = rng.rand(100, 2 * inst.N)  # new random, not same as X
-    problem._evaluate(X, out2)  # use same X
+    problem._evaluate(X, out2)
     assert np.allclose(out2["F"], ref_F, rtol=1e-12, atol=1e-12), "F not deterministic"
-    assert np.allclose(out2["G"], ref_G, rtol=1e-12, atol=1e-12), "G not deterministic"
