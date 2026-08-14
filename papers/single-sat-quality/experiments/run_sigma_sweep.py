@@ -31,6 +31,15 @@ from sar_sim.solver.types import build_agile_instance_from_scenario, precompute_
 SCENARIOS_DIR = PROJECT / "experiments" / "scenarios"
 RESULTS_DIR = PROJECT / "experiments" / "results" / "sigma_sweep"
 
+
+def _atomic_write_json(path, obj):
+    tmp = path.with_suffix(path.suffix + ".tmp")
+    with open(tmp, "w", encoding="utf-8") as f:
+        json.dump(obj, f, indent=2, default=str)
+        f.flush()
+        os.fsync(f.fileno())
+    os.replace(tmp, path)
+
 SLEW_RATE = 0.0524
 SETTLE_TIME = 5.0
 SOLVER_SEED = 42  # fixed seed for reproducibility across sigma values
@@ -244,8 +253,7 @@ def run_sigma_sweep(sigma_values, groups, solvers, max_scenarios=0):
 
                     # Incremental save
                     progress["completed"] = completed
-                    with open(progress_file, 'w') as f:
-                        json.dump(progress, f, indent=2, default=str)
+                    _atomic_write_json(progress_file, progress)
 
                 # Per-group summary
                 grp_keys = [k for k in completed if k.startswith(gname + "/")]
@@ -273,8 +281,7 @@ def run_sigma_sweep(sigma_values, groups, solvers, max_scenarios=0):
                 "solver_seed": SOLVER_SEED,
                 "git_commit": _git_commit(),
             }
-            with open(progress_file, 'w') as f:
-                json.dump(progress, f, indent=2)
+            _atomic_write_json(progress_file, progress)
             print(f"  [σ={sigma}, {solver_name}] Done: {len(completed)}/{sum(group_counts.values())}\n")
 
     # Aggregate summary

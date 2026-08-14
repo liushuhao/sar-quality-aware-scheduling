@@ -42,6 +42,15 @@ SCENARIOS_DIR = PROJECT / "experiments" / "scenarios"
 RESULTS_DIR = PROJECT / "experiments" / "results" / "moea_3obj_no_physics"
 RESULTS_DIR.mkdir(parents=True, exist_ok=True)
 
+
+def _atomic_write_json(path, obj):
+    tmp = path.with_suffix(path.suffix + ".tmp")
+    with open(tmp, "w", encoding="utf-8") as f:
+        json.dump(obj, f, indent=2, default=str)
+        f.flush()
+        os.fsync(f.fileno())
+    os.replace(tmp, path)
+
 MOEA_PARAMS = {"population_size": 100, "n_generations": 200, "n_obj": 3}
 SLEW_RATE = 0.0524
 SETTLE_TIME = 5.0
@@ -373,10 +382,10 @@ def main():
             except Exception as e:
                 print(f"  [ERR] {fpath.name}: {e}"); total_err += 1; continue
             progress["completed"] = completed
-            json.dump(progress, open(pf, "w"), indent=2, default=str)
+            _atomic_write_json(pf, progress)
 
     progress["stats"] = {"total_scenarios": total, "completed": len(completed), "errors": total_err, "ablation_variant": "D_no_physics"}
-    json.dump(progress, open(pf, "w"), indent=2)
+    _atomic_write_json(pf, progress)
     print(f"\nVariant D complete: {len(completed)}/{total}, errors={total_err}")
 
 if __name__ == "__main__":

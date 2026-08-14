@@ -16,7 +16,7 @@ paragraph: 10 S1 (A_seed00-09), 4 S2 (A_seed00-03), 5 S3 (A_seed00-04),
 Incremental save per run + resume. Output:
   experiments/results/p1-1_random_init/hotstart_control_s1s4.json
 """
-import pickle, json, sys, time, hashlib
+import pickle, json, sys, os, time, hashlib
 from pathlib import Path
 import numpy as np
 
@@ -27,6 +27,15 @@ sys.path.insert(0, str(SRC))
 SCENARIOS_DIR = PROJECT / "papers/single-sat-quality/experiments/scenarios"
 RESULTS_DIR = PROJECT / "papers/single-sat-quality/experiments/results/p1-1_random_init"
 RESULTS_DIR.mkdir(parents=True, exist_ok=True)
+
+
+def _atomic_write_json(path, obj):
+    tmp = path.with_suffix(path.suffix + ".tmp")
+    with open(tmp, "w", encoding="utf-8") as f:
+        json.dump(obj, f, indent=2, ensure_ascii=False, default=str)
+        f.flush()
+        os.fsync(f.fileno())
+    os.replace(tmp, path)
 
 from sar_sim.solver.moea import moea_solver
 from sar_sim.solver.baselines import baseline_b1
@@ -156,7 +165,7 @@ def main():
                                  if not (r["scenario"] == pkl.name
                                          and r["seed"] == idx and r["extra_seed"] == extra)]
                 scales[scale].append(results[-1])
-                json.dump(state, open(OUT_PATH, "w", encoding="utf-8"), ensure_ascii=False, indent=2)
+                _atomic_write_json(OUT_PATH, state)
                 print(f"[{scale}-{idx:02d}] x{extra} hot={hot_res['f1']:.3f} rnd={rnd_res['f1']:.3f} d={hot_res['f1']-rnd_res['f1']:+.3f}", flush=True)
 
     # summary with ddof=1
@@ -188,7 +197,7 @@ def main():
         "scenario_plan": {s: f"{s}-A_seed{start:02d}..{start+count-1:02d} ({count} scenarios)" for s, start, count in PLAN},
     }
     state["summary"] = summary
-    json.dump(state, open(OUT_PATH, "w", encoding="utf-8"), ensure_ascii=False, indent=2)
+    _atomic_write_json(OUT_PATH, state)
 
     print("\n=== SUMMARY ===", flush=True)
     for scale, s in summary.items():

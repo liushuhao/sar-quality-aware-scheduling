@@ -53,6 +53,15 @@ SCENARIOS_DIR = PROJECT / "experiments" / "scenarios"
 RESULTS_DIR = PROJECT / "experiments" / "results" / "moea_3obj_no_squint"
 RESULTS_DIR.mkdir(parents=True, exist_ok=True)
 
+
+def _atomic_write_json(path, obj):
+    tmp = path.with_suffix(path.suffix + ".tmp")
+    with open(tmp, "w", encoding="utf-8") as f:
+        json.dump(obj, f, indent=2, default=str)
+        f.flush()
+        os.fsync(f.fileno())
+    os.replace(tmp, path)
+
 MOEA_PARAMS = {
     "population_size": 100,
     "n_generations": 200,
@@ -562,8 +571,7 @@ def main():
                 continue
 
             progress["completed"] = completed
-            with open(progress_file, 'w') as f:
-                json.dump(progress, f, indent=2, default=str)
+            _atomic_write_json(progress_file, progress)
 
         grp_keys = [k for k in completed if k.startswith(group_name + "/")]
         if grp_keys:
@@ -587,8 +595,7 @@ def main():
         "git_commit": GIT_COMMIT,
         "ablation_variant": "B_no_squint",
     }
-    with open(progress_file, 'w') as f:
-        json.dump(progress, f, indent=2)
+    _atomic_write_json(progress_file, progress)
 
     print(f"\n{'='*60}")
     print(f"MOEA-3obj NO-SQUINT ablation complete!")
