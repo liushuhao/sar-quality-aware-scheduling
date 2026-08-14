@@ -69,6 +69,21 @@ def _solver_code_identical(ver: str) -> bool:
 
 GIT_COMMIT = _git_commit()
 
+
+def _atomic_write_json(path: Path, obj) -> None:
+    """Write JSON atomically: temp file + fsync + os.replace.
+
+    A hard power-off mid-write would otherwise truncate _progress.json
+    and destroy all resume state. os.replace is atomic on same-volume
+    Windows filesystems."""
+    tmp = path.with_suffix(path.suffix + ".tmp")
+    with open(tmp, "w", encoding="utf-8") as f:
+        json.dump(obj, f, indent=2, default=str)
+        f.flush()
+        os.fsync(f.fileno())
+    os.replace(tmp, path)
+
+
 def get_all_scenarios():
     """Return ordered dict of group_name -> list of pkl paths for S1-S8."""
     groups = OrderedDict()
@@ -208,10 +223,23 @@ def main():
 
     progress_file = RESULTS_DIR / "_progress.json"
     if args.resume and progress_file.exists():
-        with open(progress_file) as f:
-            progress = json.load(f)
-        completed = progress.get("completed", {})
-        print(f"Resuming: {len(completed)} already completed")
+        try:
+            with open(progress_file) as f:
+                progress = json.load(f)
+            completed = progress.get("completed", {})
+            print(f"Resuming: {len(completed)} already completed")
+        except (json.JSONDecodeError, OSError) as e:
+            print(f"[WARN] progress file unreadable ({e}); looking for backup")
+            backups = sorted(RESULTS_DIR.glob("_progress.backup_*.json"))
+            if backups:
+                with open(backups[-1]) as f:
+                    progress = json.load(f)
+                completed = progress.get("completed", {})
+                print(f"[WARN] restored from {backups[-1].name}: {len(completed)} entries")
+            else:
+                print("[WARN] no backup; starting fresh")
+                progress = {"completed": OrderedDict()}
+                completed = progress["completed"]
     else:
         progress = {"completed": OrderedDict()}
         completed = progress["completed"]
@@ -257,8 +285,7 @@ def main():
 
             # Save progress after every scenario
             progress["completed"] = completed
-            with open(progress_file, 'w') as f:
-                json.dump(progress, f, indent=2, default=str)
+            _atomic_write_json(progress_file, progress)
 
         # Per-group summary
         grp_keys = [k for k in completed if k.startswith(group_name + "/")]
@@ -285,8 +312,7 @@ def main():
         "params": MOEA_PARAMS,
         "git_commit": GIT_COMMIT,
     }
-    with open(progress_file, 'w') as f:
-        json.dump(progress, f, indent=2)
+    _atomic_write_json(progress_file, progress)
 
     print(f"\n{'='*60}")
     print(f"MOEA-2obj experiment complete!")
