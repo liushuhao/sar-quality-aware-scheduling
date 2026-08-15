@@ -123,3 +123,6 @@ papers/single-sat-quality/experiments/results/_moea*_rerun_*.log
 
 # Internal submission strategy (local only)
 papers/single-sat-quality/journal_recommendation_plan.md
+
+# gate snapshot is regenerable via experiments/rebuild_snapshot.py
+papers/single-sat-quality/experiments/results/_snapshot_gate.json

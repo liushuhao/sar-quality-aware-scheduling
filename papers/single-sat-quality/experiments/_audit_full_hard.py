@@ -68,10 +68,13 @@ def audit_one(args):
 def main():
     import argparse
     _ap = argparse.ArgumentParser(description="Full hard-constraint audit of saved solver snapshots")
-    _ap.add_argument("--snapshot", default=None, help="path to snapshot JSON (default: results/_snapshot_audit.json)")
+    _ap.add_argument("--snapshot", required=True,
+                     help="snapshot JSON path — run experiments/rebuild_snapshot.py first; "
+                          "no default, the former default (_snapshot_audit.json) had a dead "
+                          "producer and silently reported thousands of false violations")
     _ap.add_argument("--jobs", type=int, default=mp.cpu_count(), help="parallel workers (default: cpu count)")
     _args = _ap.parse_args()
-    SNAP = Path(_args.snapshot) if _args.snapshot else PAPER / "experiments/results/_snapshot_audit.json"
+    SNAP = Path(_args.snapshot)
 
     _data = json.load(open(SNAP, encoding="utf-8"))
     prog = _data["completed"] if "completed" in _data else _data
