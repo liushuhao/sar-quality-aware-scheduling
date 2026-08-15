@@ -126,3 +126,7 @@ papers/single-sat-quality/journal_recommendation_plan.md
 
 # gate snapshot is regenerable via experiments/rebuild_snapshot.py
 papers/single-sat-quality/experiments/results/_snapshot_gate.json
+
+# gen_fig6_ablation.py byproduct (paper includes fig5_ablation.pdf instead)
+papers/single-sat-quality/figures/fig6_ablation.pdf
+papers/single-sat-quality/figures/fig6_ablation.png

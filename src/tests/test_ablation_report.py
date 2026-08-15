@@ -4,7 +4,8 @@ import math
 import sys
 from pathlib import Path
 
-_EXPERIMENTS_DIR = Path(__file__).resolve().parent.parent / "experiments"
+_EXPERIMENTS_DIR = (Path(__file__).resolve().parents[2] /
+                    "papers" / "single-sat-quality" / "experiments")
 if str(_EXPERIMENTS_DIR) not in sys.path:
     sys.path.insert(0, str(_EXPERIMENTS_DIR))
 

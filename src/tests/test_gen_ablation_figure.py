@@ -1,7 +1,8 @@
 """Tests for gen_ablation_figure.py (TDD) — ablation chart generation."""
 import sys
 from pathlib import Path
-_EXP = Path(__file__).resolve().parent.parent / "experiments"
+_EXP = (Path(__file__).resolve().parents[2] /
+        "papers" / "single-sat-quality" / "experiments")
 sys.path.insert(0, str(_EXP))
 
 import pytest
@@ -63,3 +64,20 @@ def test_figure_saved_to_file(tmp_path, variant_data):
     gen_ablation_figure(data, classes, ["B", "C", "D"], metric_labels, str(out))
     assert out.exists()
     assert out.stat().st_size > 1000  # at least 1KB
+
+
+def test_prepare_bar_data_resolves_raw_keys(variant_data):
+    """Regression: raw class keys must resolve table data. The fig5 zero-bar
+    bug passed pretty axis labels ('S1 ($N{=}20$)') as data keys, so every
+    `cls in table` lookup missed and all bars silently drew at height 0."""
+    from gen_ablation_figure import prepare_bar_data
+    data, classes, variants, metric_labels = variant_data
+    bar_data = prepare_bar_data(data, classes, ["B", "C", "D"],
+                                ["f1_degradation_pct"])
+    for v in ["B", "C", "D"]:
+        assert np.any(bar_data[v]["f1_degradation_pct"] != 0.0)
+    # pretty labels used as keys must resolve to zero (the old main() wiring)
+    pretty = ["S1 ($N{=}20$)", "S2 ($N{=}100$)", "S3 ($N{=}300$)",
+              "S4 ($N{=}500$)"]
+    bar_pretty = prepare_bar_data(data, pretty, ["B"], ["f1_degradation_pct"])
+    assert np.all(bar_pretty["B"]["f1_degradation_pct"] == 0.0)

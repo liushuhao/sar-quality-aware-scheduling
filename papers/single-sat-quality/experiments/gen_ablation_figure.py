@@ -68,7 +68,8 @@ def gen_ablation_figure(table: Dict[str, Dict[str, dict]],
                         classes: List[str],
                         variants: List[str],
                         metrics: List[str],
-                        out_path: str) -> None:
+                        out_path: str,
+                        class_labels: Dict[str, str] = None) -> None:
     """Generate a grouped bar chart of per-class degradation.
 
     Each metric (f1, f2, f3) gets a subplot row; each variant (B, C, D)
@@ -76,10 +77,12 @@ def gen_ablation_figure(table: Dict[str, Dict[str, dict]],
 
     Args:
         table: compare_variants() output
-        classes: class labels like ["S1 ($N=20$)", ...]
+        classes: raw class keys like ["S1", "S2", ...] — these must match
+            the table keys; pretty axis labels go through class_labels.
         variants: ["B", "C", "D"]
         metrics: ["f1_raw_degradation_pct", ...]
         out_path: output PDF path
+        class_labels: optional {raw key: pretty label} mapping for the x-axis
     """
     bar_data = prepare_bar_data(table, classes, variants, metrics)
     colors = get_bar_colors(variants)
@@ -115,7 +118,8 @@ def gen_ablation_figure(table: Dict[str, Dict[str, dict]],
         ax.grid(axis="y", alpha=0.3)
 
     axes[-1].set_xticks(x)
-    axes[-1].set_xticklabels(classes, fontsize=9)
+    labels = [class_labels.get(c, c) for c in classes] if class_labels else classes
+    axes[-1].set_xticklabels(labels, fontsize=9)
 
     fig.tight_layout(pad=1.0)
     fig.savefig(out_path, dpi=150, bbox_inches="tight")
@@ -166,7 +170,7 @@ def main():
 
     print(f"Generating ablation chart: {len(classes)} classes, "
           f"{len(variants)} variants, {len(metrics)} metrics")
-    gen_ablation_figure(table, labels, variants, metrics, args.out)
+    gen_ablation_figure(table, classes, variants, metrics, args.out, class_labels)
     print(f"Saved to: {args.out}")
 
 

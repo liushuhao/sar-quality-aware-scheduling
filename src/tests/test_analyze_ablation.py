@@ -9,7 +9,9 @@ import sys
 from pathlib import Path
 
 # Ensure experiments/ is on path so `import analyze_ablation` works
-_EXPERIMENTS_DIR = Path(__file__).resolve().parent.parent / "experiments"
+# Scripts live under papers/single-sat-quality/experiments (not src/experiments).
+_EXPERIMENTS_DIR = (Path(__file__).resolve().parents[2] /
+                    "papers" / "single-sat-quality" / "experiments")
 if str(_EXPERIMENTS_DIR) not in sys.path:
     sys.path.insert(0, str(_EXPERIMENTS_DIR))
 
