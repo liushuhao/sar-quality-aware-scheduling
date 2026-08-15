@@ -222,13 +222,10 @@ def audit_group_stats(rpt, bl, m3, m2):
     # MOEA-3 stats
     m3_stats = compute_stats(m3_groups, is_baselines=False)
     
-    # Paper Table 2 claims (S4 only)
-    # G-BL:  f1*=1.00,  f2=0.580±0.025, f3=0.210±0.071
-    # G-SM:  f1*=0.61±0.09, f2=0.506±0.035, f3=0.356±0.075
-    # GA-P-BL: f1*=1.18±0.26, f2=0.580±0.024, f3=0.203±0.073
-    # MOEA-2: f1*=0.98±0.05, f2=0.589±0.021, f3=0.169±0.066
-    # MOEA-3: f1*=0.98±0.06, f2=0.589±0.021, f3=0.170±0.066
-    
+    # Paper Table 2 claims (all density classes; values synced to tex @ e01ca3d)
+    # GA-P-BL rows omitted: guard forces GA-P-BL == G-BL (fallback collapse),
+    # so its table rows duplicate G-BL by construction.
+
     # We don't have GA-P-BL data directly in the same format — let's flag this
     ga_bl_path = os.path.join(RESULTS, "b2_profit_bl", "_progress.json")
     if os.path.exists(ga_bl_path):
@@ -237,48 +234,68 @@ def audit_group_stats(rpt, bl, m3, m2):
         rpt.ok("GA-P-BL _progress.json exists (will check schema separately)")
     else:
         rpt.warn("GA-P-BL _progress.json NOT found at expected path")
-    
+
     # Check Table 2 values
-    print("\n── Table 2 (S4 solver profiles) ──")
+    print("\n── Table 2 (solver profiles per density class) ──")
     table2_claims = {
-        "G-BL":  {"f1*": (1.00, None),    "f2": (0.580, 0.025), "f3": (0.210, 0.071)},
-        "G-SM":  {"f1*": (0.61, 0.09),    "f2": (0.506, 0.035), "f3": (0.356, 0.075)},
-        # GA-P-BL: skip, no data yet
-        "MOEA-2":{"f1*": (0.98, 0.05),    "f2": (0.589, 0.021), "f3": (0.169, 0.066)},
-        "MOEA-3":{"f1*": (0.98, 0.06),    "f2": (0.589, 0.021), "f3": (0.170, 0.066)},
+        "S1": {
+            "G-BL":   {"f1*": (1.00, 0.00), "f2": (0.295, 0.037), "f3": (0.497, 0.044)},
+            "G-SM":   {"f1*": (0.51, 0.16), "f2": (0.389, 0.086), "f3": (0.722, 0.058)},
+            "MOEA-2": {"f1*": (0.86, 0.14), "f2": (0.394, 0.059), "f3": (0.654, 0.038)},
+            "MOEA-3": {"f1*": (0.85, 0.12), "f2": (0.377, 0.050), "f3": (0.699, 0.037)},
+        },
+        "S2": {
+            "G-BL":   {"f1*": (1.00, 0.00), "f2": (0.317, 0.026), "f3": (0.561, 0.060)},
+            "G-SM":   {"f1*": (0.35, 0.09), "f2": (0.357, 0.078), "f3": (0.735, 0.055)},
+            "MOEA-2": {"f1*": (0.99, 0.03), "f2": (0.328, 0.030), "f3": (0.589, 0.045)},
+            "MOEA-3": {"f1*": (0.98, 0.04), "f2": (0.329, 0.030), "f3": (0.597, 0.042)},
+        },
+        "S3": {
+            "G-BL":   {"f1*": (1.00, 0.00), "f2": (0.342, 0.026), "f3": (0.616, 0.042)},
+            "G-SM":   {"f1*": (0.29, 0.04), "f2": (0.317, 0.055), "f3": (0.756, 0.036)},
+            "MOEA-2": {"f1*": (1.00, 0.00), "f2": (0.343, 0.026), "f3": (0.622, 0.040)},
+            "MOEA-3": {"f1*": (1.00, 0.01), "f2": (0.344, 0.026), "f3": (0.623, 0.040)},
+        },
+        "S4": {
+            "G-BL":   {"f1*": (1.00, 0.00), "f2": (0.336, 0.039), "f3": (0.675, 0.074)},
+            "G-SM":   {"f1*": (0.37, 0.12), "f2": (0.291, 0.067), "f3": (0.786, 0.046)},
+            "MOEA-2": {"f1*": (1.00, 0.01), "f2": (0.338, 0.038), "f3": (0.680, 0.073)},
+            "MOEA-3": {"f1*": (1.00, 0.01), "f2": (0.338, 0.038), "f3": (0.680, 0.073)},
+        },
     }
-    
+
     computed = {"G-BL": gbl_stats, "G-SM": gsm_stats, "MOEA-2": m2_stats, "MOEA-3": m3_stats}
-    
-    for solver, claims in table2_claims.items():
-        cs = computed.get(solver, {}).get("S4", {})
-        if not cs:
-            rpt.warn(f"Table2 {solver}: no computed data for S4")
-            continue
-        for obj, (claim_mean, claim_std) in claims.items():
-            comp_mean = cs.get(f"{obj}_mean")
-            comp_std = cs.get(f"{obj}_std")
-            if comp_mean is None:
+
+    for cls, solvers in table2_claims.items():
+        for solver, claims in solvers.items():
+            cs = computed.get(solver, {}).get(cls, {})
+            if not cs:
+                rpt.warn(f"Table2 {solver} {cls}: no computed data")
                 continue
-            mean_ok = abs(comp_mean - claim_mean) <= max(TOLERANCE * abs(claim_mean), 0.003)
-            std_ok = True
-            if claim_std is not None and comp_std is not None:
-                std_ok = abs(comp_std - claim_std) <= max(TOLERANCE * abs(claim_std), 0.005)
-            
-            status = "OK" if (mean_ok and std_ok) else "MISMATCH"
-            marker = rpt.ok if (mean_ok and std_ok) else (rpt.fail if abs(comp_mean - claim_mean) > 0.02 else rpt.warn)
-            marker(
-                f"Table2 {solver} S4 {obj}",
-                f"paper={claim_mean}±{claim_std}, data={comp_mean:.4f}±{comp_std:.4f} [{status}]"
-            )
+            for obj, (claim_mean, claim_std) in claims.items():
+                comp_mean = cs.get(f"{obj}_mean")
+                comp_std = cs.get(f"{obj}_std")
+                if comp_mean is None:
+                    continue
+                mean_ok = abs(comp_mean - claim_mean) <= max(TOLERANCE * abs(claim_mean), 0.003)
+                std_ok = True
+                if claim_std is not None and comp_std is not None:
+                    std_ok = abs(comp_std - claim_std) <= max(TOLERANCE * abs(claim_std), 0.005)
+
+                status = "OK" if (mean_ok and std_ok) else "MISMATCH"
+                marker = rpt.ok if (mean_ok and std_ok) else (rpt.fail if abs(comp_mean - claim_mean) > 0.02 else rpt.warn)
+                marker(
+                    f"Table2 {solver} {cls} {obj}",
+                    f"paper={claim_mean}±{claim_std}, data={comp_mean:.4f}±{comp_std:.4f} [{status}]"
+                )
     
     # Check Table 5 (scale-sensitivity)
     print("\n── Table 5 (scale sensitivity) ──")
     table5_claims = {
-        "S1": {"f1*": (0.69, 0.30), "f2_imp": 8.0, "pct_opt": 82},
-        "S2": {"f1*": (0.83, 0.23), "f2_imp": 4.4, "pct_opt": 64},
-        "S3": {"f1*": (0.97, 0.04), "f2_imp": 1.6, "pct_opt": 14},
-        "S4": {"f1*": (0.98, 0.05), "f2_imp": 1.5, "pct_opt": 20},
+        "S1": {"f1*": (0.86, 0.14), "f2_imp": 33.7, "pct_opt": 78},
+        "S2": {"f1*": (0.985, 0.03), "f2_imp": 3.5, "pct_opt": 10},
+        "S3": {"f1*": (0.999, 0.00), "f2_imp": 0.4, "pct_opt": 0},
+        "S4": {"f1*": (0.996, 0.01), "f2_imp": 0.4, "pct_opt": 0},
     }
     
     for cls, claims in table5_claims.items():
@@ -331,8 +348,6 @@ def audit_orphan_scan(rpt, bl, m3, m2):
         "baselines": bl,
         "moea_3obj": m3.get("completed", {}),
         "moea_2obj": m2.get("completed", {}),
-        "effect_sizes": load_json(os.path.join(RESULTS, "effect_sizes.json")),
-        "f2_f3_coupling": load_json(os.path.join(RESULTS, "f2_f3_coupling.json")),
     }
     
     # Read .tex
@@ -380,48 +395,18 @@ def audit_orphan_scan(rpt, bl, m3, m2):
     else:
         rpt.fail("MOEA-3 S4: no entries found")
     
-    # 2. Effect sizes: cross-check key values
-    es = all_data["effect_sizes"]
-    
-    # G-SM f3 vs G-BL f3: Cliff's δ = +0.72, p = 1.7×10⁻³⁴
-    if "GSM_f3_vs_GBL_f3" in es:
-        e = es["GSM_f3_vs_GBL_f3"]
-        delta_ok = abs(e["cliff_delta"] - 0.72) <= 0.02
-        marker = rpt.ok if delta_ok else rpt.warn
-        marker("GSM_f3_vs_GBL_f3 δ", f"paper=+0.72, data={e['cliff_delta']:.3f}")
-        rpt.ok(f"GSM_f3_vs_GBL_f3 p_value: paper=1.7e-34, data={e['p_value']:.2e}")
-    else:
-        rpt.fail("GSM_f3_vs_GBL_f3 NOT found in effect_sizes.json")
-    
-    # G-SM f1 vs G-BL f1: Cliff's δ = -0.25, p = 7.0×10⁻³⁴
-    if "GSM_f1_vs_GBL_f1" in es:
-        e = es["GSM_f1_vs_GBL_f1"]
-        delta_ok = abs(abs(e["cliff_delta"]) - 0.25) <= 0.05
-        marker = rpt.ok if delta_ok else rpt.warn
-        marker("GSM_f1_vs_GBL_f1 δ", f"paper=-0.25, data={e['cliff_delta']:.3f}")
-    else:
-        rpt.fail("GSM_f1_vs_GBL_f1 NOT found")
-    
-    # MOEA-2 f3 vs G-BL f3: Cliff's δ = -0.63
-    if "MOEA-2_f3_vs_GBL_f3" in es:
-        e = es["MOEA-2_f3_vs_GBL_f3"]
-        delta_ok = abs(abs(e["cliff_delta"]) - 0.63) <= 0.03
-        marker = rpt.ok if delta_ok else rpt.warn
-        marker("MOEA-2_f3_vs_GBL_f3 δ", f"paper=-0.63, data={e['cliff_delta']:.3f}")
-    else:
-        rpt.fail("MOEA-2_f3_vs_GBL_f3 NOT found")
-    
-    # 3. f2_f3 coupling: r = 0.93--0.98 across scenarios
-    fc = all_data["f2_f3_coupling"]
-    r_values = [v["r"] for v in fc.values()]
-    r_min, r_max = min(r_values), max(r_values)
-    rpt.ok(f"θ/ψ_sq correlation: paper=0.93--0.98, data=({r_min:.4f}--{r_max:.4f}) across {len(fc)} groups")
-    
-    # 4. Check: paper claims "200 scenarios" — count unique scenario keys
+    # 2. Effect-size / coupling / abstract-delta claims: superseded by
+    # verify_paper_numbers.py — the authoritative 144-assertion ledger, which
+    # covers the f3 Cliff's δ=+0.88, §6.4 Fisher-z and §7.1 claims. Historical
+    # checks here referenced a removed effect_sizes.json / f2_f3_coupling.json
+    # namespace and pre-D01 correlation values; re-implementing them would
+    # duplicate the ledger.
+
+    # 3. Check: paper claims "200 scenarios" — count unique scenario keys
     all_bl_keys = set(bl.keys())
     rpt.ok(f"Scenario count: paper=200, data={len(all_bl_keys)} unique baselines entries")
-    
-    # 5. Check: scenario key naming — do S4 keys have consistent naming?
+
+    # 4. Check: scenario key naming — do S4 keys have consistent naming?
     # Problem from memory: S4 key mismatch might cause gen_all_figures.py to exclude them
     s4_all_keys = set(k for k in all_bl_keys if k.startswith("S4/"))
     s4_m3_keys = set(k for k in m3.get("completed", {}).keys() if k.startswith("S4/"))
@@ -431,15 +416,6 @@ def audit_orphan_scan(rpt, bl, m3, m2):
     diff2 = s4_m3_keys - s4_all_keys
     if diff2:
         rpt.warn(f"S4 keys in moea_3obj but NOT in baselines: {sorted(diff2)[:5]}")
-    
-    # 6. Abstract claim check: "Cliff's δ = −0.14 on normalized profit" between MOEA-2 vs MOEA-3
-    # Need to find MOEA-2_vs_MOEA-3 comparison
-    moea2_vs_moea3 = {k: v for k, v in es.items() if "MOEA-2" in k and "MOEA-3" in k}
-    if moea2_vs_moea3:
-        for k, v in moea2_vs_moea3.items():
-            rpt.ok(f"{k}: δ={v['cliff_delta']:.3f}, p={v['p_value']:.2e}")
-    else:
-        rpt.warn("MOEA-2 vs MOEA-3 comparison not found in effect_sizes.json")
 
 # ══════════════════════════════════════════════
 # RUN
