@@ -316,8 +316,7 @@ a set of $N$ ground targets $\mathcal{T}$, a satellite platform $\mathcal{P}$,
 and a SAR imaging model $\mathcal{O}$.
 \paragraph{Task Set.}
 Each task $i \in \{1,\ldots,N\}$ is specified by its geographic coordinates
-$\mathbf{r}_i = (\phi_i, \lambda_i)$, a priority weight $p_i \in \mathbb{R}^+$,
-a minimum required ground resolution $\rho_i^{\text{req}}$, a visibility window
+$\mathbf{r}_i = (\phi_i, \lambda_i)$, a priority weight $p_i \in \mathbb{R}^+$, a visibility window
 $\mathcal{W}_i = [a_i, b_i]$ during which the satellite can observe the target,
 and a fixed observation duration $d_i$.
 \paragraph{Satellite Platform.}
@@ -476,7 +475,7 @@ active constraint in dense regimes.
 $\sum_{i \in \mathcal{S}} e_i \leq E_{\max}$ and
 $\sum_{i \in \mathcal{S}} m_i \leq M_{\max}$, where $E_{\max}=10^7$ and
 $M_{\max}=10^{11}$ (arbitrary units) are set sufficiently high to be
-non-binding under all tested scenarios (typical per-task $e_i \sim 10^2$--$10^3$, $m_i \sim 10^6$--$10^7$, far below the caps); they are retained for completeness.
+non-binding under all tested scenarios (typical per-task $e_i = 5\times10^4$, $m_i = 5\times10^8$, far below the caps); they are retained for completeness.
 % ============================================================
 %  4. METHODOLOGY (~1000 words)
 % ============================================================
@@ -554,7 +553,7 @@ $t_i = t_i^{\text{earliest}} + \tau_i \cdot (t_i^{\text{latest}} - d_i - t_i^{\t
 alongside a binary selection vector $\mathbf{x} \in \{0,1\}^N$; both are
 decision variables (a $2N$-dimensional chromosome).
 The population of 100 individuals is initialized from G-BL's solution
-with Gaussian noise (std = 0.5) added to each $\tau_i$.
+with Gaussian noise (std = 0.5) added to the full $2N$-dimensional chromosome.
 The GA runs for 200 generations with simulated binary crossover
 ($p_c = 0.9$, $\eta_c = 20$) and polynomial mutation
 ($p_m = 0.1$, $\eta_m = 20$).
@@ -1105,8 +1104,10 @@ byproduct of the $\sigma=0.5$ perturbation level.
 \paragraph{Random-search calibration.}
 On five S1 scenarios, 5,000 random task selections per scenario produce mean
 $f_1^*=0.527\pm0.003$ and a 90th percentile of $0.930\pm0.008$; the best
-sample reaches $1.000$ --- the G-BL profit, so random sampling can at most
-replicate the greedy baseline, never exceed it. High coverage under random
+sample reaches $1.000$ --- the G-BL profit, so random sampling never exceeded
+the greedy baseline on these scenarios. Because the random sampler is
+unconstrained and does not enforce C2--C4, this is an empirical bound on the
+tested batch rather than a construction guarantee. High coverage under random
 sampling therefore occurs only by chance; the MOEA's gains reflect structured
 search.
 
