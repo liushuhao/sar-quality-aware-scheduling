@@ -25,15 +25,20 @@ SLEW, SETTLE = 0.0524, 5.0
 
 
 def audit_one(args):
-    """Audit a single scenario entry; returns (key, summary_dict)."""
+    """Audit a single scenario entry; returns (key, summary_dict).
+
+    Snapshot entries carry {"scenario": "S1/<name>.pkl", "entry": {...}}; the
+    composite dict key is "<fam>|<scenario>" so multi-solver families sharing
+    scenario keys do not collide."""
     key, e = args
-    data = pickle.load(open(PAPER / "experiments/scenarios" / key, "rb"))
+    scenario, sd = e["scenario"], e["entry"]
+    data = pickle.load(open(PAPER / "experiments/scenarios" / scenario, "rb"))
     alt = float(data.get("satellite", {}).get("altitude_km", 693.0)) * 1000.0
     inst = build_agile_instance_from_scenario(
         data, max_slew_rate=SLEW, settle_time=SETTLE, altitude_m=alt)
     precompute_geometry(inst, step_s=10.0)
-    sel = list(e["selected"]); ta = list(e["t_actuals"])
-    phis = list(e["phis_off_nadir"])
+    sel = list(sd["selected"]); ta = list(sd["t_actuals"])
+    phis = list(sd["phis_off_nadir"])
     N = inst.N; phi = np.zeros(N); t = np.zeros(N); oow = 0
     for i, tt, ph in zip(sel, ta, phis):
         task = inst.tasks[i]
@@ -52,7 +57,7 @@ def audit_one(args):
             flags[c] = len(v.violations)
             worst_local[c] = max((x.magnitude for x in v.violations), default=0.0)
     return key, {
-        "cls": key.split("/")[0],
+        "cls": scenario.split("/")[0],
         "nsel": len(sel),
         "oow": oow,
         "flags": flags,
