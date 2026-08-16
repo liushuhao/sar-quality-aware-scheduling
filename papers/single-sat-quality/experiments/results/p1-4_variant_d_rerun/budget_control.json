@@ -4,140 +4,140 @@
       {
         "scenario": "S3-A_seed00.pkl",
         "pkl_sha1": "59b7b3bb8225d004b9dc842316063cc3c9031301",
-        "git_commit": "681ced6b",
+        "git_commit": "ce8e37fc",
         "A": {
           "variant": "A_full_physics",
-          "f1": 0.9897084048027445,
-          "f1_raw": 1154.0,
-          "f2": 0.3551654208866298,
-          "f3": 0.6200286601463851,
-          "n_selected": 197,
+          "f1": 0.9965694682675815,
+          "f1_raw": 1162.0,
+          "f2": 0.35463863043671046,
+          "f3": 0.6227553933405204,
+          "n_selected": 198,
           "constraint_feasible": true,
           "all_infeasible": false,
-          "runtime_s": 2027.8
+          "runtime_s": 1022.8
         },
         "D": {
           "variant": "D_no_physics",
           "f1": 1.0,
           "f1_raw": 1166.0,
-          "f2": 0.3513070228582128,
-          "f3": 0.609452317328408,
+          "f2": 0.35120631518398243,
+          "f3": 0.610042926037774,
           "n_selected": 200,
           "constraint_feasible": true,
           "all_infeasible": false,
-          "runtime_s": 1802.9
+          "runtime_s": 801.8
         },
-        "delta_f1": -0.010291595197255532
+        "delta_f1": -0.0034305317324184736
       },
       {
         "scenario": "S3-A_seed01.pkl",
         "pkl_sha1": "75f1290a4702c81105917d0806ed1c22f5cb4598",
-        "git_commit": "f96674f6",
+        "git_commit": "ce8e37fc",
         "A": {
           "variant": "A_full_physics",
           "f1": 1.0,
           "f1_raw": 1208.0,
-          "f2": 0.3420757316862566,
-          "f3": 0.6278801056585694,
+          "f2": 0.34215798659038194,
+          "f3": 0.6288109923678674,
           "n_selected": 200,
           "constraint_feasible": true,
           "all_infeasible": false,
-          "runtime_s": 1824.1
+          "runtime_s": 897.7
         },
         "D": {
           "variant": "D_no_physics",
           "f1": 1.0,
           "f1_raw": 1208.0,
-          "f2": 0.33955147321501294,
-          "f3": 0.6148400729718948,
+          "f2": 0.3394956746772484,
+          "f3": 0.6146016261509271,
           "n_selected": 200,
           "constraint_feasible": true,
           "all_infeasible": false,
-          "runtime_s": 1464.2
+          "runtime_s": 903.3
         },
         "delta_f1": 0.0
       },
       {
         "scenario": "S3-A_seed02.pkl",
         "pkl_sha1": "97e90a049c1b5c7caea458dd3ea97191c947728f",
-        "git_commit": "f96674f6",
+        "git_commit": "ce8e37fc",
         "A": {
           "variant": "A_full_physics",
           "f1": 1.0,
           "f1_raw": 1168.0,
-          "f2": 0.33624019075912087,
-          "f3": 0.61819196615286,
+          "f2": 0.3369729804856497,
+          "f3": 0.6192436956957011,
           "n_selected": 200,
           "constraint_feasible": true,
           "all_infeasible": false,
-          "runtime_s": 1469.4
+          "runtime_s": 860.5
         },
         "D": {
           "variant": "D_no_physics",
           "f1": 1.0,
           "f1_raw": 1168.0,
-          "f2": 0.3331691117704977,
-          "f3": 0.6026686361600568,
+          "f2": 0.3332373047184176,
+          "f3": 0.6031248634562191,
           "n_selected": 200,
           "constraint_feasible": true,
           "all_infeasible": false,
-          "runtime_s": 1393.7
+          "runtime_s": 731.5
         },
         "delta_f1": 0.0
       },
       {
         "scenario": "S3-A_seed03.pkl",
         "pkl_sha1": "dbd0f8c25051ecbee53ebf9083c0a017c6ad19cd",
-        "git_commit": "f96674f6",
+        "git_commit": "ce8e37fc",
         "A": {
           "variant": "A_full_physics",
-          "f1": 1.0,
-          "f1_raw": 1163.0,
-          "f2": 0.3311312476676162,
-          "f3": 0.61604460604886,
-          "n_selected": 200,
+          "f1": 0.9974204643164231,
+          "f1_raw": 1160.0,
+          "f2": 0.3309661364717678,
+          "f3": 0.6180509489178736,
+          "n_selected": 199,
           "constraint_feasible": true,
           "all_infeasible": false,
-          "runtime_s": 1284.6
+          "runtime_s": 759.2
         },
         "D": {
           "variant": "D_no_physics",
           "f1": 1.0,
           "f1_raw": 1163.0,
-          "f2": 0.3273981104417536,
-          "f3": 0.6007284663346699,
+          "f2": 0.32731179417846945,
+          "f3": 0.6005286259495725,
           "n_selected": 200,
           "constraint_feasible": true,
           "all_infeasible": false,
-          "runtime_s": 1164.7
+          "runtime_s": 12562.3
         },
-        "delta_f1": 0.0
+        "delta_f1": -0.002579535683576939
       },
       {
         "scenario": "S3-A_seed04.pkl",
         "pkl_sha1": "40e71d41822cf1582a194eebde4b62a92c5c22d0",
-        "git_commit": "f96674f6",
+        "git_commit": "ce8e37fc",
         "A": {
           "variant": "A_full_physics",
           "f1": 1.0,
           "f1_raw": 1179.0,
-          "f2": 0.33818308959979937,
-          "f3": 0.6237159088900242,
+          "f2": 0.33806593766725146,
+          "f3": 0.6227463636930585,
           "n_selected": 200,
           "constraint_feasible": true,
           "all_infeasible": false,
-          "runtime_s": 1129.7
+          "runtime_s": 917.7
         },
         "D": {
           "variant": "D_no_physics",
           "f1": 1.0,
           "f1_raw": 1179.0,
-          "f2": 0.33465415994034314,
-          "f3": 0.6077654966798647,
+          "f2": 0.33469812963060197,
+          "f3": 0.607393015200306,
           "n_selected": 200,
           "constraint_feasible": true,
           "all_infeasible": false,
-          "runtime_s": 1028.5
+          "runtime_s": 848.4
         },
         "delta_f1": 0.0
       }
@@ -146,7 +146,7 @@
       {
         "scenario": "S4-A_seed00.pkl",
         "pkl_sha1": "394e897935d74d8551ef19d9b78f7ba524095506",
-        "git_commit": "f96674f6",
+        "git_commit": "ce8e37fc",
         "A": {
           "variant": "A_full_physics",
           "f1": 0.9983221476510067,
@@ -156,63 +156,63 @@
           "n_selected": 199,
           "constraint_feasible": true,
           "all_infeasible": false,
-          "runtime_s": 1078.6
+          "runtime_s": 834.6
         },
         "D": {
           "variant": "D_no_physics",
           "f1": 1.0,
           "f1_raw": 1192.0,
-          "f2": 0.3862753893756253,
-          "f3": 0.6519003132732744,
+          "f2": 0.3862373341460984,
+          "f3": 0.6515509507374938,
           "n_selected": 200,
           "constraint_feasible": true,
           "all_infeasible": false,
-          "runtime_s": 1083.8
+          "runtime_s": 847.4
         },
         "delta_f1": -0.001677852348993314
       },
       {
         "scenario": "S4-A_seed01.pkl",
         "pkl_sha1": "e3f28a0d482b86dd0295f42fa054d382e0fda2ac",
-        "git_commit": "f96674f6",
+        "git_commit": "ce8e37fc",
         "A": {
           "variant": "A_full_physics",
-          "f1": 0.9894815927873779,
-          "f1_raw": 1317.0,
-          "f2": 0.37925123028120666,
-          "f3": 0.675811453134397,
-          "n_selected": 198,
+          "f1": 0.9962434259954921,
+          "f1_raw": 1326.0,
+          "f2": 0.3771237411893178,
+          "f3": 0.6734496951864126,
+          "n_selected": 199,
           "constraint_feasible": true,
           "all_infeasible": false,
-          "runtime_s": 1126.4
+          "runtime_s": 859.3
         },
         "D": {
           "variant": "D_no_physics",
           "f1": 1.0,
           "f1_raw": 1331.0,
-          "f2": 0.37329180262124995,
-          "f3": 0.6607415185610567,
+          "f2": 0.37351946075968756,
+          "f3": 0.6617766752894754,
           "n_selected": 200,
           "constraint_feasible": true,
           "all_infeasible": false,
-          "runtime_s": 1112.0
+          "runtime_s": 8631.7
         },
-        "delta_f1": -0.010518407212622094
+        "delta_f1": -0.0037565740045079066
       },
       {
         "scenario": "S4-A_seed02.pkl",
         "pkl_sha1": "040a94545a2ac14dd5f648d0b5e179d66865bbee",
-        "git_commit": "f96674f6",
+        "git_commit": "ce8e37fc",
         "A": {
           "variant": "A_full_physics",
           "f1": 0.9925124792013311,
           "f1_raw": 1193.0,
-          "f2": 0.38533981782390914,
-          "f3": 0.6644036922923744,
+          "f2": 0.385392948669942,
+          "f3": 0.6661521021290369,
           "n_selected": 199,
           "constraint_feasible": true,
           "all_infeasible": false,
-          "runtime_s": 1111.4
+          "runtime_s": 841.2
         },
         "D": {
           "variant": "D_no_physics",
@@ -223,14 +223,14 @@
           "n_selected": 200,
           "constraint_feasible": true,
           "all_infeasible": false,
-          "runtime_s": 1095.6
+          "runtime_s": 835.0
         },
         "delta_f1": -0.0074875207986688785
       },
       {
         "scenario": "S4-A_seed03.pkl",
         "pkl_sha1": "85c2962c6530049f8748102667f0601f5d4ef78d",
-        "git_commit": "f96674f6",
+        "git_commit": "ce8e37fc",
         "A": {
           "variant": "A_full_physics",
           "f1": 0.9927007299270073,
@@ -240,25 +240,25 @@
           "n_selected": 199,
           "constraint_feasible": true,
           "all_infeasible": false,
-          "runtime_s": 1109.0
+          "runtime_s": 840.4
         },
         "D": {
           "variant": "D_no_physics",
           "f1": 1.0,
           "f1_raw": 1233.0,
-          "f2": 0.36823530096890067,
-          "f3": 0.6642438564433408,
+          "f2": 0.3681300336431824,
+          "f3": 0.6637649518470606,
           "n_selected": 200,
           "constraint_feasible": true,
           "all_infeasible": false,
-          "runtime_s": 1095.2
+          "runtime_s": 796.2
         },
         "delta_f1": -0.007299270072992692
       },
       {
         "scenario": "S4-A_seed04.pkl",
         "pkl_sha1": "74bdbc468537273dd38bda6e76ef4742ce560de8",
-        "git_commit": "f96674f6",
+        "git_commit": "ce8e37fc",
         "A": {
           "variant": "A_full_physics",
           "f1": 1.0,
@@ -268,18 +268,18 @@
           "n_selected": 200,
           "constraint_feasible": true,
           "all_infeasible": false,
-          "runtime_s": 1121.9
+          "runtime_s": 1903.8
         },
         "D": {
           "variant": "D_no_physics",
           "f1": 1.0015835312747428,
           "f1_raw": 1265.0,
-          "f2": 0.38278595702726087,
-          "f3": 0.6482191426469684,
+          "f2": 0.3827956757155353,
+          "f3": 0.6481356124935196,
           "n_selected": 200,
           "constraint_feasible": true,
           "all_infeasible": false,
-          "runtime_s": 1088.3
+          "runtime_s": 841.2
         },
         "delta_f1": -0.0015835312747427555
       }
@@ -287,26 +287,26 @@
   },
   "summary": {
     "S3": {
-      "A_f1_mean": 0.9979416809605489,
-      "A_f1_std": 0.004116638078902213,
+      "A_f1_mean": 0.998797986516801,
+      "A_f1_std": 0.0014965540578953294,
       "D_f1_mean": 1.0,
       "D_f1_std": 0.0,
-      "delta_mean": -0.0020583190394511063,
+      "delta_mean": -0.0012020134831990826,
       "n": 5,
-      "A_f2_mean": 0.34055913611988453,
-      "D_f2_mean": 0.3372159756451641,
-      "f2_pooled_mean": 0.3388875558825243
+      "A_f2_mean": 0.34056033433035227,
+      "D_f2_mean": 0.33718984367774396,
+      "f2_pooled_mean": 0.3388750890040481
     },
     "S4": {
-      "A_f1_mean": 0.9946033899133446,
-      "A_f1_std": 0.003928801037660086,
+      "A_f1_mean": 0.9959557565549675,
+      "A_f1_std": 0.002982945619749333,
       "D_f1_mean": 1.0003167062549485,
       "D_f1_std": 0.0006334125098971023,
-      "delta_mean": -0.005713316341603947,
+      "delta_mean": -0.004360949699981109,
       "n": 5,
-      "A_f2_mean": 0.38198639543780527,
-      "D_f2_mean": 0.3787398423792973,
-      "f2_pooled_mean": 0.38036311890855135
+      "A_f2_mean": 0.38157152378863407,
+      "D_f2_mean": 0.3787586532335907,
+      "f2_pooled_mean": 0.3801650885111124
     }
   },
   "params": {
@@ -319,6 +319,6 @@
     ],
     "n_obj": 3,
     "n_ref_dirs": 12,
-    "git_commit": "f96674f6"
+    "git_commit": "ce8e37fc"
   }
 }

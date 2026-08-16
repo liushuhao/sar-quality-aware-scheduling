@@ -56,6 +56,7 @@ rnd = json.loads(fingerprint("p1-2_random_search/p1-2_s1_random_search.json").re
 sweep = json.loads(fingerprint("sigma_sweep/sweep_summary.json").read_text(encoding="utf-8"))
 vd_rnd = json.loads(fingerprint("variant_d_random_init/full.json").read_text(encoding="utf-8"))
 n50 = json.loads(fingerprint("n50_logistic.json").read_text(encoding="utf-8"))
+budget = json.loads(fingerprint("p1-4_variant_d_rerun/budget_control.json").read_text(encoding="utf-8"))
 
 import csv  # noqa: E402
 ablation = {}
@@ -461,6 +462,14 @@ for cls, pexp in (("S3", 0.349), ("S4", 0.347)):
     f2s_d = [r["f2"] for r in vd_rnd["results"].get(cls, [])]
     if f2s_d:
         check(f"vd-{cls}-f2", f"§6.6 variant-D random-init f2 {cls}", pexp, mean(f2s_d), 0.011)
+
+# search-budget control (§6.6; double-budget A-vs-D, current-code rerun 2026-08-16)
+bud_sum = budget.get("summary", {})
+for cls, p_delta in (("S3", -0.12), ("S4", -0.44)):
+    s = bud_sum.get(cls, {})
+    if s:
+        check(f"bud-{cls}-delta", f"§6.6 budget-control Δf1* {cls}", p_delta / 100.0, s["delta_mean"], 0.003)
+        check(f"bud-{cls}-n", f"§6.6 budget-control {cls} scenarios", 5, s.get("n", 0), 0.0)
 
 # ── ablation table ──────────────────────────────────────────────────────────
 ab_exp = {("S1", "B"): (-0.8, 0.463), ("S1", "C"): (0.1, 0.833), ("S1", "D"): (-18.0, 3.44e-9),
