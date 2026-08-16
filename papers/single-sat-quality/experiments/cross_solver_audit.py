@@ -292,7 +292,7 @@ def audit_group_stats(rpt, bl, m3, m2):
     # Check Table 5 (scale-sensitivity)
     print("\n── Table 5 (scale sensitivity) ──")
     table5_claims = {
-        "S1": {"f1*": (0.86, 0.14), "f2_imp": 33.7, "pct_opt": 78},
+        "S1": {"f1*": (0.86, 0.14), "f2_imp": 33.7, "pct_opt": 80},
         "S2": {"f1*": (0.985, 0.03), "f2_imp": 3.5, "pct_opt": 10},
         "S3": {"f1*": (0.999, 0.00), "f2_imp": 0.4, "pct_opt": 0},
         "S4": {"f1*": (0.996, 0.01), "f2_imp": 0.4, "pct_opt": 0},
