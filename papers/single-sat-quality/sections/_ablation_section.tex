@@ -113,7 +113,16 @@ $f_1^*$ unchanged ($-0.8\%$, $p=0.46$) but lowers $f_3$ to $0.574$
 ($-18\%$): without squint penalization the solver tolerates higher-squint
 views, sacrificing the radiometric quality that the full-physics baseline
 purchases in the sparse regime. Variant C (no incidence) produces no
-measurable change in any reported metric. Thus the physical content of the
+measurable change in any reported metric. This inertness is consistent with
+the window geometry: the elevation-plane incidence angle varies by only a
+few degrees across a visibility window (mean $\sim 1.5^\circ$ in the S1
+scenarios), whereas the squint angle sweeps $\sim 20$--$35^\circ$, so the
+$\theta_{\text{elev}}$ factor in $f_2$/$f_3$ acts as an approximately common
+scale within each window; removing it preserves the within-window task
+ordering and hence the selected schedule. The incidence conflict of
+\S\ref{sec:pareto-coupling} therefore operates through the
+across-window/aggregate geometry rather than through per-window selection.
+Thus the physical content of the
 objectives acts on sparse-regime outcomes chiefly through radiometric
 quality ($f_3$) and through the full-removal coverage contrast, while
 partially removing either geometric component leaves coverage unaffected.

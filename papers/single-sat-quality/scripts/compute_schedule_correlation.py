@@ -58,6 +58,7 @@ def main():
         variant_out = {}
         for group in GROUPS:
             F2, F3 = [], []
+            sched_rs = []
             n_sched = 0
             for key, v in sorted(completed.items()):
                 if not key.startswith(group + "/"):
@@ -74,19 +75,35 @@ def main():
                 sel, t_acts = v.get("selected", []), v.get("t_actuals", [])
                 if not sel or len(sel) != len(t_acts):
                     continue
+                sf2, sf3 = [], []
                 for i, t in zip(sel, t_acts):
                     g = inst.geom_cache.lookup(int(i), float(t))
-                    F2.append(f2_new(g))
-                    F3.append(f3_new(g))
+                    sf2.append(f2_new(g))
+                    sf3.append(f3_new(g))
+                F2.extend(sf2)
+                F3.extend(sf3)
+                if len(sf2) >= 3:
+                    r = pearson(sf2, sf3)
+                    if np.isfinite(r):
+                        sched_rs.append(r)
                 n_sched += 1
             if not F2:
                 print(f"  {variant} {group}: no data")
                 continue
-            variant_out[group] = {
+            entry = {
                 "r": pearson(F2, F3), "n_tasks": len(F2), "n_schedules": n_sched,
                 "f2_mean": float(np.mean(F2)), "f3_mean": float(np.mean(F3)),
             }
-            print(f"{variant} {group}: r={variant_out[group]['r']:+.4f} n_tasks={len(F2)} n_sched={n_sched}", flush=True)
+            if sched_rs:
+                rs = np.asarray(sched_rs)
+                entry["per_schedule_mean"] = float(rs.mean())
+                entry["fisher_z_mean"] = float(np.arctanh(rs).mean())
+                entry["per_schedule_min"] = float(rs.min())
+                entry["per_schedule_max"] = float(rs.max())
+            variant_out[group] = entry
+            print(f"{variant} {group}: r={entry['r']:+.4f} n_tasks={len(F2)} "
+                  f"n_sched={n_sched} per_sched_mean={entry.get('per_schedule_mean', float('nan')):+.4f}",
+                  flush=True)
         out["variants"][variant] = variant_out
     out["sources"] = {v: prog_rel for v, prog_rel in VARIANTS}
     json.dump(out, open(OUT_PATH, "w", encoding="utf-8"), indent=2)

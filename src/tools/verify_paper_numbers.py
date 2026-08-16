@@ -55,6 +55,7 @@ hotstart = json.loads(fingerprint("p1-1_random_init/hotstart_control_s1s4.json")
 rnd = json.loads(fingerprint("p1-2_random_search/p1-2_s1_random_search.json").read_text(encoding="utf-8"))
 sweep = json.loads(fingerprint("sigma_sweep/sweep_summary.json").read_text(encoding="utf-8"))
 vd_rnd = json.loads(fingerprint("variant_d_random_init/full.json").read_text(encoding="utf-8"))
+n50 = json.loads(fingerprint("n50_logistic.json").read_text(encoding="utf-8"))
 
 import csv  # noqa: E402
 ablation = {}
@@ -281,7 +282,7 @@ scl = {"S1": scale_metrics("S1", bl), "S2": scale_metrics("S2", bl),
        "S3": scale_metrics("S3", bl), "S4": scale_metrics("S4", bl),
        "S7": scale_metrics("S7", S78), "S8": scale_metrics("S8", S78)}
 for cls, (pm, psd, pf2, pf2sd, ptrade) in [
-    ("S1", (0.86, 0.14, 33.7, 14.9, 78.0)),
+    ("S1", (0.86, 0.14, 33.7, 14.9, 80.0)),
     ("S2", (0.985, 0.03, 3.5, 3.6, 10.0)),
     ("S3", (0.999, 0.00, 0.4, 0.25, 0.0)),
     ("S4", (0.996, 0.01, 0.4, 0.44, 0.0)),
@@ -290,6 +291,12 @@ for cls, (pm, psd, pf2, pf2sd, ptrade) in [
     check(f"sc-{cls}-f1star", f"§6.3 {cls} f1* ratio", pm, r, 0.011)
     check(f"sc-{cls}-f2imp", f"§6.3 {cls} f2 improvement %", pf2, f2, 0.31)
     check(f"sc-{cls}-trade", f"§6.3 {cls} % f1*<0.95", ptrade, tr, 2.1)
+
+# N50 transition midpoint (§6.3 ≈50, §7.2 ≈50; n50_logistic.json 50.03 CI[30,62])
+if n50.get("N50"):
+    check("n50-mid", "§6.3/§7.2 N50 logistic midpoint", 50.0, n50["N50"], 1.0)
+    check("n50-ci-low", "§6.3 N50 CI low", 30.0, n50.get("ci_low", 0), 1.5)
+    check("n50-ci-high", "§6.3 N50 CI high", 62.0, n50.get("ci_high", 0), 2.0)
 
 # §6.2 G-SM f3 gain
 for cls, (pbase_m, pbase_s, pgsm_m, pgsm_s) in [
@@ -348,17 +355,16 @@ for cls in ("S1", "S4"):
         check(f"p2-{cls}-f3gain", f"§6.4 {cls} f3 MOEA-3 vs MOEA-2 +%",
               7.0 if cls == "S1" else 0.2, pct(m3f3, m2f3), 3.0)
 
-# HV S4/S1 ratio (pooled)
-try:
-    hv = sr.get("pooled_hv", {})
-    if hv:
-        for solver, pv in (("MOEA-2", 0.18), ("MOEA-3", 0.11)):
-            s1v = hv.get(solver, {}).get("S1")
-            s4v = hv.get(solver, {}).get("S4")
-            if s1v and s4v and s1v != 0:
-                check(f"hv-{solver}-s4s1", f"§6.4 {solver} S4/S1 HV ratio", pv, s4v / s1v, 0.02)
-except (AttributeError, KeyError):
-    pass
+# HV S4/S1 ratio (§6.4 pooled-HV contraction; per-scenario mean HV basis)
+per_hv = sr.get("per_scenario_hv", {})
+if per_hv:
+    for solver, pv in (("MOEA-2", 0.25), ("MOEA-3", 0.17)):
+        s1v = np.mean([v[solver] for k, v in per_hv.items() if k.startswith("S1/")])
+        s4v = np.mean([v[solver] for k, v in per_hv.items() if k.startswith("S4/")])
+        if s1v and s1v != 0:
+            check(f"hv-{solver}-s4s1", f"§6.4 {solver} S4/S1 HV ratio", pv, s4v / s1v, 0.02)
+else:
+    print("WARN: per_scenario_hv absent in statistical_results.json; hv-s4s1 unverified")
 
 # schedule correlation A / D
 for v, key in (("A_full_physics", "A"), ("D_no_physics", "D")):
@@ -370,6 +376,17 @@ for v, key in (("A_full_physics", "A"), ("D_no_physics", "D")):
     if key == "A":
         check("corr-A-S1", "§6.4 A per-task r S1", -0.63, r1, 0.02)
         check("corr-A-S4", "§6.4 A per-task r S4", -0.23, r4, 0.02)
+        # §6.4 per-schedule summaries (R8): raw mean + Fisher-z mean, A variant
+        for cls, p_raw, p_fz in (("S1", -0.72, -1.09), ("S2", -0.15, -0.16),
+                                 ("S3", -0.16, -0.16), ("S4", -0.18, -0.19)):
+            sq = seq.get(cls, {})
+            if "per_schedule_mean" in sq:
+                check(f"corr-A-{cls}-psm", f"§6.4 A per-schedule mean r {cls}",
+                      p_raw, sq["per_schedule_mean"], 0.02)
+                check(f"corr-A-{cls}-fz", f"§6.4 A Fisher-z mean {cls}",
+                      p_fz, sq["fisher_z_mean"], 0.03)
+            else:
+                print(f"SKIP corr-A-{cls}-psm: per_schedule_mean absent")
     else:
         check("corr-D-S1", "§6.4 D per-task r S1", -0.13, r1, 0.02)
         check("corr-D-S4", "§6.4 D per-task r S4", -0.2, r4, 0.02)
@@ -502,14 +519,35 @@ _, p_f1 = scipy_stats.wilcoxon(d_f1, zero_method="zsplit")
 _, p_f3 = scipy_stats.wilcoxon(d_f3, zero_method="zsplit")
 check("g2-gsm-f1delta", "§6.2 G-SM f1* coverage δ", -1.0, cd_f1, 0.011)
 checkp("g2-gsm-f1p", "§6.2 G-SM f1* p", 1e-34, p_f1, 1.0)
-check("g2-gsm-f3delta", "§6.2 G-SM f3 δ", 1.0, cd_f3, 0.011,
-      note=f"data: g={g3} l={l3}; paper printed 0.91 (hardcoded, no source)")
+check("g2-gsm-f3delta", "§6.2 G-SM f3 δ", 0.99, cd_f3, 0.011,
+      note=f"data: g={g3} l={l3} (per-scenario paired, 199/200)")
 checkp("g2-gsm-f3p", "§6.2 G-SM f3 p", 1e-34, p_f3, 1.0)
 
-# phenomenon2 cliff (MOEA-3 vs MOEA-2 f3 per group)
+# phenomenon2 cliff (MOEA-3 vs MOEA-2 f3 per group) + paired Wilcoxon p (§6.4, R11)
 for cls, pv in (("S1", 0.88), ("S4", 0.32)):
     dv = p2_cliff["per_group"][cls]["f3"]
     check(f"p2-{cls}-cliff", f"§6.4 {cls} Cliff f3 MOEA-3vs2", pv, dv, 0.02)
+m3keys = [k for k in m3 if k in m2]
+for cls, p_paper in (("S1", 5.5e-13), ("S4", 4.5e-3)):
+    kk = [k for k in m3keys if k.startswith(cls + "/")]
+    if kk:
+        d = np.array([m3[k]["f3"] - m2[k]["f3"] for k in kk])
+        pv_ = scipy_stats.wilcoxon(d, zero_method="zsplit").pvalue
+        checkp(f"p2-{cls}-f3p", f"§6.4 {cls} f3 MOEA-3vs2 Wilcoxon p", p_paper, pv_, 0.5)
+
+# G-BL coverage-anchor exceedances (§6.4 "one of 200 scenarios, up to +10.8%")
+_exceed = []
+for _loader, _nm in ((m2, "MOEA-2"), (m3, "MOEA-3")):
+    for _k, _v in _loader.items():
+        if not isinstance(_v, dict) or _k not in bl:
+            continue
+        _ref = bl[_k].get("b1", {}).get("f1_raw", 0)
+        _f1 = _v.get("f1_raw", _v.get("f1", 0))
+        if _ref and _ref > 0 and _f1 / _ref > 1.0:
+            _exceed.append(_f1 / _ref)
+check("gbl-exceed-count", "§6.4 # scenarios with f1*>1.00", 1, len(_exceed), 0.0)
+if _exceed:
+    check("gbl-exceed-max", "§6.4 max f1* exceedance", 1.108, max(_exceed), 0.002)
 
 # ── report ──────────────────────────────────────────────────────────────────
 REVIEW.mkdir(exist_ok=True)
