@@ -1,6 +1,6 @@
 Cover Letter
 =============
-Date: 2026-08-05
+Date: 2026-08-18
 To: Editor-in-Chief, Advances in Space Research
 From: LIU Shuhao, College of Intelligent Systems Science and Engineering,
        Harbin Engineering University, liushuhao@hrbeu.edu.cn
