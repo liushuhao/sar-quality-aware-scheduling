@@ -291,7 +291,7 @@ for cls, (pm, psd, pf2, pf2sd, ptrade) in [
     r, rs, f2, f2s, tr = scl[cls]
     check(f"sc-{cls}-f1star", f"§6.3 {cls} f1* ratio", pm, r, 0.011)
     check(f"sc-{cls}-f2imp", f"§6.3 {cls} f2 improvement %", pf2, f2, 0.31)
-    check(f"sc-{cls}-trade", f"§6.3 {cls} % f1*<0.95", ptrade, tr, 2.1)
+    check(f"sc-{cls}-trade", f"§6.3 {cls} % f1*<0.95", ptrade, tr, 0.5)
 
 # N50 transition midpoint (§6.3 ≈50, §7.2 ≈50; n50_logistic.json 50.03 CI[30,62])
 if n50.get("N50"):
@@ -331,13 +331,12 @@ for cls in ("S2", "S3", "S4"):
           0.235, r_, 0.07, note="paper: ~20-27% at N>=100 (asserts band, not point)")
 
 # ── §6.4 Pareto mechanism ──────────────────────────────────────────────────
-for cls, (p_m3, p_m2) in {"S4": (5.4, 1.6), "S3": (3.5, 1.5), "S2": (6.9, 2.7),
+for cls, (p_m3, p_m2) in {"S4": (4.7, 1.6), "S3": (3.3, 1.3), "S2": (6.3, 2.6),
                           "S1": (33.8, 6.8)}.items():
-    for name, loader, pv, tol in (("MOEA-3", m3, p_m3, 1.1), ("MOEA-2", m2, p_m2, 1.1)):
+    for name, loader, pv in (("MOEA-3", m3, p_m3), ("MOEA-2", m2, p_m2)):
         nf = sol_vals(loader, cls, "n_frontier")
         if nf:
-            t = 0.3 if cls == "S1" else tol
-            check(f"p2-{cls}-{name}-nf", f"§6.4 {cls} {name} n_frontier", pv, mean(nf), t)
+            check(f"p2-{cls}-{name}-nf", f"§6.4 {cls} {name} n_frontier", pv, mean(nf), 0.4)
 
 # Phenomenon 2 (S1/S4)
 p2p = {
