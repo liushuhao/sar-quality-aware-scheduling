@@ -104,7 +104,11 @@ papers/single-sat-quality/experiments/logs/
 # Ch3 smoke-test output
 papers/single-sat-quality/experiments/results/_smoke_rerun_20260806/
 
-# Ch3 intermediate / historical snapshots (final *_snapshot_final_*.json are tracked)
+# Ch3 intermediate / historical snapshots
+# (old _snapshot_final_*.json of 90de261f caliber archived to
+#  archive/stale-snapshots-90de261f-20260817/; do not re-track stale
+#  final snapshots under results/ — authoritative data is _progress.json)
+papers/single-sat-quality/experiments/results/_snapshot_final_*.json
 papers/single-sat-quality/experiments/_snapshot_moea2obj.json
 papers/single-sat-quality/experiments/_snapshot_moea3.json
 papers/single-sat-quality/experiments/results/_snapshot_gapbl.json
