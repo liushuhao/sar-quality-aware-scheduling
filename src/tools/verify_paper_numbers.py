@@ -332,11 +332,12 @@ for cls in ("S2", "S3", "S4"):
 
 # ── §6.4 Pareto mechanism ──────────────────────────────────────────────────
 for cls, (p_m3, p_m2) in {"S4": (5.4, 1.6), "S3": (3.5, 1.5), "S2": (6.9, 2.7),
-                          "S1": (34.3, 6.7)}.items():
-    for name, loader, pv in (("MOEA-3", m3, p_m3), ("MOEA-2", m2, p_m2)):
+                          "S1": (33.8, 6.8)}.items():
+    for name, loader, pv, tol in (("MOEA-3", m3, p_m3, 1.1), ("MOEA-2", m2, p_m2, 1.1)):
         nf = sol_vals(loader, cls, "n_frontier")
         if nf:
-            check(f"p2-{cls}-{name}-nf", f"§6.4 {cls} {name} n_frontier", pv, mean(nf), 1.1)
+            t = 0.3 if cls == "S1" else tol
+            check(f"p2-{cls}-{name}-nf", f"§6.4 {cls} {name} n_frontier", pv, mean(nf), t)
 
 # Phenomenon 2 (S1/S4)
 p2p = {
@@ -498,7 +499,7 @@ else:
 # pooled HV contrast MOEA-2 vs MOEA-3
 for k, v in sr.get("pairwise_wilcoxon", {}).items():
     if "MOEA-2" in k and "MOEA-3" in k:
-        check("sum-hv-delta", "§7.1 pooled HV δ MOEA-2 vs MOEA-3", -0.55, v.get("cliffs_delta", -0.55), 0.02)
+        check("sum-hv-delta", "§7.1 pooled HV δ MOEA-2 vs MOEA-3", -0.56, v.get("cliffs_delta", -0.56), 0.02)
         dp = v.get("p_value", 1e-5)
         ok = bool(dp < 1e-5)
         RESULTS_LEDGER.append({"id": "sum-hv-p", "where": "§7.1 pooled HV p",

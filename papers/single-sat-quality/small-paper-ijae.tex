@@ -889,7 +889,7 @@ Fitting a logistic regression to the proportion of scenarios with
 $f_1^* < 0.95$ across the six density points ($N=20, 100, 150, 200, 300, 500$)
 yields a transition midpoint $N_{50} \approx 50$ targets. This estimate is
 weakly constrained: only the two sparse densities ($N=20, 100$) carry
-informative deficit proportions ($78\%$ and $10\%$), while the four denser
+informative deficit proportions ($80\%$ and $10\%$), while the four denser
 points are all at most $1\%$, so the bootstrap confidence interval is wide
 ($N_{50} \in [30, 62]$). $N_{50}$ should therefore be read as a coarse indicator that the
 transition is confined to $N \in [20, 100]$, not as a precise threshold.
@@ -965,7 +965,7 @@ from its low-coverage, high-$f_3$ operating point
 ($f_1^* \approx 0.37$, $f_3 \approx 0.79$ at S4), so the HV ranking would
 invert if it were included. This is precisely the point-count confound: HV
 rewards an extreme single point more than a dense front near full coverage.
-One sparse-density MOEA solution exceeds $f_1^*=1.00$ (one of 200 scenarios, $+10.8\%$ above G-BL), so G-BL is a near-optimal rather than a strict coverage anchor. This reversal is driven by point-count asymmetry: single-objective solvers contribute one point each to the HV reference set, while MOEA-3 contributes $34.3 \pm 8.4$ non-dominated points at S1 (MOEA-2: $6.7 \pm 2.0$), a cardinality gap that persists, less severely, at S3--S4. HV therefore conflates front quality with front cardinality, and the ranking should not be interpreted as a standalone quality judgment. The core phenomenon---front compression---is independent of HV ranking.
+One sparse-density MOEA solution exceeds $f_1^*=1.00$ (one of 200 scenarios, $+10.8\%$ above G-BL), so G-BL is a near-optimal rather than a strict coverage anchor. This reversal is driven by point-count asymmetry: single-objective solvers contribute one point each to the HV reference set, while MOEA-3 contributes $33.8 \pm 8.4$ non-dominated points at S1 (MOEA-2: $6.8 \pm 2.1$), a cardinality gap that persists, less severely, at S3--S4. HV therefore conflates front quality with front cardinality, and the ranking should not be interpreted as a standalone quality judgment. The core phenomenon---front compression---is independent of HV ranking.
 
 \textbf{Mechanism: geometric coupling and lower-squint convergence.}
 
@@ -1224,7 +1224,7 @@ HV dispersion of the two multi-point NSGA-III solvers rather than by
 baseline-vs-baseline differences. Pairwise Wilcoxon
 signed-rank tests use the Bonferroni threshold $\alpha=0.005$; interpretation
 relies on Cliff's $\delta$ given the large sample size.
-MOEA-2 and MOEA-3 differ on pooled HV with $\delta = -0.55$
+MOEA-2 and MOEA-3 differ on pooled HV with $\delta = -0.56$
 ($p < 10^{-5}$), but this contrast blends the sparse-regime divergence with
 the dense-regime convergence and is inflated by the HV point-count
 asymmetry (\S~\ref{sec:pareto-coupling}); contrasts involving
