@@ -330,6 +330,27 @@ for cls in ("S2", "S3", "S4"):
     check(f"g2-{cls}-taskratio", f"§6.2 {cls} G-SM/G-BL n_sel mean in 20-27%",
           0.235, r_, 0.07, note="paper: ~20-27% at N>=100 (asserts band, not point)")
 
+# ── §6.4 matched-reference-point control (MOEA-3 p=4 H=15) ────────────────
+# Guards the claim that +7% f3 over MOEA-2 is not an H=91 artifact.
+_p4_path = RESULTS / "moea_3obj_p4_control.json"
+if _p4_path.exists():
+    _p4 = json.loads(_p4_path.read_text(encoding="utf-8"))
+    _p4f3 = [r["f3"] for r in _p4]
+    check("p4-s1-f3", "§6.4 S1 MOEA-3 p=4 f3 (matched H=15)", 0.702,
+          float(np.mean(_p4f3)), 0.006, note="vs p=12 0.699; paired p=0.149")
+else:
+    check("p4-s1-f3", "§6.4 S1 MOEA-3 p=4 control file", 1, 0, 1,
+          note="moea_3obj_p4_control.json MISSING")
+
+# ── §7.2 operational implication: +34% f2 ≈ 25% pixel-area reduction ───────
+# Pixel area ∝ 1/f2 (geometric index), so area reduction = 1 - f2_G-BL/f2_MOEA2.
+# Guards against a recurrence of the stale "~0.3 m" prose number.
+_s1_m2f2 = 0.394  # MOEA-2 S1 f2, ledged above (p2-S1-m2f2)
+_s1_gbl_f2 = 0.295  # G-BL S1 f2, ledged in Table 1
+_area_reduction = (1 - _s1_gbl_f2 / _s1_m2f2) * 100
+check("op-s1-area-pct", "§7.2 S1 f2 gain -> pixel-area reduction %", 25.0,
+      _area_reduction, 1.0, note="area ∝ 1/f2; 1-0.295/0.394≈25%")
+
 # ── §6.4 Pareto mechanism ──────────────────────────────────────────────────
 for cls, (p_m3, p_m2) in {"S4": (4.7, 1.6), "S3": (3.3, 1.3), "S2": (6.3, 2.6),
                           "S1": (33.8, 6.8)}.items():

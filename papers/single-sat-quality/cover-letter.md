@@ -18,15 +18,18 @@ a problem at the intersection of spacecraft resource management and SAR
 remote sensing instrumentation.
 
 The manuscript presents a physics-aware multi-objective optimization
-framework for single-satellite agile SAR scheduling. Five solvers spanning
-greedy heuristics, single-objective GA, and NSGA-III variants are compared
+framework for single-satellite agile SAR scheduling. Five configurations spanning
+greedy heuristics, a single-objective GA control, and NSGA-III variants are compared
 on 200 systematically varied scenarios across four density classes
-(N = 20 to 500). The central finding is an empirical saturation regime for SAR
-quality optimization, conditional on G-BL-seeded NSGA-III convergence to
-low-squint regimes that render the three-objective formulation redundant at
-operational densities. The work establishes that multi-objective scheduling
+(N = 20 to 500). The central finding is a conditional empirical saturation regime for SAR
+quality optimization: G-BL-seeded NSGA-III converges to
+low-squint geometries under which the three-objective formulation is
+indistinguishable from the two-objective one at operational densities, while
+retaining measurable quality gains at sparse density. The work establishes that multi-objective scheduling
 provides measurable quality benefit only when observation requests are sparse
 (N < 100), within the single-satellite, single-pass Stripmap setting studied.
+A matched-reference-point control confirms the sparse-density third-objective
+gain is not an artifact of NSGA-III reference-direction count.
 
 Disclosure of related manuscript:
 I have an article previously accepted by Advances in Space Research

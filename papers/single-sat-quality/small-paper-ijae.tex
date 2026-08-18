@@ -251,7 +251,7 @@ proxies rather than separate geometric and radiometric objectives.
 \subsection{SAR Physical Quality Modeling}
 The SAR remote sensing literature provides well-established analytical
 models linking observation geometry to image quality.
-\citet{Curlander1991}, \citet{Cumming2005}, and \citet{Moreira2025} give detailed treatments
+\citet{Curlander1991}, \citet{Cumming2005}, and \citet{Moreira2026} give detailed treatments
 of SAR physics, including the two quality dimensions relevant to scheduling:
 geometric resolution and radiometric sensitivity.
 Geometric resolution decomposes into ground-range resolution
@@ -270,7 +270,7 @@ and improves as $\theta$ rises away from it---the origin of the $\theta$-axis
 trade-off formalized in \S~\ref{sec:objective-functions}. Radiometric sensitivity,
 measured by the Noise-Equivalent Sigma Zero (NESZ), deteriorates with the
 cube of slant range: $\text{NESZ} \propto R^3$ for Stripmap SAR after azimuth compression
-gain~\citep{Curlander1991,Moreira2025}. We adopt a 3D geometric approximation
+gain~\citep{Curlander1991,Moreira2026}. We adopt a 3D geometric approximation
 that decomposes the slant range as
 $R \approx R_{\text{elev}} / \cos\psi_{\text{sq}}$ (where $R_{\text{elev}}$
 is the elevation-plane range at zero squint), yielding
@@ -660,8 +660,9 @@ bilateral configuration is selected to exercise the full incidence--squint
 trade-off space.
 
 Targets are distributed along the satellite ground track within the
-accessible swath (cross-track half-width $\pm 5.5^\circ$ from nadir,
-roughly $\pm 608$ km). Within each class, the five scenario variants (labeled
+accessible observation band (cross-track half-width roughly $\pm 608$ km,
+a ground central angle of about $\pm 5.5^\circ$, corresponding to the
+$47^\circ$ incidence limit). Within each class, the five scenario variants (labeled
 A--E in the scenario files) span the target distribution (uniform, clustered,
 and mixed), and three variants additionally modulate the geometry rather than
 only the distribution: S1-D and S3-D use a single orbital revolution (yielding
