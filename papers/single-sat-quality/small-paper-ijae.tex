@@ -70,6 +70,8 @@ agile SAR \sep satellite scheduling \sep multi-objective optimization \sep NSGA-
 % ============================================================
 \section{Introduction}
 \label{sec:introduction}
+Here ``single-pass'' denotes a single satellite operating over a two-orbit scheduling horizon
+(\(\sim 200\) min, at most one observation per target), not a single overflight.
 Agile Earth-observation satellites equipped with Synthetic Aperture Radar (SAR)
 are increasingly central to time-critical monitoring missions, from disaster response
 to maritime surveillance.
@@ -135,7 +137,7 @@ Our results show a scale-dependent saturation, not a uniform solver advantage.
 In sparse scenarios, multi-objective optimization can extract substantial
 radiometric gains (MOEA-3 raises $f_3$ by $+41\%$
 relative to G-BL at a $15\%$ coverage cost) alongside modest geometric
-gains (MOEA-2, $+34\%$ in $f_2$ at a $14\%$ coverage cost).
+gains (MOEA-2, $+34\%$ in $f_2$ at a $14\%$ coverage cost; the best-coverage front point gives $+12.5\%$).
 In dense scenarios, the multi-objective advantage diminishes to negligible
 levels: greedy methods attain the tested family's coverage reference, and the
 squint-minimized heuristic offers competitive radiometric quality. This
@@ -773,7 +775,7 @@ scenario classes. The full-scale view
 shows why the value of multi-objective optimization cannot be judged from S4
 alone. At the sparsest density S1, MOEA-2 improves $f_2$ by $+34\%$ relative
 to G-BL ($0.394$ vs.\ $0.295$) while accepting a $14\%$ coverage reduction
-($f_1^* = 0.86$), and
+($f_1^* = 0.86$; knee-point value; the best-coverage front point gives $+12.5\%$), and
 MOEA-3 raises $f_3$ by $+41\%$ ($0.699$ vs.\ $0.497$) at a $15\%$ coverage cost
 ($f_1^* = 0.85$).
 At S2 the effects contract, and at S3--S4 MOEA coverage and quality
@@ -962,7 +964,7 @@ in \S\ref{sec:scale-sensitivity}. This compression is a property of the found
 front under G-BL-seeded search rather than of the full feasible trade-off
 surface: the squint-minimizing heuristic G-SM reaches feasible high-$f_3$
 operating points ($f_3 \approx 0.79$ at S4, \S\ref{sec:squint-special}) outside
-the MOEA-3 surface, so the dense-regime redundancy is established near the
+the MOEA-3 surface, so the dense-regime indistinguishability is established near the
 full-coverage working point rather than over the entire feasible surface. In
 dense regimes, solver convergence to
 lower-squint geometries combined with schedule saturation limits quality
@@ -994,7 +996,7 @@ $0.654\pm0.038$ for MOEA-2 ($+7\%$, paired Wilcoxon $p = 5.5\times10^{-13}$,
 Cliff's $\delta = +0.88$ on a per-scenario basis, 47 of 50 scenarios), at a
 small $f_2$ cost ($0.377\pm0.050$ vs.\ $0.394\pm0.059$, $-4\%$, $p = 0.017$).
 This $+7\%$ is robust to the reference-direction count: rerunning MOEA-3 at S1
-with Das--Dennis $p=4$ ($H=15$, matched to MOEA-2's $H=13$ instead of the
+with Das--Dennis $p=4$ ($H=15$, comparable in magnitude to MOEA-2's $H=13$ instead of the
 default $H=91$) yields $f_3 = 0.702\pm0.041$ (50 scenarios, same pop=100,
 gen=200, G-BL hot-start), statistically indistinguishable from the $p=12$
 value $0.699$, so the third-objective gain is not an artifact of the
@@ -1077,7 +1079,7 @@ schedule correlation therefore stays closest to the envelope at S1
 ($-0.97 \to -0.63$, the weakest attenuation) and drops to about
 $-0.2$ to $-0.15$ at higher density, where the attenuation is strongest,
 so coverage pressure does not amplify the incidence-angle conflict. The
-third-objective redundancy is therefore an empirical convergence
+third-objective indistinguishability is therefore an empirical convergence
 effect---not a mathematical identity between $f_2$ and $f_3$ but a
 consequence of the modest, density-independent residual correlation
 coupled with the small $f_3$ margins between solvers.
@@ -1147,7 +1149,7 @@ the dense S3 class ($-0.68$ at $N=300$), is smallest at the sparsest S1
 ($-0.39$ at $N=20$), and moderates at the densest S4 ($-0.48$ at
 $N=500$), so high target density does not by itself make random initialization
 sufficient. This constrains the
-coverage-ceiling claim: proximity to G-BL is initialization-dependent. The
+coverage-convergence claim: proximity to G-BL is initialization-dependent. The
 initialization effect is not confined to coverage: random-init $f_2$ is
 actually higher --- i.e.\ better geometric quality, under the convention of
 Table~\ref{tab:solver-profiles} --- at sparse density ($0.505$ vs.\ $0.395$
@@ -1157,7 +1159,7 @@ S3 ($0.349$ vs.\ $0.339$, $+3\%$), and only lower at the densest S4
 comparable or better per-task geometric quality at S1--S3 at a large coverage
 cost, and the G-BL anchor's material benefit lies in coverage, not geometry;
 its geometric advantage is confined to the densest regime. The coverage
-ceiling is thus a G-BL
+convergence is thus a G-BL
 initialization effect rather than an artifact of the MOEA framework. Two caveats qualify this control: the
 deficit sample is small (10/4/5/5 scenarios per class $\times$ 3 seeds, and 30
 runs for the variant-D control, 15 per class), the hot and random runs share
@@ -1300,7 +1302,7 @@ In sparse regimes ($N \leq 100$), MOEA-2 achieves a $+34\%$ geometric-quality
 improvement at S1 at a $14\%$ coverage cost ($f_1^* = 0.86$
 at $N=20$ relative to G-BL). Whether this trade-off is acceptable
 depends on the application: for maritime surveillance tasks where the
-$+34\%$ $f_2$ gain at S1 corresponds to roughly a $25\%$ reduction in ground
+The knee-point $+34\%$ $f_2$ gain at S1 corresponds to roughly a $25\%$ reduction in ground
 pixel area (pixel area scales as $1/f_2$ for the geometric index of
 Eq.~\ref{eq:f2}), the coverage cost may be
 justified; for area-monitoring missions, the greedy baseline remains
@@ -1361,7 +1363,7 @@ The hot-start control experiment
 initialization materially improves MOEA convergence; the coverage
 convergence reported here is conditional on this initialization, and
 full-scale random-init experiments are needed to establish the unconditional
-behavior. The hot-start dependence implies that the coverage-ceiling result
+behavior. The hot-start dependence implies that the coverage-convergence result
 reflects the combination of G-BL prior knowledge with MOEA search; whether
 the MOEA can independently discover high-coverage solutions without greedy
 seeding remains an open question. Similarly, the NSGA-III
@@ -1402,7 +1404,7 @@ benefit of physical objectives in G-BL-seeded MOEA formulations for
 single-pass, single-satellite Stripmap SAR operations under the tested
 configuration.
 At sparse density the three objectives form a genuine trade-off surface
-(MOEA-2 raises $f_2$ by $+34\%$ and MOEA-3 raises $f_3$ by $+41\%$ over the
+(MOEA-2 raises $f_2$ by $+34\%$ (knee-point value; best-coverage front $+12.5\%$) and MOEA-3 raises $f_3$ by $+41\%$ over the
 greedy anchor at a $14$--$15\%$ coverage cost), while at operational densities the marginal quality
 gains become negligible and all configurations converge to the G-BL
 reference.
