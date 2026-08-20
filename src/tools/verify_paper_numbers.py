@@ -339,17 +339,38 @@ if _p4_path.exists():
     check("p4-s1-f3", "§6.4 S1 MOEA-3 p=4 f3 (matched H=15)", 0.702,
           float(np.mean(_p4f3)), 0.006, note="vs p=12 0.699; paired p=0.149")
 else:
-    check("p4-s1-f3", "§6.4 S1 MOEA-3 p=4 control file", 1, 0, 1,
-          note="moea_3obj_p4_control.json MISSING")
+    N_FAIL += 1
+    print("FAIL p4-s1-f3 [§6.4 S1 MOEA-3 p=4 matched-reference-point control] "
+          "moea_3obj_p4_control.json MISSING (headline +7% f3 / H=15 control unguarded)")
+    RESULTS_LEDGER.append(
+        {"id": "p4-s1-f3", "where": "§6.4 S1 MOEA-3 p=4 control",
+         "paper": 0.702, "data": None, "tol": 0.006, "unit": "abs",
+         "ok": False, "note": "moea_3obj_p4_control.json MISSING"})
 
 # ── §7.2 operational implication: +34% f2 ≈ 25% pixel-area reduction ───────
 # Pixel area ∝ 1/f2 (geometric index), so area reduction = 1 - f2_G-BL/f2_MOEA2.
-# Guards against a recurrence of the stale "~0.3 m" prose number.
-_s1_m2f2 = 0.394  # MOEA-2 S1 f2, ledged above (p2-S1-m2f2)
-_s1_gbl_f2 = 0.295  # G-BL S1 f2, ledged in Table 1
+# Inputs are traced to data rather than hardcoded, which also adds the only
+# guard on G-BL S1 f2 (Table 1) and reproduces the selector-sensitivity
+# disclosure (knee +34% vs best-coverage front point +12.5%).
+_s1_gbl_f2, _, _ = gbl("S1", "f2")
+_s1_m2f2, _, _ = stats(m2, "S1", "f2")
+check("op-s1-gbl-f2", "§7.2/Table 1 S1 G-BL f2", 0.295, _s1_gbl_f2, 0.006)
+check("op-s1-m2-f2", "§7.2/Table 1 S1 MOEA-2 knee f2", 0.394, _s1_m2f2, 0.006)
 _area_reduction = (1 - _s1_gbl_f2 / _s1_m2f2) * 100
 check("op-s1-area-pct", "§7.2 S1 f2 gain -> pixel-area reduction %", 25.0,
-      _area_reduction, 1.0, note="area ∝ 1/f2; 1-0.295/0.394≈25%")
+      _area_reduction, 1.0, note="area ∝ 1/f2")
+_bestf1_f2 = []
+for _k, _e in m2.items():
+    if not _k.startswith("S1/"):
+        continue
+    _f1 = np.array(_e["frontier_f1"])
+    _f2 = np.array(_e["frontier_f2"])
+    if len(_f1):
+        _bestf1_f2.append(float(_f2[int(np.argmax(_f1))]))
+check("op-s1-bestf1-pct",
+      "§7.2 S1 best-coverage front point f2 gain over G-BL %",
+      12.5, pct(float(np.mean(_bestf1_f2)), _s1_gbl_f2), 1.0,
+      note="knee +34% vs best-f1 front point +12.5% (selector sensitivity)")
 
 # ── §6.4 Pareto mechanism ──────────────────────────────────────────────────
 for cls, (p_m3, p_m2) in {"S4": (4.7, 1.6), "S3": (3.3, 1.3), "S2": (6.3, 2.6),
