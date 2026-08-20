@@ -1179,7 +1179,7 @@ same flatness at $f_2 \approx 0.343$ and $f_3 \approx 0.609$), and coverage
 stays flat at $200/300$ selected tasks (199.5 at $\sigma=0.7$). The per-task
 $f_2$--$f_3$ coupling reported in \S~\ref{sec:pareto-coupling} is therefore a
 property of the schedule geometry rather than of the perturbation magnitude,
-and redundancy persists across $\sigma=0.1$--$0.7$ rather than being a
+and the indistinguishability persists across $\sigma=0.1$--$0.7$ rather than being a
 byproduct of the $\sigma=0.5$ perturbation level.
 
 \paragraph{Random-search calibration.}
@@ -1301,10 +1301,10 @@ The scale dependence has direct consequences for mission planning.
 In sparse regimes ($N \leq 100$), MOEA-2 achieves a $+34\%$ geometric-quality
 improvement at S1 at a $14\%$ coverage cost ($f_1^* = 0.86$
 at $N=20$ relative to G-BL). Whether this trade-off is acceptable
-depends on the application: for maritime surveillance tasks where the
-The knee-point $+34\%$ $f_2$ gain at S1 corresponds to roughly a $25\%$ reduction in ground
+depends on the application: for maritime surveillance, the
+knee-point $+34\%$ $f_2$ gain at S1 corresponds to roughly a $25\%$ reduction in ground
 pixel area (pixel area scales as $1/f_2$ for the geometric index of
-Eq.~\ref{eq:f2}), the coverage cost may be
+Eq.~\ref{eq:f2}), and the coverage cost may be
 justified; for area-monitoring missions, the greedy baseline remains
 preferable. In dense regimes ($N \geq 300$), the multi-objective
 advantage falls below $1\%$ improvement in $f_2$, while G-SM offers
@@ -1346,7 +1346,7 @@ single solver ranking, is the transferable contribution.
 % ── 7.4 Limitations ──
 \subsection{Limitations}\label{sec:limitations}
 Our study is bounded by scope decisions that define directions for future work.
-The 3-objective redundancy reported above is specific to the single-pass,
+The density-dependent third-objective indistinguishability reported above is specific to the single-pass,
 single-satellite Stripmap setting: it reflects solver convergence to lower-squint
 geometries that attenuate the envelope-level $f_2$--$f_3$ correlation while
 the residual within-schedule $\theta$-conflict persists (negative at all
