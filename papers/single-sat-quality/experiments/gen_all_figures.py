@@ -315,6 +315,29 @@ if rep_key:
         ff1_m2 = ff2_m2 = ff3_m2 = []
     marker_styles = {"G-BL": 's', "G-SM": '^', "GA-P-BL": 'D'}
 
+    # G-BL and GA-P-BL are numerically identical by construction (the
+    # never-worse-than-baseline guard), so plotting both markers at the same
+    # point hides the G-BL square under the GA-P-BL diamond. Draw the
+    # single-point baselines with GA-P-BL hollow so both are visible.
+    baseline_plot_specs = {
+        "G-BL":    dict(c=SOLVER_COLORS["G-BL"],    marker='s', facecolors=SOLVER_COLORS["G-BL"],    edgecolors='black', linewidth=1.2, s=90),
+        "G-SM":    dict(c=SOLVER_COLORS["G-SM"],    marker='^', facecolors=SOLVER_COLORS["G-SM"],    edgecolors='black', linewidth=1.2, s=90),
+        # Hollow diamond: shows the identical G-BL square underneath.
+        "GA-P-BL": dict(c='none',                    marker='D', facecolors='none',                     edgecolors='#009E73', linewidth=1.8, s=110),
+    }
+
+    def _plot_baselines(ax, ykey):
+        for solver in ["G-BL", "G-SM", "GA-P-BL"]:
+            if solver in results[rep_key]:
+                r = results[rep_key][solver]
+                spec = dict(baseline_plot_specs[solver])
+                spec['y'] = r[ykey]
+                spec['x'] = r["f1"]
+                spec['zorder'] = 5
+                spec['label'] = ("G-BL (= GA-P-BL)" if solver == "GA-P-BL"
+                                 else solver)
+                ax.scatter(**spec)
+
     # (a) f1-f2 — MOEA-3 frontier + MOEA-2 overlay + baselines
     if ff1_m3:
         # Draw a faint connecting line for the MOEA-3 frontier, then the points.
@@ -330,12 +353,9 @@ if rep_key:
                  c='#CC79A7', linewidth=0.5, alpha=0.3, zorder=2)
         ax1.scatter(ff1_m2, ff2_m2, c='#CC79A7', s=6, alpha=0.4,
                     edgecolors='none', label='MOEA-2 frontier', zorder=3)
-    for solver in ["G-BL", "G-SM", "GA-P-BL"]:
-        if solver in results[rep_key]:
-            r = results[rep_key][solver]
-            ax1.scatter(r["f1"], r["f2"], c=SOLVER_COLORS[solver],
-                       marker=marker_styles.get(solver, 'o'), s=90,
-                       edgecolors='black', linewidth=1.2, label=solver, zorder=5)
+    # (a) f1-f2 — MOEA-3 frontier + MOEA-2 overlay + baselines
+    if ff1_m3:
+        _plot_baselines(ax1, "f2")
     ax1.set_xlabel("$f_1^*$ (Norm. Profit)", fontsize=9)
     ax1.set_ylabel("$f_2$ (Geom. Quality)", fontsize=9)
     ax1.set_title("(a) $f_1^*$–$f_2$: profit vs geometric quality", fontsize=10)
@@ -386,12 +406,9 @@ if rep_key:
                  c='#CC79A7', linewidth=0.5, alpha=0.3, zorder=2)
         ax2.scatter(ff1_m2, ff3_m2, c='#CC79A7', s=6, alpha=0.4,
                     edgecolors='none', label='MOEA-2 frontier', zorder=3)
-    for solver in ["G-BL", "G-SM", "GA-P-BL"]:
-        if solver in results[rep_key]:
-            r = results[rep_key][solver]
-            ax2.scatter(r["f1"], r["f3"], c=SOLVER_COLORS[solver],
-                       marker=marker_styles.get(solver, 'o'), s=90,
-                       edgecolors='black', linewidth=1.2, label=solver, zorder=5)
+    # (b) f1-f3 — MOEA-3 frontier + MOEA-2 overlay + baselines
+    if ff1_m3:
+        _plot_baselines(ax2, "f3")
     ax2.set_xlabel("$f_1^*$ (Norm. Profit)", fontsize=9)
     ax2.set_ylabel("$f_3$ (NESZ)", fontsize=9)
     ax2.set_title("(b) $f_1^*$–$f_3$: profit vs NESZ quality", fontsize=10)
@@ -414,8 +431,8 @@ else:
 # ═══════════════════════════════════════════════════════════════════════════
 print("── Fig 4: Statistical Validation ──")
 if stats_data and "per_scenario_hv" in stats_data:
-    fig = plt.figure(figsize=(8, 5))
-    gs = gridspec.GridSpec(1, 2, width_ratios=[1.2, 1], wspace=0.35,
+    fig = plt.figure(figsize=(9.5, 5.5))
+    gs = gridspec.GridSpec(1, 2, width_ratios=[1.2, 1], wspace=0.42,
                            left=0.07, right=0.97, top=0.90, bottom=0.12)
 
     # LEFT: HV boxplot
@@ -464,27 +481,27 @@ if stats_data and "per_scenario_hv" in stats_data:
         ax_right.axvline(x=0, color='black', linewidth=0.8)
         ax_right.axvspan(-0.147, 0.147, alpha=0.08, color='#808080')
         ax_right.annotate("negligible effect",
-                          xy=(0.0, len(pairs) - 0.5), xytext=(0, 3),
-                          textcoords='offset points', ha='center', va='bottom',
-                          fontsize=6.5, color='#555')
+                          xy=(0.16, len(pairs) - 1.45),
+                          fontsize=6.5, color='#555', ha='left', va='center')
         # Direction-of-effect annotation: Cliff's δ is computed as A(row) - A(col)
         # (Vargha-Delaney, scaled), so positive bars mean the ROW solver has higher
-        # HV. Placed in the right strip above the existing MOEA-2-vs-MOEA-3 callout
-        # so the two annotations don't collide.
-        ax_right.text(0.98, 0.16,
-                      r"$\delta > 0$  $\rightarrow$  row solver" "\n" "          has higher HV",
+        # HV. Placed BELOW the axis (under the x-label strip) so it never collides
+        # with the MOEA-2-vs-MOEA-3 callout or any bar.
+        ax_right.text(0.98, -0.14,
+                      r"$\delta > 0$  $\rightarrow$  row solver has higher HV",
                       transform=ax_right.transAxes, fontsize=6.5,
-                      ha='right', va='bottom', style='italic', color='#555')
+                      ha='right', va='top', style='italic', color='#555')
         ax_right.set_yticks(y_positions)
         ax_right.set_yticklabels(labels, fontsize=6.5)
         ax_right.set_xlabel(r"Cliff's $\delta$ (effect size)", fontsize=9)
         ax_right.set_title("Pairwise effect sizes", fontsize=10)
-        # Annotation: place the MOEA-2 vs MOEA-3 label OUTSIDE the bar (to the right
-        # of the bar tip), so it never sits on top of the orange rectangle.
+        # Annotation: place the MOEA-2 vs MOEA-3 label in the empty right half
+        # (positive-δ region is unoccupied for this row), offset above the bar so
+        # it never sits on the bar or the gray band.
         for i, (label, d) in enumerate(zip(labels, deltas)):
             if 'MOEA-2' in label and 'MOEA-3' in label:
-                ax_right.annotate(f"MOEA-2 vs MOEA-3: δ={d:+.2f} (small)",
-                                 xy=(d, i), xytext=(8, 0), textcoords='offset points',
+                ax_right.annotate(f"MOEA-2 vs MOEA-3: $\\delta$={d:+.2f} (small)",
+                                 xy=(d, i), xytext=(30, 10), textcoords='offset points',
                                  fontsize=7, va='center', ha='left',
                                  color='#555', fontweight='normal')
 
