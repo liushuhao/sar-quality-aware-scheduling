@@ -627,6 +627,18 @@ try:
     r_null = np.mean([env[g]["r_shuffle_null_mean"] for g in ("S1", "S2", "S3", "S4")])
     check("n8-envelope-r", "§6.4 envelope corr f2/f3", -0.36, r_env, 0.03)
     check("n8-shuffle-null", "§6.4 independent-angle null", -0.60, r_null, 0.03)
+    # S4 tail risk (§5.3: per-scenario f2 lower decile below G-BL mean)
+    s4tail = extra["tail_risk"]["S4"]
+    check("tail-s4-m3-f2-p10", "§5.3 S4 MOEA-3 f2 10th percentile", 0.291,
+          s4tail["MOEA-3_f2"]["p10"], 0.005)
+    check("tail-s4-gbl-f2-mean", "§5.3 S4 G-BL f2 mean", 0.336,
+          s4tail["G-BL_f2"]["mean"], 0.005)
+    # S1 selector-extreme fronts (best-f2 / best-f3 points, §5.3)
+    s1sel = extra["selector_sensitivity"]["S1"]
+    check("sel-s1-bestf2", "§5.3 S1 best-f2 front point f2", 0.449,
+          s1sel["MOEA-3_best-f2"]["f2"], 0.005)
+    check("sel-s1-bestf3", "§5.3 S1 best-f3 front point f3", 0.738,
+          s1sel["MOEA-3_best-f3"]["f3"], 0.005)
 except FileNotFoundError as e:
     print(f"WARN panel results missing: {e.filename}")
 
