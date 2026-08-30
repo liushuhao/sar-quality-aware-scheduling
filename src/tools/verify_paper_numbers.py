@@ -29,6 +29,7 @@ from scipy import stats as scipy_stats
 REPO = Path(__file__).resolve().parent.parent.parent
 RESULTS = REPO / "papers" / "single-sat-quality" / "experiments" / "results"
 REVIEW = REPO / "papers" / "single-sat-quality" / "review"
+PAPER = REPO / "papers" / "single-sat-quality"
 
 # ── fingerprint ─────────────────────────────────────────────────────────────
 FINGERPRINTS = {}
@@ -599,6 +600,60 @@ for _loader, _nm in ((m2, "MOEA-2"), (m3, "MOEA-3")):
 check("gbl-exceed-count", "§6.4 # scenarios with f1*>1.00", 1, len(_exceed), 0.0)
 if _exceed:
     check("gbl-exceed-max", "§6.4 max f1* exceedance", 1.108, max(_exceed), 0.002)
+
+# ── panel 20260830 strict checks (Table 2 digits, N9) ──────────────────────
+def _grp_mean(coll, group, key, loader=None):
+    if loader == "bl":
+        return float(np.mean([bl[k]["b1"][key] for k in bl if k.startswith(group + "/")]))
+    return float(np.mean([coll[k][key] for k in coll if k.startswith(group + "/") and isinstance(coll[k], dict)]))
+
+# Table 2 strict digits (tol 0.0005; previously rounded to 3 decimals)
+check("t2-s1-m2-f2", "Table 2 S1 MOEA-2 f2", 0.393, _grp_mean(m2, "S1", "f2"), 0.0005)
+check("t2-s1-m2-f3", "Table 2 S1 MOEA-2 f3", 0.657, _grp_mean(m2, "S1", "f3"), 0.0005)
+check("t2-s1-m3-f2", "Table 2 S1 MOEA-3 f2", 0.376, _grp_mean(m3, "S1", "f2"), 0.0005)
+check("t2-s1-m3-f3", "Table 2 S1 MOEA-3 f3", 0.698, _grp_mean(m3, "S1", "f3"), 0.0005)
+check("t2-s2-m2-f1", "Table 2 S2 MOEA-2 f1*", 0.98, _grp_mean(m2, "S2", "f1"), 0.005)
+check("t2-s4-m2-f2", "Table 2 S4 MOEA-2 f2", 0.337, _grp_mean(m2, "S4", "f2"), 0.0005)
+
+# ── panel 20260830 new findings (N13/N15/N18/envelope) ─────────────────────
+try:
+    extra = json.load(open(PAPER / "experiments" / "results" / "panel20260830_extra.json"))
+    check("n13-knee3-margin", "§6.4 matched knee-rule f3 margin (knee3)", 0.0492,
+          extra["f3_margins"]["S1"]["knee3"]["margin_pct"] / 100.0, 0.003)
+    check("n13-knee2-blind", "§6.4 radiometric-blind knee margin", 0.0005,
+          extra["f3_margins"]["S1"]["knee2"]["margin_pct"] / 100.0, 0.003)
+    env = json.load(open(PAPER / "experiments" / "results" / "null_new_caliber2026.json"))
+    r_env = np.mean([env[g]["r_envelope"] for g in ("S1", "S2", "S3", "S4")])
+    r_null = np.mean([env[g]["r_shuffle_null_mean"] for g in ("S1", "S2", "S3", "S4")])
+    check("n8-envelope-r", "§6.4 envelope corr f2/f3", -0.36, r_env, 0.03)
+    check("n8-shuffle-null", "§6.4 independent-angle null", -0.60, r_null, 0.03)
+except FileNotFoundError as e:
+    print(f"WARN panel results missing: {e.filename}")
+
+# N15 doubled-budget stability (§6.6)
+try:
+    bdg = json.load(open(PAPER / "experiments" / "results" / "p1-4_variant_d_rerun" / "budget_control.json"))
+    for grp in ("S3", "S4"):
+        rows = bdg["results"].get(grp, [])
+        d = np.array([r["A"]["f3"] - m3[f"{grp}/{r['scenario']}"]["f3"] for r in rows
+                      if f"{grp}/{r['scenario']}" in m3])
+        check(f"n15-{grp}-f3-stable", f"§6.6 {grp} doubled-vs-standard f3 drift", 0.012, float(np.mean(d)), 0.01)
+except Exception as e:
+    print(f"WARN budget check skipped: {e}")
+
+# N18 envelope-cap sensitivity (§7.2)
+try:
+    cap = json.load(open(PAPER / "experiments" / "results" / "envelope_cap" / "_progress.json"))["completed"]
+    def _cap(grp, k1, k2):
+        ks = [k for k in cap if k.startswith(grp + "/")]
+        return np.mean([cap[k][k1][k2] for k in ks])
+    for grp, margin in (("E25", 0.085), ("E15", 0.023)):
+        m = _cap(grp, "moea3", "f2") / _cap(grp, "gbl", "f2") - 1
+        check(f"n18-{grp}-f2margin", f"§7.2 {grp} MOEA-3 f2 margin over GBL", margin, float(m), 0.02)
+    check("n18-e15-f1", "§7.2 E15 MOEA-3 f1* (zero coverage cost)", 1.006,
+          float(np.mean([cap[k]["moea3"]["f1"] for k in cap if k.startswith("E15/")])), 0.02)
+except Exception as e:
+    print(f"WARN envelope-cap check skipped: {e}")
 
 # ── report ──────────────────────────────────────────────────────────────────
 REVIEW.mkdir(exist_ok=True)

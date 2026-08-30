@@ -34,7 +34,12 @@ Wilcoxon signed-rank test is appropriate for paired comparison of
 objective-function variants.
 Each variant completes six scenario classes $\times$ 50 seeds $= 300$ runs
 (total: 1,200 runs across A--D); Table~\ref{tab:ablation} reports the
-density-regime classes S1--S4. Degradation is reported as
+density-regime classes S1--S4. The two remaining classes stress non-density
+axes: S5 holds density at $N=20$ but spreads target positions along-track
+over $5^\circ$/$15^\circ$/$25^\circ$/$35^\circ$/$45^\circ$ (a
+squint-spread sensitivity group), and S6 packs the 20 targets into
+2--10 clusters with narrow windows (60--180\,s; a C3 transition-stress
+group). Degradation is reported as
 $\Delta\% = (\text{A} - \text{V})/\text{A} \times 100$, where A is the full
 physical baseline and V is the variant; negative values indicate the variant
 outperforms the baseline on $f_1^*$.
@@ -110,7 +115,8 @@ $1.002$ ($-18.0\%$, $p=3.4\times10^{-9}$) by scheduling $3.9$ more tasks
 ($19.5$ vs.\ $15.6$) at a substantial radiometric cost, with post hoc $f_3$
 falling from $0.698$ to $0.525$ ($-25\%$). Variant B (no squint) leaves
 $f_1^*$ unchanged ($-0.8\%$, $p=0.46$) but lowers $f_3$ to $0.574$
-($-18\%$): without squint penalization the solver tolerates higher-squint
+($-18\%$) and $f_2$ to $0.353$ ($-6.2\%$, $p=1.1\times10^{-5}$): without
+squint penalization the solver tolerates higher-squint
 views, sacrificing the radiometric quality that the full-physics baseline
 purchases in the sparse regime. Variant C (no incidence) produces no
 measurable change in any reported metric. This inertness is consistent with
@@ -143,10 +149,24 @@ ones. In this regime, the NSGA-III solver acts as a constraint-filtered
 profit maximizer regardless of whether $f_2$ and $f_3$ carry geometric
 meaning (A) or serve as constant placeholders (D).
 
+The two robustness classes replicate this pattern away from the density
+axis. On S5 (along-track target spread) and S6 (narrow-window clusters),
+the full-removal variant D is significantly worse than A in $f_2$
+($-11.2\%$, $p = 1.6\times10^{-13}$ and $-11.1\%$, $p = 1.8\times10^{-15}$)
+and in $f_3$ ($-6.1\%$ and $-6.3\%$), C is indistinguishable from A
+($f_2$ $+0.4\%$, $p = 0.33$ and $-0.6\%$, $p = 0.48$), and B shows small
+significant differences ($+3.2\%$, $p = 0.046$ and $+4.6\%$,
+$p = 1.2\times10^{-5}$ in $f_2$). The coverage price of physics persists
+here as well: D attains $17\%$ (S5) and $8\%$ (S6) more raw profit than A,
+i.e.\ objective-driven selection sacrifices coverage in sparse
+configurations regardless of whether the stressor is density, target
+spread, or window clustering.
+
 Taken together, the physical quality objectives add value mainly in the
 sparse regime, and primarily through radiometric quality: at S1 the
-full-physics A attains $25\%$ higher $f_3$ than the no-physics D
-($0.698$ vs.\ $0.525$) at an $18\%$ coverage disadvantage, and removing
+full-physics A attains $33\%$ higher $f_3$ than the no-physics D
+($0.698$ vs.\ $0.525$; D lies $25\%$ below A on the common-degradation
+basis) at an $18\%$ coverage disadvantage, and removing
 only the squint component (B) already sacrifices $18\%$ of $f_3$ while
 preserving $f_1^*$. The coverage effect of partially removing the
 objectives is minimal in every regime, and by $N \geq 300$ the choice of

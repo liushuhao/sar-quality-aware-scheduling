@@ -1,0 +1,54 @@
+{
+  "S1": {
+    "r_all": -0.3547,
+    "r_psi_le_45": -0.3547,
+    "n_points_all": 1600,
+    "n_points_le45": 1600,
+    "psi_max": 40.51,
+    "psi_p95": 35.99,
+    "sweep_med": 23.71,
+    "sweep_p95": 34.75,
+    "width_med_min": 1.17,
+    "drift30_med": 11.47,
+    "drift30_p95": 14.61
+  },
+  "S2": {
+    "r_all": -0.3714,
+    "r_psi_le_45": -0.3714,
+    "n_points_all": 8318,
+    "n_points_le45": 8318,
+    "psi_max": 41.17,
+    "psi_p95": 36.67,
+    "sweep_med": 23.35,
+    "sweep_p95": 34.75,
+    "width_med_min": 1.17,
+    "drift30_med": 11.39,
+    "drift30_p95": 14.5
+  },
+  "S3": {
+    "r_all": -0.3702,
+    "r_psi_le_45": -0.3702,
+    "n_points_all": 24742,
+    "n_points_le45": 24742,
+    "psi_max": 44.33,
+    "psi_p95": 36.69,
+    "sweep_med": 23.31,
+    "sweep_p95": 34.77,
+    "width_med_min": 1.0,
+    "drift30_med": 11.36,
+    "drift30_p95": 14.49
+  },
+  "S4": {
+    "r_all": -0.3601,
+    "r_psi_le_45": -0.3601,
+    "n_points_all": 41816,
+    "n_points_le45": 41816,
+    "psi_max": 44.82,
+    "psi_p95": 36.69,
+    "sweep_med": 23.38,
+    "sweep_p95": 34.82,
+    "width_med_min": 1.0,
+    "drift30_med": 11.4,
+    "drift30_p95": 14.5
+  }
+}

@@ -27,9 +27,10 @@ low-squint geometries under which the three-objective formulation is
 indistinguishable from the two-objective one at operational densities, while
 retaining measurable quality gains at sparse density. The work establishes that multi-objective scheduling
 provides measurable quality benefit only when observation requests are sparse
-(N < 100), within the single-satellite, single-pass Stripmap setting studied.
-A matched-reference-point control confirms the sparse-density third-objective
-gain is not an artifact of NSGA-III reference-direction count.
+($N \lesssim 100$), within the single-satellite, single-pass Stripmap setting studied.
+A matched-knee-point control confirms the sparse-density third-objective
+gain is a modest controlled margin (+4.9% under matched knee selection), not
+an artifact of NSGA-III reference-direction count or knee selection.
 
 Disclosure of related manuscript:
 I have an article previously accepted by Advances in Space Research

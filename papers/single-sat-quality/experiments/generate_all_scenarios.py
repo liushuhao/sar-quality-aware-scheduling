@@ -437,6 +437,7 @@ def generate_one_scenario(
     s6_cluster_size: Optional[int] = None,
     max_window_width_s: Optional[float] = None,
     high_lat: bool = False,
+    max_squint_deg: Optional[float] = None,
 ) -> dict:
     """Generate a single scenario with the given parameters."""
     random.seed(seed)
@@ -446,13 +447,16 @@ def generate_one_scenario(
     incidence_min = sat_params["incidence_min"]
     incidence_max = sat_params["incidence_max"]
 
-    instrument = SARInstrument(
+    instrument_kwargs = dict(
         incidence_min=incidence_min,
         incidence_max=incidence_max,
         look_direction=look_direction,
         antenna_type="reflector",
         min_elevation=5.0,
     )
+    if max_squint_deg is not None:
+        instrument_kwargs["max_squint_deg"] = max_squint_deg
+    instrument = SARInstrument(**instrument_kwargs)
 
     orbit = make_orbit(altitude_km, ltan=6.0)
 
