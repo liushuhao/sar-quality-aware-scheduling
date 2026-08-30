@@ -65,7 +65,12 @@ Results: `experiments/results/variant_d_per_task_r.json` (raw per-task
 points included), `cross_solver_pool_probe.json`. Note `f2_f3_coupling.json`
 is deprecated: its earlier +0.93–0.98 values were not reproducible and have
 been retracted; all reproducible calibers are negative (see
-`scripts/reproduce_A_r.py` and `scripts/r_visible_envelope.py`).
+`scripts/reproduce_A_r.py`). The envelope correlation under production
+geometry is `scripts/envelope_stats_caliber.py`
+(`experiments/results/envelope_caliber2026.json`, envelope r≈−0.36,
+independent-angle null r≈−0.60); `scripts/r_visible_envelope.py` is
+deprecated — it used the wrong geometry builder and the pre-RDR-066
+objective caliber, producing the retracted −0.97.
 
 ### Generate figures
 

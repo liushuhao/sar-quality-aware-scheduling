@@ -1484,10 +1484,12 @@ reference and may be preferable. Indeed, the
 MOEA-2 coverage gap relative to the coverage-only anchor is
 $0\%$ at $N \geq 300$ (Table~\ref{tab:scale-sensitivity}); since GA-P-BL
 output coincides with G-BL in 199 of 200 scenarios (and is never worse), no meaningful separate gap exists. The dense-regime greedy
-recommendation is also latency-favorable: G-BL places each task at its
-earliest feasible time within the visibility window, whereas quality-steering
-solvers may delay acquisitions, so the coverage-priority choice aligns with
-timeliness-sensitive operations.
+choice also differs from quality steering on a timeliness dimension, by
+construction rather than by a measured latency figure: G-BL places each
+task at its earliest feasible time within the visibility window, whereas
+quality-steering solutions may delay acquisitions to reach lower-squint
+geometry, so the coverage-priority choice is the natural default when
+acquisition timeliness matters.
 
 \subsection{Transferability Across Remote-Sensing Domains}
 The analytic device most likely to transfer beyond SAR is the
@@ -1514,7 +1516,10 @@ densities, strongest at sparse density; \S\ref{sec:pareto-coupling},
 Eq.~\ref{eq:rnull}), not a mathematical
 identity between $f_2$ and $f_3$. In multi-pass or multi-satellite
 settings with greater angular diversity, the $\theta$-conflict would
-re-emerge and the third objective may become discriminative. Similarly,
+re-emerge and the third objective may become discriminative; the static,
+advance-known target set likewise excludes dynamic arrivals and
+rolling-horizon re-optimization, where newly arriving tasks compete
+within the same windows and could shift the saturation threshold. Similarly,
 ScanSAR, Spotlight, and TOPS modes introduce different NESZ and resolution
 dependencies beyond Stripmap, and the scenario design uses a fixed orbit
 (693 km circular LEO) without exploring sensitivity to orbital parameters.
