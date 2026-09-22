@@ -132,7 +132,7 @@ variants with two and three objectives.
 The solvers are evaluated on 200 systematically varied scenarios across four
 density classes ($N = 20$ to $N = 500$).
 Our results show a scale-dependent saturation, not a uniform solver advantage.
-In sparse scenarios, multi-objective optimization can extract substantial
+In sparse scenarios, multi-objective optimization can extract
 radiometric gains (MOEA-3 raises $f_3$ by $+40\%$
 relative to G-BL at a $15\%$ coverage cost) alongside modest geometric
 gains (MOEA-2, $+34\%$ in $f_2$ at a $14\%$ coverage cost; the best-coverage front point gives $+12.5\%$ in $f_2$).
@@ -862,7 +862,7 @@ numerically identical to G-BL in all but one scenario (mean $f_2$ and $f_3$
 within $0.001$ of G-BL, and the single differing scenario improves profit;
 Sec.~\ref{sec:ga-p-bl}), serving as a control that confirms the greedy
 coverage baseline rather than an independent solver. G-SM occupies a different operating regime, exchanging
-coverage and $f_2$ for substantially higher $f_3$.
+coverage and $f_2$ for higher $f_3$.
 
 \begin{table}[H]
 \centering
@@ -954,7 +954,7 @@ relative to the profit-only baseline (G-BL) by selecting observation times that
 minimize squint angle within each visibility window.
 Across all 200 scenarios, this produces a large positive effect on $f_3$
 (Cliff's $\delta = +0.99$, $p \approx 1.5\times10^{-34}$, on a per-scenario
-paired basis: 199 of 200 scenarios improve) at a substantial aggregate cost
+paired basis: 199 of 200 scenarios improve) at an aggregate cost
 in coverage (Cliff's $\delta = -1.0$, $p < 10^{-34}$, on $f_1^*$; raw $f_1$ is used here because G-BL yields constant $f_1^* = 1.0$ by definition, for which the normalized-profit comparison degenerates to a one-sample test against a fixed value).
 The trade-off, however, is strongly density-dependent.
 In sparse scenarios (S1, $N = 20$), G-SM drops to $f_1^* = 0.51 \pm 0.16$
@@ -1114,12 +1114,12 @@ optimizing $f_3$ is bounded, and the principal quality contrast with the
 profit-only baseline remains MOEA-3's $+40\%$ $f_3$ gain at S1. At operational
 densities the advantage disappears because coverage pressure locks the
 selection, not because the underlying $f_2$--$f_3$
-trade-off vanishes---the within-schedule correlation remains negative at
+trade-off vanishes. The within-schedule correlation remains negative at
 every density.
 
-The HV ranking (Table~\ref{tab:hv}) differs from the coverage ranking (Table~\ref{tab:solver-profiles}): among the three tabulated solvers, G-BL ranks first in tabulated $f_1^*$ but third in HV, while the NSGA-III variants rank first and second in HV (MOEA-3, then MOEA-2), despite their lower coverage ranking. Notably, G-SM --- omitted from the
+The HV ranking (Table~\ref{tab:hv}) differs from the coverage ranking (Table~\ref{tab:solver-profiles}): among the three tabulated solvers, G-BL ranks first in tabulated $f_1^*$ but third in HV, while the NSGA-III variants rank first and second in HV (MOEA-3, then MOEA-2), despite their lower coverage ranking. G-SM, omitted from the
 table because its single-point HV is dominated by point location rather than
-front quality --- actually attains the highest HV of any solver ($0.2341$)
+front quality, attains the highest HV of any solver ($0.2341$)
 from its low-coverage, high-$f_3$ operating point
 ($f_1^* \approx 0.37$, $f_3 \approx 0.79$ at S4), so the HV ranking would
 invert if it were included. This is precisely the point-count confound: HV
@@ -1191,7 +1191,7 @@ full-physics schedules match the factorized, independent-angle null
 ($-0.63$ versus $r_{\text{null}} \approx -0.60$), whereas at operational
 density they weaken to about $-0.2$ to $-0.15$. The third objective's
 class-mean indistinguishability at high density is therefore an
-empirical convergence effect---not a mathematical identity between $f_2$
+empirical convergence effect. It is not a mathematical identity between $f_2$
 and $f_3$: a trace per-scenario $f_3$ advantage of MOEA-3 over MOEA-2
 persists even at S4 (paired Wilcoxon $p = 4.5\times10^{-3}$, 33 of 50
 scenarios), coexisting with negligible class-mean $f_3$ margins.
@@ -1398,7 +1398,7 @@ the Pareto front, while offering multiple quality-coverage configurations,
 is compressed by the geometric coupling above: the narrow $f_2$ range limits
 practical differentiation between solutions.
 \textbf{(3)}~G-SM occupies a distinct high-radiometric-quality regime at
-substantial density-dependent coverage cost;
+density-dependent coverage cost;
 \textbf{(4)}~solver outcomes become invariant to the choice of physical
 objectives at $N \geq 300$ (ablation study); and
 \textbf{(5)}~coverage convergence toward the G-BL anchor is conditional

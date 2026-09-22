@@ -138,3 +138,4 @@ papers/single-sat-quality/figures/fig6_ablation.png
 # Local submission package (regenerable; not versioned)
 /ASR-submission-*.zip
 /ASR-submission-*/
+papers/single-sat-quality/backup/
