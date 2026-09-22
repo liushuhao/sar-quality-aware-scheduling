@@ -38,15 +38,17 @@ density-regime classes S1--S4. The two remaining classes stress non-density
 axes: S5 holds density at $N=20$ but spreads target positions along-track
 over $5^\circ$/$15^\circ$/$25^\circ$/$35^\circ$/$45^\circ$ (a
 squint-spread sensitivity group), and S6 packs the 20 targets into
-2--10 clusters with narrow windows (60--180\,s; a C3 transition-stress
+2--10 clusters with narrow windows (60--180\,s; a C2 transition-stress
 group). Degradation is reported as
-$\Delta\% = (\text{A} - \text{V})/\text{A} \times 100$, where A is the full
+$\Delta\% = (\text{A} - \text{V})/\text{A} \times 100$, computed on
+\emph{raw profit} means (it is therefore not exactly reproducible from the
+G-BL-normalized $f_1^*$ column), where A is the full
 physical baseline and V is the variant; negative values indicate the variant
 outperforms the baseline on $f_1^*$.
 
 \begin{table}[H]
 \centering
-\caption{Per-class ablation results. Bold: $p < 0.005$ (Wilcoxon signed-rank vs.~A; consistent with the Friedman--Wilcoxon framework of \S\ref{sec:evaluation-metrics}).}
+\caption{Per-class ablation results. $f_1/n$ is the mean priority weight of the selected tasks. Bold: $p < 0.005$ (Wilcoxon signed-rank vs.~A; the ablation threshold is $\alpha=0.05/12$, \S\ref{sec:evaluation-metrics}; all marked cells satisfy it).}
 \label{tab:ablation}
 \begin{tabular}{llccccrc}
 \toprule
@@ -154,9 +156,10 @@ axis. On S5 (along-track target spread) and S6 (narrow-window clusters),
 the full-removal variant D is significantly worse than A in $f_2$
 ($-11.2\%$, $p = 1.6\times10^{-13}$ and $-11.1\%$, $p = 1.8\times10^{-15}$)
 and in $f_3$ ($-6.1\%$ and $-6.3\%$), C is indistinguishable from A
-($f_2$ $+0.4\%$, $p = 0.33$ and $-0.6\%$, $p = 0.48$), and B shows small
-significant differences ($+3.2\%$, $p = 0.046$ and $+4.6\%$,
-$p = 1.2\times10^{-5}$ in $f_2$). The coverage price of physics persists
+($f_2$ $+0.4\%$, $p = 0.33$ and $-0.6\%$, $p = 0.48$), and B shows a small
+$f_2$ difference that is significant at S6 ($+4.6\%$,
+$p = 1.2\times10^{-5}$) but not at the corrected threshold at S5
+($+3.2\%$, $p = 0.046$). The coverage price of physics persists
 here as well: D attains $17\%$ (S5) and $8\%$ (S6) more raw profit than A,
 i.e.\ objective-driven selection sacrifices coverage in sparse
 configurations regardless of whether the stressor is density, target
