@@ -44,11 +44,14 @@ $\Delta\% = (\text{A} - \text{V})/\text{A} \times 100$, computed on
 \emph{raw profit} means (it is therefore not exactly reproducible from the
 G-BL-normalized $f_1^*$ column), where A is the full
 physical baseline and V is the variant; negative values indicate the variant
-outperforms the baseline on $f_1^*$.
+outperforms the baseline on $f_1^*$. Percentages quoted for the quality
+metrics $f_2$ and $f_3$ in the text follow the direct relative-change
+convention $(\text{V}-\text{A})/\text{A}$ (negative values indicate
+degradation), the opposite sign of the $\Delta f_1^*\%$ column.
 
 \begin{table}[H]
 \centering
-\caption{Per-class ablation results. $f_1/n$ is the mean priority weight of the selected tasks. Bold: $p < 0.005$ (Wilcoxon signed-rank vs.~A; the ablation threshold is $\alpha=0.05/12$, \S\ref{sec:evaluation-metrics}; all marked cells satisfy it).}
+\caption{Per-class ablation results. $f_1/n$ is the mean priority weight of the selected tasks. Bold: significant at the ablation threshold $\alpha=0.05/12$ (Wilcoxon signed-rank vs.~A, \S\ref{sec:evaluation-metrics}; all marked cells satisfy it).}
 \label{tab:ablation}
 \begin{tabular}{llccccrc}
 \toprule
@@ -102,7 +105,7 @@ outperforms the baseline on $f_1^*$.
 \begin{figure}[H]
     \centering
     \includegraphics[width=\textwidth]{fig5_ablation.pdf}
-    \caption{Ablation results across objective-function variants B--D and scenario classes S1--S4. Bars show degradation relative to the full-physics baseline A for normalized profit $f_1^*$ and post hoc geometric-quality metrics $f_2$ and $f_3$; negative values indicate that a variant outperforms A. Asterisks mark paired Wilcoxon comparisons against A with $p<0.005$ (Bonferroni threshold).}
+    \caption{Ablation results across objective-function variants B--D and scenario classes S1--S4. Bars show degradation relative to the full-physics baseline A for normalized profit $f_1^*$ and post hoc geometric-quality metrics $f_2$ and $f_3$; negative values indicate that a variant outperforms A. Asterisks mark paired Wilcoxon comparisons against A significant at the Bonferroni threshold ($p<0.05/12$).}
     \label{fig:fig5}
 \end{figure}
 
@@ -112,7 +115,7 @@ vanishes as scenario density increases --- a pattern consistent with our
 scale-sensitivity analysis (\S~\ref{sec:scale-sensitivity}).
 
 At S1 ($N = 20$), only variant D (no physics) differs significantly from
-baseline A at the manuscript's $p<0.005$ threshold: its $f_1^*$ rises to
+baseline A at the ablation threshold ($\alpha=0.05/12$): its $f_1^*$ rises to
 $1.002$ ($-18.0\%$, $p=3.4\times10^{-9}$) by scheduling $3.9$ more tasks
 ($19.5$ vs.\ $15.6$) at a substantial radiometric cost, with post hoc $f_3$
 falling from $0.698$ to $0.525$ ($-25\%$). Variant B (no squint) leaves
