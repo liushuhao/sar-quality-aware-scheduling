@@ -88,6 +88,7 @@ papers/single-sat-quality/.workbuddy/
 skills-lock.json
 archive/
 .scratch/
+/.workbuddy/
 
 # Ch3 session scratch launchers
 papers/single-sat-quality/experiments/_check_control.ps1
