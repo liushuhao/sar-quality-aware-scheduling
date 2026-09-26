@@ -56,7 +56,7 @@
     "j_max_rad_s3": {
       "value": null,
       "kim_source": null,
-      "note": "NOT PUBLISHED as a hard limit: Figure 17b (p.23) shows a realized jerk profile of about +-20 rad/s^3 for the 3 s verification case only -- that is a result plot, not a design limit. The D5 ticket freezes the fallback conservative bound + alarm per the spec escape hatch (Testing Decisions, Kim RMT entry)."
+      "note": "NOT PUBLISHED as a hard limit: Figure 17b (p.23) shows a realized jerk profile for the 3 s verification case only (axis spans about -30..+20 rad/s^3, realized peaks roughly +13/-25) -- that is a result plot, not a design limit. The D5 ticket freezes the fallback conservative bound + alarm per the spec escape hatch (Testing Decisions, Kim RMT entry)."
     },
     "objective_weights": {
       "k1_sec":           { "value": 1, "kim_source": "p.19 section 3.1 text: 'k_1 ... is set as 1 sec'" },

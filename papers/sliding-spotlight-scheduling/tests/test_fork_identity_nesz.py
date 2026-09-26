@@ -52,6 +52,9 @@ SHARED_ONLY_SYMBOLS = {
     "incidence_to_off_nadir",
     "aggregate_quality",
     "quality_summary",
+    "quality_score_from_elevation",
+    "EARTH_RADIUS_MEAN_M",
+    "_DEFAULT_ALTITUDE_M",
 }
 
 

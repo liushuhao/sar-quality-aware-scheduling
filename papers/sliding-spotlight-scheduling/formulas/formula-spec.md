@@ -1,6 +1,6 @@
 # 公式规格（冻结版）— 滑聚/聚束变时长 SAR 调度：驻留时长 + 逐模式分辨率 + AASR/RASR
 
-- 版本: v1.0（2026-09-27，票 01 SLS/时长公式族 blocking gate 产出）
+- 版本: v1.0.1（2026-09-27，票 01 产出；同日两路 fresh 独立审查 0 critical 后勘误轮——§2 λ 值、§7 稳定时间算术、§3/§5 标注补强、§0.1 路径以盘上改名落实，登记见 §8.6；v1.0 = 票 01 SLS/时长公式族 blocking gate 产出）
 - 状态: **FROZEN**——后续实现票（映射表、时长模块、AASR 硬约束、质量指标、窗域预编译）以本文件为**唯一公式来源**；修改须经新 blocking gate。
 - 上游: `.scratch/sliding-spotlight-scheduling/issues/01-sls-formula-blocking-gate.md`（8 项验收 §9 对照）
 - 裁决对象: `archive/next-paper-formalization/blueprint-draft.md` §2.2(c)/附 A/附 B（蓝图是二手源，本规格全部公式从 PDF 原文符号级复原，未照抄蓝图）
@@ -62,7 +62,7 @@ $$A \;=\; \frac{r_0}{R_0+r_0} \;=\; 1-\frac{R_0\,k_\theta}{v_g}\,,\qquad A\in(0,
 2. [文献] Song 2025, `song2025_sensors_sparse.pdf` **p.3**，Eq.(1)：$A = (R_{rot}-R_0)/R_{rot} = 1-R_0k_\theta/v_g$（$R_{rot}$=平台到旋转中心距离；正文明确 "$0<A<1$ in Sliding Spotlight"，$A=0$ Spotlight、$A=1$ Stripmap/Scan）。注意 $R_{rot}=R_0+r_0$，与 GF-3/Kim 完全同构。
 3. [文献·隐含式] Kim 2021，**p.9**，Eq.(15)-(16)：$R_0\alpha=(R_0+r_0)(\psi_{s_0}-\psi_{s_1})$ 与 $r_0=R_0\theta_a/(\alpha-\theta_a)$ 联立 ⇔ $\alpha=\theta_a/A$（$\alpha$=点目标总 SAA）——Kim 虽未定义 A 记号，其几何与上两式严格等价（代数验证：`numerical_check.py` 末节，`theta_a/A = lam/(2ρ)` 恒等式成立）。
 
-**定量旁证**（非取式，仅证因子链正确）：GF-3 全文 p.8 实测 $\Delta f_{dc}=18{,}000$ Hz 对应方位转角 3.8°，$V_s=7568$ m/s、$\lambda=0.555$ m：$(2V_s/\lambda)\sin 3.8°=18{,}073$ Hz（偏差 0.4%）——验证 Song Eq.(4) 多普勒中心-扫描角关系。
+**定量旁证**（非取式，仅证因子链正确）：GF-3 全文 p.8 实测 $\Delta f_{dc}=18{,}000$ Hz 对应方位转角 3.8°，$V_s=7568$ m/s、$\lambda=0.0555$ m（C 频段；GF-3 原文 p.4 误排为 0.555 m——其 $\Delta R_q=0.96$ m 例同样仅在该值下自洽，勘误登记 §8.6）：$(2V_s/\lambda)\sin 3.8°=18{,}073$ Hz（偏差 0.4%）——验证 Song Eq.(4) 多普勒中心-扫描角关系。
 
 ---
 
@@ -75,7 +75,7 @@ $$\rho_{a,\mathrm{STR}}=\frac{D}{2}\,,\qquad
 - **STR** [教科书+Kim]：$D/2$。Kim Eq.(4)-(5)（`kim2021_...pdf` **p.6**）：$\rho_a=V_s/B_d$、$\Delta\theta=\lambda/(2\rho_a)$；条带 $B_d=(2V_s/\lambda)\theta_a$、$\theta_a=\lambda/D$ ⇔ $D/2$。Cumming & Wong 标准式。
 - **SLS** [文献，2 全文源钉死]：
   - GF-3 2018 **p.3** 正文（紧随 Eq.(2)）："compared with stripmap working mode, the azimuth resolution of the sliding-spotlight mode is **improved by the factor A** as $\rho_{AZ}=A\cdot D_a/2$，where $D_a$ is the azimuth antenna length"。
-  - Song 2025 **p.3**，Eq.(2)：$\rho \approx \dfrac{L_a}{2}(N_B+1)\,A$（$L_a$=天线方位向尺寸，$N_B$=子波位数；单波位模式 $N_B=0$ ⇒ $\rho=L_a A/2$；正文："with the steering angle rate increasing, Sliding Spotlight has the highest resolution … TOPS performing the worst"）。
+  - Song 2025 **p.3**，Eq.(2)：$\rho \approx \dfrac{L_a}{2}(N_B+1)\,A$（$L_a$=天线方位向尺寸，$N_B$=子波位数；单波位 $N_B=0$ 为**解读式使用**——subswath 数取 0 的退化，与该文自身 stripmap 基线 $\rho=L_a/2$ 自洽，并与 GF-3 交叉一致 ⇒ $\rho=L_a A/2$；正文："with the steering angle rate increasing, Sliding Spotlight has the highest resolution … TOPS performing the worst"）。
   - 两源 + Kim 隐含式（§2 条 3）三方一致。
 - **SPT** [文献·Kim Eq 反演]：$\rho_a=\lambda/(2\beta_{\mathrm{span}})$，即 Kim Eq.(5)（p.6）$\Delta\theta=\lambda/(2\rho_a)$ 的反演；$\beta_{\mathrm{span}}=\psi_s-\psi_e$ 为聚束扫描跨度（Kim Eq.(8)，**p.6**：$\Delta\theta=\lambda/(2\rho_a)=\theta_{s_0}-\theta_{s_1}$）。**口径精确化（对 spec D6 的修正，见 §8.3）**：$\rho_{a,\mathrm{SPT}}$ 是**模式库设计常数**（由 $\beta_{\mathrm{span}}$ 定），映射表 coarsest-sufficient 保证 $\rho_{a,\mathrm{SPT}}\le\rho_{\mathrm{req}}$；进 $f_Q$ 的是 achieved 值 $\lambda/(2\beta_{\mathrm{span}})$，不是需求常数。
 - **斜视角修正口径注记**（实现口径声明，无未验成分）：本规格三条主式为孔径角语义（$\lambda/(2\times\text{总视角角})$），斜视角不进 $\rho_a$；spec D6「ρ_a 用孔径中心 $\bar\psi$ 语义」若需 Doppler 语义修正（$B_d\propto\cos\bar\psi$，前篇 $\cos\psi_{sq}$ 因子血统），则三模式**同乘** $\cos\bar\psi$ 因子，档序不变——修正属 D6 实现选项，不改变本节公式与档序。
@@ -163,7 +163,7 @@ $$\mathrm{AASR}_{Sc}=\frac{\sum_{m}\int_{-B_D/2-K_at_0}^{B_D/2-K_at_0}G(f_a+m\cd
 **TOPS / 滑聚 / Mosaic AASR**（p.5，Eq.(9)-(10)——**票 06 主式**）：
 $$\mathrm{AASR}_{T,S,M}=\frac{\sum_{m=-\infty}^{+\infty}\int_{-B_D/2+f_{ac}}^{B_D/2+f_{ac}}G\big(f_a'+m\cdot\mathrm{PRF}\big)^2\,df_a}{\int_{-B_D/2+f_{ac}}^{B_D/2+f_{ac}}G\big(f_a'\big)^2\,df_a}\,,\qquad
 f_a'=\Big(1-\frac{K_c}{K_a}\Big)(f_a-f_{ac})$$
-（**式 (10) 的 $(1-K_c/K_a)$ 即滑聚因子谱域形态**：$1-K_c/K_a=A$ 桥接 §2——滑聚的 (1−k) 因子在谱域的正确落位是**频率轴重缩放**，不是"回波多普勒调率×(1−k)"（蓝图附 A 第 8 行的挂靠方式证伪，见 §8.4）。三式相同、差异在扫描率符号：TOPS 正、滑聚/Mosaic 负。）
+（**式 (10) 的 $(1-K_c/K_a)$ 即滑聚因子谱域形态**：$1-K_c/K_a\approx A$ 为**近似桥接**（$K_a$ 式用 $v_s$、$A$ 式用 $v_g$，平地 $K_a$），桥接 §2——滑聚的 (1−k) 因子在谱域的正确落位是**频率轴重缩放**，不是"回波多普勒调率×(1−k)"（蓝图附 A 第 8 行的挂靠方式证伪，见 §8.4）。三式相同、差异在扫描率符号：TOPS 正、滑聚/Mosaic 负。）
 
 **方位 AAP**（p.7-8，Eq.(12)-(15b)，票 06 积分被积函数）：$G(\theta,t)=G_e(\theta)\cdot G_T(\theta,t)\cdot G_R(\theta,t)$，$G_e(\theta)=\mathrm{sinc}^2\big(\frac{L_e}{\lambda}\sin\theta\big)$，$G_{T/R}$ 为单元激励加权和（式 (14a)/(14b)/(15a)/(15b)，$M$=收发模块数，$L_e=L_a/M$，$C_{T/R}$=激励系数）。
 
@@ -251,7 +251,7 @@ $$\mathrm{RASR}=\frac{\sum_{m\neq0}\dfrac{G_r^2\big(\theta_r(r+m\cdot c/\mathrm{
 | 场景 2 | SAT 合计 32.81 s（8.38/8.15/8.08/8.20）；Phase-2 RMT 11.06 s（3.62/3.37/4.07）；总 49.87 s | Table 3, PDF p.29 |
 | Phase-2 RMT（场景 1） | 5.60 s（1.84/1.91/1.85）；总 44.37 s | Table 3, PDF p.29 |
 | SAT 裕度 | 25% | p.7 / p.11 正文两处 |
-| 稳定时间 | 2 s（×4 = 6 s） | Table 2 + Table 3 |
+| 稳定时间 | 2 s（×3 = 6 s；4 目标 3 间隔，Table 3 计 (2/2/2)） | Table 2 + Table 3 |
 | MOI / CMG 扭矩 / 角动量 | [1000,700,500] kg·m² / 60 Nm / 40 Nms | Table 2, PDF p.19（D5 校准辅助） |
 | jerk 目标权重 $k_2$ | 100 rad²/sec⁵（$k_1$=1 s） | p.19 正文（D5 校准辅助） |
 
@@ -296,6 +296,17 @@ $\rho_{a,\mathrm{SPT}}$ 是模式库设计常数 $\lambda/(2\beta_{\mathrm{span}
 ### 8.5 🟢 其余蓝图公式族复核结果（无冲突，按蓝图原样进实现）
 
 $\beta_{req}=\lambda/2\rho_a$（Kim Eq.(5)）、SAT=SAL/V 框架、SPT 斜视 $\tan$ 式（Kim Eq.(10)-(11) 逐字）、STR 物理口径（P9 定案）、NESZ $\propto R^3$、RASR 教科书式、旋转中心几何（Kim Eq.(27)-(29)）——均与本规格复原一致。NESZ $g_T(T_i,m_i)$ 维持**[自推导待验证]**（本规格唯一保留的待核标记；核验归票 05，对照源 = Song 2025 §2-§3 + Cumming & Wong；降级预案 = spec D6 独立退出通道）。
+
+### 8.6 勘误登记（v1.0.1，2026-09-27 两路 fresh 独立审查后）
+
+独立审查（formula 取式路 + fork 边界路，均 0 critical）发现并已修，全部不触公式本体与数值结论（审查复算：§6 全表命中、三 PDF 取式零错误、Kim Eq.(23) 系数独立重推吻合）：
+
+1. **§2 定量旁证 λ 值**：原照抄 GF-3 原文 p.4 的 0.555 m 排版错误——18,073 Hz 仅在 C 频段 0.0555 m 下成立（按 0.555 复算只得 1,807 Hz）。已改 0.0555 m 并注记原文错误；旁证结论（0.4% 偏差验证 Song Eq.(4)）不受影响。
+2. **§7 稳定时间**：「×4 = 6 s」算术错，实为 2 s × 3 间隔 = 6 s（Table 3 计 (2/2/2)）。
+3. **§3/§5 标注补强**：Song Eq.(2) 单波位 $N_B=0$ 补「解读式使用」标注；$1-K_c/K_a\approx A$ 补「近似桥接」（$v_s$ vs $v_g$）标注。
+4. **§0.1 GF-3 PDF 登记路径**：登记名与盘上文件名不一致（sensors vs zhang），以盘上文件改名落实，路径现已可解析（10,325,517 B 核对一致）。
+
+残留已知项（接受不修）：§6 表 2 SPT@12° ECEF 格 5.802 与独立复算 5.798–5.800 差 ≤0.05%（舍入级；票 03 以本表为期望值带实现）。
 
 ---
 

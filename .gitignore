@@ -140,3 +140,6 @@ papers/single-sat-quality/figures/fig6_ablation.png
 /ASR-submission-*.zip
 /ASR-submission-*/
 papers/single-sat-quality/backup/
+
+# tool-local gate marker (hook state)
+.gates/

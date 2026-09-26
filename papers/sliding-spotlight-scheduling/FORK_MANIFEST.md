@@ -35,7 +35,7 @@
 | 源文件 | `src/sar_sim/metrics/nesz.py` @ `paper2-m1-baseline`（60ee1e8） |
 | 分叉文件 | `papers/sliding-spotlight-scheduling/sss_core/metrics/nesz.py` |
 | 复制符号 | 常量 `_K_NESZ_DEFAULT`, `_THETA_REF_DEG`, `_THETA_REF`, `_COS3_THETA_REF`；函数 `nesz_linear`, `nesz_db`, `quality_score` |
-| 排除符号及理由 | `elevation_to_off_nadir`, `incidence_to_elevation`, `off_nadir_to_incidence`, `incidence_to_off_nadir`（几何换算器——本篇由自身轨道几何 builder 提供精确几何，spec D4 质量链只消费精确几何）；`aggregate_quality`, `quality_summary`（依赖共享类型 `sar_sim.types.ScheduledObservation`，复制会把共享类型拖过分叉边界） |
+| 排除符号及理由 | `elevation_to_off_nadir`, `incidence_to_elevation`, `off_nadir_to_incidence`, `incidence_to_off_nadir`（几何换算器——本篇由自身轨道几何 builder 提供精确几何，spec D4 质量链只消费精确几何）；`quality_score_from_elevation`（换算器包装 API，随几何换算器一并排除——同上）；`aggregate_quality`, `quality_summary`（依赖共享类型 `sar_sim.types.ScheduledObservation`，复制会把共享类型拖过分叉边界）；`EARTH_RADIUS_MEAN_M`, `_DEFAULT_ALTITUDE_M`（几何换算器常量，随换算器一并排除）。**共享库 nesz.py 全部 10 函数 + 6 常量对照：复制 3 函数 + 4 常量，其余 7 函数 + 2 常量全在排除清单**（独立审查 2026-09-27 补齐，守卫 denylist 与本清单同步） |
 | 数值一致性要求 | 逐位一致（同一操作序列，同解释器下浮点确定）；守卫用**精确相等**断言 |
 | 语义注记 | `quality_score` 仅诊断用；本篇目标 f_Q 为独立逐模式量（spec D6），不得与本核混淆 |
 
