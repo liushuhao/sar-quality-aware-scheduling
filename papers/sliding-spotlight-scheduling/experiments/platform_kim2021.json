@@ -1,0 +1,129 @@
+{
+  "meta": {
+    "document_type": "platform_parameter_fixture",
+    "unique_source_of_truth_for": ["mode parameters (k ladder, PRF, squint envelope)", "SAT calibration", "maneuver actuator limits", "rho_req band anchors"],
+    "rule": "Downstream tickets (D2 mode mapping, D4 duration layering, D5 maneuver model, D7 AASR) must REFERENCE values in this file; copying numbers into code/spec is forbidden. Parameters Kim 2021 does not publish are null with a note -- inventing values is forbidden (ticket 02).",
+    "source_citation": "Kim, H.; Park, J.; Chang, Y.-K.; Lee, S.-H. Optimal Attitude Maneuvering Analyses for Imaging at Squint Staring and Sliding Spotlight Modes of SAR Satellite. Aerospace 2021, 8, 277. https://doi.org/10.3390/aerospace8100277",
+    "source_pdf": "literature/fulltext/kim2021_aerospace_fulltext.pdf",
+    "page_convention": "Page numbers refer to the PDF page footer 'N of 33' (the PDF has 33 pages).",
+    "extraction": {
+      "date": "2026-09-27",
+      "method": "Direct reading of the PDF original (all 33 pages); auxiliary txt used for search only. Tables 2 and 3 transcribed table-by-table.",
+      "frozen_by": "ticket 02 (fork skeleton + manifest + fixture)"
+    }
+  },
+
+  "platform": {
+    "band":            { "value": "X-band", "kim_source": "p.19 section 3.1 text: 'SAR satellites use the frequency bandwidth of the X-band'" },
+    "frequency_ghz":   { "value": 9.6, "kim_source": "p.19 section 3.1 text: 'operating frequency of the X-band SAR satellite is assumed to be 9.6 GHz'" },
+    "wavelength_m":    { "value": 0.031, "kim_source": "Table 2, p.19 ('Wavelength 0.031 m'); also p.19 text 'wavelength (lambda) is about 0.031 m'" },
+    "altitude_km":     { "value": 570, "kim_source": "Table 2, p.19 ('Satellite Altitude 570 km'); also p.19 text 'altitude of the satellite is 570 km'" },
+    "orbit_inclination_deg": { "value": 45, "kim_source": "Table 2, p.19 ('Orbit Inclination 45 deg.'); also p.19 text 'angle of inclination is 45 degree'" },
+    "satellite_moi_kgm2":    { "value": [1000, 700, 500], "unit": "kg m^2, [Ix, Iy, Iz]", "kim_source": "Table 2, p.19 ('Satellite MOI [Ix Iy Iz] [1000 kgm2 700 kgm2 500 kgm2]'); also p.19 text 'Ix = 1000 kgm2, Iy = 700 kgm2, Iz = 500 kgm2'" },
+    "cmg_max_torque_nm":     { "value": [60, 60, 60], "unit": "Nm, [tau_x, tau_y, tau_z]", "kim_source": "Table 2, p.19 ('CMG Max Torque [60 Nm 60 Nm 60 Nm]'); also p.19 text 'torque of tau_x,y,z = 60Nm'" },
+    "cmg_angular_momentum_nms": { "value": 40, "unit": "Nms (per-axis envelope |H_CMG|)", "kim_source": "Table 2, p.19 ('CMG Angular Momentum 40 Nms'); also p.19 text '|H_CMG| = 40 Nms'" },
+    "antenna_beamwidth_deg": { "value": 0.36, "unit": "deg (theta_a, antenna beamwidth)", "kim_source": "Table 2 (continuation), p.20 ('Beamwidth 0.36 deg.')" },
+    "stabilization_time_s":  { "value": 2, "unit": "s", "kim_source": "Table 2, p.19 ('Stabilization Time 2 s'); also p.4 text 'a stabilization time of 2 s is arbitrarily assumed'" }
+  },
+
+  "modes": {
+    "mode_set": {
+      "value": ["squint_staring_spotlight", "sliding_spotlight"],
+      "kim_source": "Paper title (p.1) and sections 2.3.1 (p.5, staring spotlight) / 2.3.2 (p.7, sliding spotlight)",
+      "note": "Kim analyzes squint variants only; no stripmap (STR) parameters are published in Kim 2021. STR tier parameters must come from the D2 mapping ticket's reference source (TerraSAR-X ladder, mapping-reference only)."
+    },
+    "squint_angle_range_deg": {
+      "value": [-12, 12],
+      "unit": "deg",
+      "kim_source": "Table 2, p.19 ('Squint Angle +-12 deg.'); usage: p.20 text 'squint angle of 12 degrees from the first target ... not less than -12 at imaging of the last target'; p.27 text 'squint angle of this mission was within the range of +-12'",
+      "maps_to": "spec D5 alpha envelope / squint interval axis"
+    },
+    "sliding_factor_k_ladder": {
+      "value": null,
+      "kim_source": null,
+      "note": "NOT PUBLISHED: Kim describes sliding spotlight geometrically (rotation center below the ground surface, p.7/p.9 Fig.5) and publishes no discrete k values or k ladder. Frozen later by the SLS blocking gate (spec Further Notes); TerraSAR-X k ladder may serve as mapping reference only, Kim-first arbitration applies."
+    },
+    "prf_hz": {
+      "value": null,
+      "kim_source": null,
+      "note": "NOT PUBLISHED: no pulse repetition frequency appears anywhere in Kim 2021. Required by the AASR ticket (spec D7); that ticket must source PRF elsewhere and register the source here by manifest write-back."
+    },
+    "alpha_max": {
+      "value": null,
+      "kim_source": null,
+      "note": "NOT PUBLISHED as an explicit number: Kim publishes no maximum angular acceleration. An indirect bound is derivable from Table 2 (max torque / MoI, both registered under platform.*); the derivation convention (per-axis vs min-axis, margin) is a D5 maneuver-ticket decision and must be recorded there, not invented here."
+    },
+    "j_max_rad_s3": {
+      "value": null,
+      "kim_source": null,
+      "note": "NOT PUBLISHED as a hard limit: Figure 17b (p.23) shows a realized jerk profile of about +-20 rad/s^3 for the 3 s verification case only -- that is a result plot, not a design limit. The D5 ticket freezes the fallback conservative bound + alarm per the spec escape hatch (Testing Decisions, Kim RMT entry)."
+    },
+    "objective_weights": {
+      "k1_sec":           { "value": 1, "kim_source": "p.19 section 3.1 text: 'k_1 ... is set as 1 sec'" },
+      "k2_rad2_per_sec2": { "value": 100, "kim_source": "p.19 section 3.1 text: 'k_2 is set to 100 rad2/sec2'" },
+      "note": "Weights of Kim's retargeting objective J (Eq. 37, p.16). Recorded for RMT-provenance completeness; not platform limits."
+    }
+  },
+
+  "sat_calibration": {
+    "role": "Duration-model literature calibration fixture (spec Testing Decisions: Kim SAT 8.08-8.38 s; US3 unit-test reproduction target).",
+    "squint_staring_per_target_s": {
+      "value": [8.38, 8.18, 8.08, 8.13],
+      "order": "Target 1-4, Scenario 1 (Along)",
+      "kim_source": "Table 3, p.29 (Scenario 1, Phase 1 per-target SAT in parentheses)"
+    },
+    "squint_staring_range_s": {
+      "value": [8.08, 8.38],
+      "kim_source": "p.25 section 3.3 text: 'the SAT in Phase 1 took about 8.08-8.38 s for all four targets (25% margin was considered)'"
+    },
+    "scenario1_sat_total_s": { "value": 32.77, "kim_source": "Table 3, p.29 (Scenario 1, Phase 1 total)" },
+    "scenario2_sat_per_target_s": { "value": [8.38, 8.15, 8.08, 8.20], "kim_source": "Table 3, p.29 (Scenario 2, Phase 1 per-target SAT)" },
+    "scenario2_sat_total_s": { "value": 32.81, "kim_source": "Table 3, p.29 (Scenario 2, Phase 1 total)" },
+    "sat_margin_fraction": {
+      "value": 0.25,
+      "kim_source": "p.7 ('a margin of 25% is considered in addition to the staring spotlight mode SAT obtained from Equations (7) or (11)'); p.11 ('a margin of 25% is considered in addition to SAT at the sliding spotlight mode obtained from Equations (19) or (24)'); p.25 text",
+      "maps_to": "spec D4 C2 inter-task transfer pad 25% maneuver margin (Kim semantics)"
+    },
+    "rmt_reference": {
+      "scenario1_rmt_per_transition_s": { "value": [1.84, 1.91, 1.85], "kim_source": "Table 3, p.29 (Scenario 1, Phase 2 in parentheses)" },
+      "scenario1_rmt_total_s": { "value": 5.60, "kim_source": "Table 3, p.29" },
+      "scenario2_rmt_per_transition_s": { "value": [3.62, 3.37, 4.07], "kim_source": "Table 3, p.29" },
+      "scenario2_rmt_total_s": { "value": 11.06, "kim_source": "Table 3, p.29" },
+      "scenario1_total_mission_s": { "value": 44.37, "kim_source": "Table 3, p.29" },
+      "scenario2_total_mission_s": { "value": 49.87, "kim_source": "Table 3, p.29; also p.28 text 'the longest time was taken at 49.87 s'" },
+      "maps_to": "spec D5 RMT calibration fixture (jerk-aware maneuver closure; reproduction failure falls back to conservative bound per spec escape hatch)"
+    },
+    "scenario_geometry": {
+      "incidence_angle_deg": { "value": 45, "kim_source": "p.20 text 'imaging at the center of the AoI and at an angle of incidence of 45'; p.27 text 'incidence angle for each target was around 45'" },
+      "end_of_imaging_squint_deg": { "value": [-7.92, -10.26], "label": ["Scenario 1", "Scenario 2"], "kim_source": "p.25 ('squint angle at the end of imaging was -7.92') and p.28 ('squint angle at the end of imaging was -10.26')", "note": "Result values, recorded only as sanity anchors for duration-model reproduction tests." }
+    }
+  },
+
+  "resolution": {
+    "resolution_m": {
+      "value": 0.5,
+      "unit": "m (azimuth x ground range)",
+      "kim_source": "Table 2, p.19 ('Resolution 0.5 m x 0.5 m'); also p.1 abstract 'four high resolution images of 5 km x 5 km'"
+    },
+    "rho_req_bands": {
+      "fine_band_anchor_m": {
+        "value": 0.5,
+        "kim_source": "Table 2, p.19 -- the ONLY resolution grade published in Kim 2021"
+      },
+      "coarse_band_m": {
+        "value": null,
+        "kim_source": null,
+        "note": "NOT PUBLISHED: Kim provides a single resolution grade, so a coarse/fine two-band ladder cannot be extracted from Kim alone. The coarse band (and the boundary-zone definition used by the cheap-ablation prereg) is frozen by the D2 mode-mapping ticket; TerraSAR-X tier ladder may serve as mapping reference ONLY, with Kim-first conflict arbitration (spec Testing Decisions, Kim Table 2/3 entry). Until frozen, scenario generation must refuse to run C/F/H demand tiers (fail loud, no silent default)."
+      },
+      "status": "pending_D2_mapping_ticket",
+      "consumers": ["scenario_manifest_template.json prereg.rho_req_distribution (binds by reference, never copies values)"]
+    }
+  },
+
+  "scene": {
+    "aoi_km": { "value": 20, "unit": "km (20 km x 20 km)", "kim_source": "Table 2 (continuation), p.20 ('Area of Interest 20 km x 20 km'); also p.1 abstract" },
+    "scene_size_km": { "value": 5, "unit": "km (per-target scene, azimuth and range)", "kim_source": "Table 2, p.19 ('Swath Width 5 km x 5 km'); p.7 section 2.3.2 'maximum scene length in the direction of the azimuth and the range is set to 5 km'" },
+    "scene_height_variation_m": { "value": 4, "unit": "m (point target to scene corner height difference)", "kim_source": "p.7 section 2.3.2 text: 'the height difference between the coordinates of the point target and the corner of the scene is up to 4 m'" },
+    "n_targets_kim": { "value": 4, "kim_source": "Table 2 (continuation), p.20 ('Number of Targets 4')", "note": "Kim's demonstration size only; Paper 2 scenario densities follow spec D10 (N=20/100/300/500), not this value." }
+  }
+}

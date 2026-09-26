@@ -1,0 +1,57 @@
+{
+  "meta": {
+    "document_type": "scenario_manifest_template",
+    "version": "1.0.0-prereg1",
+    "frozen_by": "ticket 02 (2026-09-27)",
+    "usage": "One manifest per scenario family instance M<density 1-4><interval N|W><demand C|F|H>. Copy this template, fill the <placeholders>, keep every field under 'preregistration' byte-identical -- those are frozen experiment-design decisions (spec D10; editing them after any experiment has run is a prereg violation).",
+    "completeness_rule": "The coarse/fine band values live ONLY in platform_kim2021.json (resolution.rho_req_bands). This template binds them by reference. If platform_kim2021.json still has status 'pending_D2_mapping_ticket', scenario generation must fail loud and generate nothing."
+  },
+
+  "scenario": {
+    "family_code": "<M?NC | M?NW | ... e.g. M3WH>",
+    "density_n_targets": "<20 | 100 | 300 | 500 -- spec D10, inherits Paper 1 gradient>",
+    "interval_width": "<N | W -- squint-interval width axis>",
+    "demand_tier": "<C | F | H>",
+    "platform_fixture": "experiments/platform_kim2021.json",
+    "degenerate_anchor": "<true only for M?NC: both margin pads = 0 (spec D4), fixed-duration regression anchor>"
+  },
+
+  "preregistration": {
+    "rho_req_distribution": {
+      "frozen": true,
+      "frozen_by": "ticket 02, 2026-09-27 (spec D10)",
+      "tiers": {
+        "C": "every target draws its resolution requirement from the COARSE band",
+        "F": "every target draws its resolution requirement from the FINE band",
+        "H": "fine:coarse = 1:1 uniform mix (per-target Bernoulli with p=0.5, drawn under the scenario seed)"
+      },
+      "band_values": {
+        "source_of_truth": "experiments/platform_kim2021.json#resolution.rho_req_bands",
+        "values_copied_here": false,
+        "note": "Bound by reference only (spec D3 unique-source rule). A target whose requirement falls inside the two-band boundary zone belongs to NEITHER tier by default -- the boundary zone is only exercised by the cheap ablation below."
+      }
+    },
+
+    "seed_convention": {
+      "frozen": true,
+      "frozen_by": "ticket 02, 2026-09-27 (inherits papers/single-sat-quality/experiments/generate_all_scenarios.py gen_group convention)",
+      "rule": "seed = variant_index * 100 + seed_index",
+      "seed_index_range": "[0, 9] (10 seeds per variant)",
+      "replication_structure": "5 variants x 10 seeds, same as Paper 1 (spec D10)",
+      "storage": "scenario JSON/PKL carries integer field 'seed'; all stochastic stages (generation, solver init, repair, tie-breaks) consume this one seed",
+      "reproducibility_requirement": "same seed rerun must reproduce results bit-identically (spec Testing Decisions: 确定性)"
+    },
+
+    "cheap_ablation_reserved": {
+      "frozen": true,
+      "frozen_by": "ticket 02, 2026-09-27 (spec Out of Scope, registered-not-implemented)",
+      "design": "Tasks whose requirement falls inside the two-band boundary zone are allowed to be served by EITHER band (dual-mode eligibility at mapping time); comparison against the base mapping isolates the boundary-assignment effect.",
+      "status": "REGISTERED ONLY -- NOT IMPLEMENTED. Enabled only if reviewers request it; any implementation ticket must reference this registration ID, never re-design in place."
+    }
+  },
+
+  "run_artifacts": {
+    "results_dir": "<filled per run; must be inside the paper domain, gitignored if large>",
+    "verify_gate": "Paper-2 verify chain (spec D11) -- to be wired by its own ticket; zero-feasible / zero-output batches must exit with a distinguishing code, never fake success."
+  }
+}
