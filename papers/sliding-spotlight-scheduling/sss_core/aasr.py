@@ -153,8 +153,16 @@ def aasr_direct(
     prf_hz: float,
     lib: ModeLibrary,
     spt_edge_worst: bool = True,
+    spt_scene_wa_m: float | None = None,
 ) -> dict:
-    """Direct AASR (power ratio) for one library mode (D06-1/2/3)."""
+    """Direct AASR (power ratio) for one library mode (D06-1/2/3).
+
+    ``spt_scene_wa_m`` (ticket 08 D08-2, D06-2 amendment): per-scene
+    azimuth extent for the SPT worst-edge evaluation; default None keeps
+    the frozen platform-level scene_wa_m (5 km) -- the generator passes
+    the per-task L_az (a 1-3 km scene IS its own worst edge; the 5 km
+    default is over-conservative, never under-conservative, for smaller
+    scenes)."""
     geo = lib.geo
     vs, lam, r0 = geo.vs_mps, geo.wavelength_m, geo.R0_m
     rho_ach = lib.rho_az(mode)
@@ -162,7 +170,8 @@ def aasr_direct(
 
     if mode is Mode.SPT:
         # Eq.(7): the integrand is independent of f_a; worst azimuth edge
-        kat0 = (2.0 * vs / lam) * (geo.scene_wa_m / 2.0) / r0 if spt_edge_worst else 0.0
+        wa = geo.scene_wa_m if spt_scene_wa_m is None else float(spt_scene_wa_m)
+        kat0 = (2.0 * vs / lam) * (wa / 2.0) / r0 if spt_edge_worst else 0.0
         m = np.array([i for i in range(-N_ALIASES, N_ALIASES + 1) if i != 0], dtype=float)
         p = _pattern(m * prf_hz - kat0, vs, geo.D_m)
         num = float(np.sum(p**2))

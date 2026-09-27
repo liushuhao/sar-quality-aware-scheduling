@@ -89,16 +89,21 @@ def test_identity_theta_a_over_A_equals_lambda_over_2rho(geo):
 
 
 def test_fixture_null_fields_fail_loud():
-    """Ticket-02 rule: Kim-unpublished parameters stay null and raise.
-    prf_hz was resolved by the ticket-06 manifest write-back (sourced from
-    Song Table 1 + TerraSAR-X mapping references) -- its value is present
-    and matches the AASR grid key set; the k ladder remains pending
-    (ticket 08 freezes it) and must still raise."""
+    """Ticket-02 rule: Kim-unpublished parameters stay null and raise --
+    except where later tickets resolved them by manifest write-back.
+    prf_hz: resolved by ticket 06 (Song Table 1 + TerraSAR-X references).
+    sliding_factor_k_ladder: resolved by ticket 08 (derived k = 1-A,
+    formula-spec section 7) -- its value must equal DerivedGeometry.k
+    EXACTLY (dual-source drift guard, spec D3)."""
     fx = load_platform_fixture()
-    with pytest.raises(ValueError, match="sliding_factor_k_ladder"):
-        fixture_value(fx["modes"], "sliding_factor_k_ladder")
     prf = fixture_value(fx["modes"], "prf_hz")
     assert sorted(float(v) for v in prf) == [1150.0, 2300.0, 3044.0, 3630.0]
+    k_fixture = float(fixture_value(fx["modes"], "sliding_factor_k_ladder"))
+    geo = DerivedGeometry.from_fixture()
+    # dual-source drift guard (D08-4); the fixture registers the formula-spec
+    # section-7 6-digit convention (0.797317), hence abs tolerance 1e-6 --
+    # accidental derivation drift moves it far beyond that
+    assert k_fixture == pytest.approx(geo.k, abs=1e-6)
 
 
 # ── per-mode azimuth resolution ordering (formula-spec §3/§6 table 1) ────
