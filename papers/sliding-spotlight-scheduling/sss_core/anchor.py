@@ -215,6 +215,7 @@ def _precompile_frozen(manifest: dict, lib: ModeLibrary, pads: MarginPads):
                 mode=mode,
                 prf_hz=float(t["prf_hz"]),
                 t_ca_s=float(t["t_ca_s"]),
+                azimuth_size_m=float(t["azimuth_size_m"]),
                 intervals=intervals,
                 priority_f=float(t["priority"]),
             )

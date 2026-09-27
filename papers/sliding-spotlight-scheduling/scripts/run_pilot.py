@@ -23,8 +23,15 @@ FORK = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(FORK))
 sys.path.insert(0, str(FORK.parent.parent / "src"))
 
+from sss_core.anchor import anchor_on_manifest  # noqa: E402
+from sss_core.evaluator import SchedulingProblem  # noqa: E402
 from sss_core.modes import ModeLibrary  # noqa: E402
-from sss_core.nsga2 import PYMOO_PINNED, load_manifest, run_nsga2  # noqa: E402
+from sss_core.nsga2 import (  # noqa: E402
+    PYMOO_PINNED,
+    encode_seed_individual,
+    load_manifest,
+    run_nsga2,
+)
 
 EXIT_OK = 0
 EXIT_ZERO_SERVED = 10
@@ -53,22 +60,41 @@ def main(argv=None) -> int:
         return EXIT_ZERO_SERVED
 
     lib = ModeLibrary.from_fixture()
-    result = run_nsga2(manifest, lib, seed=args.seed, pop_size=args.pop,
-                       generations=args.gen)
+
+    # anchor seed (D12-1/2): encode the greedy anchor solution as population
+    # row 0, with the fail-loud CV/f1 dual check inside run_nsga2
+    anchor = anchor_on_manifest(manifest, lib)
+    sp = SchedulingProblem(manifest, lib)
+    seed_vec = encode_seed_individual(sp, anchor.starts)
+    result = run_nsga2(
+        manifest, lib, seed=args.seed, pop_size=args.pop,
+        generations=args.gen, seed_individual=seed_vec,
+        anchor_f1_star=anchor.f1_star,
+    )
     feasible = [r for r in result.front if r["cv"] == 0.0]
     if not feasible:
         print("D11 EXIT 11: no feasible individual survived", file=sys.stderr)
         return EXIT_EMPTY_FRONT
 
     payload = {
-        "schema": "pilot-result/1.0",
+        "schema": "pilot-result/1.1",
         "manifest": str(args.manifest),
         "seed": args.seed,
         "pop_size": args.pop,
         "generations": args.gen,
         "pymoo": PYMOO_PINNED,
+        "anchor_seeded": True,
+        "anchor_f1_star": anchor.f1_star,
+        "anchor_served": len(anchor.starts),
         "front_size": len(feasible),
         "front": feasible,
+        "max_f1_star_on_front": max(r["f1_star"] for r in feasible),
+        "search_only_max_f1_star": result.search_only_max_f1_star,
+        "promotion": {
+            "spread_db": result.promotion_spread_db,
+            "decision": result.promotion_decision,
+            "threshold_db": 6.0,
+        },
         "violation_stats": {
             "max_cv_on_reported_front": max(r["cv"] for r in feasible),
             "all_cv_zero": True,
@@ -84,10 +110,10 @@ def main(argv=None) -> int:
         )
         print(f"pilot front written: {outpath}")
     print(f"front_size={len(feasible)} "
-          f"f1_star_range=[{min(r['f1_star'] for r in feasible):.4f}, "
-          f"{max(r['f1_star'] for r in feasible):.4f}] "
-          f"f_q_range=[{min(r['f_q'] for r in feasible):.4f}, "
-          f"{max(r['f_q'] for r in feasible):.4f}]")
+          f"max_f1_star={max(r['f1_star'] for r in feasible):.4f} "
+          f"(anchor {anchor.f1_star:.4f}, search-only "
+          f"{result.search_only_max_f1_star if result.search_only_max_f1_star is not None else float('nan'):.4f}) "
+          f"promotion={result.promotion_decision}")
     return EXIT_OK
 
 

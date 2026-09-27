@@ -1,0 +1,328 @@
+"""Paper-2 verify gate (spec D11, ticket 12): evidence chain + replay.
+
+Step model: every check returns ``{"step", "status", "detail"}`` with
+status in {PASS, FAIL, REPORT}.  REPORT items (the A6 insurance action)
+do NOT fail the gate -- they are escalation records the analysis layer
+must answer ("口径重议上报", never self-adjusted).  Gate exit: 0 = no FAIL,
+20 = at least one FAIL (runner-level D11 codes 10/11 stay with run_pilot).
+
+Steps (D12-5):
+  m1_double_check      tag-diff + worktree emptiness of src/sar_sim
+  shared_lib_tests     PYTHONPATH=src pytest src/tests: passed == 145 == N0
+                       AND failed == 0 AND exit 0 (three conditions)
+  grid_halving         AASRGrid.halving_stability, sampling program
+                       preregistered (Random(20260927), uniform in axes
+                       and PRF keys, 20 samples -- the ticket-06 test
+                       program, same seed)
+  predicate_source     the C2 requirement resolves to sss_core.predicates
+  promotion_replay     recompute per-candidate unenforced AASR from the
+                       pilot's STARTS + manifest (never trusting stored
+                       values), derive the decision, compare with the
+                       recorded one (US12)
+  aasr_headroom        anti-fixture: unenforced AASR CAN exceed -13 dB on
+                       synthetic high-squint candidates (never asserted on
+                       M1NC -- its tasks passed the generation gate)
+  scatter_precheck     A6 insurance: within-window vs cross-task f_Q
+                       dispersion ratio (< 0.1 triggers the preregistered
+                       口径重议 escalation; with D05-4 time invariance the
+                       within-scatter is structurally ~2e-4 relative -- a
+                       known outcome, recorded not discovered)
+  anchor_crosscheck    pilot front max f1* >= greedy-anchor f1* - 1e-9
+                       (the double-chain check that exposed the ticket-10
+                       C2 ordering defect)
+  snapshot_rebuild     rerun run_nsga2 from manifest + seed honoring
+                       anchor_seeded; front must reproduce bit-exactly
+"""
+from __future__ import annotations
+
+import json
+import math
+import random
+import subprocess
+import sys
+from pathlib import Path
+
+from .aasr import AASRGrid, aasr_direct
+from .anchor import anchor_on_manifest
+from .geometry import squint_at
+from .modes import Mode, ModeLibrary
+
+FORK_DOMAIN = Path(__file__).resolve().parent.parent
+REPO_ROOT = FORK_DOMAIN.parent.parent
+M1_TAG = "paper2-m1-baseline"
+SHARED_LIB_N0 = 145
+
+PROMOTION_THRESHOLD_DB = 6.0  # mirrored from experiments/promotion_prereg.json
+A6_SCATTER_RATIO_THRESHOLD = 0.1  # spec D10 preregistration
+
+EXIT_PASS = 0
+EXIT_FAIL = 20
+
+
+def _step(name: str, status: str, detail) -> dict:
+    return {"step": name, "status": status, "detail": detail}
+
+
+def m1_double_check() -> dict:
+    """M1 zero-byte guarantee: tag diff AND worktree, both empty; git
+    return codes are checked explicitly (a missing tag must FAIL loudly,
+    not silently produce an empty diff, D12-5)."""
+    for argv in (
+        ["git", "diff", f"{M1_TAG}..HEAD", "--", "src/sar_sim"],
+        ["git", "status", "--porcelain", "src/sar_sim"],
+    ):
+        proc = subprocess.run(argv, cwd=REPO_ROOT, capture_output=True, text=True)
+        if proc.returncode != 0:
+            return _step("m1_double_check", "FAIL",
+                         f"git failed ({proc.returncode}): {proc.stderr.strip()}")
+        if proc.stdout.strip():
+            return _step("m1_double_check", "FAIL",
+                         f"non-empty: {argv}: {proc.stdout[:400]}")
+    return _step("m1_double_check", "PASS",
+                 f"tag {M1_TAG}..HEAD diff empty AND src/sar_sim worktree clean")
+
+
+def shared_lib_tests() -> dict:
+    """Full shared-library suite: collected == 145 == N0, failed == 0,
+    exit 0 -- three conditions, all required."""
+    import os
+
+    env = dict(os.environ)
+    env["PYTHONPATH"] = str(REPO_ROOT / "src")
+    proc = subprocess.run(
+        [sys.executable, "-m", "pytest", "src/tests/", "-q", "-p", "no:cacheprovider"],
+        cwd=REPO_ROOT, capture_output=True, text=True, env=env,
+    )
+    import re
+
+    tail = proc.stdout.strip().splitlines()[-1] if proc.stdout.strip() else ""
+    m_p = re.search(r"(\d+) passed", tail)
+    m_f = re.search(r"(\d+) failed", tail)
+    passed = int(m_p.group(1)) if m_p else 0
+    failed = int(m_f.group(1)) if m_f else 0
+    ok = proc.returncode == 0 and passed == SHARED_LIB_N0 and failed == 0
+    detail = {"exit": proc.returncode, "passed": passed, "failed": failed,
+              "expected_n0": SHARED_LIB_N0, "tail": tail}
+    return _step("shared_lib_tests", "PASS" if ok else "FAIL", detail)
+
+
+def grid_halving(lib: ModeLibrary, n_samples: int = 20) -> dict:
+    """Preregistered sampling program (ticket-06 test program, same seed):
+    Random(20260927), uniform within axes + uniform PRF keys."""
+    rng = random.Random(20260927)
+    from .aasr import PRF_KEYS_HZ, RHO_REQ_AXIS_DEFAULT
+
+    samples = [
+        (
+            rng.uniform(RHO_REQ_AXIS_DEFAULT[0], RHO_REQ_AXIS_DEFAULT[-1]),
+            math.radians(rng.uniform(-12.0, 12.0)),
+            rng.uniform(0.0, 0.9),
+            rng.choice(PRF_KEYS_HZ),
+        )
+        for _ in range(n_samples)
+    ]
+    grid = AASRGrid(lib)
+    report = grid.halving_stability(samples)
+    ok = report["within_preregistered_bound"]
+    return _step("grid_halving", "PASS" if ok else "FAIL", report)
+
+
+def predicate_source() -> dict:
+    """Ticket-09 acceptance item: the C2 requirement resolves to
+    sss_core.predicates and the evaluator hook confirms it."""
+    from . import predicates
+    from . import evaluator as ev
+
+    ok = (
+        predicates.c2_transfer_requirement_s.__module__ == "sss_core.predicates"
+        and ev.SchedulingProblem.c2_uses_predicate_source(object.__new__(ev.SchedulingProblem))
+    )
+    return _step("predicate_source", "PASS" if ok else "FAIL",
+                 {"c2_module": predicates.c2_transfer_requirement_s.__module__})
+
+
+def promotion_replay(pilot: dict, manifest: dict, lib: ModeLibrary) -> dict:
+    """US12: recompute the criterion from STARTS + manifest (raw data) and
+    compare the derived decision with the recorded one."""
+    sp_plans = {int(i): p for i, p in enumerate(_plans_of(manifest, lib))}
+    vals = []
+    for rec in pilot["front"]:
+        cand_max = None
+        for i_str, start in rec["starts"].items():
+            plan = sp_plans[int(i_str)]
+            psi = squint_at(start, plan.t_ca_s, lib.geo)
+            db = aasr_direct(
+                plan.mode, psi, lib.geo.k, plan.prf_hz, lib,
+                spt_scene_wa_m=(plan.azimuth_size_m if plan.mode is Mode.SPT else None),
+            )["aasr_db"]
+            cand_max = db if cand_max is None else max(cand_max, db)
+        if cand_max is not None:
+            vals.append(cand_max)
+    spread = (max(vals) - min(vals)) if len(vals) >= 2 else 0.0
+    derived = "promote" if spread >= PROMOTION_THRESHOLD_DB else "no_promotion"
+    recorded = pilot["promotion"]["decision"]
+    ok = derived == recorded
+    return _step("promotion_replay", "PASS" if ok else "FAIL",
+                 {"recomputed_spread_db": spread, "derived_decision": derived,
+                  "recorded_decision": recorded,
+                  "threshold_db": PROMOTION_THRESHOLD_DB})
+
+
+def aasr_headroom(lib: ModeLibrary) -> dict:
+    """Anti-fixture (US12 second half): unenforced AASR can exceed -13 dB.
+    Synthetic high-squint SLS candidates -- never M1NC data (its tasks
+    passed the generation-time AASR gate)."""
+    from .aasr import AASR_THRESHOLD_DB
+
+    vals = [
+        aasr_direct(Mode.SLS, math.radians(psi), 0.1, 1150.0, lib)["aasr_db"]
+        for psi in (0.0, 6.0)
+    ]
+    ok = max(vals) > AASR_THRESHOLD_DB
+    return _step("aasr_headroom", "PASS" if ok else "FAIL",
+                 {"synthetic_max_db": max(vals), "threshold_db": AASR_THRESHOLD_DB,
+                  "note": "threshold-capped scatter would kill the promotion"})
+
+
+def scatter_precheck(manifest: dict, lib: ModeLibrary) -> dict:
+    """A6 insurance (REPORT item): within-window vs cross-task f_Q
+    dispersion ratio.  D05-4 makes the within-scatter structurally ~2e-4
+    relative -- the escalation is a KNOWN outcome, recorded not discovered."""
+    from .quality import f_q_per_task
+
+    within, means = [], []
+    for t in manifest["tasks"]:
+        mode = Mode[t["mode"]]
+        t0, t1, tca = float(t["t_start_s"]), float(t["t_end_s"]), float(t["t_ca_s"])
+        vals = [
+            f_q_per_task(mode, squint_at(tt, tca, lib.geo), lib.geo.R0_m, lib)
+            for tt in (t0, 0.5 * (t0 + t1), t1)
+        ]
+        mu = sum(vals) / len(vals)
+        within.append(math.sqrt(sum((v - mu) ** 2 for v in vals) / len(vals)))
+        means.append(mu)
+    mu_all = sum(means) / len(means)
+    cross = math.sqrt(sum((m - mu_all) ** 2 for m in means) / len(means))
+    ratio = (sum(within) / len(within)) / cross if cross > 0 else 0.0
+    triggered = ratio < A6_SCATTER_RATIO_THRESHOLD
+    return _step(
+        "scatter_precheck", "REPORT",
+        {
+            "ratio": ratio,
+            "threshold": A6_SCATTER_RATIO_THRESHOLD,
+            "escalation": "口径重议上报 (preregistered A6 action; do NOT self-adjust)",
+            "structural_note": (
+                "consistent with D05-4 f_Q time invariance and the A6 "
+                "steel-man ruling -- a known outcome, not a new finding"
+            ),
+            "action_required": triggered,
+            "per_mode_mean_f_q": _per_mode_means(manifest, lib),
+        },
+    )
+
+
+def _per_mode_means(manifest: dict, lib: ModeLibrary) -> dict:
+    from .quality import f_q_per_task
+
+    acc: dict[str, list] = {}
+    for t in manifest["tasks"]:
+        mode = Mode[t["mode"]]
+        q = f_q_per_task(mode, 0.0, lib.geo.R0_m, lib)
+        acc.setdefault(mode.name, []).append(q)
+    return {k: sum(v) / len(v) for k, v in acc.items()}
+
+
+def anchor_crosscheck(pilot: dict, manifest: dict, lib: ModeLibrary) -> dict:
+    """Double-chain check (rule 11): the front's best coverage must reach
+    the greedy anchor's f1* (the anchor individual is seeded, CV-clean and
+    elitist-survives).  This exposed the ticket-10 C2 ordering defect."""
+    anchor = anchor_on_manifest(manifest, lib)
+    front_max = max(r["f1_star"] for r in pilot["front"]) if pilot["front"] else 0.0
+    ok = front_max >= anchor.f1_star - 1e-9
+    return _step("anchor_crosscheck", "PASS" if ok else "FAIL",
+                 {"front_max_f1_star": front_max, "anchor_f1_star": anchor.f1_star,
+                  "anchor_served": len(anchor.starts)})
+
+
+def snapshot_rebuild(pilot: dict, manifest_path: Path, lib: ModeLibrary,
+                     pop_size: int, generations: int) -> dict:
+    """Rebuild the run from manifest + seed and compare front structures
+    bit-exactly (JSON-roundtripped floats).  Honors the anchor_seeded flag
+    (D12-2)."""
+    from .nsga2 import encode_seed_individual, run_nsga2
+    from .evaluator import SchedulingProblem
+
+    manifest = json.loads(Path(manifest_path).read_text(encoding="utf-8"))
+    seeded = bool(pilot.get("anchor_seeded"))
+    seed_vec = None
+    anchor_f1 = None
+    if seeded:
+        anchor = anchor_on_manifest(manifest, lib)
+        seed_vec = encode_seed_individual(SchedulingProblem(manifest, lib), anchor.starts)
+        anchor_f1 = anchor.f1_star
+    res = run_nsga2(manifest, lib, seed=pilot["seed"], pop_size=pop_size,
+                    generations=generations, seed_individual=seed_vec,
+                    anchor_f1_star=anchor_f1)
+    fresh = json.loads(json.dumps(
+        [(r["f1_star"], r["f_q"], r["starts"]) for r in res.front], sort_keys=True))
+    stored = json.loads(json.dumps(
+        [(r["f1_star"], r["f_q"], r["starts"]) for r in pilot["front"]], sort_keys=True))
+    ok = fresh == stored
+    return _step("snapshot_rebuild", "PASS" if ok else "FAIL",
+                 {"front_size": len(res.front), "anchor_seeded": seeded})
+
+
+def _plans_of(manifest: dict, lib: ModeLibrary):
+    from .evaluator import precompile_tasks
+
+    return precompile_tasks(manifest, lib)
+
+
+def run_gate(pilot_path: Path, manifest_path: Path,
+             lib: ModeLibrary | None = None,
+             pop_size: int = 40, generations: int = 60,
+             steps: list[str] | None = None,
+             run_shared_tests: bool = True) -> tuple[dict, int]:
+    """Assemble the full gate; ``steps`` selects a subset (tests),
+    ``run_shared_tests`` may be disabled for light invocations.  Returns
+    (report, exit_code)."""
+    lib = lib or ModeLibrary.from_fixture()
+    pilot = json.loads(Path(pilot_path).read_text(encoding="utf-8"))
+    manifest = json.loads(Path(manifest_path).read_text(encoding="utf-8"))
+
+    registry = {
+        "m1_double_check": lambda: m1_double_check(),
+        "shared_lib_tests": lambda: shared_lib_tests(),
+        "grid_halving": lambda: grid_halving(lib),
+        "predicate_source": lambda: predicate_source(),
+        "promotion_replay": lambda: promotion_replay(pilot, manifest, lib),
+        "aasr_headroom": lambda: aasr_headroom(lib),
+        "scatter_precheck": lambda: scatter_precheck(manifest, lib),
+        "anchor_crosscheck": lambda: anchor_crosscheck(pilot, manifest, lib),
+        "snapshot_rebuild": lambda: snapshot_rebuild(
+            pilot, manifest_path, lib, pop_size, generations),
+    }
+    order = list(registry) if steps is None else steps
+    results = []
+    for name in order:
+        if name == "shared_lib_tests" and not run_shared_tests:
+            results.append(_step("shared_lib_tests", "SKIPPED",
+                                 "disabled for light invocation"))
+            continue
+        results.append(registry[name]())
+    fails = [r for r in results if r["status"] == "FAIL"]
+    report = {
+        "schema": "verify-report/1.0",
+        "pilot": str(pilot_path),
+        "manifest": str(manifest_path),
+        "steps": results,
+        "n_pass": sum(1 for r in results if r["status"] == "PASS"),
+        "n_report": sum(1 for r in results if r["status"] == "REPORT"),
+        "n_fail": len(fails),
+        "action_required": any(
+            r["detail"].get("action_required")
+            for r in results
+            if isinstance(r["detail"], dict)
+        ),
+    }
+    return report, (EXIT_FAIL if fails else EXIT_PASS)

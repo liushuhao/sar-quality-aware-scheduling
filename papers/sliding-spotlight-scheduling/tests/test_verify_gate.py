@@ -1,0 +1,178 @@
+#!/usr/bin/env python3
+"""Ticket 12 -- verify gate tests.
+
+Heavy steps (shared-library suite, snapshot rebuild) run for real here
+only where cheap; the promotion replay uses a minimal synthetic pilot
+fixture (D12-7).  The double anti-fixtures of US12 are both covered:
+decision tampering (replay FAIL) and AASR headroom (threshold-cap check).
+"""
+import json
+import math
+import sys
+from pathlib import Path
+
+import pytest
+
+FORK_DOMAIN = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(FORK_DOMAIN))
+sys.path.insert(0, str(FORK_DOMAIN.parent.parent / "src"))
+
+from sss_core.modes import ModeLibrary  # noqa: E402
+from sss_core.nsga2 import load_manifest  # noqa: E402
+from sss_core.verify import (  # noqa: E402
+    aasr_headroom,
+    anchor_crosscheck,
+    grid_halving,
+    m1_double_check,
+    predicate_source,
+    promotion_replay,
+    run_gate,
+    scatter_precheck,
+    SHARED_LIB_N0,
+)
+
+PILOT = FORK_DOMAIN / "experiments" / "results" / "pilot" / "pilot_M1NC_seed100.json"
+M1NC = FORK_DOMAIN / "experiments" / "results" / "scenarios" / "M1NC_seed100.json"
+M2WH = FORK_DOMAIN / "experiments" / "results" / "scenarios" / "M2WH_seed200.json"
+
+
+@pytest.fixture(scope="module")
+def lib() -> ModeLibrary:
+    return ModeLibrary.from_fixture()
+
+
+@pytest.fixture(scope="module")
+def pilot() -> dict:
+    return json.loads(PILOT.read_text(encoding="utf-8"))
+
+
+@pytest.fixture(scope="module")
+def manifest() -> dict:
+    return load_manifest(M1NC)
+
+
+@pytest.fixture(scope="module")
+def m2wh() -> dict:
+    return load_manifest(M2WH)
+
+
+# ── evidence triple (D12-5) ───────────────────────────────────────────────
+
+def test_m1_double_check_passes_on_clean_repo():
+    step = m1_double_check()
+    assert step["status"] == "PASS", step
+
+
+def test_shared_lib_n0_constant():
+    """The N0 baseline is the ticket-02 frozen count."""
+    assert SHARED_LIB_N0 == 145
+
+
+# ── grid halving (preregistered program) ─────────────────────────────────
+
+def test_grid_halving_preregistered_program(lib):
+    step = grid_halving(lib, n_samples=8)  # light sample for unit runtime
+    assert step["status"] == "PASS", step
+    assert step["detail"]["n_samples"] == 8
+
+
+# ── predicate source (acceptance item 4) ─────────────────────────────────
+
+def test_predicate_source_step(lib):
+    step = predicate_source()
+    assert step["status"] == "PASS", step
+
+
+# ── promotion replay + double anti-fixtures (US12) ───────────────────────
+
+def test_promotion_replay_reproduces_decision(pilot, manifest, lib):
+    step = promotion_replay(pilot, manifest, lib)
+    assert step["status"] == "PASS", step
+    assert step["detail"]["derived_decision"] == "no_promotion"  # M1NC trivial
+
+
+def test_promotion_replay_tamper_red(pilot, manifest, lib):
+    """Anti-fixture 1: a tampered recorded decision MUST fail the replay
+    (otherwise the replay cannot detect post-hoc freedom)."""
+    tampered = json.loads(json.dumps(pilot))
+    tampered["promotion"]["decision"] = "promote"
+    step = promotion_replay(tampered, manifest, lib)
+    assert step["status"] == "FAIL", step
+
+
+def test_aasr_headroom_anti_fixture(lib):
+    """Anti-fixture 2 (US12): unenforced AASR CAN exceed -13 dB on
+    synthetic candidates -- a threshold-capped scatter would be silent."""
+    step = aasr_headroom(lib)
+    assert step["status"] == "PASS", step
+
+
+# ── A6 scatter precheck (REPORT semantics) ───────────────────────────────
+
+def test_scatter_precheck_structural_report(m2wh, lib):
+    """D05-4 time invariance makes the within-window scatter structurally
+    ~0 -> the ratio is far below 0.1 -> the preregistered escalation fires
+    as a REPORT (never a FAIL), flagged action_required with the
+    structural note."""
+    step = scatter_precheck(m2wh, lib)
+    assert step["status"] == "REPORT"
+    assert step["detail"]["action_required"] is True
+    assert step["detail"]["ratio"] < 0.1
+    assert "D05-4" in step["detail"]["structural_note"]
+    per_mode = step["detail"]["per_mode_mean_f_q"]
+    assert len(per_mode) >= 2  # per-mode decomposition registered
+    spread = max(per_mode.values()) / min(per_mode.values())
+    assert spread > 10  # cross-mode magnitude ratio ~ 1.8 orders (A6 note)
+
+
+# ── anchor crosscheck + snapshot rebuild ─────────────────────────────────
+
+def test_anchor_crosscheck_passes(pilot, manifest, lib):
+    """The double-chain check that exposed the ticket-10 C2 ordering
+    defect: front max f1* must reach the anchor's 0.8931."""
+    step = anchor_crosscheck(pilot, manifest, lib)
+    assert step["status"] == "PASS", step
+    assert step["detail"]["anchor_f1_star"] == pytest.approx(0.8931, abs=1e-3)
+
+
+def test_gate_aggregation_fail_exits_20(pilot, manifest, lib):
+    """Any FAIL step -> exit 20; REPORT steps never fail the gate."""
+    real_replay = promotion_replay
+
+    def broken_replay(p, m, l):
+        step = real_replay(p, m, l)
+        step["status"] = "FAIL"
+        return step
+
+    import sss_core.verify as v
+
+    original = v.promotion_replay
+    v.promotion_replay = broken_replay
+    try:
+        report, code = run_gate(
+            PILOT, M1NC, lib=lib, pop_size=10, generations=5,
+            steps=["promotion_replay", "predicate_source", "scatter_precheck"],
+            run_shared_tests=False,
+        )
+    finally:
+        v.promotion_replay = original
+    assert code == 20
+    assert report["n_fail"] == 1
+    assert report["n_report"] == 1  # REPORT does not fail the gate
+
+
+def test_gate_light_pass(pilot, manifest, lib):
+    """Light gate (no shared tests, no snapshot) passes on the seeded
+    pilot."""
+    report, code = run_gate(
+        PILOT, M1NC, lib=lib, pop_size=10, generations=5,
+        steps=["predicate_source", "promotion_replay", "aasr_headroom",
+               "scatter_precheck", "anchor_crosscheck"],
+        run_shared_tests=False,
+    )
+    assert code == 0, [s for s in report["steps"] if s["status"] == "FAIL"]
+    assert report["n_fail"] == 0
+
+
+if __name__ == "__main__":
+    sys.exit(pytest.main([__file__, "-v"]))

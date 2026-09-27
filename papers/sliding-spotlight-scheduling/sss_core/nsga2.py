@@ -24,7 +24,16 @@ from pymoo.operators.crossover.sbx import SBX
 from pymoo.operators.mutation.pm import PM
 from pymoo.operators.sampling.rnd import FloatRandomSampling
 
-from .evaluator import SchedulingProblem
+from .aasr import aasr_direct
+from .evaluator import SchedulingProblem, decode_tau
+from .geometry import squint_at
+from .modes import Mode
+
+# D12-3 preregistered promotion threshold; derivation chain registered in
+# experiments/promotion_prereg.json (6.0 = 2x the sensitivity half-band of
+# the -10/-14 dB alternates, and >= 6x the registered machine noise floor:
+# 1.0 dB cell margin + <=0.2 dB halving sub-sample excess)
+PROMOTION_SPREAD_DB = 6.0
 from .modes import ModeLibrary
 
 PYMOO_PINNED = "0.6.1.6"
@@ -64,6 +73,68 @@ class PilotResult:
     n_evaluations: int
     seed: int
     all_cv_zero: bool
+    anchor_seeded: bool = False
+    anchor_f1_star: float | None = None
+    search_only_max_f1_star: float | None = None  # D12-2 info field
+    promotion_spread_db: float | None = None
+    promotion_decision: str | None = None
+
+
+def encode_seed_individual(sp: SchedulingProblem, starts: dict[int, float]) -> list[float]:
+    """Inverse of the piecewise decode for a full schedule (D12-1): tau =
+    (cumulated measure before the interval + offset) / total measure.
+    Round-trips through decode_tau with a 1e-9 tolerance (fail-loud on the
+    cumulative-boundary float edge)."""
+    x = [0.0] * (2 * sp.n)
+    for i, start in starts.items():
+        plan = sp.plans[i]
+        x[i] = 1.0
+        intervals = list(plan.intervals)
+        cum = 0.0
+        total = sum(hi - lo for lo, hi in intervals)
+        for lo, hi in intervals:
+            if lo - 1e-12 <= start <= hi + 1e-12:
+                tau = (cum + (start - lo)) / total
+                break
+            cum += hi - lo
+        else:
+            raise ValueError(f"anchor start {start} outside task {i} feasible set")
+        x[sp.n + i] = min(max(tau, 0.0), 1.0)
+        # round-trip guard (D12-1)
+        back = decode_tau(x[sp.n + i], plan.intervals)
+        assert abs(back - start) <= 1e-9, (i, start, back)
+    return x
+
+
+def promotion_spread_db(sp: SchedulingProblem, front_records: list[dict]) -> dict:
+    """Unenforced AASR spread over the front candidates (D12-3): per
+    candidate, the max direct AASR over its selected tasks (per-task scene
+    extent for SPT, D08-2); spread = max - min across candidates.
+    Threshold and derivation chain live in experiments/promotion_prereg.json."""
+    vals = []
+    for rec in front_records:
+        cand_max = None
+        for i_str, start in rec["starts"].items():
+            plan = sp.plans[int(i_str)]
+            psi = squint_at(start, plan.t_ca_s, sp.lib.geo)
+            db = aasr_direct(
+                plan.mode, psi, sp.lib.geo.k, plan.prf_hz, sp.lib,
+                spt_scene_wa_m=(plan.azimuth_size_m if plan.mode is Mode.SPT else None),
+            )["aasr_db"]
+            cand_max = db if cand_max is None else max(cand_max, db)
+        if cand_max is not None:
+            vals.append(cand_max)
+    spread = (max(vals) - min(vals)) if len(vals) >= 2 else 0.0
+    from sss_core.aasr import AASR_THRESHOLD_DB
+    decision = "promote" if spread >= PROMOTION_SPREAD_DB else "no_promotion"
+    return {
+        "per_candidate_max_db": vals,
+        "spread_db": spread,
+        "decision": decision,
+        "threshold_db": PROMOTION_SPREAD_DB,
+        "note": f"threshold -13 dB context; spread vs preregistered {PROMOTION_SPREAD_DB} dB",
+        "_threshold_ref": AASR_THRESHOLD_DB,
+    }
 
 
 def run_nsga2(
@@ -72,12 +143,32 @@ def run_nsga2(
     seed: int,
     pop_size: int = 40,
     generations: int = 60,
+    seed_individual: list[float] | None = None,
+    anchor_f1_star: float | None = None,
 ) -> PilotResult:
-    """One deterministic NSGA-II run over a scenario manifest."""
+    """One deterministic NSGA-II run over a scenario manifest.
+
+    ``seed_individual`` (D12-1/2): an anchor-encoded vector placed as row 0
+    of the initial population (pymoo accepts an array sampling); its CV==0
+    and f1* >= anchor are ASSERTED at construction (fail-loud dual check).
+    """
     sp = SchedulingProblem(manifest, lib)
+    sampling = FloatRandomSampling()
+    if seed_individual is not None:
+        rng = np.random.default_rng(seed)
+        X = rng.random((pop_size, 2 * sp.n))
+        X[0] = np.array(seed_individual)
+        # dual check (D12-1): the seed must be feasible and cover the anchor
+        ev = sp.evaluate(X[0])
+        assert ev["cv"] == 0.0, f"seed individual CV={ev['cv']}"
+        if anchor_f1_star is not None:
+            assert ev["f1_star"] >= anchor_f1_star - 1e-9, (
+                ev["f1_star"], anchor_f1_star
+            )
+        sampling = X
     algorithm = NSGA2(
         pop_size=pop_size,
-        sampling=FloatRandomSampling(),
+        sampling=sampling,
         crossover=SBX(prob=0.9, eta=15),
         mutation=PM(eta=20),
         eliminate_duplicates=True,
@@ -93,7 +184,7 @@ def run_nsga2(
     if res.F is not None:
         for k in range(len(res.F)):
             x = res.X[k]
-            rec = sp.decode_solution(x) if hasattr(sp, "decode_solution") else decode_solution(sp, x)
+            rec = decode_solution(sp, x)
             front.append(
                 {
                     "f1_star": float(-res.F[k, 0]),
@@ -104,8 +195,23 @@ def run_nsga2(
                 }
             )
     all_zero = all(r["cv"] == 0.0 for r in front) if front else False
-    return PilotResult(front=front, n_evaluations=pop_size * generations, seed=seed,
-                       all_cv_zero=all_zero)
+    promo = promotion_spread_db(sp, front)
+    anchor_f1 = anchor_f1_star
+    search_only = None
+    if anchor_f1 is not None and front:
+        others = [r["f1_star"] for r in front if r["f1_star"] < anchor_f1 - 1e-9]
+        search_only = max(others) if others else None
+    return PilotResult(
+        front=front,
+        n_evaluations=pop_size * generations,
+        seed=seed,
+        all_cv_zero=all_zero,
+        anchor_seeded=seed_individual is not None,
+        anchor_f1_star=anchor_f1,
+        search_only_max_f1_star=search_only,
+        promotion_spread_db=promo["spread_db"],
+        promotion_decision=promo["decision"],
+    )
 
 
 def load_manifest(path: Path) -> dict:

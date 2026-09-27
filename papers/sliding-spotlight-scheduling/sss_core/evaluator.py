@@ -106,6 +106,7 @@ class TaskPlan:
     mode: Mode
     prf_hz: float
     t_ca_s: float
+    azimuth_size_m: float
     intervals: tuple | None  # None = unschedulable (empty feasible set)
     priority_f: float
 
@@ -145,6 +146,7 @@ def precompile_tasks(manifest: dict, lib: ModeLibrary) -> list[TaskPlan]:
                 mode=mode,
                 prf_hz=float(t["prf_hz"]),
                 t_ca_s=t_ca,
+                azimuth_size_m=float(t["azimuth_size_m"]),
                 intervals=intervals,
                 priority_f=float(t["priority"]),
             )
@@ -199,7 +201,10 @@ class SchedulingProblem:
     def evaluate(self, x) -> dict:
         violations = 0.0
         starts = self.decode_starts(x)
-        order = sorted(starts)
+        # C2/conflict chains iterate in START-TIME order (index order is NOT
+        # time order -- the anchor-seed cross-check of ticket 12 exposed this
+        # as spurious violations on time-inverted index pairs)
+        order = sorted(starts, key=lambda i: starts[i])
         for i, plan in enumerate(self.plans):
             if x[i] > 0.5 and not plan.schedulable:
                 violations += 1.0

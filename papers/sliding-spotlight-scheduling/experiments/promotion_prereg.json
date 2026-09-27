@@ -1,0 +1,16 @@
+{
+  "meta": {
+    "document_type": "promotion_criterion_prereg",
+    "version": "1.0.0-ticket12",
+    "frozen_by": "ticket 12 (2026-09-27)",
+    "formula_registration": "D12-3: this file is the SOLE registration of the promotion trigger (the frozen formula-spec is deliberately not extended)."
+  },
+  "criterion": {
+    "domain": "unenforced AASR (direct path) over the pilot front candidates: per candidate, the MAX over its selected tasks of aasr_direct(mode, psi_start, k=1-A, prf, spt_scene_wa_m=task azimuth extent); spread = max - min across candidates",
+    "decision_rule": "promote to the three-objective tier iff spread_db >= 6.0",
+    "threshold_db": 6.0,
+    "derivation_chain": "6.0 dB = 2 x the hard-threshold sensitivity half-band (registered alternates -10/-14 dB around the -13 dB main value => 3 dB half-band), and >= 6 x the registered machine noise floor (AASR_CELL_MARGIN_DB 1.0 dB + <=0.2 dB halving sub-sample excess). Semantics: the spread between candidates must exceed twice the constraint machinery's own registered uncertainty before a third objective (independent AASR dimension) carries information.",
+    "design_value_disclaimer": "6.0 dB is a DESIGN preregistration (spec D7 allows it): no literature source exists for a promotion trigger; the derivation chain above is the defense, frozen BEFORE any W/H-band experiment has run.",
+    "m1nc_expectation": "The M1NC anchor scenario is all-STR in narrow windows: the spread is trivially below threshold and the decision is no_promotion -- this validates the MECHANISM; informative readings come from the future W/H full matrix (ticket-12 gate-review note)."
+  }
+}
