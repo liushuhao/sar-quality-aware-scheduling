@@ -252,11 +252,15 @@ class AASRGrid:
         # k axis (measured violation: interior 8.96 dB vs corner max 8.79).
         # The residual risk (sub-midpoint extrema) is covered empirically by
         # the halving-stability check (D7 discipline 3).
-        self._n_sub = 3
+        # k carries the resonance-steep structure (measured sub-sample
+        # overshoot up to 1.08 dB at PRF keys near the pattern null), so the
+        # k axis is refined 5x while the smooth psi axis stays at 3x
+        self._n_sub_psi = 3
+        self._n_sub_k = 5
         self._psi_dense = np.linspace(
-            psi_ax[0], psi_ax[-1], self._n_sub * (len(psi_ax) - 1) + 1
+            psi_ax[0], psi_ax[-1], self._n_sub_psi * (len(psi_ax) - 1) + 1
         )
-        self._k_dense = np.linspace(k_ax[0], k_ax[-1], self._n_sub * (len(k_ax) - 1) + 1)
+        self._k_dense = np.linspace(k_ax[0], k_ax[-1], self._n_sub_k * (len(k_ax) - 1) + 1)
         # dense dB table: (mode, prf) -> ndarray (len(psi_dense), len(k_dense))
         self._dense: dict[tuple, np.ndarray] = {}
         for prf in PRF_KEYS_HZ:
@@ -320,21 +324,25 @@ class AASRGrid:
     def _locate(self, rho_req_m, psi_bar_rad, k, prf_hz):
         """(mode, i_psi, i_k) for a query -- the MODE routes by the EXACT
         query rho (tier boundaries fall inside axis cells, and the bound
-        must be the routed mode's physics, never a neighbour's)."""
+        must be the routed mode's physics, never a neighbour's).  The cell
+        is the CONTAINING interval (bisect), so the bound always covers the
+        query point (final-review minor fix; previously nearest-axis-point
+        could pick a neighbouring cell not containing the query)."""
         deg = math.degrees(psi_bar_rad)
-        i_psi = min(
-            range(len(self.axes.psi_deg) - 1),
-            key=lambda i: abs(self.axes.psi_deg[i] - deg),
+        i_psi = (
+            __import__("bisect").bisect_right(self.axes.psi_deg, deg) - 1
         )
-        i_k = min(range(len(self.axes.k) - 1), key=lambda i: abs(self.axes.k[i] - k))
+        i_psi = max(0, min(i_psi, len(self.axes.psi_deg) - 2))
+        i_k = __import__("bisect").bisect_right(self.axes.k, k) - 1
+        i_k = max(0, min(i_k, len(self.axes.k) - 2))
         mode = route_mode(rho_req_m, self.lib)
         return mode, i_psi, i_k
 
     def _cell_bound(self, rho_req_m, psi_bar_rad, k, prf_hz) -> float:
         mode, i_psi, i_k = self._locate(rho_req_m, psi_bar_rad, k, prf_hz)
-        n = self._n_sub
+        np_, nk = self._n_sub_psi, self._n_sub_k
         block = self._dense[(mode, prf_hz)][
-            n * i_psi : n * i_psi + n + 1, n * i_k : n * i_k + n + 1
+            np_ * i_psi : np_ * i_psi + np_ + 1, nk * i_k : nk * i_k + nk + 1
         ]
         return float(block.max()) + AASR_CELL_MARGIN_DB  # D06-7 margin
 
@@ -343,11 +351,11 @@ class AASRGrid:
         self._domain_check(rho_req_m, psi_bar_rad, k, prf_hz)
         mode, i_psi, i_k = self._locate(rho_req_m, psi_bar_rad, k, prf_hz)
         dense = self._dense[(mode, prf_hz)]
-        n = self._n_sub
+        np_, nk = self._n_sub_psi, self._n_sub_k
         return [
-            float(dense[n * i_psi + dp, n * i_k + dk])
-            for dp in (0, n)
-            for dk in (0, n)
+            float(dense[np_ * i_psi + dp, nk * i_k + dk])
+            for dp in (0, np_)
+            for dk in (0, nk)
         ]
 
     # -- queries ------------------------------------------------------------

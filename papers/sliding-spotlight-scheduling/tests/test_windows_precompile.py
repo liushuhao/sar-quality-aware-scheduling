@@ -179,10 +179,9 @@ def test_naive_bisection_misses_sliver():
 
     got = naive_single_bisection(0.0, 40.0)
     expected = {10.0 - delta, 10.0 + delta, 25.0, 35.0}
-    assert got is not None  # it finds SOME root
-    assert not any(abs(got - e) < 1e-6 for e in expected) or len(expected) > 1
-    # decisive: the naive root set (a single point) differs from the true set
-    assert abs(got - 35.0) > 1e-6 or True  # documentation of the miss
+    # decisive: the naive root set (a single point) recovers at most ONE of
+    # the four true roots -- the other three are silently lost
+    assert got is not None
     assert sum(1 for e in expected if abs(got - e) < 1e-6) <= 1
     assert len(expected) == 4
 

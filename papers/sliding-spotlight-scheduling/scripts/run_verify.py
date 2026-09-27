@@ -36,9 +36,10 @@ def main(argv=None) -> int:
 
     import os
 
-    assert os.environ.get("PYTHONHASHSEED") == "0", (
-        "run_verify requires PYTHONHASHSEED=0 (D10-8/D12-5 run convention)"
-    )
+    if os.environ.get("PYTHONHASHSEED") != "0":
+        print("run_verify requires PYTHONHASHSEED=0 (D10-8/D12-5 run convention)",
+              file=sys.stderr)
+        return 2
 
     from sss_core.verify import EXIT_FAIL, EXIT_PASS, run_gate
 

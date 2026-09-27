@@ -40,6 +40,7 @@ from pathlib import Path
 from .aasr import AASR_THRESHOLD_DB, aasr_direct, route_mode
 from .duration import MarginPads, duration_scene_s
 from .fixture import fixture_value, load_platform_fixture
+from .geometry import squint_at
 from .modes import Mode, ModeLibrary
 from .windows import footprint_ok
 
@@ -111,8 +112,8 @@ def generate_scenario(
     lib = lib or ModeLibrary.from_fixture()
     bands = load_rho_bands()  # D08-10 fail loud
     half_w = INTERVAL_HALF_WIDTH_S[interval]
-    psi_max_window = math.atan(lib.geo.vs_mps * half_w / lib.geo.R0_m)
-    if abs(psi_max_window) > math.radians(12.0):
+    psi_max_window = abs(squint_at(half_w, 0.0, lib.geo))
+    if psi_max_window > math.radians(12.0):
         raise ValueError("window exceeds the +-12 deg squint envelope (D08-5 guard)")
 
     rng = random.Random(seed)
@@ -148,7 +149,7 @@ def generate_scenario(
         if not footprint_ok(mode, l_az_m, lib):
             removals["footprint"] += 1
             continue
-        psi_edge = math.atan(lib.geo.vs_mps * half_w / lib.geo.R0_m)
+        psi_edge = squint_at(half_w, 0.0, lib.geo)
         aasr = aasr_direct(
             mode,
             psi_edge,

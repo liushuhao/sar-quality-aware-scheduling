@@ -33,7 +33,7 @@ set (callers convert that to a per-task CV violation); the runner
 distinguishes exit codes per D11 -- 0 success, 10 zero-served scenario,
 11 empty front, 2 usage.
 
-Objectives (pymoo minimizes): (-f1*, f_Q) -- f1* = selected priority sum
+Objectives (pymoo minimizes): (-f1*, -f_q) -- f1* = selected priority sum
 over all served priorities; f_Q = the ticket-05 MEAN aggregate over the
 selected set (time-invariant per D05-4, so it depends only on the
 selected subset; |front| >= 1 is the promised assertion, no more).  An

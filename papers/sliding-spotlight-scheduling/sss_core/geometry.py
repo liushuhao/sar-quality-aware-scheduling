@@ -19,6 +19,19 @@ from dataclasses import dataclass
 
 from .fixture import fixture_value, load_platform_fixture
 
+def squint_envelope_deg() -> tuple[float, float]:
+    """Platform squint envelope from the fixture (Kim Table 2 +-12 deg).
+
+    Drift guard home: several modules hard-derive limits from this pair;
+    the guard test asserts the fixture values so a fixture edit turns red
+    (D3 reference-not-copy discipline, final-review major fix)."""
+    from .fixture import fixture_value, load_platform_fixture
+
+    fx = load_platform_fixture()
+    pair = fixture_value(fx["modes"], "squint_angle_range_deg")
+    return (float(pair[0]), float(pair[1]))
+
+
 R_EARTH_M = 6_371_000.0           # [教科书] mean Earth radius (IUGG reference)
 MU_EARTH_M3_S2 = 3.986004418e14   # [教科书] geocentric gravitational constant
 

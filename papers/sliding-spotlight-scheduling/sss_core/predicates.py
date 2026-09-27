@@ -78,6 +78,11 @@ C3_WEIGHTS = {Mode.STR: 1.0, Mode.SLS: 1.15, Mode.SPT: 1.3}
 C4_BITS_PER_COMPONENT = 3
 C4_RANGE_SAMPLES_NR = 10_000
 
+# D09-1 internal default: the calibration RMT anchor (Kim scenario 1,
+# target 1) used when no explicit maneuver time is injected.  Drift-guarded
+# against the fixture (test_fixture_drift_guards).
+CALIBRATION_KIM_RMT_S = 1.84
+
 
 def _t_env_max(lib: ModeLibrary) -> float:
     """Envelope reference dwell (D09-3): largest library-mode scene dwell at
@@ -113,7 +118,7 @@ def c2_transfer_requirement_s(
 
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
-            cal = calibrate_against_kim(lib, d_psi_rad, kim_rmt_s=1.84)
+            cal = calibrate_against_kim(lib, d_psi_rad, kim_rmt_s=CALIBRATION_KIM_RMT_S)
         maneuver_s = maneuver_time_production(
             d_psi_rad, omega_start, omega_end, lib, cal
         )["t_maneuver_s"]
