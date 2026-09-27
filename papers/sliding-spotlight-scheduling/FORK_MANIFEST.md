@@ -64,3 +64,7 @@ PYTHONPATH=src "/d/Program Files/Python/python" -m pytest papers/sliding-spotlig
 # 共享库回归面（N₀ == 145 断言防静默漏收集）
 PYTHONPATH=src "/d/Program Files/Python/python" -m pytest src/tests/ -v
 ```
+
+## 票 10 零复制声明（2026-09-27，非 F-NN 文档节）
+
+票 10 调度器装配**未复制任何共享库符号**：pymoo 0.6.1.6（外部依赖，不触回写条款）提供 NSGA2 算法档（D8 授权实现票按 pymoo 支持定）；前篇 `solver/moea.py` 为 NSGA-III 三目标 + 固定时长物理，无符号可复用。2N 编码结构同构（moea.py:107-116 设计参照）但解码语义异构（分段投影 vs 线性映射）；分叉域内全部 τ 解码位点收口 `sss_core/evaluator.py::decode_tau`（位点清单见该模块 docstring），并有源扫描守卫禁止域内出现前篇线性解码模式。前篇四点位（moea.py:128/:412/:679 + so_f1.py:84/:243）仅为设计参照，非守卫对象。

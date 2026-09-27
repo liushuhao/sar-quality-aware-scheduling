@@ -165,7 +165,7 @@ def generate_scenario(
         # window dwell dispersion (anchor property; sampled edges+centre)
         if anchor:
             ts = [t0, t_ca, t1]
-            durs = [duration_scene_s(mode, _squint_at(t, t_ca, lib), lib) for t in ts]
+            durs = [duration_scene_s(mode, _squint_at(t, t_ca, lib.geo), lib) for t in ts]
             dispersion = max(dispersion, max(durs) / min(durs))
         tasks.append(
             {
@@ -222,9 +222,7 @@ def generate_scenario(
     return manifest
 
 
-def _squint_at(t: float, t_ca: float, lib: ModeLibrary) -> float:
-    """Planar squint at time t for a target with closest approach t_ca."""
-    return math.atan(lib.geo.vs_mps * (t - t_ca) / lib.geo.R0_m)
+from .geometry import squint_at as _squint_at  # D10-7 single source
 
 
 def write_manifest(manifest: dict, path: Path) -> None:

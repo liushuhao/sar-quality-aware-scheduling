@@ -35,6 +35,14 @@ def look_geometry(altitude_m: float, theta_inc_deg: float) -> tuple[float, float
     return math.degrees(theta_look), math.degrees(beta), r0_m
 
 
+def squint_at(t: float, t_ca: float, lib_geo) -> float:
+    """Planar squint angle [rad] at time t for a target whose closest
+    approach is t_ca (single shared source: window precompilation, the
+    evaluator dwell chain and the scenario generator all consume THIS
+    function -- ticket 10 D10-7)."""
+    return math.atan(lib_geo.vs_mps * (t - t_ca) / lib_geo.R0_m)
+
+
 def vs_inertial(altitude_m: float) -> float:
     """[自推导·轨道力学] circular-orbit inertial speed (formula-spec §7 SANITY).
 
