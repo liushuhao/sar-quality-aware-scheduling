@@ -89,12 +89,16 @@ def test_identity_theta_a_over_A_equals_lambda_over_2rho(geo):
 
 
 def test_fixture_null_fields_fail_loud():
-    """Ticket-02 rule: Kim-unpublished parameters stay null and raise."""
+    """Ticket-02 rule: Kim-unpublished parameters stay null and raise.
+    prf_hz was resolved by the ticket-06 manifest write-back (sourced from
+    Song Table 1 + TerraSAR-X mapping references) -- its value is present
+    and matches the AASR grid key set; the k ladder remains pending
+    (ticket 08 freezes it) and must still raise."""
     fx = load_platform_fixture()
-    with pytest.raises(ValueError, match="prf_hz"):
-        fixture_value(fx["modes"], "prf_hz")
     with pytest.raises(ValueError, match="sliding_factor_k_ladder"):
         fixture_value(fx["modes"], "sliding_factor_k_ladder")
+    prf = fixture_value(fx["modes"], "prf_hz")
+    assert sorted(float(v) for v in prf) == [1150.0, 2300.0, 3044.0, 3630.0]
 
 
 # ── per-mode azimuth resolution ordering (formula-spec §3/§6 table 1) ────

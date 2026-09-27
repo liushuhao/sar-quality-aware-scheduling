@@ -44,9 +44,18 @@
       "note": "NOT PUBLISHED: Kim describes sliding spotlight geometrically (rotation center below the ground surface, p.7/p.9 Fig.5) and publishes no discrete k values or k ladder. Frozen later by the SLS blocking gate (spec Further Notes); TerraSAR-X k ladder may serve as mapping reference only, Kim-first arbitration applies."
     },
     "prf_hz": {
-      "value": null,
+      "value": [1150, 2300, 3044, 3630],
       "kim_source": null,
-      "note": "NOT PUBLISHED: no pulse repetition frequency appears anywhere in Kim 2021. Required by the AASR ticket (spec D7); that ticket must source PRF elsewhere and register the source here by manifest write-back."
+      "unit": "Hz (discrete operating keys, not a continuous axis)",
+      "sourced_by": "ticket 06 (2026-09-27) manifest write-back -- resolves the ticket-02 null per the fixture rule ('that ticket must source PRF elsewhere and register the source here').",
+      "sources": {
+        "1150": "Song 2025 Table 1 (sliding spotlight SS1), literature/fulltext/song2025_sensors_sparse.txt lines 376-383 (in-house fulltext)",
+        "2300": "Song 2025 Table 1 (SS2), literature/fulltext/song2025_sensors_sparse.txt lines 376-383 (in-house fulltext)",
+        "3044": "TerraSAR-X concurrent-imaging effective PRF, Kraus et al. 2022 IEEE (https://ieeexplore.ieee.org/iel7/36/9633014/09668948.pdf) -- web-sourced mapping reference",
+        "3630": "TerraSAR-X spotlight acquisition parameter at 43 deg incidence, ESA TDX mission presentation (https://eo4society.esa.int/wp-content/uploads/2019/01/TDXMission_IHajnsek.pdf) -- web-sourced mapping reference; corroborated by Steinbrecher 2014 (>=3100 Hz, https://elib.dlr.de/91122/1/p189-steinbrecher.pdf) and Kraus 2016 staring-spotlight optimization (https://elib.dlr.de/92033/1/Kraus2016.pdf)"
+      },
+      "arbitration": "Kim publishes no PRF anywhere (ticket-02 note stands). The Song/TerraSAR-X values are MAPPING REFERENCES per formula-spec v1.0.1 section 0 arbitration (TerraSAR-X mapping-reference tier allowed); they are discrete query keys for the D7 AASR grid, not invented Kim parameters.",
+      "note": "Non-key PRF values are out-of-domain and raise (spec D7 discipline 2, no extrapolation)."
     },
     "alpha_max": {
       "value": null,
