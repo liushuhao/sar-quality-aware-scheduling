@@ -31,8 +31,10 @@ from .modes import Mode
 
 # D12-3 preregistered promotion threshold; derivation chain registered in
 # experiments/promotion_prereg.json (6.0 = 2x the sensitivity half-band of
-# the -10/-14 dB alternates, and >= 6x the registered machine noise floor:
-# 1.0 dB cell margin + <=0.2 dB halving sub-sample excess)
+# the -10/-14 dB alternates = 6x the 1.0 dB cell margin = 5x the margin
+# plus the <=0.2 dB halving sub-sample excess; arithmetic corrected from
+# the original ">= 6x (1.0 + 0.2)" wording 2026-09-29, ticket 13 --
+# 6*1.2 = 7.2 > 6.0 was false as registered; threshold value unchanged)
 PROMOTION_SPREAD_DB = 6.0
 from .modes import ModeLibrary
 

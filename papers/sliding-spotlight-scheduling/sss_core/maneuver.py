@@ -9,7 +9,17 @@ review):
   the beam at the k fraction of the apparent rate; with A = r0/(R0+r0) the
   slide rate k*Vs/R0 follows from formula-spec §2 exactly), SPT: 1 (staring
   locks on the target).  ``omega_SLS == k * omega_SPT`` is therefore an
-  EXACT identity at any squint.  Convention note: Song Eq.(1) writes
+  EXACT identity at any squint.  DERIVATION STATUS (audit-corrected
+  2026-09-29, ticket 13): the cos^1 lever is NOT the analytic derivative
+  of the registered planar relations -- d/dt of this module's own squint
+  model squint_at = atan(Vs*t'/R0) gives exactly (Vs/R0)*cos^2(psi_bar),
+  and implicit differentiation of the ticket's tan(psi) = (s-x_t)*
+  cos(psi)/R0 form gives (Vs/R0)*cos^3(psi)/(1+sin^2(psi)).  The cos^1
+  lever OVERESTIMATES the true rate by 1/cos(psi_bar) (+2.2% at the
+  +-12 deg envelope edge, exact at 0) -- a conservative upper bound,
+  retained: it is consumed by the calibration path only, and the armed
+  maneuver FALLBACK (4.07 s constant) means production C2 assembly never
+  consumes these numbers.  Convention note: Song Eq.(1) writes
   k_theta = k*v_g/R0 with the ECEF ground speed v_g; the production chain
   uses the frozen inertial Vs (ticket-03 D03-5, ~4.7% difference,
   registered).

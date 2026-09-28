@@ -43,6 +43,11 @@ in the ticket body after the pre-implementation gate review):
   literature/fulltext/song2025_sensors_sparse.txt line 376-377) and a
   registered placeholder range pattern; the probe verdict is INITIAL and
   must be re-checked once ticket 06 freezes PRF in the manifest.
+  [RECHECK CLOSED 2026-09-29, ticket-13 audit: 4-key rerun over the
+  frozen PRF set {1150, 2300, 3044, 3630} Hz gives -42.3 .. -24.5 dB
+  (span 17.8 dB vs the 2-key 9.8 dB); every value is far below 0 dB, so
+  the diagnostic-only ruling (RASR stays a diagnostic column, never
+  enters f_Q) is CONFIRMED unchanged.]
 """
 from __future__ import annotations
 

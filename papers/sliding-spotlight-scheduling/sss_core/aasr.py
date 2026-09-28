@@ -13,8 +13,14 @@ pre-implementation gate review):
   product semantics; requirement-based bandwidth would be narrower and
   anti-conservative).  The beta_req key routes to a mode via
   beta = lambda/(2 rho) (§8.5); it is a routing key, not a physics key.
-  Structural identity: at psi = 0 (and for k = 0 at any psi) the SLS
-  rescale a_res = 1, so AASR_SLS == AASR_STR exactly there.
+  Structural identity (audit-corrected 2026-09-29, ticket 13): at
+  psi = 0 with k = k_lib the SLS band folds exactly onto the STR band
+  (B_D ratio 1/(1-k_lib) = 1/A folds the ambiguity pattern onto itself),
+  so AASR_SLS(k_lib, 0) == AASR_STR to 0.000 dB (verified at 1150/2300/
+  3630 Hz).  The ORIGINAL registration wording ("a_res = 1 at psi = 0 /
+  k = 0 implies AASR_SLS == AASR_STR") is FALSE: at k = 0 the SLS
+  bandwidth is ~A-fold narrower, and measured AASR differs by up to
+  8 dB (e.g. +10.64 vs +2.58 dB at 1150 Hz).
 * D06-2  SPT (Eq.(7)) is evaluated at the WORST azimuth scene EDGE
   (|K_a t_0|max = (2 Vs/lambda) * (Wa/2)/R0): the scene-centre value is
   ~8 dB optimistic and would leak infeasible edge targets through the
@@ -93,20 +99,32 @@ AASR_SENSITIVITY_ALTERNATES_DB = (-10.0, -14.0)  # sensitivity table ONLY
 # OPERATIVE DENSITY NOTE (D7 discipline 3, applied 2026-09-27 during ticket
 # 06 verification BEFORE any experiment consumed the grid): the initial
 # 24x25x19 grid failed the halving-stability bound (flip rate 1.67% > 0.5%),
-# so the operative density was escalated to 24x37x28 as the discipline
-# prescribes; the flip check must now hold against its own 2x densification.
+# so the operative density was escalated to 24x37x28 and then the k axis
+# was further densified 28 -> 55 (D06 addendum 5: the k = 1-A library
+# design point must sit in a cell whose BOUND, not just direct value,
+# clears -13 dB); the flip check must hold against its own 2x
+# densification.  Actual operative axes: rho 24 x psi 37 x k 55
+# (audit-corrected from the stale "24x37x28" wording, 2026-09-29).
 RHO_REQ_AXIS_DEFAULT = tuple(round(0.3 + i * (3.0 - 0.3) / 23, 6) for i in range(24))
 PSI_AXIS_DEG_DEFAULT = tuple(round(-12.0 + i * 24.0 / 36, 6) for i in range(37))
 K_AXIS_DEFAULT = tuple(round(i * 0.9 / 54, 6) for i in range(55))  # k in [0, 0.9];
 # k-cell width 0.0167: the SLS library design point k = 1-A must sit in a
 # cell tight enough that its bound (not just its direct value) clears -13 dB
 
-# D06-7 amendment: conservative safety margin over the sampled block max.
-# The k-axis AASR structure is resonance-like (measured interior peak
-# 8.96 dB vs 8.79 dB sampled max at 0.016 k-spacing), so NO finite sampling
-# is provably conservative; the registered +1.0 dB margin covers sub-sample
-# peaks (observed sub-sample excess <= 0.2 dB) in the conservative direction
-# (it can only shrink, never inflate, the feasible set).
+# D06-7 amendment (re-registered 2026-09-29, ticket-13 audit): the
+# original justification -- a measured interior k-resonance peak of
+# 8.96 dB vs an 8.79 dB sampled max -- DOES NOT REPRODUCE under the
+# shipped physics: exhaustive k-scans (901 points x PRF {1150, 2300,
+# 3630} Hz at psi = 0, plus dense psi rows) find AASR(k) monotone
+# DECREASING with the maximum at the k = 0 endpoint, so the corner/
+# block-max bound is already conservative in the current code (the
+# resonance was real in the pre-fix code state that motivated the
+# margin; the D06-2/D06-3 corrections apparently removed it).
+# The +1.0 dB margin is RETAINED unchanged as frozen conservative
+# slack: it only shrinks the feasible set, and it keeps the bound
+# robust against any future structural change of the k-axis shape.
+# In-cell spans measured <= 0.8 dB, so bound - direct = 1.0-1.7 dB is
+# slack, not tight.
 AASR_CELL_MARGIN_DB = 1.0
 
 N_INTEGRATION_POINTS = 256
