@@ -73,6 +73,19 @@ from .windows import feasible_subintervals
 
 EMPTY_SELECTION_FQ_PLACEHOLDER = 1.0  # worst normalized-quality stand-in
 
+# C2 gap tolerance (ticket 14, 2026-09-29): the greedy anchor's fits()
+# admits gap >= need - C2_TOL_S, so boundary-exact anchor starts can carry
+# a C2 deficit of up to 1e-12 s.  Without the floor below the positive
+# part turns that into CV dust (~1e-14 after float round-trips), which
+# pymoo's INTERNAL feasibility filter treats as infeasible (strict CV==0
+# on the optimal-set extraction) -- emptying the result front on W/H
+# bands.  The floor zeroes sub-picosecond deficits (physically
+# meaningless; genuine violations are ~seconds), making boundary-exact
+# seeds cv EXACTLY 0.0.  Tolerance chain (single registration): anchor
+# fits 1e-12 (this constant) / encode round-trip 1e-9 / nsga2 consumer
+# belt CV_DUST_TOL 1e-9.
+C2_TOL_S = 1e-12
+
 
 def decode_tau(tau: float, intervals) -> float:
     """Project tau in [0,1] onto the feasible union by measure walk (D10-2).
@@ -230,7 +243,7 @@ class SchedulingProblem:
                 omega_end=boundary_rate(pb.mode, psi_b, self.lib),
             )
             gap = starts[b] - starts[a]
-            violations += max(0.0, req["requirement_s"] - gap)
+            violations += max(0.0, req["requirement_s"] - gap - C2_TOL_S)
             if schedule_conflict(starts[a], self._dwell(a, starts[a]), starts[b], self._dwell(b, starts[b])):
                 violations += 1.0
         for i in order:

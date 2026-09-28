@@ -57,7 +57,7 @@ import math
 from dataclasses import dataclass
 
 from .duration import MarginPads, duration_scene_s
-from .evaluator import TaskPlan, precompile_tasks
+from .evaluator import C2_TOL_S, TaskPlan, precompile_tasks
 from .geometry import squint_at
 from .maneuver import FALLBACK_MANEUVER_S, calibrate_against_kim
 from .modes import Mode, ModeLibrary
@@ -143,7 +143,7 @@ def greedy_anchor(
                 boundary_rate_of(pj.mode, psi_j, lib),
                 boundary_rate_of(plan.mode, psi_self, lib), lib, pads,
             )
-            if cand - tj < need - 1e-12:
+            if cand - tj < need - C2_TOL_S:
                 return False
         if succ:
             j, tj = succ[0]
@@ -154,7 +154,7 @@ def greedy_anchor(
                 boundary_rate_of(plan.mode, psi_self, lib),
                 boundary_rate_of(pj.mode, psi_j, lib), lib, pads,
             )
-            if tj - cand < need - 1e-12:
+            if tj - cand < need - C2_TOL_S:
                 return False
         return True
 

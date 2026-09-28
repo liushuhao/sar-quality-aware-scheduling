@@ -24,6 +24,7 @@ sys.path.insert(0, str(FORK))
 sys.path.insert(0, str(FORK.parent.parent / "src"))
 
 from sss_core.anchor import anchor_on_manifest  # noqa: E402
+from sss_core.nsga2 import CV_DUST_TOL  # noqa: E402 -- ticket 14 tolerance chain
 from sss_core.evaluator import SchedulingProblem  # noqa: E402
 from sss_core.modes import ModeLibrary  # noqa: E402
 from sss_core.nsga2 import (  # noqa: E402
@@ -71,7 +72,7 @@ def main(argv=None) -> int:
         generations=args.gen, seed_individual=seed_vec,
         anchor_f1_star=anchor.f1_star,
     )
-    feasible = [r for r in result.front if r["cv"] == 0.0]
+    feasible = [r for r in result.front if r["cv"] <= CV_DUST_TOL]
     if not feasible:
         print("D11 EXIT 11: no feasible individual survived", file=sys.stderr)
         return EXIT_EMPTY_FRONT

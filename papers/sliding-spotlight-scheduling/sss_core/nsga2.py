@@ -40,6 +40,19 @@ from .modes import ModeLibrary
 
 PYMOO_PINNED = "0.6.1.6"
 
+# CV dust tolerance (ticket 14, 2026-09-29): BELT ONLY.  The primary fix
+# is the C2_TOL_S source floor in evaluator.py (boundary-exact anchor
+# starts carry a C2 deficit up to 1e-12 s; the unfloored positive part
+# produced CV dust ~1e-14, which pymoo's INTERNAL strict CV==0
+# feasibility filter treated as infeasible -- emptying the W/H result
+# front -- and which crashed the strict construction assert below).
+# Tolerance chain (single registration): evaluator C2_TOL_S 1e-12
+# (source floor, mirrored by anchor fits) / encode round-trip 1e-9 /
+# these consumer belts 1e-9.  Genuine violations are ~seconds, orders of
+# magnitude above the belt (anti-fixture: a seed shifted 1.0 s into a
+# C2 conflict stays red).
+CV_DUST_TOL = 1e-9
+
 
 class SchedulingProblemPymoo(Problem):
     """pymoo adapter: 2N decision vector, two minimized objectives
@@ -162,7 +175,7 @@ def run_nsga2(
         X[0] = np.array(seed_individual)
         # dual check (D12-1): the seed must be feasible and cover the anchor
         ev = sp.evaluate(X[0])
-        assert ev["cv"] == 0.0, f"seed individual CV={ev['cv']}"
+        assert ev["cv"] <= CV_DUST_TOL, f"seed individual CV={ev['cv']}"
         if anchor_f1_star is not None:
             assert ev["f1_star"] >= anchor_f1_star - 1e-9, (
                 ev["f1_star"], anchor_f1_star
@@ -196,7 +209,7 @@ def run_nsga2(
                     "starts": {str(i): float(s) for i, s in rec["starts"].items()},
                 }
             )
-    all_zero = all(r["cv"] == 0.0 for r in front) if front else False
+    all_zero = all(r["cv"] <= CV_DUST_TOL for r in front) if front else False
     promo = promotion_spread_db(sp, front)
     anchor_f1 = anchor_f1_star
     search_only = None

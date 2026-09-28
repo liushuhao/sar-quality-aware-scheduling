@@ -212,5 +212,71 @@ def test_precompile_respects_manifest_pads(manifest, lib):
     assert manifest["preregistration"]["pads"]["window_tail_fraction"] == 0.0
 
 
+# ── ticket 14: cv-dust tolerance (W/H matrix blocker) ────────────────────
+
+M2WH_PATH = FORK_DOMAIN / "experiments" / "results" / "scenarios" / "M2WH_seed200.json"
+
+
+def test_cv_dust_seed_passes_tolerance(lib):
+    """Ticket 14: boundary-exact M2WH anchor starts used to carry CV dust
+    ~1.4e-14 (the C2 positive part had no floor against the anchor fits()
+    admission tolerance); pymoo's INTERNAL feasibility filter (strict
+    CV==0 on the optimal-set extraction) treated the seed as infeasible,
+    emptying the result front -- and the strict construction assert
+    crashed run_pilot before any W/H-band experiment could run.  With the
+    C2_TOL_S source floor the seed is cv EXACTLY 0.0 and a tiny NSGA run
+    completes with a non-empty feasible front."""
+    from sss_core.anchor import anchor_on_manifest
+    from sss_core.evaluator import SchedulingProblem
+    from sss_core.nsga2 import encode_seed_individual, run_nsga2
+
+    man = load_manifest(M2WH_PATH)
+    sp = SchedulingProblem(man, lib)
+    anchor = anchor_on_manifest(man, lib)
+    x = encode_seed_individual(sp, anchor.starts)
+    ev = sp.evaluate(x)
+    assert ev["cv"] == 0.0                 # exact zero, not dust
+    res = run_nsga2(man, lib, seed=200, pop_size=10, generations=5,
+                    seed_individual=x, anchor_f1_star=anchor.f1_star)
+    assert res.anchor_seeded and res.front and res.all_cv_zero
+
+
+def test_genuine_violation_seed_still_red(lib):
+    """Ticket 14 anti-fixture: a seed with a REAL conflict (two tasks at
+    the same start -> overlap + C2 deficit ~ several seconds, orders of
+    magnitude above CV_DUST_TOL) must still fail construction."""
+    import pytest as _pytest
+
+    from sss_core.evaluator import SchedulingProblem
+    from sss_core.nsga2 import CV_DUST_TOL, encode_seed_individual, run_nsga2
+
+    tasks = [
+        {"t_start_s": 0.0, "t_end_s": 40.0, "t_ca_s": 3.0,
+         "azimuth_size_m": 1000.0, "priority": 10, "rho_req_m": 3.0,
+         "mode": "STR", "prf_hz": 3630.0},
+        {"t_start_s": 0.0, "t_end_s": 40.0, "t_ca_s": 3.0,
+         "azimuth_size_m": 1000.0, "priority": 5, "rho_req_m": 3.0,
+         "mode": "STR", "prf_hz": 3630.0},
+    ]
+    man = {
+        "schema": "scenario-manifest/1.0",
+        "scenario": {"family_code": "MXWN", "density_n_targets": 2,
+                     "interval_width": "N", "demand_tier": "C",
+                     "platform_fixture": "experiments/platform_kim2021.json",
+                     "degenerate_anchor": False},
+        "preregistration": {"pads": {"inter_task_fraction": 0.0,
+                                     "window_tail_fraction": 0.0}},
+        "generation_ledger": {},
+        "tasks": tasks,
+    }
+    sp = SchedulingProblem(man, lib)
+    both_at_zero = {0: 0.0, 1: 0.0}          # same-start conflict by hand
+    x = encode_seed_individual(sp, both_at_zero)
+    ev = sp.evaluate(x)
+    assert ev["cv"] > CV_DUST_TOL            # genuine, not dust
+    _pytest.raises(AssertionError, run_nsga2, man, lib, seed=1,
+                   pop_size=4, generations=1, seed_individual=x)
+
+
 if __name__ == "__main__":
     sys.exit(pytest.main([__file__, "-v"]))
