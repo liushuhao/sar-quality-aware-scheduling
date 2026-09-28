@@ -35,6 +35,21 @@ pairs -- evaluator D10-6); candidate lists are deduplicated then SORTED
 (no set iteration order reaches the float path).  The need assembly goes
 EXCLUSIVELY through the ticket-09 predicate (D11-7 -- no local
 re-assembly of maneuver+settle).
+
+Audit amendment (ticket 13, 2026-09-29, independent review + directed
+fix review): every candidate -- left edges AND repair candidates -- must
+lie inside the task's feasible subintervals (membership gate in the
+acceptance loop, same 1e-12 tol as the seed encoder).  Without it a
+fallback-regime repair candidate (constant need) is accepted OUTSIDE the
+window span: repro A(pri10, win[0,40], t_ca=3) + B(pri5, win[0,6],
+t_ca=3), pads=0 -> B placed at 7.373 s vs feasible [0, 4.697], f1*
+overstated 1.0 vs true 2/3.  Model-regime needs vary with the evaluation
+position and rejected such candidates incidentally; the fallback regime
+removed that protection.  Blast radius measured by the fix reviewer:
+M1NC/M2WF/M2WH anchors bit-identical pre/post; M3NC loses 5 out-of-window
+starts (f1* 0.2475 -> 0.2345, the old value was inflated) and the M4WH
+anchor previously CRASHED at encode (sec2 singularity on an out-of-set
+start) -- both strictly improved, no existing artifact pins either.
 """
 from __future__ import annotations
 
@@ -164,6 +179,16 @@ def greedy_anchor(
         placed = None
         for cand in candidates:
             if cand < ws - 1e-12:
+                continue
+            # Window membership (ticket 13 audit fix 2026-09-29): repair
+            # candidates tj+need may overshoot the task's feasible span --
+            # under the maneuver FALLBACK the need is constant, so the
+            # fits() re-check cannot self-protect (generation and
+            # acceptance see the same need).  Out-of-span candidates are
+            # skipped; the task then stays unserved, the greedy-correct
+            # outcome.  Same tol as encode_seed_individual (nsga2).
+            if not any(lo - 1e-12 <= cand <= hi + 1e-12
+                       for lo, hi in plan.intervals):
                 continue
             if fits(cand, plan):
                 placed = cand

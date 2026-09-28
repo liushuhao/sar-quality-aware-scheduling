@@ -153,6 +153,44 @@ def _pair_manifest(tasks: list[dict]) -> dict:
     }
 
 
+# ── ticket-13 audit regression ───────────────────────────────────────────
+
+def test_repair_candidate_respects_window_membership(lib):
+    """Fallback-regime repair candidate (constant need = 4.07 s fallback +
+    2 s settle + dwell, ~7.37 s total) must NOT be accepted outside the
+    task's feasible span.  Repro (2026-09-29 audit): A(pri 10, win
+    [0, 40], t_ca=3) placed at 0 blocks B(pri 5, win [0, 6], t_ca=3) at
+    every in-window point; pre-fix the anchor placed B at ~7.373 s --
+    outside B's feasible interval (~[0, 4.697]) and overstating f1* to
+    1.0.  Post-fix B stays unserved (greedy-correct), f1* = 10/15, and
+    every placed start is in-window so the seed encoder never raises.
+    RED pre-fix / GREEN post-fix verified by the directed fix review."""
+    tasks = [
+        {"t_start_s": 0.0, "t_end_s": 40.0, "t_ca_s": 3.0,
+         "azimuth_size_m": 1000.0, "priority": 10, "rho_req_m": 3.0,
+         "mode": "STR", "prf_hz": 3630.0},
+        {"t_start_s": 0.0, "t_end_s": 6.0, "t_ca_s": 3.0,
+         "azimuth_size_m": 1000.0, "priority": 5, "rho_req_m": 3.0,
+         "mode": "STR", "prf_hz": 3630.0},
+    ]
+    m = _pair_manifest(tasks)
+    res = anchor_on_manifest(m, lib, repair=True)
+    assert res.starts == {0: 0.0}          # B unserved (in-window infeasible)
+    assert res.f1_star == pytest.approx(10.0 / 15.0)
+    # every placed start inside its task's precompiled feasible set
+    from sss_core.evaluator import precompile_tasks
+    plans = precompile_tasks(m, lib)
+    for i, s in res.starts.items():
+        assert any(lo - 1e-12 <= s <= hi + 1e-12 for lo, hi in plans[i].intervals)
+    # seed-encoder consumability: the anchor output must encode cleanly
+    from sss_core.evaluator import SchedulingProblem
+    from sss_core.nsga2 import encode_seed_individual
+    encode_seed_individual(SchedulingProblem(m, lib), res.starts)
+    # repair-off left-edge path is unaffected by the membership gate
+    off = anchor_on_manifest(m, lib, repair=False)
+    assert off.starts == {0: 0.0}
+
+
 # ── equivalence / redden pair (D11-2/3) ──────────────────────────────────
 
 def test_equivalence_half_m1nc(m1nc, lib):
