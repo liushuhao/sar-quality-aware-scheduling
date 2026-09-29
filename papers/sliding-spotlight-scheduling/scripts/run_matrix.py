@@ -56,11 +56,20 @@ EXIT_VARIANT_EMPTY = 6
 
 
 def git_head() -> str:
+    import re
+
+    import shutil as _shutil
+    exe = _shutil.which("git")
+    if exe is None:
+        raise SystemExit("git not found on PATH")
     out = subprocess.run(
-        ["/mingw64/bin/git", "rev-parse", "HEAD"],
+        [exe, "rev-parse", "HEAD"],
         capture_output=True, text=True, check=True,
     )
-    return out.stdout.strip()
+    head = out.stdout.strip()
+    if not re.fullmatch(r"[0-9a-f]{40}", head):
+        raise SystemExit(f"git rev-parse returned non-HEAD-sha output: {head!r}")
+    return head
 
 
 def manifest_sha1(path: Path) -> str:
