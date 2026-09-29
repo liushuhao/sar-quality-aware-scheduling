@@ -209,7 +209,7 @@ def main(argv=None) -> int:
                 "artifact": str(expected_artifact.relative_to(FORK.parent.parent)),
                 "front_size": art["front_size"],
                 "anchor_f1_star": art["anchor_f1_star"],
-                "max_f1_star": art["max_f1_star"],
+                "max_f1_star": art["max_f1_star_on_front"],
                 "promotion_decision": art["promotion"]["decision"],
                 "promotion_spread_db": art["promotion"]["spread_db"],
             })
