@@ -1,0 +1,70 @@
+{
+  "meta": {
+    "document_type": "analysis_prereg",
+    "version": "1.0.0",
+    "frozen": "2026-09-30",
+    "frozen_by": "experiment-phase kickoff, user-approved execution order (session 2026-09-30)",
+    "frozen_before_evidence": "at freeze time no experiments/results/matrix/ directory exists; the only solver artifacts are results/pilot/pilot_M1NC_seed100.json (seed_index 0, degenerate anchor variant). No W/H full-matrix result has been observed.",
+    "registration_scope": "spec D10 pins the replication structure (5 variants x 10 seeds) and seed pinning, but no statistical analysis plan. This file is the SOLE registration of the analysis plan. It does not modify any frozen quantity: promotion threshold 6.0 dB (promotion_prereg.json), AASR main -13 dB (D7), scatter ratio 0.1 (D10/A6) all remain untouched.",
+    "statistical_precedent": "papers/single-sat-quality/experiments/analysis.py paired_comparison (Wilcoxon signed-rank + Cliff's delta, zero_method='wilcox', two-sided) and Friedman/Nemenyi across variants; mirrored here to avoid a second calibration."
+  },
+  "matrix_scope": {
+    "variants": {
+      "1": "M1NC",
+      "2": "M2WH",
+      "3": "M3NC",
+      "4": "M2WF",
+      "5": "M4WH"
+    },
+    "seeds_per_variant": 10,
+    "seed_rule": "seed = variant_index*100 + seed_index, seed_index in [0,9] (scenario_manifest_template.json seed_convention, D08-9)",
+    "solver_config_pinned": {
+      "pop_size": 40,
+      "generations": 60,
+      "anchor_seeded": true,
+      "pymoo": "sss_core.nsga2.PYMOO_PINNED (asserted at runtime by run_pilot.py)",
+      "PYTHONHASHSEED": 0,
+      "source": "scripts/run_pilot.py defaults, identical to the pilot runs; frozen before matrix launch, no post-hoc tuning"
+    },
+    "artifact_contract": "one results/matrix/pilot_<FAM>_seed<S>.json per unit, schema pilot-result/1.1, written by run_pilot.py --out; units ending exit 10/11 leave no artifact and are recorded in the driver progress file"
+  },
+  "metrics": {
+    "f1_star_max": "max over front records of f1_star (anchor-normalized coverage, D8); the unit's anchor_f1_star is recorded alongside and is the greedy-anchor baseline for the primary test",
+    "f_q_front": "front records carry f_q (delivered quality, D6 aggregate mean over served set)",
+    "hv": "hypervolume of the (f1_star, f_q) front with reference point (0, 0). No max-side min-max normalization is applied, so the D6/steel-man-A16 envelope ban (references only from the all-mode common envelope, never per-mode self-best) is satisfied by construction.",
+    "promotion_readout": "per unit: promotion.spread_db and promotion.decision as written by the evaluator (D12-3 domain: unenforced AASR spread); threshold 6.0 dB frozen",
+    "trivialization_readout": {
+      "per_unit": "count of distinct f_q values among front records (rounded to 1e-6) and Spearman rho between f1_star and f_q over front records",
+      "per_variant_verdict": "median across the 10 seeds of distinct-f_q count; the H/W front is declared TRIVIALIZED iff the median is < 3",
+      "reason": "operationalizes a6_adjudication_20260929.md Appendix B ('f_Q 与 f1* 单调可换、非平凡权衡点 < 3'); if any W/H variant trivializes, the second-leg narrative requires rework and a new adjudication -- pre-declared here so the criterion is fixed before data"
+    },
+    "per_mode_fq_decomposition": {
+      "status": "REQUIRED deliverable (a6 adjudication 2026-09-29, ruling 2, bound to writing phase)",
+      "computation": "from matrix fronts: per selected task, mode label -> share of |S| and per-mode mean f_Q,i for STR/SLS/SPT; mode-level constants table alongside (f_Q ~ 1/rho_a_ach^2 per-mode lookup, D05-3/D05-4)",
+      "consumes": "D05-5 dual-weighting disclosure in the paper (implicit 1/rho_req priority weighting via rho_a_ach AND effective rho_a^2 azimuth weighting via g_T) -- both must be stated, neither alone"
+    }
+  },
+  "tests": {
+    "pairing": "paired across the 10 seeds within a variant (same variant, 10 scenario replicates)",
+    "primary_comparison": {
+      "what": "NSGA-II max_f1_star vs greedy anchor f1_star, per variant",
+      "test": "scipy.stats.wilcoxon(zero_method='wilcox', alternative='two-sided')",
+      "effect_size": "Cliff's delta with ties counting half, interpreted as in paper 1 (_cliffs_interpretation)",
+      "multiplicity": "5 primary tests (one per variant); report raw p and Holm-Bonferroni-adjusted p across the 5; alpha = 0.05",
+      "n_guard": "n < 5 valid pairs -> test not run, reported as insufficient (paper-1 analysis.py same guard)"
+    },
+    "secondary_comparison": {
+      "what": "Friedman across the 5 variants on per-seed HV and on per-seed max_f1_star; Nemenyi post-hoc if Friedman rejects",
+      "test": "scipy.stats.friedmanchisquare",
+      "guard": "run only if >= 3 variants contribute >= 5 valid units each; otherwise reported as not run"
+    },
+    "valid_unit_rule": "exit-0 artifacts only. Exit-11 (empty front) units are excluded from tests but their count is reported per variant and never silently dropped; exit-10 anywhere aborts analysis (generation defect, alarm)"
+  },
+  "forbidden": [
+    "changing any frozen threshold after seeing results: promotion 6.0 dB, AASR -13 dB main, scatter ratio 0.1, solver pop/gen",
+    "numeric cross-variant claims that M?NC anchors 'regress to the fixed-duration world' in numbers (spec Testing Decisions: M1NC platform is Kim X-band, differs from paper 1 platform -- semantic-level regression claim only, 论文禁数值级对照声明)",
+    "per-seed cherry-picking: all 10 seeds are reported per variant; headline numbers are medians/means over seeds as registered here",
+    "adding or dropping metrics or tests after data inspection; additions only via amendment fields (below)"
+  ],
+  "amendment_discipline": "additions or corrections are appended as amendment_<date>_<slug> fields with rationale; frozen fields are never mutated in place. The promotion_prereg.json amendment_20260929_ticket13 pattern is the precedent."
+}
