@@ -1,0 +1,244 @@
+#!/usr/bin/env python3
+"""Full experiment matrix driver: 5 variants x 10 seeds (spec D10).
+
+Usage (repo root, real interpreter -- the bare `python` shim is polluted):
+    PYTHONHASHSEED=0 "/d/Program Files/Python/python" \
+        papers/sliding-spotlight-scheduling/scripts/run_matrix.py \
+        [--pop 40] [--gen 60] [--variants 1,2,3,4,5]
+
+Solver seed = scenario seed (one integer drives all stochastic stages,
+scenario_manifest_template.json seed_convention).
+
+Defenses (paper-1 runner fault modes, feedback-runner-three-fault-modes):
+- manifests generated once; on rerun each existing manifest is regenerated
+  in memory and byte-compared (determinism assertion, fail loud on drift)
+- per-unit subprocess isolation; distinguishing exit codes recorded (0/10/11)
+- progress file: atomic write (tmp + fsync + os.replace) with .bak fallback
+  (JSONDecodeError falls back to the backup; both corrupt = abort)
+- resume skips a unit only if the artifact exists AND the recorded exit is 0
+  AND the manifest sha1 matches AND the code identity (git HEAD) is unchanged
+  (feedback-version-identity + resume-sha lessons)
+- zero-output alarm (exit 4), generation-defect alarm (exit 5, any exit 10),
+  variant-wide empty-front alarm (exit 6)
+- per-unit stdout lines flushed immediately (no block-buffer fake stall)
+"""
+from __future__ import annotations
+
+import argparse
+import hashlib
+import json
+import os
+import shutil
+import subprocess
+import sys
+import time
+from pathlib import Path
+
+FORK = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(FORK))
+
+from sss_core.scenarios import (  # noqa: E402
+    VARIANT_REGISTRY,
+    generate_scenario,
+    write_manifest,
+)
+
+SCENARIOS_DIR = FORK / "experiments" / "results" / "scenarios"
+MATRIX_DIR = FORK / "experiments" / "results" / "matrix"
+PROGRESS_PATH = MATRIX_DIR / "_progress.json"
+PILOT_SCRIPT = FORK / "scripts" / "run_pilot.py"
+SEEDS_PER_VARIANT = 10
+
+EXIT_OK = 0
+EXIT_ZERO_OUTPUT = 4
+EXIT_GENERATION_DEFECT = 5
+EXIT_VARIANT_EMPTY = 6
+
+
+def git_head() -> str:
+    out = subprocess.run(
+        ["/mingw64/bin/git", "rev-parse", "HEAD"],
+        capture_output=True, text=True, check=True,
+    )
+    return out.stdout.strip()
+
+
+def manifest_sha1(path: Path) -> str:
+    return hashlib.sha1(path.read_bytes()).hexdigest()
+
+
+def atomic_write_json(path: Path, obj: dict) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    if path.exists():
+        shutil.copy2(path, path.with_suffix(path.suffix + ".bak"))
+    tmp = path.with_suffix(path.suffix + ".tmp")
+    with open(tmp, "w", encoding="utf-8") as f:
+        json.dump(obj, f, indent=2, sort_keys=True, ensure_ascii=False)
+        f.write("\n")
+        f.flush()
+        os.fsync(f.fileno())
+    os.replace(tmp, path)
+
+
+def load_progress() -> dict | None:
+    for cand in (PROGRESS_PATH, PROGRESS_PATH.with_suffix(".json.bak")):
+        if cand.exists():
+            try:
+                return json.loads(cand.read_text(encoding="utf-8"))
+            except json.JSONDecodeError:
+                print(f"progress file corrupt, falling back: {cand}", flush=True)
+    return None
+
+
+def ensure_manifests(variants: dict[int, tuple]) -> dict[str, Path]:
+    """Generate missing manifests; byte-verify existing ones (determinism)."""
+    paths: dict[str, Path] = {}
+    lib = None
+    for vidx, (code, density, interval, tier) in sorted(variants.items()):
+        for si in range(SEEDS_PER_VARIANT):
+            seed = vidx * 100 + si
+            path = SCENARIOS_DIR / f"{code}_seed{seed}.json"
+            if lib is None:
+                from sss_core.modes import ModeLibrary
+                lib = ModeLibrary.from_fixture()
+            manifest = generate_scenario(
+                code, density, interval, tier, seed,
+                variant_index=vidx, lib=lib,
+            )
+            fresh = json.dumps(manifest, indent=2, sort_keys=True,
+                               ensure_ascii=False) + "\n"
+            if path.exists():
+                if path.read_text(encoding="utf-8") != fresh:
+                    raise SystemExit(
+                        f"DETERMINISM DRIFT: {path} differs from regeneration"
+                    )
+            else:
+                write_manifest(manifest, path)
+                print(f"manifest generated: {path.name}", flush=True)
+            paths[f"{code}_{seed}"] = path
+    return paths
+
+
+def main(argv=None) -> int:
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--pop", type=int, default=40)
+    ap.add_argument("--gen", type=int, default=60)
+    ap.add_argument("--variants", default="1,2,3,4,5",
+                    help="variant indexes into VARIANT_REGISTRY, comma-sep")
+    args = ap.parse_args(argv)
+
+    vmap = {}
+    for tok in args.variants.split(","):
+        vidx = int(tok.strip())
+        vmap[vidx] = VARIANT_REGISTRY[vidx]
+
+    head = git_head()
+    print(f"matrix code identity: git HEAD {head}", flush=True)
+
+    progress = load_progress()
+    if progress is None:
+        progress = {"schema": "matrix-progress/1.0", "code_head": head,
+                    "pop": args.pop, "gen": args.gen, "units": {}}
+    elif progress.get("code_head") != head:
+        raise SystemExit(
+            f"CODE IDENTITY CHANGED since matrix start: progress head "
+            f"{progress['code_head']} != current {head}. Resume refused "
+            f"(caliber mixing guard). Delete {PROGRESS_PATH} only after "
+            f"deciding old artifacts are void."
+        )
+    elif (progress.get("pop"), progress.get("gen")) != (args.pop, args.gen):
+        raise SystemExit(
+            f"pop/gen changed since matrix start: progress "
+            f"({progress.get('pop')},{progress.get('gen')}) != "
+            f"({args.pop},{args.gen}). Refused (analysis_prereg.json)."
+        )
+
+    paths = ensure_manifests(vmap)
+    MATRIX_DIR.mkdir(parents=True, exist_ok=True)
+
+    counts: dict[int, int] = {}
+    empty_variants: set[str] = set()
+    succeeded = 0
+    for key, mpath in paths.items():
+        rec = progress["units"].get(key)
+        sha = manifest_sha1(mpath)
+        code, seed_s = mpath.name.split("_seed")
+        expected_artifact = MATRIX_DIR / f"pilot_{code}_seed{seed_s}.json"
+        if (
+            rec is not None
+            and rec.get("exit") == EXIT_OK
+            and rec.get("manifest_sha1") == sha
+            and expected_artifact.exists()
+        ):
+            succeeded += 1
+            counts[EXIT_OK] = counts.get(EXIT_OK, 0) + 1
+            continue
+
+        t0 = time.monotonic()
+        env = dict(os.environ, PYTHONHASHSEED="0")
+        proc = subprocess.run(
+            [sys.executable, str(PILOT_SCRIPT),
+             "--manifest", str(mpath),
+             "--seed", seed_s,
+             "--pop", str(args.pop),
+             "--gen", str(args.gen),
+             "--out", str(MATRIX_DIR)],
+            env=env, capture_output=True, text=True,
+        )
+        wall = time.monotonic() - t0
+        exit_code = proc.returncode
+        counts[exit_code] = counts.get(exit_code, 0) + 1
+        rec = {
+            "manifest": str(mpath.relative_to(FORK.parent.parent)),
+            "manifest_sha1": sha,
+            "exit": exit_code,
+            "wall_s": round(wall, 1),
+        }
+        if exit_code == EXIT_OK:
+            art = json.loads(expected_artifact.read_text(encoding="utf-8"))
+            rec.update({
+                "artifact": str(expected_artifact.relative_to(FORK.parent.parent)),
+                "front_size": art["front_size"],
+                "anchor_f1_star": art["anchor_f1_star"],
+                "max_f1_star": art["max_f1_star"],
+                "promotion_decision": art["promotion"]["decision"],
+                "promotion_spread_db": art["promotion"]["spread_db"],
+            })
+            succeeded += 1
+        elif exit_code == 11:
+            rec["note"] = "empty front (no feasible individual) -- recorded outcome"
+            empty_variants.add(code)
+        progress["units"][key] = rec
+        atomic_write_json(PROGRESS_PATH, progress)
+        lines = (proc.stdout or "").strip().splitlines()
+        tail = lines[-1] if lines else (proc.stderr or "").strip().splitlines()[-1:]
+        print(f"[{key}] exit={exit_code} wall={wall:.1f}s {tail}", flush=True)
+        if exit_code == 10:
+            print(f"GENERATION DEFECT at {key} (exit 10 zero-served)", flush=True)
+
+    print("\n=== matrix summary ===", flush=True)
+    print(f"code head: {head}", flush=True)
+    by_variant: dict[str, dict[int, int]] = {}
+    for key, rec in progress["units"].items():
+        code = key.rsplit("_seed", 1)[0]
+        by_variant.setdefault(code, {})
+        by_variant[code][rec["exit"]] = by_variant[code].get(rec["exit"], 0) + 1
+    for code in sorted(by_variant):
+        print(f"{code}: {dict(sorted(by_variant[code].items()))}", flush=True)
+    print(f"exit-code totals: {dict(sorted(counts.items()))}", flush=True)
+
+    if any(e == 10 for e in counts):
+        print("ALARM: exit-10 zero-served scenario present", flush=True)
+        return EXIT_GENERATION_DEFECT
+    if succeeded == 0:
+        print("ALARM: zero units succeeded (silent-zero guard)", flush=True)
+        return EXIT_ZERO_OUTPUT
+    for code in empty_variants:
+        if by_variant.get(code, {}).get(11, 0) == SEEDS_PER_VARIANT:
+            print(f"ALARM: variant {code} empty front on all seeds", flush=True)
+            return EXIT_VARIANT_EMPTY
+    return EXIT_OK
+
+
+if __name__ == "__main__":
+    sys.exit(main())
