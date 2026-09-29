@@ -1,0 +1,55 @@
+{
+  "anchor_f1_star": 0.33638025594149906,
+  "anchor_seeded": true,
+  "anchor_served": 22,
+  "front": [
+    {
+      "cv": 0.0,
+      "f1_star": 0.33638025594149906,
+      "f_q": 38.879344054880285,
+      "n_selected": 22,
+      "starts": {
+        "19": 268.6578183480776,
+        "20": 68.97270262324443,
+        "23": 133.78935226,
+        "25": 81.90392472763435,
+        "42": 208.26398033590294,
+        "44": 29.618808356735624,
+        "46": 54.91900598791926,
+        "47": 3.199650384814814,
+        "57": 194.1853366336448,
+        "58": 230.7724921077416,
+        "61": 287.79522339778975,
+        "7": 257.454973866,
+        "73": 220.40585852330594,
+        "82": 174.49305266281,
+        "83": 17.61064165985055,
+        "84": 120.80107454992823,
+        "90": 108.31307105426123,
+        "91": 146.7194338905897,
+        "94": 161.135843997,
+        "95": 94.58067287935499,
+        "96": 243.38783017766357,
+        "99": 41.61402220419682
+      }
+    }
+  ],
+  "front_size": 1,
+  "generations": 60,
+  "manifest": "D:\\hermes\\my-workspace\\projects\\planning-paper\\papers\\sliding-spotlight-scheduling\\experiments\\results\\scenarios\\M2WF_seed404.json",
+  "max_f1_star_on_front": 0.33638025594149906,
+  "pop_size": 40,
+  "promotion": {
+    "decision": "no_promotion",
+    "spread_db": 0.0,
+    "threshold_db": 6.0
+  },
+  "pymoo": "0.6.1.6",
+  "schema": "pilot-result/1.1",
+  "search_only_max_f1_star": null,
+  "seed": 404,
+  "violation_stats": {
+    "all_cv_zero": true,
+    "max_cv_on_reported_front": 0.0
+  }
+}
