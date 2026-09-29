@@ -171,7 +171,7 @@ def main(argv=None) -> int:
     for key, mpath in paths.items():
         rec = progress["units"].get(key)
         sha = manifest_sha1(mpath)
-        code, seed_s = mpath.name.split("_seed")
+        code, seed_s = mpath.stem.split("_seed")
         expected_artifact = MATRIX_DIR / f"pilot_{code}_seed{seed_s}.json"
         if (
             rec is not None
