@@ -57,9 +57,18 @@ VARIANT_REGISTRY = {
     3: ("M3NC", 300, "N", "C"),
     4: ("M2WF", 100, "W", "F"),
     5: ("M4WH", 500, "W", "H"),
+    # probe amendment 2026-09-30 (analysis_prereg.json
+    # amendment_20260930_probe_density): post-hoc WH-family density sweep
+    # below M2WH; NOT part of the frozen matrix (indexes 1-5 unchanged)
+    6: ("P6WH", 20, "W", "H"),
+    7: ("P7WH", 40, "W", "H"),
+    8: ("P8WH", 60, "W", "H"),
+    9: ("P9WH", 80, "W", "H"),
 }
 
-DENSITY_BY_INDEX = {1: 20, 2: 100, 3: 300, 4: 500}
+# keys 6-8 are whitelist-only entries for the density probe (their variant
+# indexes live in VARIANT_REGISTRY); the frozen prereg densities 1-4 stand
+DENSITY_BY_INDEX = {1: 20, 2: 100, 3: 300, 4: 500, 6: 40, 7: 60, 8: 80}
 INTERVAL_HALF_WIDTH_S = {"N": 6.0, "W": 20.0}  # D08-5: +-3.36 / +-11.20 deg
 PASS_HORIZON_S = 300.0
 PRF_PRODUCTION_HZ = 3630.0  # platform operating point (design convention)
