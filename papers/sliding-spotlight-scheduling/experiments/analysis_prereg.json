@@ -109,5 +109,21 @@
       "inheritance": "prereg v2 (real-window family) inherits this calibration: its band re-calibration must include the same scaling check at the boundary densities"
     },
     "relation_to_matrix": "matrix runs (pop 40/gen 60) and their statistics are unaffected; this amendment only adjudicates the interpretation of the probe cliff"
+  },
+  "amendment_20260930_matrix_readjudication": {
+    "rationale": "Triggered by amendment_20260930_convergence_calibration verdict: the probe cliff (N=40->60) is a search artifact, and the matrix trivialization readings (same 40/60 budget, same readout) are therefore unadjudicated. This amendment re-adjudicates whether frontier collapse is PHYSICAL at higher densities, BEFORE any narrative claim. Registered before any high-density high-budget data exists. User ruling 2026-09-30: run M2WH (N=100) first, then gate the decision on higher densities.",
+    "scope": {
+      "primary_grid": "variant 2 (M2WH, N=100, W, H), seeds 200-204, budgets {80/120, 160/240} via run_probe_density.py --variants 2, artifacts to experiments/results/probe_convergence/ with _p<POP>_g<GEN> suffix",
+      "escalation_rule": "if the median distinct-fq at 160/240 differs from 80/120 by > 2 levels or any unit's >=3/<3 verdict flips between them, escalate to 320/480 on the same 5 seeds before concluding",
+      "later_densities": "N>=200 tiers are a separate user-gated decision informed by the M2WH outcome; running them requires appending them to this amendment's scope first"
+    },
+    "pre_declared_criteria": {
+      "converged": "per-variant median distinct-fq stable: |median(top two budgets)| <= 2 levels AND no unit verdict flip at the top budget (with escalation applied if triggered)",
+      "physics_collapse_verdict": "CONVERGED AND median distinct-fq < 3 at the top budget -> the frontier collapse at that density is PHYSICAL (trivialization real, boundary at or below this density)",
+      "rich_and_converged_verdict": "CONVERGED AND median >= 3 -> the frontier is physically rich at this density; the trivialization narrative at this density is void",
+      "unconverged": "top two budgets differ by > 2 levels or verdicts flip after escalation -> report as NOT-YET-CONVERGED; no physics claim; higher budgets are a new decision",
+      "robustness_note": "promotion readout recorded at every budget (its dead-at-all-budgets status is already established and expected to hold)"
+    },
+    "relation_to_prior": "supersedes the interpretation of the 40/60-budget readings for these units; frozen matrix statistics untouched"
   }
 }
