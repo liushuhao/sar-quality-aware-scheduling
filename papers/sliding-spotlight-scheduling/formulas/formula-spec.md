@@ -1,6 +1,6 @@
 # 公式规格（冻结版）— 滑聚/聚束变时长 SAR 调度：驻留时长 + 逐模式分辨率 + AASR/RASR
 
-- 版本: v1.0.1（2026-09-27，票 01 产出；同日两路 fresh 独立审查 0 critical 后勘误轮——§2 λ 值、§7 稳定时间算术、§3/§5 标注补强、§0.1 路径以盘上改名落实，登记见 §8.6；v1.0 = 票 01 SLS/时长公式族 blocking gate 产出）
+- 版本: v1.1（2026-09-30，票 18 blocking gate 产出：新增 §3.1 逐模式 $\rho_a(m,\bar\psi)$ 封闭式 + dated 取代 §3 斜视注记（方向 cos→sec）+ Eq.(12)/(13) 约定钉死（Kim p.9 原文留痕）+ B_D 第三消费方登记 + §4.2/§4.3 生产层反转标记；勘误登记 §8.7；v1.0.1 = 2026-09-27 票 01 产出 + 两路 fresh 审查勘误轮，登记见 §8.6；v1.0 = 票 01 SLS/时长公式族 blocking gate 产出）
 - 状态: **FROZEN**——后续实现票（映射表、时长模块、AASR 硬约束、质量指标、窗域预编译）以本文件为**唯一公式来源**；修改须经新 blocking gate。
 - 上游: `.scratch/sliding-spotlight-scheduling/issues/01-sls-formula-blocking-gate.md`（8 项验收 §9 对照）
 - 裁决对象: `archive/next-paper-formalization/blueprint-draft.md` §2.2(c)/附 A/附 B（蓝图是二手源，本规格全部公式从 PDF 原文符号级复原，未照抄蓝图）
@@ -36,6 +36,7 @@
 | $R_0$ | 孔径中心斜距 | Kim Eq.(2)-(3) 由 $h$、$\theta_{inc}$ 得（值未公布，§7 SANITY 层） |
 | $V_s$ | 卫星相对场景速度（ECEF 系） | Kim §2.3.2 假设三（p.7）；**数值未公布**，§7 SANITY 层 |
 | $\psi_s, \psi_e, \bar\psi$ | 成像起始/结束斜视角、孔径中心斜视角 | 沿用蓝图 §1.1 / spec D6 |
+| $\psi_{s_0}, \psi_{s_1}$ | Eq.(12)-(13) 转向轴角（成像始/终） | **边缘角 = 轴角 ± θ_a/2 各自偏移；轴跨度 = α−θ_a**（§3.1 钉死，Kim p.9 原文留痕）；$t_0,t_1$ = 波束边缘穿越时刻 |
 | $\beta$ | 合成孔径角需求（SPT 扫描跨度）；SLS 场景级扫角另记 $\Delta\theta$ | Kim Eq.(5)/(8) 记 $\Delta\theta$ |
 | $A$ | 滑聚因子（混合度因子） | $A=r_0/(R_0+r_0)=1-R_0k_\theta/v_g=\texttt{1}-$k_桥接，§2 |
 | $r_0$ | 旋转中心到场景中心距离 | Kim Nomenclature（值未公布，§7） |
@@ -78,8 +79,40 @@ $$\rho_{a,\mathrm{STR}}=\frac{D}{2}\,,\qquad
   - Song 2025 **p.3**，Eq.(2)：$\rho \approx \dfrac{L_a}{2}(N_B+1)\,A$（$L_a$=天线方位向尺寸，$N_B$=子波位数；单波位 $N_B=0$ 为**解读式使用**——subswath 数取 0 的退化，与该文自身 stripmap 基线 $\rho=L_a/2$ 自洽，并与 GF-3 交叉一致 ⇒ $\rho=L_a A/2$；正文："with the steering angle rate increasing, Sliding Spotlight has the highest resolution … TOPS performing the worst"）。
   - 两源 + Kim 隐含式（§2 条 3）三方一致。
 - **SPT** [文献·Kim Eq 反演]：$\rho_a=\lambda/(2\beta_{\mathrm{span}})$，即 Kim Eq.(5)（p.6）$\Delta\theta=\lambda/(2\rho_a)$ 的反演；$\beta_{\mathrm{span}}=\psi_s-\psi_e$ 为聚束扫描跨度（Kim Eq.(8)，**p.6**：$\Delta\theta=\lambda/(2\rho_a)=\theta_{s_0}-\theta_{s_1}$）。**口径精确化（对 spec D6 的修正，见 §8.3）**：$\rho_{a,\mathrm{SPT}}$ 是**模式库设计常数**（由 $\beta_{\mathrm{span}}$ 定），映射表 coarsest-sufficient 保证 $\rho_{a,\mathrm{SPT}}\le\rho_{\mathrm{req}}$；进 $f_Q$ 的是 achieved 值 $\lambda/(2\beta_{\mathrm{span}})$，不是需求常数。
-- **斜视角修正口径注记**（实现口径声明，无未验成分）：本规格三条主式为孔径角语义（$\lambda/(2\times\text{总视角角})$），斜视角不进 $\rho_a$；spec D6「ρ_a 用孔径中心 $\bar\psi$ 语义」若需 Doppler 语义修正（$B_d\propto\cos\bar\psi$，前篇 $\cos\psi_{sq}$ 因子血统），则三模式**同乘** $\cos\bar\psi$ 因子，档序不变——修正属 D6 实现选项，不改变本节公式与档序。
+- **斜视角修正口径注记**（~~实现口径声明，无未验成分~~【**已取代 2026-09-30 v1.1 §3.1**：本注记「同乘 cos ψ̄」方向错误（应为 sec ψ̄，斜视变粗），且自标「无未验成分」不成立——原文按 dated 取代纪律保留，勘误 §8.7-1】）：本规格三条主式为孔径角语义（$\lambda/(2\times\text{总视角角})$），斜视角不进 $\rho_a$；spec D6「ρ_a 用孔径中心 $\bar\psi$ 语义」若需 Doppler 语义修正（$B_d\propto\cos\bar\psi$，前篇 $\cos\psi_{sq}$ 因子血统），则三模式**同乘** $\cos\bar\psi$ 因子，档序不变——修正属 D6 实现选项，不改变本节公式与档序。
 - **SLS 精于条带的单调性**：$A\in(0,1)\Rightarrow\rho_{a,\mathrm{SLS}}<\rho_{a,\mathrm{STR}}$ 严格成立（GF-3 原文 "improved by the factor A"）。蓝图 §2.2(c) 单调性声明方向正确、公式错误，见 §8.1。
+
+### 3.1 逐模式 $\rho_{a,\mathrm{ach}}(m,\bar\psi)$ 封闭式（v1.1，2026-09-30 票 18 blocking gate 产出；dated 取代上文「斜视角修正口径注记」）
+
+**取代声明**：§3 末原「斜视角修正口径注记」称修正为「三模式**同乘 $\cos\bar\psi$」——**方向错误，本节取代**（原注记自标「无未验成分」不成立，勘误登记 §8.7-1）。正确机理：Doppler 语义 $\rho_a=V_s/B_d$（§3 Kim Eq.(4)-(5) 原文），固定角跨度（$\theta_a$ 与转向跨度以角度计固定）下 $B_d\propto\cos\bar\psi$，故 $\rho_a\propto\sec\bar\psi$（**斜视变粗**）；与 §8.2/§4.2 时长族 $\sec^2\bar\psi$ 同源（带宽随斜视收窄）。双路独立验证：audit-20260930 A 路 85 检查重推导 + 主线程独立推导（$B_d\propto\cos\bar\psi$ 链），另 Kim Eq.(13) 结构自证——分母 $\sin(\bar\psi+\alpha/2)-\sin(\bar\psi-\alpha/2)=2\cos\bar\psi\sin(\alpha/2)\propto\cos\bar\psi$。
+
+**生产式（唯一实现口径）**：
+
+$$\rho_{a,\mathrm{ach}}(m,\bar\psi)=\frac{\rho_a(m,0)}{\cos\bar\psi},\qquad \bar\psi\in[0^\circ,45^\circ]$$
+
+零斜视锚点（§3 三 adjudication 不变）：$\rho_a(\mathrm{STR},0)=D/2=2.4669$ m；$\rho_a(\mathrm{SLS},0)=A\cdot D/2=0.5000$ m；$\rho_a(\mathrm{SPT},0)=$ 模式库设计常数 $0.3000$ m（$=\lambda/(2\beta_{\mathrm{span}})$，$\beta_{\mathrm{span}}=2.9603°$）。零斜视处严格等于现常数（锚点回归零漂移）；各模式定义域另受包络约束（STR/SPT ±45° 设计界、SLS 物理滑动域 ~26°，spec D12③）。
+
+**恒等核验式（Eq.(13) 逐模式实例化，非生产路径）**：$\rho_a=\lambda/(4\sin(\alpha_m/2)\cos\bar\psi)$，$\alpha_m\in\{\theta_a,\ \theta_a/A,\ \beta_{\mathrm{span}}\}$；由恒等式 $\sin(\bar\psi+\alpha/2)-\sin(\bar\psi-\alpha/2)=2\cos\bar\psi\sin(\alpha/2)$ 与生产式代数等价。实测残差（常数推导路径差，非公式差）：STR $4.1\times10^{-6}$ / SLS $2.0\times10^{-5}$ / SPT $3.3\times10^{-5}$，**全域容差 $10^{-3}$**。
+
+**sanity 数值表（本票独立复算，sec 形式）**：
+
+| $\bar\psi$ | STR (m) | SLS (m) | SPT (m) |
+|---|---|---|---|
+| 0° | 2.46690 | 0.50000 | 0.30000 |
+| 12°（Kim 参考几何） | 2.52201 | 0.51117 | 0.30670 |
+| 45° | 3.48873 | 0.70711 | 0.42426 |
+
+12° 档为**恒等/单调断言**用途（Kim 未公布斜视 $\rho_a$，无外部文献锚，禁找不存在的文献值）；45° 档供票 15 实现核对。
+
+**Eq.(12)/(13) edge-vs-axis 约定钉死（Kim p.9 原文级留痕）**：PDF p.9（"9 of 33"）原文桥接句逐字——"Since $V_s(t-t_0)/\sqrt{R_0^2+V_s^2(t-t_0)^2}=\sin(\psi_{s_0}+\frac{\theta_a}{2})$ and $V_s(t-t_1)/\sqrt{R_0^2+V_s^2(t-t_1)^2}=\sin(\psi_{s_1}-\frac{\theta_a}{2})$, Equation (12) can be expressed simply as Equation (13)."——即 $t_0,t_1$ = 波束**边缘**穿越时刻，$\psi_{s_0},\psi_{s_1}$ = **转向轴**角；**边缘角 = 轴角 ± θ_a/2（各自偏移）**，轴跨度 $\psi_{s_0}-\psi_{s_1}=\alpha-\theta_a$（与同页 Eq.(14) $\psi_{s_0}-\psi_{s_1}+\theta_a=\alpha$ 一致）。pymupdf 逐字抽取，留痕即本节引文。
+
+**B_D 第三消费方登记（AASR 侧，spec D12②）**：
+
+$$B_D(m,\bar\psi)=\frac{V_s}{\rho_{a,\mathrm{ach}}(m,\bar\psi)}\equiv\frac{V_s\cos\bar\psi}{\rho_a(m,0)}$$
+
+（SANITY：SLS @45° = 7578.057×cos45°/0.5 = 10717.0 Hz。）**禁用** $V_s\cos\bar\psi/\rho_{a,\mathrm{ach}}(m,\bar\psi)$ 字面式——sec 口径下展开为 $V_s\cos^2\bar\psi/\rho_a(m,0)$，差一个 cos 因子（@45° 宽带窄 29%，反保守；spec D12② 原式已废，勘误登记 §8.7-2）。D06-8 AASR 数值期望随票 15 网格重生成时消费本式。
+
+**语义边界**：本节 sec 因子为**沿轨方位口径**（azimuth-along-track）；45° 端分辨率椭圆旋转引入的地面投影修正不在本式范围，实现与论文按外推/简化披露（spec D12④ limitation）。
 
 ---
 
@@ -121,6 +154,8 @@ $$\rho_{a,\mathrm{STR}}=\frac{D}{2}\,,\qquad
 
 ### 4.2 优化器层平面地闭式（spec D4「优化器内」口径；均 [自推导·文献结构]，验证证据 §6）
 
+> 【勘误标记 v1.1 2026-09-30，spec D4 修订对齐】spec D4 已反转（2026-09-30）：驻留**生产路径 = Kim Eq.(22) 全式**（票 15 切换），本节平面闭式**降级为测试 oracle**；本节公式与 §6 验证值不动（oracle 语义下继续有效）。
+
 统一结构：**驻留 = 视角角跨度 × 几何杠杆 / 速度**，四式共用斜视修正 $\sec^2\bar\psi$（线性化；与 Kim Eq.(22) 全式偏差 0.11% @6°、0.44% @12°，§6 表 4）：
 
 | 模式 | 闭式 | 骨架出处 |
@@ -135,6 +170,8 @@ $$\rho_{a,\mathrm{STR}}=\frac{D}{2}\,,\qquad
 - **SPT 场景尺寸包络**（C1b 足印约束的物理来源）：SPT 波束足印方位向长度为 $R\theta_a$ 量级（本参考几何 ≈4.87 km，对 5 km 场景无裕量）；滑聚靠波束滑动「maintaining the same resolution」成像更宽区域（Kim p.7 原文、摘要 overlapping-imaging 语义），场景方位尺寸超足印的任务判不可服务（映射表第三键，spec D2）。
 
 ### 4.3 校核层与误差界（spec D4「Kim 全式为实现层校核器」的落位）
+
+> 【勘误标记 v1.1 2026-09-30，spec D4 修订对齐】本节「校核器」随 D4 反转**升为生产层**（票 15）；下列误差界条目语义转为 oracle-vs-全式偏差登记。
 
 - 校核器 = §4.1 Eq.(2)-(3)（$R_0$ 全曲率）+ Eq.(20)-(23)（斜视 SLS 精确解，二次方程取根规则：两解取落在 $[\theta_{s_1}^{min},\theta_{s_1}^{max}]$ 内者）+ Eq.(22)/(24)。
 - 优化器闭式误差源与当前实测界：$\sec^2$ 线性化 ≤0.44%（@12°，随 $\bar\psi$ 增大）；平面地 $R_0$ 近似 ~4% $R$ 量级（蓝图 §2.3 简化声明，同前篇 $f_3$ 先例）；$|\bar\psi|\gtrsim45°$（W 档边缘）线性化失效，校核器误差超裕度垫（初值 5%）即报警升级（spec D4 语义）。
@@ -307,6 +344,12 @@ $\beta_{req}=\lambda/2\rho_a$（Kim Eq.(5)）、SAT=SAL/V 框架、SPT 斜视 $\
 4. **§0.1 GF-3 PDF 登记路径**：登记名与盘上文件名不一致（sensors vs zhang），以盘上文件改名落实，路径现已可解析（10,325,517 B 核对一致）。
 
 残留已知项（接受不修）：§6 表 2 SPT@12° ECEF 格 5.802 与独立复算 5.798–5.800 差 ≤0.05%（舍入级；票 03 以本表为期望值带实现）。
+
+### 8.7 勘误登记（v1.1，2026-09-30 票 18 blocking gate；gate-review 确认轮 ALL-CLOSED）
+
+1. **§3 斜视角修正口径注记方向错误**：原注记（现 :81 附近）称修正为「三模式同乘 $\cos\bar\psi$」且自标「无未验成分」——两处均不成立。Doppler 语义 $\rho_a=V_s/B_d$、固定角跨度 $B_d\propto\cos\bar\psi$ ⇒ $\rho_a\propto\sec\bar\psi$（斜视**变粗**非变细）。audit-20260930 双路独立推导 + Kim Eq.(13) 结构三方一致。已由 §3.1 dated 取代（原注记保留原文 + 取代标记，非删除）。
+2. **B_D 公式 cos 因子重复计入（spec D12② 侧错误，本文件登记正式式）**：spec D12② 原登记 $B_D=V_s\cos\psi/\rho_{a,\mathrm{ach}}(\psi)$ 在 sec 口径下字面展开 $=V_s\cos^2\bar\psi/\rho_a(m,0)$，差一个 cos 因子（@45° SLS 宽带 10717 vs 7578 Hz，窄 29% 反保守）。正式式见 §3.1：$B_D=V_s/\rho_{a,\mathrm{ach}}(m,\bar\psi)\equiv V_s\cos\bar\psi/\rho_a(m,0)$。spec D12② 已同步勘误（2026-09-30 gate-review P0-1）。
+3. **§4.2/§4.3 分层标签过时**：spec D4 2026-09-30 反转（生产 = Kim 全式、平面式降 oracle）后，两节标题沿用旧「优化器层/校核层」称谓——已加 dated 勘误标记，正文公式与 §6 验证值不动。
 
 ---
 
