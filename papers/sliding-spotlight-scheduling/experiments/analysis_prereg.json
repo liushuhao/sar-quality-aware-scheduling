@@ -125,5 +125,15 @@
       "robustness_note": "promotion readout recorded at every budget (its dead-at-all-budgets status is already established and expected to hold)"
     },
     "relation_to_prior": "supersedes the interpretation of the 40/60-budget readings for these units; frozen matrix statistics untouched"
+  },
+  "amendment_20260930_audit2_r1_redline":   {
+    "rationale": "Audit2 (2026-09-30: four fresh-subagent lanes -- premise / code / data / cross-layer -- plus a main-thread theory pass, run after a backend model change) found that the machine-readable verdict skeleton still encodes the PHYSICAL-vs-SEARCH-ARTIFACT binary that tickets 19/20 adjudicated as SEARCH-ARTIFACT at every density. The refutation lived only in the spec prose (D14 / D15), so the primary machine-readable artifact retained a refuted criterion. Append-only per amendment_discipline: nothing already present is mutated; this records the adjudication and forbids the refuted branch.",
+    "verdict": "Frontier collapse at any density in the synthetic family is a SEARCH ARTIFACT. The PHYSICAL branch is REFUTED: amendment_20260930_convergence_calibration shows the front keeps growing with budget at N=40/60/80/100, and the N=100 ladder 2->4->17->48 (distinct-fq at budget 60/120/160/240/320/480) exhibits NO plateau, so the reading is NOT-YET-CONVERGED rather than collapsed.",
+    "applies_to": [
+      "amendment_20260930_probe_density.physics_collapse_verdict (wording 'COLLAPSE IS PHYSICAL' -- branch now dead)",
+      "amendment_20260930_convergence_calibration.physics_collapse_verdict (same skeleton, same status)",
+      "amendment_20260930_convergence_calibration.search_artifact_verdict (this amendment is consistent with it and supersedes the earlier conditional reading)"
+    ],
+    "binding_rule": "No PHYSICAL-collapse claim may be made from any density readout, at any budget, without a per-density convergence ladder exhibiting a plateau (distinct-fq flat across a further budget doubling) under a pre-registered plateau threshold. Absence of a plateau is NOT-YET-CONVERGED, never 'collapsed'. This restates spec D15 red line 1 in machine-readable form so the preregistration no longer carries a refuted criterion."
   }
 }
