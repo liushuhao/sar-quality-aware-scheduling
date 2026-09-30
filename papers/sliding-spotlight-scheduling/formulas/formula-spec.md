@@ -110,7 +110,7 @@ $$\rho_{a,\mathrm{ach}}(m,\bar\psi)=\frac{\rho_a(m,0)}{\cos\bar\psi},\qquad \bar
 
 $$B_D(m,\bar\psi)=\frac{V_s}{\rho_{a,\mathrm{ach}}(m,\bar\psi)}\equiv\frac{V_s\cos\bar\psi}{\rho_a(m,0)}$$
 
-（SANITY：SLS @45° = 7578.057×cos45°/0.5 = 10717.0 Hz。）**禁用** $V_s\cos\bar\psi/\rho_{a,\mathrm{ach}}(m,\bar\psi)$ 字面式——sec 口径下展开为 $V_s\cos^2\bar\psi/\rho_a(m,0)$，差一个 cos 因子（@45° 宽带窄 29%，反保守；spec D12② 原式已废，勘误登记 §8.7-2）。D06-8 AASR 数值期望随票 15 网格重生成时消费本式。
+（SANITY：SLS @45° = 7578.057×cos45°/0.5 = 10717.0 Hz。）**禁用** $V_s\cos\bar\psi/\rho_{a,\mathrm{ach}}(m,\bar\psi)$ 字面式——sec 口径下展开为 $V_s\cos^2\bar\psi/\rho_a(m,0)$，差一个 cos 因子（@45° 宽带窄 29%，反保守；spec D12② 原式已废，勘误登记 §8.7-2）。D06-8 AASR 数值期望随票 15 网格重生成时消费本式。**残差登记（票 18 验收 5 补齐）**：本闭式与 $K_a\cdot T_{\mathrm{point}}$（Eq.22 全式驻留链，D06-1 原推导）的等价残差 = $\rho_a(m,0)$ 常数链小角近似（$\sin(\alpha/2)\approx\alpha/2$ 类）+ Eq.22 tan 链 vs 闭式驻留差，合并量级 $O(\alpha^2\tan^2\bar\psi)$；上界：$\alpha_{\max}=\theta_a/A\approx1.78°\Rightarrow\alpha^2\approx9.6\times10^{-4}$，$\bar\psi=45°$ 端相对残差 $\lesssim10^{-3}$（与 §3.1 恒等容差同量级）；票 15 D06-8 期望重生成时以实测差值复核该上界。
 
 **语义边界**：本节 sec 因子为**沿轨方位口径**（azimuth-along-track）；45° 端分辨率椭圆旋转引入的地面投影修正不在本式范围，实现与论文按外推/简化披露（spec D12④ limitation）。
 
