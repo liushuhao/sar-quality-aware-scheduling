@@ -46,17 +46,22 @@ def git_head() -> str:
     return out.stdout.strip()
 
 
-def run_unit(code: str, seed: int, manifest_path: Path) -> tuple[int, dict | None]:
+def run_unit(code: str, seed: int, manifest_path: Path, pop: int, gen: int,
+             out_dir: Path) -> tuple[int, dict | None]:
     env = dict(os.environ, PYTHONHASHSEED="0")
     proc = subprocess.run(
         [sys.executable, str(PILOT_SCRIPT),
          "--manifest", str(manifest_path),
          "--seed", str(seed),
-         "--pop", "40", "--gen", "60",
-         "--out", str(PROBE_DIR)],
+         "--pop", str(pop), "--gen", str(gen),
+         "--out", str(out_dir)],
         env=env, capture_output=True, text=True,
     )
-    art_path = PROBE_DIR / f"pilot_{code}_seed{seed}.json"
+    suffix = f"_p{pop}_g{gen}" if (pop, gen) != (40, 60) else ""
+    plain = out_dir / f"pilot_{code}_seed{seed}.json"
+    art_path = out_dir / f"pilot_{code}_seed{seed}{suffix}.json"
+    if proc.returncode == 0 and suffix and plain.exists():
+        plain.replace(art_path)
     art = json.loads(art_path.read_text(encoding="utf-8")) if (
         proc.returncode == 0 and art_path.exists()
     ) else None
@@ -67,13 +72,20 @@ def main(argv=None) -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--variants", default="6,7,8,9")
     ap.add_argument("--seeds", type=int, default=5)
+    ap.add_argument("--pop", type=int, default=40)
+    ap.add_argument("--gen", type=int, default=60)
+    ap.add_argument("--out", default=None,
+                    help="output dir override (default: probe_density; "
+                         "convergence runs use probe_convergence)")
     args = ap.parse_args(argv)
 
     vmap = {int(t): VARIANT_REGISTRY[int(t)] for t in args.variants.split(",")}
     head = git_head()
     print(f"probe code identity: git HEAD {head}", flush=True)
+    print(f"budget: pop={args.pop} gen={args.gen}", flush=True)
 
-    PROBE_DIR.mkdir(parents=True, exist_ok=True)
+    out_dir = Path(args.out).resolve() if args.out else PROBE_DIR
+    out_dir.mkdir(parents=True, exist_ok=True)
     results: dict[str, list[dict]] = {}
     exit_counts: dict[int, int] = {}
     for vidx, (code, density, interval, tier) in sorted(vmap.items()):
@@ -86,7 +98,8 @@ def main(argv=None) -> int:
             write_manifest(manifest, mpath)
 
             t0 = time.monotonic()
-            exit_code, art = run_unit(code, seed, mpath)
+            exit_code, art = run_unit(code, seed, mpath, args.pop, args.gen,
+                                      out_dir)
             wall = time.monotonic() - t0
             exit_counts[exit_code] = exit_counts.get(exit_code, 0) + 1
             if exit_code == 0:
