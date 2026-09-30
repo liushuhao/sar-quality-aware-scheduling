@@ -26,9 +26,11 @@ pre-implementation gate review):
   ~8 dB optimistic and would leak infeasible edge targets through the
   hard constraint (anti-conservative, D7 violation).
 * D06-3  K_c = (2 Vs/lambda) * k_theta * cos(psi)  =>  K_c/K_a = k/cos^2(psi)
-  (the exact rate keeps a_res > 0 at the k = 0.9 / psi = 12 deg corner
-  where the Song small-angle form would go negative); a_res > 0 is a
-  domain guard.
+  (the exact rate keeps a_res > 0 up to psi ~ 18.4 deg at k = 0.9; the
+  Song cos^3 / small-angle readings go negative only beyond psi ~ 15.1
+  deg -- audit 2026-09-30 re-registration: the old "goes negative at
+  the k=0.9/psi=12 deg corner" quote was not reproducible (+0.038/+0.10
+  measured there)); a_res > 0 is a domain guard.
 * D06-4  PRF keys (Kim publishes none; sourced per ticket-06 mandate):
   1150 / 2300 Hz  Song 2025 Table 1 (in-house fulltext, txt:376-383);
   3044 Hz  TerraSAR-X concurrent-imaging effective PRF (Kraus et al.,
@@ -123,8 +125,11 @@ K_AXIS_DEFAULT = tuple(round(i * 0.9 / 54, 6) for i in range(55))  # k in [0, 0.
 # The +1.0 dB margin is RETAINED unchanged as frozen conservative
 # slack: it only shrinks the feasible set, and it keeps the bound
 # robust against any future structural change of the k-axis shape.
-# In-cell spans measured <= 0.8 dB, so bound - direct = 1.0-1.7 dB is
-# slack, not tight.
+# In-cell spans measured <= 0.8 dB at mid-grid; bound - direct =
+# 1.0-1.7 dB at mid-grid but up to 6.64 dB at grid corners (worst:
+# STR/3044 Hz/psi=12 deg; corner-biased 400-sample scan, audit
+# 2026-09-30 re-registration) -- slack grows away from mid-grid in the
+# conservative direction; bound >= direct held 400/400.
 AASR_CELL_MARGIN_DB = 1.0
 
 N_INTEGRATION_POINTS = 256

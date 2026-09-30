@@ -60,8 +60,10 @@ class ModeLibrary:
         if mode is Mode.SPT:
             return self.beta_span_spt_rad
         if mode is Mode.SLS:
-            # point-target total viewing angle alpha = theta_a / A (formula-spec §5
-            # identity); the steering span is the beam-axis part alpha - theta_a.
+            # point-target total viewing angle alpha = theta_a / A (identity in
+            # formula-spec §2 source 3 / §6 Table 5; audit 2026-09-30 citation
+            # fix: old comment cited §5); the steering span is the beam-axis
+            # part alpha - theta_a.
             return self.geo.theta_a_rad / self.geo.A - self.geo.theta_a_rad
         if mode is Mode.STR:
             return 0.0

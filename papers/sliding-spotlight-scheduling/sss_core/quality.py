@@ -14,7 +14,8 @@ in the ticket body after the pre-implementation gate review):
   scene reference would break the radiometric monotonicity -- SPT scene
   dwell is SHORTER than SLS because its beam parks instead of sweeping).
 * D05-3 CONSTRUCTIVE COUPLING (registered counter-evidence) -- to within
-  0.02% (SPT tan-exact vs sec^2 linearisation), g_T,point equals
+  0.03% (measured max 0.025%; audit 2026-09-30 re-registration)
+  (SPT tan-exact vs sec^2 linearisation), g_T,point equals
   rho_a,STR/rho_a,ach: the dwell gain carries no information beyond the
   mode ordering.  It is retained because its semantic leg is independent
   (integrated-pulse ENERGY vs geometric sampling); the spec-D6 exit
