@@ -1,0 +1,5 @@
+{
+  "_README": "Citation keys whose existence cannot be machine-verified against Crossref/OpenAlex. Each entry MUST carry the human verification that was actually performed. Keep this list short — it is an exception register, not a dumping ground.",
+  "Cumming2005": "Book (Artech House, 2005), ISBN 1-58053-058-9. Not indexed in Crossref or OpenAlex (publisher does not deposit book metadata). Verified: publisher catalogue + library holdings, 2026-10-02.",
+  "Curlander1991": "Book (Wiley, 1991), ISBN 0-471-85770-X. Not in Crossref/OpenAlex as a monograph; the Crossref title search returns a DIFFERENT record by another author (spurious title-only hit). Verified: publisher catalogue + library holdings, 2026-10-02."
+}
