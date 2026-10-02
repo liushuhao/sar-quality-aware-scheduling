@@ -82,6 +82,56 @@ def m1_double_check() -> dict:
                  f"tag {M1_TAG}..HEAD diff empty AND src/sar_sim worktree clean")
 
 
+def claim_provenance() -> dict:
+    """Claim-level provenance for the frozen formula source.
+
+    Distinct from the shared-library suite: this asks whether the cited
+    sources actually SAY what formula-spec.md attributes to them.  The
+    existence gate (src/tools/check_citation_exists.py) cannot see that
+    class of defect -- a real paper can contradict itself, or be cited for
+    a passage it does not contain.
+
+    rc mapping is explicit because the failure modes are not equivalent:
+      0 -> PASS    every registered claim verified
+      1 -> FAIL    a claim's quote is absent from its cited page
+      2 -> REPORT  literature/ absent (gitignored; fresh clone cannot verify)
+      3 -> FAIL    usage error or empty registry -- verifies nothing
+    Anything else (including a crash) is FAIL: a gate that silently
+    degrades to green is worse than no gate.
+
+    The rc=2 downgrade is a user decision (2026-10-02): the standalone
+    script keeps its hard rc=2, but inside the gate a missing source is a
+    recorded non-failure so a fresh clone is not permanently blocked.
+    Detail uses `restore_required`, NOT `action_required` -- the latter is
+    scanned across all steps (verify.py:322) and drives a hardcoded A6
+    message in run_verify.py.
+    """
+    script = FORK_DOMAIN / "scripts" / "verify_claim_traces.py"
+    if not script.is_file():
+        return _step("claim_provenance", "FAIL", f"verifier missing: {script}")
+    try:
+        proc = subprocess.run(
+            [sys.executable, str(script)],
+            cwd=REPO_ROOT, capture_output=True, text=True, encoding="utf-8",
+        )
+    except OSError as exc:
+        return _step("claim_provenance", "FAIL", f"verifier would not run: {exc}")
+
+    rc = proc.returncode
+    if rc == 0:
+        status = "PASS"
+    elif rc == 2:
+        status = "REPORT"
+    else:
+        status = "FAIL"
+    tail = proc.stdout.strip().splitlines()[-1:] if proc.stdout.strip() else []
+    return _step("claim_provenance", status, {
+        "exit": rc,
+        "restore_required": rc == 2,
+        "summary": tail[0] if tail else proc.stderr.strip()[:300],
+    })
+
+
 def shared_lib_tests() -> dict:
     """Full shared-library suite: collected == 145 == N0, failed == 0,
     exit 0 -- three conditions, all required."""
@@ -293,6 +343,7 @@ def run_gate(pilot_path: Path, manifest_path: Path,
     registry = {
         "m1_double_check": lambda: m1_double_check(),
         "shared_lib_tests": lambda: shared_lib_tests(),
+        "claim_provenance": lambda: claim_provenance(),
         "grid_halving": lambda: grid_halving(lib),
         "predicate_source": lambda: predicate_source(),
         "promotion_replay": lambda: promotion_replay(pilot, manifest, lib),

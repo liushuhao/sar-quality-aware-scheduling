@@ -22,6 +22,7 @@ from sss_core.nsga2 import load_manifest  # noqa: E402
 from sss_core.verify import (  # noqa: E402
     aasr_headroom,
     anchor_crosscheck,
+    claim_provenance,
     grid_halving,
     m1_double_check,
     predicate_source,
@@ -34,6 +35,7 @@ from sss_core.verify import (  # noqa: E402
 PILOT = FORK_DOMAIN / "experiments" / "results" / "pilot" / "pilot_M1NC_seed100.json"
 M1NC = FORK_DOMAIN / "experiments" / "results" / "scenarios" / "M1NC_seed100.json"
 M2WH = FORK_DOMAIN / "experiments" / "results" / "scenarios" / "M2WH_seed200.json"
+LITERATURE = FORK_DOMAIN.parents[1] / "literature" / "fulltext"
 
 
 @pytest.fixture(scope="module")
@@ -172,6 +174,74 @@ def test_gate_light_pass(pilot, manifest, lib):
     )
     assert code == 0, [s for s in report["steps"] if s["status"] == "FAIL"]
     assert report["n_fail"] == 0
+
+
+def test_claim_provenance_passes_with_sources_present():
+    """On a machine with literature/ restored, the provenance gate is green.
+
+    Skipped elsewhere: literature/ is gitignored, and the step's rc=2 ->
+    REPORT behaviour is asserted separately below, so a missing source must
+    not make this test fail.
+    """
+    if not LITERATURE.is_dir():
+        pytest.skip("literature/ absent; see test_claim_provenance_rc2_is_report")
+    step = claim_provenance()
+    assert step["status"] == "PASS", step
+    assert step["detail"]["exit"] == 0
+
+
+@pytest.mark.parametrize(
+    "rc,expected",
+    [(0, "PASS"), (1, "FAIL"), (2, "REPORT"), (3, "FAIL"), (99, "FAIL")],
+)
+def test_claim_provenance_rc_mapping(monkeypatch, rc, expected):
+    """Every rc maps explicitly; an unrecognised rc is FAIL, never PASS.
+
+    The false-green this guards: mapping only rc==1 to FAIL would let a
+    verifier that checks nothing (rc=3, empty registry) or that is simply
+    broken (unknown rc) report success.
+    """
+    import subprocess as sp
+
+    import sss_core.verify as v
+
+    def fake_run(argv, **kw):
+        return sp.CompletedProcess(argv, rc, "", "")
+
+    monkeypatch.setattr(v.subprocess, "run", fake_run)
+    step = v.claim_provenance()
+    assert step["status"] == expected, (rc, step)
+
+
+def test_claim_provenance_rc2_does_not_set_action_required(monkeypatch):
+    """rc=2 must be a REPORT that leaves the gate green AND must not raise
+    the global action_required flag -- run_verify.py prints a hardcoded
+    'A6 scatter precheck' message when that flag is set."""
+    import subprocess as sp
+
+    import sss_core.verify as v
+
+    monkeypatch.setattr(
+        v.subprocess, "run",
+        lambda argv, **kw: sp.CompletedProcess(argv, 2, "", ""),
+    )
+    step = v.claim_provenance()
+    assert step["status"] == "REPORT"
+    assert step["detail"]["restore_required"] is True
+    assert "action_required" not in step["detail"]
+
+
+def test_claim_provenance_missing_script_fails(monkeypatch):
+    """A missing verifier must FAIL loudly, not raise FileNotFoundError
+    and take the whole gate down with a traceback."""
+    import sss_core.verify as v
+
+    monkeypatch.setattr(
+        v, "FORK_DOMAIN", v.FORK_DOMAIN / "no_such_directory_xyz",
+    )
+    step = v.claim_provenance()
+    assert step["status"] == "FAIL"
+    assert "missing" in step["detail"]
 
 
 if __name__ == "__main__":
