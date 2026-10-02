@@ -11,9 +11,18 @@
     "initial_scope": "audit3 F1/F2/F3/F5 plus the two spot-checked formula attributions (GF-3 Eq.(2), Kim Eq.(12)/(13) bridge). F3 and F5 are registered as explicit KNOWN-BROKEN entries so the gate reports the real current state rather than a curated green."
   },
   "sources": {
-    "kim2021_aerospace_fulltext.txt": { "total_pages": 33, "pdf": "kim2021_aerospace_fulltext.pdf" },
-    "song2025_sensors_sparse.txt": { "total_pages": 17, "pdf": "song2025_sensors_sparse.pdf" },
-    "gf3_2018_zhang_sliding.txt": { "total_pages": 13, "pdf": "gf3_2018_zhang_sliding.pdf" }
+    "kim2021_aerospace_fulltext.txt": {
+      "total_pages": 33,
+      "pdf": "kim2021_aerospace_fulltext.pdf"
+    },
+    "song2025_sensors_sparse.txt": {
+      "total_pages": 17,
+      "pdf": "song2025_sensors_sparse.pdf"
+    },
+    "gf3_2018_zhang_sliding.txt": {
+      "total_pages": 13,
+      "pdf": "gf3_2018_zhang_sliding.pdf"
+    }
   },
   "claims": [
     {
@@ -132,14 +141,14 @@
     },
     {
       "id": "KIM-eq12-13-bridge",
-      "status": "provenance-label-wrong",
-      "summary": "formula-spec.md §3.1 presents a LaTeX-rendered sentence as Kim p.9 '原文逐字'; the extraction shows the symbols were stripped",
+      "status": "verified",
+      "summary": "formula-spec.md:107 quotes Kim p.9's Eq.(12)/(13) bridge sentence; the 'pymupdf 逐字抽取' label is CONFIRMED accurate",
       "source_file": "kim2021_aerospace_fulltext.txt",
       "source_page": 9,
       "source_total_pages": 33,
       "quote": "Since  ( ) = sin  + and",
-      "spec_line": 97,
-      "note": "FOUND BY THIS GATE during construction, not by audit3. The spec quotes 'Since V_s(t-t_0)/sqrt(...)=sin(psi_s_0+theta_a/2) and ... Equation (12) can be expressed simply as Equation (13).' and labels it 逐字原文 (pymupdf extraction). The .txt extraction has the symbols blanked. Either the two extractions genuinely differ (pymupdf raw vs this txt) or the spec reconstructed the sentence from the rendered PDF. Math is unaffected -- the edge-vs-axis reading is correct -- but the provenance LABEL overstates. Resolve under ticket 21; this gate deliberately registers the weaker form so the label cannot stay overstated."
+      "spec_line": 107,
+      "note": "RESOLVED 2026-10-02 by extracting the PDF directly with pymupdf (fitz 1.27.2.3), page index 8. pymupdf yields the bridge sentence with its structure intact but its glyphs as mojibake, e.g. 'ටోඬమା౞మ(௧ି௧బ)మ= sin ቀ𝜓௦బ+ ... ఏౌశቁ and ... = sin ቀ𝜓௦భ− ఏౌశቁ, Equation (12) can be expressed simply as Equation (13).' That is exactly the structure the spec renders as Vs(t-t0)/sqrt(R0^2+Vs^2(t-t0)^2)=sin(psi_s0+theta_a/2). The spec's rendering is therefore faithful to pymupdf and its provenance label is CORRECT; only the auxiliary .txt extraction drops the glyphs. This entry was registered as provenance-label-wrong on the strength of the .txt alone -- a misreading. The erratum is to THIS registry entry, not to formula-spec.md; no edit to the spec is warranted for this item. Generalisable lesson: a .txt extraction cannot adjudicate a claim that is labelled as coming from a different extractor."
     }
   ]
 }
