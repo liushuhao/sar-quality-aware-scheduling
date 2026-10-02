@@ -1,0 +1,134 @@
+{
+  "meta": {
+    "document_type": "claim_provenance_registry",
+    "purpose": "Claim-level provenance for formula-spec.md. check_citation_exists.py verifies a bib entry RESOLVES; this registry verifies the source actually SAYS what the spec attributes to it. The audit3 F1/F2/F3/F5 defects all pass a DOI check and fail this one.",
+    "verifier": "papers/sliding-spotlight-scheduling/scripts/verify_claim_traces.py",
+    "mechanism": "Each claim pins source file + PDF page + a VERBATIM quote. The verifier builds a page -> line-range map from the 'N of M' PDF footer markers in the extracted text, then requires the quote inside that page's range. Page locator and quote are independent, so a mis-transcribed quote cannot silently pass by matching itself.",
+    "source_convention": "Page numbers are PDF footer numbers ('9 of 33'), not printed page numbers. Quotes are copied character-for-character from the .txt extraction, INCLUDING its hyphenation and dropped-subscript artifacts ('mar-\\ngin', '( )'). Do not 'clean up' a quote to match the spec's LaTeX rendering: that reconstruction is the exact defect class this gate exists to catch.",
+    "extraction_line_split": "split('\\n') only. The .txt files contain 33 (Kim) / 17 (Song) / 13 (GF-3) form-feed page separators, which str.splitlines() also breaks on, shifting every line number after page 1.",
+    "source_availability": "literature/ is gitignored (.gitignore:13). A fresh clone cannot verify any claim; the verifier returns exit 2, never 0, in that case.",
+    "registration_policy": "Register a claim when it is (a) a load-bearing formula attribution, (b) a numeric anchor entering a fixture or test expectation, or (c) a conflict/errata record. Coverage grows as tickets 21 and 17 touch their sections; it is not meant to cover every p.N mention in the spec. Extending this file is expected, not exceptional.",
+    "initial_scope": "audit3 F1/F2/F3/F5 plus the two spot-checked formula attributions (GF-3 Eq.(2), Kim Eq.(12)/(13) bridge). F3 and F5 are registered as explicit KNOWN-BROKEN entries so the gate reports the real current state rather than a curated green."
+  },
+  "sources": {
+    "kim2021_aerospace_fulltext.txt": { "total_pages": 33, "pdf": "kim2021_aerospace_fulltext.pdf" },
+    "song2025_sensors_sparse.txt": { "total_pages": 17, "pdf": "song2025_sensors_sparse.pdf" },
+    "gf3_2018_zhang_sliding.txt": { "total_pages": 13, "pdf": "gf3_2018_zhang_sliding.pdf" }
+  },
+  "claims": [
+    {
+      "id": "F1a",
+      "status": "open",
+      "summary": "Song 2025 states sliding-spotlight k_theta is POSITIVE (conflicts with F1b) -- ticket 21 F1",
+      "source_file": "song2025_sensors_sparse.txt",
+      "source_page": 3,
+      "source_total_pages": 17,
+      "quote": "In TOPS, kθ is negative and A > 1, while in Sliding Spotlight and Mosaic mode, kθ is positive and 0 < A < 1",
+      "spec_line": 58,
+      "note": "Verified present. Its OPPOSITE (F1b) is equally present in the same paper. Both quotes are real; the conflict is in the source, not the extraction. Resolution is ticket 21's, not this gate's."
+    },
+    {
+      "id": "F1b",
+      "status": "open",
+      "summary": "Song 2025 states sliding-spotlight steering angle rate is NEGATIVE (conflicts with F1a) -- ticket 21 F1",
+      "source_file": "song2025_sensors_sparse.txt",
+      "source_page": 5,
+      "source_total_pages": 17,
+      "quote": "TOPS has a positive rate. Sliding Spotlight and Mosaic have a negative one",
+      "spec_line": 203,
+      "note": "Verified present. Same paper, opposite sign, five pages apart. formula-spec.md:58 and :203 each inherit one of these."
+    },
+    {
+      "id": "F2a",
+      "status": "known-wrong",
+      "summary": "Kim 25% margin, occurrence 1 of 4 (staring spotlight)",
+      "source_file": "kim2021_aerospace_fulltext.txt",
+      "source_page": 7,
+      "source_total_pages": 33,
+      "quote": "gin of 25% is considered in addition to the staring spotlight mode SAT obtained from",
+      "spec_line": 153,
+      "note": "Quote verified. The defect is the COUNT, not the quote: formula-spec.md:153 records 'two places (p.7/p.11)' but Kim states it in FOUR (p.7/p.11/p.19/p.25). Correction is ticket 21's F2."
+    },
+    {
+      "id": "F2b",
+      "status": "known-wrong",
+      "summary": "Kim 25% margin, occurrence 2 of 4 (sliding spotlight)",
+      "source_file": "kim2021_aerospace_fulltext.txt",
+      "source_page": 11,
+      "source_total_pages": 33,
+      "quote": "this analysis, a margin of 25% is considered in addition to SAT at the sliding spotlight",
+      "spec_line": 153,
+      "note": "Quote verified."
+    },
+    {
+      "id": "F2c",
+      "status": "known-wrong",
+      "summary": "Kim 25% margin, occurrence 3 of 4 -- MISSED by spec and by platform_kim2021.json",
+      "source_file": "kim2021_aerospace_fulltext.txt",
+      "source_page": 19,
+      "source_total_pages": 33,
+      "quote": "25%. The constant values",
+      "spec_line": 153,
+      "note": "Quote verified. Full sentence reads 'The margin of SAR SAT is considered as 25%.' p.7 and p.11 are the two the spec names; this is the first omitted one."
+    },
+    {
+      "id": "F2d",
+      "status": "known-wrong",
+      "summary": "Kim 25% margin, occurrence 4 of 4 -- MISSED by spec and by platform_kim2021.json",
+      "source_file": "kim2021_aerospace_fulltext.txt",
+      "source_page": 25,
+      "source_total_pages": 33,
+      "quote": "8.08~8.38 s for all four targets (25% margin was considered)",
+      "spec_line": 153,
+      "note": "Quote verified. Results-section restatement; the second omitted one."
+    },
+    {
+      "id": "F3",
+      "status": "known-broken",
+      "summary": "g_T cross-check source pin -- formula-spec.md:335 cites 'Song 2025 §2-§3', which contains no g_T derivation",
+      "source_file": "song2025_sensors_sparse.txt",
+      "source_page": 3,
+      "source_total_pages": 17,
+      "quote": "In TOPS, kθ is negative and A > 1",
+      "expect": "absent-term",
+      "absent_term": "nesz",
+      "spec_line": 335,
+      "note": "This entry is deliberately inverted: it asserts that a term Song does NOT contain must be absent from Song. grep -i 'nesz|noise equivalent' over all 996 lines returns 0. The quote field exists only to locate the page; the assertion is the absent_term. Registration is what forces the F3 defect to stay visible instead of being curated away."
+    },
+    {
+      "id": "F5",
+      "status": "known-broken",
+      "summary": "formula-spec.md:64 and :218 cite numerical_check.py; no such file exists in the repo",
+      "source_file": "kim2021_aerospace_fulltext.txt",
+      "source_page": 9,
+      "source_total_pages": 33,
+      "quote": "can be expressed simply as Equation (13)",
+      "expect": "file-absent",
+      "absent_path": "numerical_check.py",
+      "spec_line": 64,
+      "note": "Second kind of registered claim: a pointer to a FILE, not a quote. Verifier confirms the file is absent repo-wide, which is the defect being registered. Ticket 21's F5 resolves it by inlining the derivation or deleting the pointer."
+    },
+    {
+      "id": "GF3-eq2",
+      "status": "verified",
+      "summary": "GF-3 2018 Eq.(2) steering factor A = r/(R+r), and the 'improved by the factor A' monotonicity the spec's §8.1 falsification rests on",
+      "source_file": "gf3_2018_zhang_sliding.txt",
+      "source_page": 3,
+      "source_total_pages": 13,
+      "quote": "the azimuth resolution of the sliding-spotlight mode is improved by the factor A",
+      "spec_line": 62,
+      "note": "Spot-check during tool construction. The monotonicity claim (sliding finer than stripmap) that §8.1 uses to falsify the blueprint's D/(2(1-k)) is verbatim in the source."
+    },
+    {
+      "id": "KIM-eq12-13-bridge",
+      "status": "provenance-label-wrong",
+      "summary": "formula-spec.md §3.1 presents a LaTeX-rendered sentence as Kim p.9 '原文逐字'; the extraction shows the symbols were stripped",
+      "source_file": "kim2021_aerospace_fulltext.txt",
+      "source_page": 9,
+      "source_total_pages": 33,
+      "quote": "Since  ( ) = sin  + and",
+      "spec_line": 97,
+      "note": "FOUND BY THIS GATE during construction, not by audit3. The spec quotes 'Since V_s(t-t_0)/sqrt(...)=sin(psi_s_0+theta_a/2) and ... Equation (12) can be expressed simply as Equation (13).' and labels it 逐字原文 (pymupdf extraction). The .txt extraction has the symbols blanked. Either the two extractions genuinely differ (pymupdf raw vs this txt) or the spec reconstructed the sentence from the rendered PDF. Math is unaffected -- the edge-vs-axis reading is correct -- but the provenance LABEL overstates. Resolve under ticket 21; this gate deliberately registers the weaker form so the label cannot stay overstated."
+    }
+  ]
+}
