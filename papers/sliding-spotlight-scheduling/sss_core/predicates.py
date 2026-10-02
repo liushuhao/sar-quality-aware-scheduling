@@ -19,7 +19,9 @@ Ticket-09 decisions D09-1..7:
 
 * D09-1 C2 transfer requirement
   ``need = (1 + pads.inter_task_fraction) * dur_i + t_maneuver + SETTLE_S``
-  -- the 25% pad multiplies the DWELL (Kim's own wording, three places,
+  -- the 25% pad multiplies the DWELL (Kim's own wording, four places —
+  p.7 / p.11 execution-layer definitions plus p.19 parameter and p.25
+  results restatement; ticket 21 corrected the earlier "three places" —
   and the frozen formula-spec §4.1 registration: "a margin of 25% is
   considered in addition to the SAT"), NOT the maneuver.  ``pads`` is a
   parameter so the M?NC degenerate anchor pays zero pad through the very

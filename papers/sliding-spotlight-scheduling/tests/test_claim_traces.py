@@ -100,12 +100,17 @@ def test_provenance_gate_passes():
 
 
 def test_gate_reports_open_defects():
-    """The false-green guard: ticket-21 defects are registered, so the gate must
-    name them.  If someone marks them all 'verified' without fixing the spec,
-    this goes red.
+    """Every claim the registry still calls open must be named in the gate
+    output -- the false-green guard.  Marking a defect 'verified' while the
+    spec still carries it makes the summary read clean; this catches that.
 
-    Fails only if the registry claims zero open defects while audit3's F1/F2/
-    F3/F5 are still unfixed in formula-spec.md.
+    The invariant is CONSISTENCY between the registry and the gate output,
+    not a frozen count.  An earlier version hard-required open defects to
+    exist, which was correct while F1/F2/F3/F5 were pending and became a
+    false failure the moment ticket 21 landed and closed them -- it had
+    encoded a temporary state as a permanent requirement.  Zero open
+    defects is now the correct steady state and is asserted as such by
+    `test_all_defects_closed_point_at_a_real_erratum`.
     """
     if not LITERATURE.is_dir():
         pytest.skip("literature/ absent; open-defect state unverifiable")
@@ -116,17 +121,27 @@ def test_gate_reports_open_defects():
         for c in json.loads(REGISTRY.read_text(encoding="utf-8"))["claims"]
         if c.get("status") in open_states
     ]
-    if not registered:
-        pytest.fail(
-            "no open defects registered, but audit3 F1/F2/F3/F5 remain "
-            "unfixed in formula-spec.md — do not mark claims closed until "
-            "ticket 21 actually lands"
-        )
     for cid in registered:
         assert cid in r.stdout, (
             f"claim {cid} is registered as an open defect but the gate output "
             f"does not mention it — false green:\n{r.stdout}"
         )
+
+
+def test_all_defects_closed_point_at_a_real_erratum():
+    """With no open defects left, each closed claim must name the erratum
+    that closed it.  This is the anti-vacuity check for the state ticket 21
+    left behind: 'closed' with no `resolved_in` pointer is indistinguishable
+    from 'closed because someone got tired of the warning'.
+    """
+    claims = json.loads(REGISTRY.read_text(encoding="utf-8"))["claims"]
+    closed = [c for c in claims if c.get("status") in ("closed", "verified")]
+    assert closed, "no closed claims at all — registry looks unmaintained"
+    missing = [c["id"] for c in closed if not c.get("resolved_in")]
+    assert not missing, (
+        f"closed claim(s) with no resolved_in pointer: {missing} — point each "
+        "at the erratum entry (formula-spec 8.8 item N) that actually closed it"
+    )
 
 
 def test_empty_registry_is_rejected(tmp_path, registry):

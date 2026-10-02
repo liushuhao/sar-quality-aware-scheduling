@@ -177,7 +177,7 @@
     },
     "sat_margin_fraction": {
       "value": 0.25,
-      "kim_source": "p.7 ('a margin of 25% is considered in addition to the staring spotlight mode SAT obtained from Equations (7) or (11)'); p.11 ('a margin of 25% is considered in addition to SAT at the sliding spotlight mode obtained from Equations (19) or (24)'); p.25 text",
+      "kim_source": "Kim states the 25% margin in FOUR places (ticket 21, 2026-10-02; this entry previously listed three and omitted p.19, contradicting both formula-spec and the sibling entry squint_staring_range_s which already cited p.25): p.7 ('a margin of 25% is considered in addition to the staring spotlight mode SAT obtained from Equations (7) or (11)'); p.11 ('a margin of 25% is considered in addition to SAT at the sliding spotlight mode obtained from Equations (19) or (24)'); p.19 ('The margin of SAR SAT is considered as 25%. The constant values ... of the objective function to be minimized in Equa-'); p.25 text ('the SAT in Phase 1 took about 8.08~8.38 s for all four targets (25% margin was considered)')",
       "maps_to": "spec D4 C2 inter-task transfer pad 25% maneuver margin (Kim semantics)"
     },
     "rmt_reference": {

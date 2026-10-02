@@ -8,7 +8,7 @@
     "extraction_line_split": "split('\\n') only. The .txt files contain 33 (Kim) / 17 (Song) / 13 (GF-3) form-feed page separators, which str.splitlines() also breaks on, shifting every line number after page 1.",
     "source_availability": "literature/ is gitignored (.gitignore:13). A fresh clone cannot verify any claim; the verifier returns exit 2, never 0, in that case.",
     "registration_policy": "Register a claim when it is (a) a load-bearing formula attribution, (b) a numeric anchor entering a fixture or test expectation, or (c) a conflict/errata record. Coverage grows as tickets 21 and 17 touch their sections; it is not meant to cover every p.N mention in the spec. Extending this file is expected, not exceptional.",
-    "initial_scope": "audit3 F1/F2/F3/F5 plus the two spot-checked formula attributions (GF-3 Eq.(2), Kim Eq.(12)/(13) bridge). F3 and F5 are registered as explicit KNOWN-BROKEN entries so the gate reports the real current state rather than a curated green."
+    "initial_scope": "audit3 F1/F2/F3/F5 plus the two spot-checked formula attributions (GF-3 Eq.(2), Kim Eq.(12)/(13) bridge). F3 and F5 are registered as explicit KNOWN-BROKEN entries so the gate reports the real current state rather than a curated green. UPDATED 2026-10-02 after ticket 21 landed: all nine open defects are now resolved in formula-spec.md v1.2 (errata registry 8.8) and marked verified. The registry stays open for future edits; --strict should now return rc=0."
   },
   "sources": {
     "kim2021_aerospace_fulltext.txt": {
@@ -27,84 +27,91 @@
   "claims": [
     {
       "id": "F1a",
-      "status": "open",
+      "status": "closed",
       "summary": "Song 2025 states sliding-spotlight k_theta is POSITIVE (conflicts with F1b) -- ticket 21 F1",
       "source_file": "song2025_sensors_sparse.txt",
       "source_page": 3,
       "source_total_pages": 17,
       "quote": "In TOPS, kθ is negative and A > 1, while in Sliding Spotlight and Mosaic mode, kθ is positive and 0 < A < 1",
       "spec_line": 58,
-      "note": "Verified present. Its OPPOSITE (F1b) is equally present in the same paper. Both quotes are real; the conflict is in the source, not the extraction. Resolution is ticket 21's, not this gate's."
+      "note": "Verified present. Its OPPOSITE (F1b) is equally present in the same paper. Both quotes are real; the conflict is in the source, not the extraction. Resolution is ticket 21's, not this gate's.",
+      "resolved_in": "formula-spec.md v1.2 errata 8.8-1"
     },
     {
       "id": "F1-quote-reconstructed",
-      "status": "provenance-label-wrong",
+      "status": "closed",
       "summary": "formula-spec.md:63 quotes Song as \"$0<A<1$ in Sliding Spotlight\" inside quotation marks; that string is NOT in Song",
       "source_file": "song2025_sensors_sparse.txt",
       "source_page": 3,
       "source_total_pages": 17,
       "quote": "in Sliding Spotlight and Mosaic mode, kθ is positive and 0 < A < 1",
       "spec_line": 63,
-      "note": "FOUND BY THIS GATE, not by audit3. The spec presents a LaTeX-stripped fragment as the source's wording. Song's actual sentence attributes the sign to k_theta and reads '0 < A < 1' with spaces. The math the spec draws from it is correct; the quotation marks are not. Same class as KIM-eq12-13-bridge: the spec's rendering was copied back as if it were the source. Registered so ticket 21 fixes the quotation, not just the sign."
+      "note": "FOUND BY THIS GATE, not by audit3. The spec presents a LaTeX-stripped fragment as the source's wording. Song's actual sentence attributes the sign to k_theta and reads '0 < A < 1' with spaces. The math the spec draws from it is correct; the quotation marks are not. Same class as KIM-eq12-13-bridge: the spec's rendering was copied back as if it were the source. Registered so ticket 21 fixes the quotation, not just the sign.",
+      "resolved_in": "formula-spec.md v1.2 errata 8.8-2"
     },
     {
       "id": "F1b",
-      "status": "open",
+      "status": "closed",
       "summary": "Song 2025 states sliding-spotlight steering angle rate is NEGATIVE (conflicts with F1a) -- ticket 21 F1",
       "source_file": "song2025_sensors_sparse.txt",
       "source_page": 5,
       "source_total_pages": 17,
       "quote": "TOPS has a positive rate. Sliding Spotlight and Mosaic have a negative one",
       "spec_line": 203,
-      "note": "Verified present. Same paper, opposite sign, five pages apart. formula-spec.md:58 and :203 each inherit one of these."
+      "note": "Verified present. Same paper, opposite sign, five pages apart. formula-spec.md:58 and :203 each inherit one of these.",
+      "resolved_in": "formula-spec.md v1.2 errata 8.8-1"
     },
     {
       "id": "F2a",
-      "status": "known-wrong",
+      "status": "closed",
       "summary": "Kim 25% margin, occurrence 1 of 4 (staring spotlight)",
       "source_file": "kim2021_aerospace_fulltext.txt",
       "source_page": 7,
       "source_total_pages": 33,
       "quote": "gin of 25% is considered in addition to the staring spotlight mode SAT obtained from",
       "spec_line": 153,
-      "note": "Quote verified. The defect is the COUNT, not the quote: formula-spec.md:153 records 'two places (p.7/p.11)' but Kim states it in FOUR (p.7/p.11/p.19/p.25). Correction is ticket 21's F2."
+      "note": "Quote verified. The defect is the COUNT, not the quote: formula-spec.md:153 records 'two places (p.7/p.11)' but Kim states it in FOUR (p.7/p.11/p.19/p.25). Correction is ticket 21's F2.",
+      "resolved_in": "formula-spec.md v1.2 errata 8.8-3"
     },
     {
       "id": "F2b",
-      "status": "known-wrong",
+      "status": "closed",
       "summary": "Kim 25% margin, occurrence 2 of 4 (sliding spotlight)",
       "source_file": "kim2021_aerospace_fulltext.txt",
       "source_page": 11,
       "source_total_pages": 33,
       "quote": "this analysis, a margin of 25% is considered in addition to SAT at the sliding spotlight",
       "spec_line": 153,
-      "note": "Quote verified."
+      "note": "Quote verified.",
+      "resolved_in": "formula-spec.md v1.2 errata 8.8-3"
     },
     {
       "id": "F2c",
-      "status": "known-wrong",
+      "status": "closed",
       "summary": "Kim 25% margin, occurrence 3 of 4 -- MISSED by spec and by platform_kim2021.json",
       "source_file": "kim2021_aerospace_fulltext.txt",
       "source_page": 19,
       "source_total_pages": 33,
       "quote": "25%. The constant values",
       "spec_line": 153,
-      "note": "Quote verified. Full sentence reads 'The margin of SAR SAT is considered as 25%.' p.7 and p.11 are the two the spec names; this is the first omitted one."
+      "note": "Quote verified. Full sentence reads 'The margin of SAR SAT is considered as 25%.' p.7 and p.11 are the two the spec names; this is the first omitted one.",
+      "resolved_in": "formula-spec.md v1.2 errata 8.8-3"
     },
     {
       "id": "F2d",
-      "status": "known-wrong",
+      "status": "closed",
       "summary": "Kim 25% margin, occurrence 4 of 4 -- MISSED by spec and by platform_kim2021.json",
       "source_file": "kim2021_aerospace_fulltext.txt",
       "source_page": 25,
       "source_total_pages": 33,
       "quote": "8.08~8.38 s for all four targets (25% margin was considered)",
       "spec_line": 153,
-      "note": "Quote verified. Results-section restatement; the second omitted one."
+      "note": "Quote verified. Results-section restatement; the second omitted one.",
+      "resolved_in": "formula-spec.md v1.2 errata 8.8-3"
     },
     {
       "id": "F3",
-      "status": "known-broken",
+      "status": "closed",
       "summary": "g_T cross-check source pin -- formula-spec.md:335 cites 'Song 2025 §2-§3', which contains no g_T derivation",
       "source_file": "song2025_sensors_sparse.txt",
       "source_page": 3,
@@ -113,11 +120,12 @@
       "expect": "absent-term",
       "absent_term": "nesz",
       "spec_line": 335,
-      "note": "This entry is deliberately inverted: it asserts that a term Song does NOT contain must be absent from Song. grep -i 'nesz|noise equivalent' over all 996 lines returns 0. The quote field exists only to locate the page; the assertion is the absent_term. Registration is what forces the F3 defect to stay visible instead of being curated away."
+      "note": "This entry is deliberately inverted: it asserts that a term Song does NOT contain must be absent from Song. grep -i 'nesz|noise equivalent' over all 996 lines returns 0. The quote field exists only to locate the page; the assertion is the absent_term. Registration is what forces the F3 defect to stay visible instead of being curated away.",
+      "resolved_in": "formula-spec.md v1.2 errata 8.8-4"
     },
     {
       "id": "F5",
-      "status": "known-broken",
+      "status": "closed",
       "summary": "formula-spec.md:64 and :218 cite numerical_check.py; no such file exists in the repo",
       "source_file": "kim2021_aerospace_fulltext.txt",
       "source_page": 9,
@@ -126,7 +134,8 @@
       "expect": "file-absent",
       "absent_path": "numerical_check.py",
       "spec_line": 64,
-      "note": "Second kind of registered claim: a pointer to a FILE, not a quote. Verifier confirms the file is absent repo-wide, which is the defect being registered. Ticket 21's F5 resolves it by inlining the derivation or deleting the pointer."
+      "note": "Second kind of registered claim: a pointer to a FILE, not a quote. Verifier confirms the file is absent repo-wide, which is the defect being registered. Ticket 21's F5 resolves it by inlining the derivation or deleting the pointer.",
+      "resolved_in": "formula-spec.md v1.2 errata 8.8-5"
     },
     {
       "id": "GF3-eq2",
@@ -137,7 +146,8 @@
       "source_total_pages": 13,
       "quote": "the azimuth resolution of the sliding-spotlight mode is improved by the factor A",
       "spec_line": 62,
-      "note": "Spot-check during tool construction. The monotonicity claim (sliding finer than stripmap) that §8.1 uses to falsify the blueprint's D/(2(1-k)) is verbatim in the source."
+      "note": "Spot-check during tool construction. The monotonicity claim (sliding finer than stripmap) that §8.1 uses to falsify the blueprint's D/(2(1-k)) is verbatim in the source.",
+      "resolved_in": "formula-spec.md v1.2 errata spot-check only, never a defect"
     },
     {
       "id": "KIM-eq12-13-bridge",
@@ -148,7 +158,8 @@
       "source_total_pages": 33,
       "quote": "Since  ( ) = sin  + and",
       "spec_line": 107,
-      "note": "RESOLVED 2026-10-02 by extracting the PDF directly with pymupdf (fitz 1.27.2.3), page index 8. pymupdf yields the bridge sentence with its structure intact but its glyphs as mojibake, e.g. 'ටోඬమା౞మ(௧ି௧బ)మ= sin ቀ𝜓௦బ+ ... ఏౌశቁ and ... = sin ቀ𝜓௦భ− ఏౌశቁ, Equation (12) can be expressed simply as Equation (13).' That is exactly the structure the spec renders as Vs(t-t0)/sqrt(R0^2+Vs^2(t-t0)^2)=sin(psi_s0+theta_a/2). The spec's rendering is therefore faithful to pymupdf and its provenance label is CORRECT; only the auxiliary .txt extraction drops the glyphs. This entry was registered as provenance-label-wrong on the strength of the .txt alone -- a misreading. The erratum is to THIS registry entry, not to formula-spec.md; no edit to the spec is warranted for this item. Generalisable lesson: a .txt extraction cannot adjudicate a claim that is labelled as coming from a different extractor."
+      "note": "RESOLVED 2026-10-02 by extracting the PDF directly with pymupdf (fitz 1.27.2.3), page index 8. pymupdf yields the bridge sentence with its structure intact but its glyphs as mojibake, e.g. 'ටోඬమା౞మ(௧ି௧బ)మ= sin ቀ𝜓௦బ+ ... ఏౌశቁ and ... = sin ቀ𝜓௦భ− ఏౌశቁ, Equation (12) can be expressed simply as Equation (13).' That is exactly the structure the spec renders as Vs(t-t0)/sqrt(R0^2+Vs^2(t-t0)^2)=sin(psi_s0+theta_a/2). The spec's rendering is therefore faithful to pymupdf and its provenance label is CORRECT; only the auxiliary .txt extraction drops the glyphs. This entry was registered as provenance-label-wrong on the strength of the .txt alone -- a misreading. The erratum is to THIS registry entry, not to formula-spec.md; no edit to the spec is warranted for this item. Generalisable lesson: a .txt extraction cannot adjudicate a claim that is labelled as coming from a different extractor.",
+      "resolved_in": "formula-spec.md v1.2 errata 8.8-6 (finding withdrawn; spec label verified correct)"
     }
   ]
 }

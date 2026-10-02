@@ -39,7 +39,9 @@ from .geometry import DerivedGeometry
 from .modes import Mode, ModeLibrary, sec2
 
 # C2 inter-task transfer pad: Kim's "a margin of 25% is considered in
-# addition to the SAT" (kim2021 p.7 / p.11; fixture sat_margin_fraction).
+# addition to the SAT" (kim2021 p.7 / p.11 definitions; p.19 parameter and
+# p.25 results restatement also state it — four places total, ticket 21;
+# fixture sat_margin_fraction).
 INTER_TASK_PAD_FRACTION_KIM = 0.25
 
 # Window-tail pad (spec D4): covers the duration-MODEL error at the window

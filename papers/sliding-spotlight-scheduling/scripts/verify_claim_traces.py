@@ -8,7 +8,8 @@ defects audit3 found in paper2:
   F1  Song 2025 :163 and :317 state OPPOSITE signs for the steering angle
       rate in sliding spotlight.  Both are real lines in a real paper.
   F2  Kim 2021 states the 25% margin in FOUR places (p.7/p.11/p.19/p.25);
-      formula-spec records "两处".
+      formula-spec, platform_kim2021.json and two source comments each
+      carried a different count (2 / 3 / 3 / "three places").
   F3  formula-spec.md:335 pins g_T's cross-check source to "Song 2025 §2-§3";
       Song's full text has ZERO hits for nesz / noise equivalent.
   F5  formula-spec.md:64 and :218 cite `numerical_check.py`; no such file.

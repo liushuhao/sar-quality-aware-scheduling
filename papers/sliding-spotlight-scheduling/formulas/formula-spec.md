@@ -1,6 +1,6 @@
 # 公式规格（冻结版）— 滑聚/聚束变时长 SAR 调度：驻留时长 + 逐模式分辨率 + AASR/RASR
 
-- 版本: v1.1（2026-09-30，票 18 blocking gate 产出：新增 §3.1 逐模式 $\rho_a(m,\bar\psi)$ 封闭式 + dated 取代 §3 斜视注记（方向 cos→sec）+ Eq.(12)/(13) 约定钉死（Kim p.9 原文留痕）+ B_D 第三消费方登记 + §4.2/§4.3 生产层反转标记；勘误登记 §8.7；v1.0.1 = 2026-09-27 票 01 产出 + 两路 fresh 审查勘误轮，登记见 §8.6；v1.0 = 票 01 SLS/时长公式族 blocking gate 产出）
+- 版本: v1.2（2026-10-02，票 21 blocking gate 产出：勘误登记 §8.8——Song 符号源文献矛盾裁定、§2 源 2 引文回抄更正、25% 裕度计数 2→4、g_T 空指针改声明、`numerical_check.py` 死指针（3 处）删除改就地可复算、撤回一条自查误判；公式本体与数值结论零改动，出处全部登记 `experiments/claim_trace.json` 由 `verify_claim_traces.py` 机检）；v1.1（2026-09-30，票 18 blocking gate 产出：新增 §3.1 逐模式 $\rho_a(m,\bar\psi)$ 封闭式 + dated 取代 §3 斜视注记（方向 cos→sec）+ Eq.(12)/(13) 约定钉死（Kim p.9 原文留痕）+ B_D 第三消费方登记 + §4.2/§4.3 生产层反转标记；勘误登记 §8.7；v1.0.1 = 2026-09-27 票 01 产出 + 两路 fresh 审查勘误轮，登记见 §8.6；v1.0 = 票 01 SLS/时长公式族 blocking gate 产出）
 - 状态: **FROZEN**——后续实现票（映射表、时长模块、AASR 硬约束、质量指标、窗域预编译）以本文件为**唯一公式来源**；修改须经新 blocking gate。
 - 上游: `.scratch/sliding-spotlight-scheduling/issues/01-sls-formula-blocking-gate.md`（8 项验收 §9 对照）
 - 裁决对象: `archive/next-paper-formalization/blueprint-draft.md` §2.2(c)/附 A/附 B（蓝图是二手源，本规格全部公式从 PDF 原文符号级复原，未照抄蓝图）
@@ -60,8 +60,8 @@ $$A \;=\; \frac{r_0}{R_0+r_0} \;=\; 1-\frac{R_0\,k_\theta}{v_g}\,,\qquad A\in(0,
 
 **出处（符号级逐条核对 PDF 页图）**：
 1. [文献] GF-3 2018, `gf3_2018_zhang_sliding.pdf` **p.3**，Eq.(2)：$A = r/(R+r)$（$r$=旋转中心到场景中心，$R$=飞行路径到场景中心斜距；正文："the steering factor A is defined as [29]"）。
-2. [文献] Song 2025, `song2025_sensors_sparse.pdf` **p.3**，Eq.(1)：$A = (R_{rot}-R_0)/R_{rot} = 1-R_0k_\theta/v_g$（$R_{rot}$=平台到旋转中心距离；正文明确 "$0<A<1$ in Sliding Spotlight"，$A=0$ Spotlight、$A=1$ Stripmap/Scan）。注意 $R_{rot}=R_0+r_0$，与 GF-3/Kim 完全同构。
-3. [文献·隐含式] Kim 2021，**p.9**，Eq.(15)-(16)：$R_0\alpha=(R_0+r_0)(\psi_{s_0}-\psi_{s_1})$ 与 $r_0=R_0\theta_a/(\alpha-\theta_a)$ 联立 ⇔ $\alpha=\theta_a/A$（$\alpha$=点目标总 SAA）——Kim 虽未定义 A 记号，其几何与上两式严格等价（代数验证：`numerical_check.py` 末节，`theta_a/A = lam/(2ρ)` 恒等式成立）。
+2. [文献] Song 2025, `song2025_sensors_sparse.pdf` **p.3**，Eq.(1)：$A = (R_{rot}-R_0)/R_{rot} = 1-R_0k_\theta/v_g$（$R_{rot}$=平台到旋转中心距离；同页正文紧接 Eq.(1) 原文（逐字）"that SAR is working in Stripmap or Scan mode. In TOPS, kθ is negative and A > 1, while in Sliding Spotlight and Mosaic mode, kθ is positive and 0 < A < 1"，另同页 "When A = 0, it indicates that the platform is working in Spotlight mode. If A = 1, this means that Rrot = ∞"）。注意 $R_{rot}=R_0+r_0$，与 GF-3/Kim 完全同构。**符号依据**：由 Eq.(1) 与 $A\in(0,1)$、$R_0,v_g>0$ 直接解出 $0<k_\theta<v_g/R_0$（滑聚 $k_\theta>0$），TOPS $A>1\Rightarrow k_\theta<0$ —— 见 §8.8 源文献符号勘误登记。
+3. [文献·隐含式] Kim 2021，**p.9**，Eq.(15)-(16)：$R_0\alpha=(R_0+r_0)(\psi_{s_0}-\psi_{s_1})$ 与 $r_0=R_0\theta_a/(\alpha-\theta_a)$ 联立 ⇔ $\alpha=\theta_a/A$（$\alpha$=点目标总 SAA）——Kim 虽未定义 A 记号，其几何与上两式严格等价（**代数验证内联**（票 21 修订，原引用脚本已不存在，见 §8.8）：以 `platform_kim2021.json` 全精度值 $\theta_a=0.006283185307$ rad、$A=0.202683397006$、$\lambda=0.031$ m、$\rho_{\mathrm{kim}}=0.5$ m 代 $\theta_a/A=0.031000000000$ 与 $\lambda/(2\rho_{\mathrm{kim}})=0.031000000000$，差 $3.5\times10^{-18}$，恒等式成立。注意：本节早前版本写作 `numerical_check.py` 并给出四舍五入后的 $0.006283/0.202683=0.031000$，该舍入显示值直算差 $8.5\times10^{-7}$（非恒等式破裂，系操作数截断所致），**以全精度值为准**）。
 
 **定量旁证**（非取式，仅证因子链正确）：GF-3 全文 p.8 实测 $\Delta f_{dc}=18{,}000$ Hz 对应方位转角 3.8°，$V_s=7568$ m/s、$\lambda=0.0555$ m（C 频段；GF-3 原文 p.4 误排为 0.555 m——其 $\Delta R_q=0.96$ m 例同样仅在该值下自洽，勘误登记 §8.6）：$(2V_s/\lambda)\sin 3.8°=18{,}073$ Hz（偏差 0.4%）——验证 Song Eq.(4) 多普勒中心-扫描角关系。
 
@@ -150,7 +150,13 @@ $$B_D(m,\bar\psi)=\frac{V_s}{\rho_{a,\mathrm{ach}}(m,\bar\psi)}\equiv\frac{V_s\c
 
 - Eq.(23) 系数经**独立代数重推逐项验证一致**（由 Eq.(22) 两个等价形式对 $\tan\theta_{s_1}$ 消元；本轮复核曾疑 $C_q$ 末项分母为 $r_0$，经 p.11 高分辨率渲染（4× DPI）确认其为 $R_0$，与重推一致）。
 - Eq.(25)-(29)（p.13-14）：姿态四元数/DCM 与**旋转中心 ECEF 位置构造**（Eq.(27) 中点式、Eq.(28) 比例式（$\|\cdot\|=W_a$）、Eq.(29) 直线参数式）——蓝图附 A 引用定位正确；D5（边界角速率）与 C1b（旋转中心几何）引用此处，本票不复原其符号细节（姿态域非本票公式族）。
-- **25% 裕度**（p.7 Eq.(11) 后、p.11 Eq.(24) 后两处原文）："a margin of 25% is considered in addition to the SAT obtained from Equations (7) or (11) / (19) or (24)"——裕度加在 SAT 之上，属执行层（spec D4 裕度垫语义一致）。
+- **25% 裕度**（Kim 2021 全文共 **4 处**，票 21 修订——原记「两处」漏 p.19/p.25；逐处原文，p.7/p.11 为执行层定义，p.19/p.25 为参数复述与结果段回述）：
+  - **p.7**（Eq.(11) 后，staring spotlight）："a margin of 25% is considered in addition to the staring spotlight mode SAT obtained from Equations (7) or (11)"
+  - **p.11**（Eq.(24) 后，sliding spotlight）："a margin of 25% is considered in addition to SAT at the sliding spotlight mode obtained from Equations (19) or (24)"
+  - **p.19**：原文（截断排版）"The margin of SAR SAT is considered as 25%. The constant values ... of the objective function to be minimized in Equa-"
+  - **p.25**（结果段回述）："the SAT in Phase 1 took about 8.08~8.38 s for all four targets (25% margin was considered)"
+  
+  裕度加在 SAT 之上，属执行层（spec D4 裕度垫语义一致）；四处分述 staring/sliding/参数/结果，**模式无关性证据**取 p.7 与 p.11 双例（两种模式同用同一条 25% 规则）。抽取件行号：`kim2021_aerospace_fulltext.txt:334/:512/:923/:1196`。
 
 ### 4.2 优化器层平面地闭式（spec D4「优化器内」口径；均 [自推导·文献结构]，验证证据 §6）
 
@@ -200,7 +206,7 @@ $$\mathrm{AASR}_{Sc}=\frac{\sum_{m}\int_{-B_D/2-K_at_0}^{B_D/2-K_at_0}G(f_a+m\cd
 **TOPS / 滑聚 / Mosaic AASR**（p.5，Eq.(9)-(10)——**票 06 主式**）：
 $$\mathrm{AASR}_{T,S,M}=\frac{\sum_{m=-\infty}^{+\infty}\int_{-B_D/2+f_{ac}}^{B_D/2+f_{ac}}G\big(f_a'+m\cdot\mathrm{PRF}\big)^2\,df_a}{\int_{-B_D/2+f_{ac}}^{B_D/2+f_{ac}}G\big(f_a'\big)^2\,df_a}\,,\qquad
 f_a'=\Big(1-\frac{K_c}{K_a}\Big)(f_a-f_{ac})$$
-（**式 (10) 的 $(1-K_c/K_a)$ 即滑聚因子谱域形态**：$1-K_c/K_a\approx A$ 为**近似桥接**（$K_a$ 式用 $v_s$、$A$ 式用 $v_g$，平地 $K_a$），桥接 §2——滑聚的 (1−k) 因子在谱域的正确落位是**频率轴重缩放**，不是"回波多普勒调率×(1−k)"（蓝图附 A 第 8 行的挂靠方式证伪，见 §8.4）。三式相同、差异在扫描率符号：TOPS 正、滑聚/Mosaic 负。）
+（**式 (10) 的 $(1-K_c/K_a)$ 即滑聚因子谱域形态**：$1-K_c/K_a\approx A$ 为**近似桥接**（$K_a$ 式用 $v_s$、$A$ 式用 $v_g$，平地 $K_a$），桥接 §2——滑聚的 (1−k) 因子在谱域的正确落位是**频率轴重缩放**，不是"回波多普勒调率×(1−k)"（蓝图附 A 第 8 行的挂靠方式证伪，见 §8.4）。三式相同、差异在扫描率符号：**TOPS 负、滑聚/Mosaic 正**（票 21 修订——原文作「TOPS 正、滑聚/Mosaic 负」，系采信 Song p.5 一句而与其 Eq.(1) 矛盾，见 §8.8）。）
 
 **方位 AAP**（p.7-8，Eq.(12)-(15b)，票 06 积分被积函数）：$G(\theta,t)=G_e(\theta)\cdot G_T(\theta,t)\cdot G_R(\theta,t)$，$G_e(\theta)=\mathrm{sinc}^2\big(\frac{L_e}{\lambda}\sin\theta\big)$，$G_{T/R}$ 为单元激励加权和（式 (14a)/(14b)/(15a)/(15b)，$M$=收发模块数，$L_e=L_a/M$，$C_{T/R}$=激励系数）。
 
@@ -215,7 +221,7 @@ $$\mathrm{RASR}=\frac{\sum_{m\neq0}\dfrac{G_r^2\big(\theta_r(r+m\cdot c/\mathrm{
 
 ## 6. 档序断言数值用例表（票 03 落地为测试；手工+文献双算）
 
-核算脚本：本票验证脚本 `numerical_check.py`（temp 归档，核心数字誊录入表；实跑输出见票回传）。平台参数全部取 Kim Table 2（PDF p.19-20），几何按 Kim Eq.(2)-(3)。
+核算方式（票 21 修订，原引用脚本 `numerical_check.py` 经实测全仓 0 命中、且标注「temp 归档」已不可解析，故改为就地可复算登记，见 §8.8）：核心数字已誊入本规格 §6 表与 §7 fixture 表，读者可依表中全精度操作数复算（例：§2 源 3 的 $\theta_a/A=\lambda/(2\rho)$ 恒等式，全精度差 $3.5\times10^{-18}$）。平台参数全部取 Kim Table 2（PDF p.19-20），几何按 Kim Eq.(2)-(3)。**可机检**：全部引文出处登记于 `experiments/claim_trace.json`，由 `scripts/verify_claim_traces.py` 逐条核验（页码 + 逐字引文）。
 
 **参考几何**：$h=570$ km、$i=45°$、$\lambda=0.031$ m、$\theta_a=0.36°$、$\theta_{inc}=45°$、场景 5×5 km、$\bar\psi\in\{0°,12°\}$ ⇒ $\theta_{look}=40.4692°$、$R_0=775.43$ km [Kim 式推得，SANITY 层]；$V_s\in\{7578.05$（惯性）$,\ 7221.69$（ECEF@40°N 升段）$\}$ m/s [Kim 未公布，双口径登记，SANITY 层]；$D=\lambda/\theta_a=4.9338$ m、$A=2\rho_{\mathrm{kim}}/D=0.202683$（即 $k=0.797317$）、$r_0=197.12$ km [SANITY 层]。
 
@@ -287,7 +293,7 @@ $$\mathrm{RASR}=\frac{\sum_{m\neq0}\dfrac{G_r^2\big(\theta_r(r+m\cdot c/\mathrm{
 | 逐目标 SAT（场景 1） | 8.38 / 8.18 / 8.08 / 8.13 s；Phase-1 合计 32.77 s | Table 3, PDF p.29 |
 | 场景 2 | SAT 合计 32.81 s（8.38/8.15/8.08/8.20）；Phase-2 RMT 11.06 s（3.62/3.37/4.07）；总 49.87 s | Table 3, PDF p.29 |
 | Phase-2 RMT（场景 1） | 5.60 s（1.84/1.91/1.85）；总 44.37 s | Table 3, PDF p.29 |
-| SAT 裕度 | 25% | p.7 / p.11 正文两处 |
+| SAT 裕度 | 25% | Kim 全文 4 处（p.7 / p.11 执行层定义 + p.19 参数 + p.25 结果回述；票 21 修订，原记「p.7 / p.11 两处」） |
 | 稳定时间 | 2 s（×3 = 6 s；4 目标 3 间隔，Table 3 计 (2/2/2)） | Table 2 + Table 3 |
 | MOI / CMG 扭矩 / 角动量 | [1000,700,500] kg·m² / 60 Nm / 40 Nms | Table 2, PDF p.19（D5 校准辅助） |
 | jerk 目标权重 $k_2$ | 100 rad²/sec⁵（$k_1$=1 s） | p.19 正文（D5 校准辅助） |
@@ -332,7 +338,7 @@ $\rho_{a,\mathrm{SPT}}$ 是模式库设计常数 $\lambda/(2\beta_{\mathrm{span}
 
 ### 8.5 🟢 其余蓝图公式族复核结果（无冲突，按蓝图原样进实现）
 
-$\beta_{req}=\lambda/2\rho_a$（Kim Eq.(5)）、SAT=SAL/V 框架、SPT 斜视 $\tan$ 式（Kim Eq.(10)-(11) 逐字）、STR 物理口径（P9 定案）、NESZ $\propto R^3$、RASR 教科书式、旋转中心几何（Kim Eq.(27)-(29)）——均与本规格复原一致。NESZ $g_T(T_i,m_i)$ 维持**[自推导待验证]**（本规格唯一保留的待核标记；核验归票 05，对照源 = Song 2025 §2-§3 + Cumming & Wong；降级预案 = spec D6 独立退出通道）。
+$\beta_{req}=\lambda/2\rho_a$（Kim Eq.(5)）、SAT=SAL/V 框架、SPT 斜视 $\tan$ 式（Kim Eq.(10)-(11) 逐字）、STR 物理口径（P9 定案）、NESZ $\propto R^3$、RASR 教科书式、旋转中心几何（Kim Eq.(27)-(29)）——均与本规格复原一致。NESZ $g_T(T_i,m_i)$ 维持**[自推导待验证]**（本规格唯一保留的待核标记；核验归票 05；降级预案 = spec D6 独立退出通道）。**外部对照源声明（票 21 修订）**：早前版本把核对源钉为「Song 2025 §2-§3 + Cumming & Wong」，实测 **Song 全文 `nesz` / `noise equivalent` 命中 0**（`song2025_sensors_sparse.txt` 全部 1007 行；该文为稀疏成像模式设计，不含辐射度量/NESZ 方程），「Song §2-§3」系**空指针**；Cumming & Wong 系教科书，`literature/fulltext/` 未入库、亦无可解析页码。故本规格 g_T **无外部文献源，纯自推导**，核验方式改为**内部恒等核验**（与 §3.1 的 $\rho_a$ 恒等式、§4.3 校核层同型），并在 limitation 披露「g_T 未获外部文献交叉验证」。见 §8.8。
 
 ### 8.6 勘误登记（v1.0.1，2026-09-27 两路 fresh 独立审查后）
 
@@ -350,6 +356,23 @@ $\beta_{req}=\lambda/2\rho_a$（Kim Eq.(5)）、SAT=SAL/V 框架、SPT 斜视 $\
 1. **§3 斜视角修正口径注记方向错误**：原注记（现 :81 附近）称修正为「三模式同乘 $\cos\bar\psi$」且自标「无未验成分」——两处均不成立。Doppler 语义 $\rho_a=V_s/B_d$、固定角跨度 $B_d\propto\cos\bar\psi$ ⇒ $\rho_a\propto\sec\bar\psi$（斜视**变粗**非变细）。audit-20260930 双路独立推导 + Kim Eq.(13) 结构三方一致。已由 §3.1 dated 取代（原注记保留原文 + 取代标记，非删除）。
 2. **B_D 公式 cos 因子重复计入（spec D12② 侧错误，本文件登记正式式）**：spec D12② 原登记 $B_D=V_s\cos\psi/\rho_{a,\mathrm{ach}}(\psi)$ 在 sec 口径下字面展开 $=V_s\cos^2\bar\psi/\rho_a(m,0)$，差一个 cos 因子（@45° SLS 宽带 10717 vs 7578 Hz，窄 29% 反保守）。正式式见 §3.1：$B_D=V_s/\rho_{a,\mathrm{ach}}(m,\bar\psi)\equiv V_s\cos\bar\psi/\rho_a(m,0)$。spec D12② 已同步勘误（2026-09-30 gate-review P0-1）。
 3. **§4.2/§4.3 分层标签过时**：spec D4 2026-09-30 反转（生产 = Kim 全式、平面式降 oracle）后，两节标题沿用旧「优化器层/校核层」称谓——已加 dated 勘误标记，正文公式与 §6 验证值不动。
+
+### 8.8 勘误登记（v1.2，2026-10-02 票 21 blocking gate；溯源门禁机检）
+
+本轮修订全部属**来源指向与计数一致性**，**未改动任何公式本体或数值结论**（audit3 已确认公式层 P0=0、幻觉引用 0）。逐条出处已登记入 `experiments/claim_trace.json`，由 `scripts/verify_claim_traces.py` 逐条机检（页码 + 逐字引文，定位与引文相互独立）。
+
+1. **Song 2025 转向角速率符号源文献自相矛盾 — 裁定取 p.3，p.5 判为源文献笔误**：Song 全文两处给出相反符号——
+   - p.3（`song2025_sensors_sparse.txt:163-164`，紧接 Eq.(1)）："In TOPS, kθ is negative and A > 1, while in Sliding Spotlight and Mosaic mode, **kθ is positive** and 0 < A < 1"
+   - p.5（`:317-318`）："TOPS has a **positive** rate. Sliding Spotlight and Mosaic have a **negative** one"
+   
+   裁定取 p.3，两条独立依据：① **p.3 与该文 Eq.(1)（`:156-159`，`A=1-R_0k_\theta/v_g`）自洽**——$A\in(0,1)$、$R_0,v_g>0$ 直接给出 $0<k_\theta<v_g/R_0$；TOPS $A>1\Rightarrow k_\theta<0$；② **本规格 §5 桥接句反证 p.5**——由 Eq.(5) `K_c\approx(2v_s/\lambda)k_\theta`（$v_s,\lambda>0$）得 $\mathrm{sign}(K_c)=\mathrm{sign}(k_\theta)$，若取 p.5（滑聚负速率）则 $1-K_c/K_a=1+|K_c|/K_a>1$，**任何量级下都不能**逼近 $A\in(0,1)$。旁证：GF-3（$A=r/(R+r)$、$\omega_r=\theta/T>0$）与 Kim（$r_0>0$ 几何）均与 p.3 同向，无源支持 p.5。已改 §5 符号标签为「TOPS 负、滑聚/Mosaic 正」（**原句保留在本条登记内，非静默改**）。**残留不确定**：Eq.(5) 带 ≈ 号，符号论证依赖「近似不跨零」——两模式定义域均不含 $k_\theta=0$，故近似误差不能跨零；亦不能排除 p.5 另指他量，故以本条显式登记而非默认采纳。**翻判条件**：出现同级第三方源明确给出滑聚 $k_\theta<0$。
+2. **§2 源 2 引文系回抄渲染版（非原文）**：原记正文明确 "$0<A<1$ in Sliding Spotlight" 并置于引号内，实测该串在 Song 全文 **0 命中**；原文为 `kθ is positive and 0 < A < 1`（不等式有空格、符号归 $k_\theta$）。已替换为两段逐字原文（`A=0`/`A=1` 释义句一并补全）。数学结论未变。
+3. **「25% 裕度」计数 2→4**：Kim 全文实为 **4 处**（p.7 / p.11 执行层定义、p.19 参数、p.25 结果回述；抽取件 `:334/:512/:923/:1196`），原记「p.7 / p.11 两处」漏 p.19/p.25。`experiments/platform_kim2021.json` 记 3 处漏 p.19，且其自身 `:159`（已引 p.25）与 `:180`（仅列 p.7/p.11/p.25）**互相矛盾**。§4.1 与 §7 表格两处同步改；模式无关性双例证据保留 p.7/p.11。
+4. **g_T 核对源空指针 → 显式声明无外部文献源**：原钉「Song 2025 §2-§3 + Cumming & Wong」，实测 Song 全文 `nesz`/`noise equivalent` **命中 0**（该文为稀疏成像模式设计，不含辐射度量方程）；Cumming & Wong 未入库、无可解析页码。改为显式登记「**无外部文献源，纯自推导 + 内部恒等核验**」，核验方式与 §3.1/§4.3 同型，并要求在 limitation 披露「g_T 未获外部文献交叉验证」。**影响**：票 15 验收项 13 的 f_Q 独立复算不再依赖外部锚，改依内部恒等链。
+5. **`numerical_check.py` 死指针（3 处）**：`:64`、`:224` 引用该脚本（`:224` 自标「temp 归档」），实测**全仓 0 命中**且无等价脚本（`src/tools/check_numerical.py` 属 Ch3 无关工具）。已删除死指针，改为就地可复算登记：把全精度操作数与实测残差写进正文（$\theta_a/A$ 与 $\lambda/(2\rho)$ 差 $3.5\times10^{-18}$）。⚠️ 附带更正：早前 §6 表列 $0.006283/0.202683=0.031000$ 并注 `equal: True`，但按该**四舍五入显示值**直算差 $8.5\times10^{-7}$（恒等式本身成立，系操作数截断造成的显示误导）——已注明以全精度值为准。
+6. **🟢 撤回一条自查发现（Kim p.9 桥接句标签，原判有误）**：本轮初查曾据 `.txt` 抽取件（`Since  ( ) = sin  + and`，符号被丢）判定 §3.1「pymupdf 逐字抽取」标签失实。**经 pymupdf（fitz 1.27.2.3）直抽 PDF p.9 复核：该句结构完整、字形呈 mojibake**（`ටోඬమା౞మ(௧ି௧బ)మ= sin ቀ𝜓௦బ+ … ఏౌశቁ and … = sin ቀ𝜓௦భ− ఏౌశቁ, Equation (12) can be expressed simply as Equation (13).`），与规格渲染式同构 ⇒ **规格标签正确，不改**。教训：`.txt` 抽取件不能裁决一条声明来自**另一种抽取器**的引文。
+
+**机检口径**：本轮 11 条 claim 中，销账 5 条（§8.8-1~5 覆盖 F1×3 / F2×4 / F3 / F5 的重复归并），`claim_trace.json` 对应 `status` 转 `verified`/`closed` 后 `verify_claim_traces.py --strict` 应 rc=0。**回归面**：两个互不相交测试面（`src/tests/` 共享库 145 + 本域 `papers/sliding-spotlight-scheduling/tests/`），计数以 `--co` 实测为准，勿写死。
 
 ---
 
