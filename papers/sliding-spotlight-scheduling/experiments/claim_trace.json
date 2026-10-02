@@ -28,6 +28,17 @@
       "note": "Verified present. Its OPPOSITE (F1b) is equally present in the same paper. Both quotes are real; the conflict is in the source, not the extraction. Resolution is ticket 21's, not this gate's."
     },
     {
+      "id": "F1-quote-reconstructed",
+      "status": "provenance-label-wrong",
+      "summary": "formula-spec.md:63 quotes Song as \"$0<A<1$ in Sliding Spotlight\" inside quotation marks; that string is NOT in Song",
+      "source_file": "song2025_sensors_sparse.txt",
+      "source_page": 3,
+      "source_total_pages": 17,
+      "quote": "in Sliding Spotlight and Mosaic mode, kθ is positive and 0 < A < 1",
+      "spec_line": 63,
+      "note": "FOUND BY THIS GATE, not by audit3. The spec presents a LaTeX-stripped fragment as the source's wording. Song's actual sentence attributes the sign to k_theta and reads '0 < A < 1' with spaces. The math the spec draws from it is correct; the quotation marks are not. Same class as KIM-eq12-13-bridge: the spec's rendering was copied back as if it were the source. Registered so ticket 21 fixes the quotation, not just the sign."
+    },
+    {
       "id": "F1b",
       "status": "open",
       "summary": "Song 2025 states sliding-spotlight steering angle rate is NEGATIVE (conflicts with F1a) -- ticket 21 F1",
