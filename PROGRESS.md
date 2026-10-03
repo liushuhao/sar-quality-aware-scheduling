@@ -60,4 +60,13 @@
 
 **一处实测纠错（已改进票 body）**：先前口算的 M2WH「顶两档 median Δ=0.0078」是错比较基数；按注册顶两档（160/240 vs 320/480）实为 **1.892048 dB** ⇒ 判 UNCONVERGED（与「9 族全 DEAD×UNCONVERGED」一致）。
 
+### [10:55] 票 22 completed — commit `b08526e`
+
+补充单元 22b：`scripts/verify_ticket22_adjudications.py`（300 行）把 A3+A4 裁决变成可复跑门禁——**42 checks / 0 failure / rc=0**。票 17 冻结 v2 前直接消费。
+- **只读证明**：跑前跑后 `experiments/results` 196 文件不变、抽查工件 md5 `6efbf819…` 不变、`git status --porcelain papers/` 仅新增脚本本身
+- **反验两向**：claim 值改 `1.892048`→错值 `0.0078` ⇒ `FAIL a4_m2wh_median_delta` / **rc=1** / `VERDICT: adjudication has DRIFTED`；还原 ⇒ rc=0
+- **采样稳健性**：新增 `a4_R_*_sampling_stable` 4 项（P族 5 点 vs 21 点扫描一致）——knife-edge 判决（P8WH 5.5012 dB）非采样假象
+- **容差稳健性**：tie count 49 在 tol 1e-15…1e-6 全域稳定，唯一非零差是那个 +0.1
+- **一处诚实修正**：收紧 plateau 阈值时判决不变（M2WH 已超阈 ⇒ 收紧 no-op），脚本**不声称双向翻转**，改为打印三档对照并注明「loosening is the live edge」
+
 （每票完成后追加：`[HH:MM] TICKET 票NN → completed (<hash>) — <计数> / exit code`）
