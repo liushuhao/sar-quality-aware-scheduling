@@ -1,0 +1,177 @@
+{
+  "meta": {
+    "document_type": "analysis_prereg",
+    "version": "2.0.0",
+    "frozen": "2026-10-03",
+    "frozen_by": "ticket 17, after ticket 16 (real-window family) and ticket 22 (analysis-design adjudication)",
+    "supersedes": "analysis_prereg.json v1.0.0 -- v1 remains frozen and is NOT rewritten; this file is the operative preregistration for the real-window main experiment",
+    "frozen_before_evidence": "Frozen BEFORE any real-window matrix run. The real-window families (R1C/R2F/R3H/R4H) have been generated only for calibration (overload ladder, 4.2 s, artifact in .scratch/sliding-spotlight-scheduling/calibration/); no matrix pilot has been run against them. The v1 evidence quoted below belongs to the SYNTHETIC M/P families and is used only as the pre-registered basis for the redesign, never as v2 outcome data.",
+    "amendment_discipline": "append-only. frozen fields are never mutated in place; a later change is a new amendment_NN block with its own timestamp, git HEAD and the reason. This file is the freeze; corrections go below, not above.",
+    "consumes": {
+      "ticket_22_A3": "primary comparison redesign (estimand, test, pairing, stratum rule)",
+      "ticket_22_A4": "promotion convergence calibration (two-dimensional verdict)",
+      "ticket_16": "real-window family, per-task geometry, overload calibration"
+    }
+  },
+
+  "why_v1_is_not_reusable": {
+    "primary_comparison": "v1 registered wilcoxon(zero_method='wilcox') on max_f1_star vs greedy anchor. The anchor is seeded into the NSGA-II population (sss_core/nsga2.py:172-183), so max_f1_star >= anchor holds BY CONSTRUCTION; measured, 49 of 50 recorded units have max_f1_star EXACTLY equal to the anchor. zero_method='wilcox' discards those zeros, leaving <= 1 valid pair per variant against an n_guard of 5, so all five variants could only report 'insufficient'. The test never had power and was never run.",
+    "measured_evidence": "recomputed from experiments/results/matrix/*.json; reproduced by scripts/verify_ticket22_adjudications.py (43 checks, rc=0)"
+  },
+
+  "matrix_scope": {
+    "family": "R<density><requirement> real-window (ticket 16); the synthetic M/P families are NOT re-run",
+    "generator": "sss_core.scenarios.generate_real_scenario via run_matrix.py --generator realwindow",
+    "directory_isolation": "ALL output goes to directories passed explicitly with --scenarios-dir/--matrix-dir. The frozen families under experiments/results/ are never written (run_matrix.py:47 hardcoded MATRIX_DIR was removed in ticket 17 item 3; the defaults still reproduce it, so isolation is the caller's responsibility and is asserted by the caliber check below)",
+    "budget_ladder": {
+      "levels": [["pop", "gen"], [40, 60], [80, 120], [160, 240]],
+      "note": "320/480 was already consumed by the ticket-20 escalation; the v2 ladder stops at 160/240 and a further escalation is a new decision, not a default",
+      "seeds_nested": "the same scenario seed is re-run at every budget level, so the ladder is paired"
+    },
+    "platform_orbit": "a registered input, supplied with --platform; the driver and the generator both refuse to invent one"
+  },
+
+  "metrics": {
+    "f1_star_max": "max over front records of f1_star; retained as a construction check ONLY -- it is guaranteed >= anchor by the warm start and carries no information (see why_v1_is_not_reusable)",
+    "f_q_front": "front records carry f_q (delivered quality, D6 aggregate mean over the served set)",
+    "distinct_fq": "count of distinct f_q values among front records, rounded to 1e-6. This is the convergence criterion's subject; front_size is NOT (saturation != convergence: front_size == pop_size is duplicate-target survival under ULP-level non-domination, ticket 17 item A-2)",
+    "hv": "REGISTERED IN v1 BUT NOT IMPLEMENTED. The literal \"hv\" appears nowhere in any .py; v1 registered a metric with no producer, which is the silent-zero-output failure class. v2 decision: see metric_status.hv",
+    "promotion_readout": "per unit: promotion.spread_db and promotion.decision, threshold 6.0 dB frozen (experiments/promotion_prereg.json)",
+    "served_over_drawn": "the overload ratio, measured at generation time; the real-window axis is the incidence band (measured 0.85 / 0.50 / 0.40 / 0.25 across the registered band ladder)"
+  },
+
+  "metric_status": {
+    "hv": {
+      "decision": "RETIRED",
+      "reason": "no implementation exists; retaining it would leave a registered metric with no producer, which is exactly the failure this prereg is meant to prevent",
+      "action": "removed from the v2 metric set; if a future ticket wants hypervolume it must land the implementation first and register it then",
+      "authority": "policy adjudication delegated by the task book; recorded in the ticket-22 decision log"
+    }
+  },
+
+  "tests": {
+    "primary_comparison": {
+      "estimand": "dq_all = max{ f_q(p) : p in front } - f_q(anchor point in that front)",
+      "why_this_estimand": "the anchor is the COVERAGE-maximal point, so any estimand conditioned on f1 >= anchor_f1 can only ever admit the anchor itself. Measured on the 49 v1 units with a locatable anchor: dq (quality at matched coverage) = 0/49 nonzero, dom (strict domination) = 0/49, mq (coverage at matched quality) = 0/49 -- all structurally tied. dq_all is the only candidate that relaxes coverage, which is the only direction the front actually moves: 20/49 nonzero, sd 0.940",
+      "stratum_rule": "a priori anchor-degeneracy, frozen BEFORE v2: a family is in the structural-null stratum if it is the all-STR degenerate-anchor family or its median distinct_fq < 2",
+      "stratum_rule_outcome_on_v1_evidence": "Applying the rule as written to the v1 synthetic families: M1NC and M3NC are the all-STR degenerate-anchor families (STRUCT-NULL by the first clause); M2WF has median distinct_fq 1.5 < 2 (STRUCT-NULL by the second clause); M2WH and M4WH have median 2.0 (PRIMARY). The primary stratum is therefore M2WH + M4WH, pooled n = 20 on v1 data. NOTE this differs from the ticket-22 working note, which had provisionally listed M2WF as primary on the grounds of its dq_all spread; the RULE is authoritative over that note, and the rule was frozen before v2 rather than tuned to keep a family in.",
+      "primary_test": "scipy.stats.ttest_1samp(dq_all_pooled, popmean=0.0, alternative='greater')  # one-sided, pooled over the primary stratum",
+      "alpha": 0.05,
+      "zeros": "RETAINED. A zero dq_all is a true 'no quality headroom', not a missing value; no zero_method filtering anywhere in this test",
+      "secondary": "the same one-sided test per family, Holm-adjusted across the primary stratum, for locating only",
+      "robustness_gate": "a sign-flip permutation p (1e5 flips, numpy only) is reported alongside; if the t and permutation p disagree across alpha, the result is reported INCONCLUSIVE",
+      "multiplicity": "the primary test is a single pooled test and carries no correction; the per-family Holm is secondary",
+      "known_power": "Power is stated for the OPERATIVE stratum, which the stratum rule determines (see stratum_rule_outcome_on_v1_evidence: M2WH + M4WH, pooled n = 20, measured mean 0.81072, sd 0.88042 on v1 dq_all). At n=20 the MDE at 80% power, one-sided alpha 0.05, is 0.579*sd = 0.5099. At n=10 per family it is 0.86*sd. IMPORTANT: v1 measured that sd on the coverage-era artifacts and the estimand is defined for v2, so this does NOT certify the design -- v2 records the pooled test as primary and reports the achieved effect regardless of significance. The superseded ticket-22 note had provisionally pooled three families at n=30, sd 1.05854; those figures belong to that note, not to this freeze."
+    },
+
+    "coverage_parity_as_result": {
+      "statement": "The greedy anchor is retained as an elite in the initial population under an elitist algorithm, so every front's coverage-maximal member equals the anchor's coverage: 49/50 exact ties in v1, the 50th +0.1. This is a STRUCTURAL consequence of the warm start, not an empirical finding. v2 makes no coverage-improvement claim and runs no significance test on the coverage axis",
+      "paper_wording": "Reported as a construction and a count, in the results, as a result. It is neither a failure of the search nor an omission."
+    },
+
+    "convergence_criterion": {
+      "subject": "distinct_fq per unit per budget (NOT front_size)",
+      "plateau_rule": "CONVERGED iff |median_i s_{i,b1} - median_i s_{i,b0}| <= 1.0 AND max_i |s_{i,b1} - s_{i,b0}| <= 2.0 (v1's rule, inherited unchanged)",
+      "median_definition": "difference of medians across the top budget pair, NOT the median of per-seed deltas (v1 audit found these conflated; the two differ by ~50x)",
+      "unconverged_action": "if any stratum is UNCONVERGED, v2 reports NOT-YET-CONVERGED for that stratum and makes NO physical claim about it. 'Front collapse' and 'phase transition' are forbidden declarations in every branch"
+    },
+
+    "promotion_convergence": {
+      "why": "v1's robustness_note asserted 'dead at all budgets, already established and expected to hold' -- a conclusion whose warrant was an empirical expectation rather than a proof, while the readout itself was never converged",
+      "ladder": "the same budget ladder as the main matrix; escalation beyond 160/240 is a new decision because the allowance is consumed",
+      "plateau_criterion": "CONVERGED(f) iff |median_i s_{i,b1} - median_i s_{i,b0}| <= 1.0 dB AND max_i |s_{i,b1} - s_{i,b0}| <= 2.0 dB, applied to promotion.spread_db over the top budget pair, per family",
+      "structural_dimension": {
+        "quantity": "R_fam = max over (task x feasible start x routed mode x registered PRF) of unenforced aasr_direct_db, minus the min; budget- and solver-independent",
+        "verdict": "STRUCTURALLY_DEAD iff R_fam < 6.0 dB",
+        "domain_correction": "the 6.0 dB threshold lives in the unenforced-AASR domain. The earlier formulation compared it against f_Q, which is m^-2 and cannot be compared to a dB threshold; v2 measures the structural bound in AASR dB",
+        "v1_evidence": "all nine registered families measured below 6.0 dB (M1NC/M3NC 0.037, M2WH 5.379, M2WF 5.464, M4WH 5.499, P6WH 5.439, P7WH 5.456, P8WH 5.501, P9WH 5.303) while the platform-level range is 71.03 dB: the platform can express the spread, the registered families cannot",
+        "knife_edge_disclosure": "P8WH sits 0.499 dB below the threshold and shares the aasr_direct model with the readout, which carries the registered D06-6 limitation (M=1 uniform aperture; Song's scan-dependent element pattern is not reproduced). 'Structurally dead' is a MODEL-level statement and is labelled as such; it is never stated as physics"
+      },
+      "two_dimensional_verdict": {
+        "DEAD_CONVERGED": "non-triggerable by structural bound (budget-independent) and the readout converged to a plateau below threshold",
+        "DEAD_UNCONVERGED": "non-triggerable by structural bound ONLY; the readout is NOT-YET-CONVERGED (still ascending toward R_fam). The deadness is stated as structural, explicitly not as a converged-readout result",
+        "ALIVE_CONVERGED": "the scenario admits spreads up to R_fam >= 6.0 dB; the plateau value is reported with a budget caveat, and promotion fires iff the plateau >= 6.0",
+        "ALIVE_UNCONVERGED": "NO CLAIM. The scenario admits >= 6.0 dB and the readout has not plateaued; report NOT-YET-CONVERGED and forbid any alive/dead assertion"
+      }
+    }
+  },
+
+  "capacity_artifacts": {
+    "status": "NOT YET DERIVED in v2. The serial-bound derivation and its measured value belong to the ticket-17 items that follow this freeze; until they land, no specific capacity number may appear in the paper",
+    "rule": "the serial-bound transfer term is min-over-pairs (a legal lower bound); the observation is the closure DEVIATION PATTERN vs the overload axis, never the closure level itself (which is near-tautological at a single constant)"
+  },
+
+  "caliber_and_gates": {
+    "synthetic_family_caliber": "every artifact under experiments/results/ predates ticket 15's Eq.(22) switch and is caliber v1; any v2 consumption of those numbers must carry the caliber tag (ticket 15 item 21)",
+    "domain_suite_in_gate": "the v1 gate ran only the shared-library suite (verify.py shared_lib_tests); v2 requires the domain suite to be part of the gate chain, otherwise 'gate PASS' does not mean the artifacts are compliant (ticket 17 item)",
+    "domain_guards_required": ["AASRGrid axes span the mode envelope with preserved cell density", "the mode-aware domain guard accepts the STR/SPT edge and refuses past the SLS edge", "T_env_max equals the per-mode envelope maximum"]
+  },
+
+  "forbidden": [
+    "changing any frozen threshold after seeing results: promotion 6.0 dB, AASR -13 dB main, plateau 1.0/2.0 dB, solver pop/gen ladder, alpha 0.05",
+    "declaring front collapse or a phase transition in any branch, converged or not (already falsified)",
+    "any physical claim about a stratum whose convergence verdict is UNCONVERGED",
+    "coverage-axis significance tests (degenerate by construction)",
+    "re-running the frozen families in place; all v2 output goes to explicitly injected directories",
+    "treating the vector squint (realwindows) and squint_at as the same quantity: different scales AND different zero points (measured: vector minimum ~600 s from the planar zero)",
+    "per-seed cherry-picking: all seeds are reported per variant"
+  ],
+
+  "predictions": {
+    "note": "A preregistration that cannot be wrong is the failure this file exists to prevent. Each prediction states the quantity, the threshold, and the observation that would refute it. Thresholds are NOT tuned to v1 evidence; they are the ones the spec already fixed.",
+    "P1_front_richness": {
+      "quantity": "median distinct_fq per density band, at the top budget of the registered ladder (160/240), in the real-window family",
+      "prediction": "median distinct_fq >= 3 in EVERY density band, at sufficient budget",
+      "refutation": "any band whose ladder has PLATEAUED (CONVERGED per convergence_criterion) and still shows median distinct_fq < 3",
+      "critical_caveat": "if a band is UNCONVERGED the prediction is NOT-YET-TESTED for that band, not refuted. Reporting a refutation for an unconverged band is a forbidden move.",
+      "forbidden_if_refuted": "no statement of 'front collapse' or 'phase transition' -- the prediction is about richness at sufficient budget, and its failure means the budget was insufficient or the front is genuinely narrow, neither of which licenses a phase-transition claim"
+    },
+    "P2_quality_headroom": {
+      "quantity": "dq_all pooled over the primary stratum (P-estimand, one-sided test above)",
+      "prediction": "the search confers measurable quality headroom over the greedy anchor at matched front, i.e. mean dq_all > 0 with the pooled one-sided test rejecting at alpha 0.05",
+      "refutation": "the pooled test fails to reject -- reported as a RESULT ('no measurable quality headroom'), never as a failure of the experiment",
+      "mandatory_wording": "the coverage-parity statement travels with this result in every branch"
+    },
+    "P3_promotion": {
+      "quantity": "promotion two-dimensional verdict (structural R_fam x budget convergence)",
+      "prediction": "promotion does not fire in the registered real-window families",
+      "refutation": "any unit whose spread_db >= 6.0 dB, OR any family whose R_fam >= 6.0 dB (structural liveness)",
+      "note": "the v1 evidence supports non-firing but on the SYNTHETIC families; the real-window families have different geometry and the prediction is re-tested, not inherited"
+    },
+    "P4_capacity": {
+      "quantity": "closure of served against the serial bound, per overload band",
+      "prediction": "WITHHELD until the serial-bound derivation lands (see capacity_artifacts). No capacity number may be predicted before its derivation is registered.",
+      "refutation": "n/a until registered",
+      "reason": "predicting a number whose derivation does not yet exist would be a retrofit, which is the thing this file is meant to prevent"
+    }
+  },
+
+  "stratum_rule_determinacy": {
+    "problem": "the reviewer found the stratum rule under-specified: 'all-STR degenerate-anchor family OR median distinct_fq < 2' has no defined analogue of M1NC's all-STR property for the R families, and a per-seed median can flip between strata on a reseed",
+    "fix": "the rule is evaluated ONCE, on the registered base seed and the base budget, per family -- not per seed and not averaged over the ladder. A family's stratum is a property of that family's registered base run",
+    "all_STR_clause_for_R_families": "the R families are defined by demand tier, not by mode, so the all-STR clause is replaced by its measurable content: a family is structural-null if distinct_fq at the registered base run is IDENTICALLY 1 for every unit (zero spread), which is the condition that makes dq_all's sd exactly zero",
+    "median_clause": "median distinct_fq < 2 is evaluated at the registered base seed and base budget only"
+  },
+
+  "freezes": {
+    "note": "this file is the freeze. Any later change is an amendment block below with its own timestamp, git HEAD and sha256 of the file being amended; the original bytes are never mutated in place",
+    "sha256_at_freeze": "85d264608b1bb49ebfb150fe80857ef28e4213b03fceba83bf3760c9df0f0a0c",
+    "sha256_note": "This hash was taken of the file BEFORE the independent-review block was appended, which is why it no longer matches the file's own bytes: a hash stored inside the file it hashes is self-referential and can never match. The operative integrity check is git -- the file is committed, so its bytes are immutable history and any later change is a visible diff plus an amendment block. This field pins the CONTENT THAT WAS REVIEWED, not the file.",
+    "git_head_at_freeze": "1c598bc",
+    "independent_review_1": {
+      "verdict": "REJECT",
+      "findings_addressed": [
+        "A1 freeze moved during review -> re-frozen with sha256 recorded here; the file is now tracked in git so its bytes are immutable history",
+        "A2 stale power text -> recomputed on the operative stratum (M2WH+M4WH, n=20, sd 0.88042, MDE 0.579*sd = 0.5099)",
+        "A3 freeze contradicted its own consumed predecessor -> stratum_rule_outcome_on_v1_evidence now records that the RULE overrides the ticket-22 note",
+        "A5 stratum rule under-determined -> stratum_rule_determinacy anchors evaluation to the registered base seed and base budget, and replaces the all-STR clause with its measurable content (identically-1 distinct_fq for every unit)"
+      ],
+      "finding_declined": "A4 (extend the ticket-22 gate to check the freeze's stratum) -- that gate validates the ticket-22 ADJUDICATION, which is a historical artifact and correctly still reflects the n=30 note it was written against. Rewriting it would falsify a record of what was decided at the time. The freeze's own stratum is instead checked by its own verification below.",
+      "biggest_weakness_raised": "no falsifiable prediction registered -> predictions P1-P4 added, each with an explicit refutation"
+    }
+  },
+  "consumed_gates": {
+    "scripts/verify_ticket22_adjudications.py": "43 checks, rc=0 -- every number this freeze quotes from v1 reproduces",
+    "scripts/verify_claim_traces.py": "11/11 claims provenance-verified, rc=0"
+  }
+}
