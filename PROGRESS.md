@@ -162,3 +162,14 @@
 **未验项（明确标记，未当作完成）**：`duration.py:141,145-149,166,168` 的 `geo.R0_m` 直接引用尚未覆盖注入。
 
 （每票完成后追加：`[HH:MM] TICKET 票NN → completed (<hash>) — <计数> / exit code`）
+### [13:33] 票 16 中途：逐任务几何注入落地（commit `fd5232e`）
+
+**实现**：`duration_scene_s(..., r0_m=None)` / `squint_at(..., r0_m=None)` / `kim_checker_scene_sls(..., r0_m=None)` + `TaskPlan` 扩展三字段（`r0_m` / `incidence_deg` / `vector_squint_min_t_s`）；`evaluator` 五处消费点全部接通（precompile / `_dwell` / C2 对斜视 / f_Q 的 `r_m`）。
+
+**非侵入性证明（硬证据）**：重算全部 **50 个冻结 matrix 工件的 greedy anchor f1\*，与记录值逐位比对，零 mismatch** ⇒ 旧族走 `None` 分支结果完全不变，`experiments/results/` 零 diff。
+
+**3 个新守卫**：`None` 携带库常数时必须逐位 no-op｜携带真值时**必须**移动驻留（防 stub 通过 None-only 检查，实测跨度 >40%）｜`squint_at` 关系是 `atan(x/r)`，角度比**接近但严格小于** R0 比（实测 1.686 vs 1.7，我第一版断言写成精确相等已被自己的测试抓住）。
+
+**一处自查纠错**：初版守卫断言 `a/b == 1.7` 精确，实测 1.686 ⇒ `atan` 非线性，比值本就不等于自变量比；已改为 `1.0 < a/b < 1.7 且 |a/b−1.7| < 0.05` 的正确关系。
+
+**剩余未做**（票 16 尚有 6 项）：三级联求交器 / 真窗族生成器（`R<密度><需求>`）/ 过载比校准环 / 单过境选择规则 / 同 seed byte-compare / 变异红证。
