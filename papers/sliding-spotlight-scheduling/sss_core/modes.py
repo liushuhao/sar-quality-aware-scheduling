@@ -46,7 +46,12 @@ class ModeLibrary:
         return cls(geo=geo, beta_span_spt_rad=beta_span)
 
     def rho_az(self, mode: Mode) -> float:
-        """Achieved azimuth resolution [m] for a library mode (formula-spec §3)."""
+        """Achieved azimuth resolution [m] for a library mode (formula-spec §3).
+
+        Zero-squint value.  Ticket 15 registers `rho_az_ach` for the
+        squint-dependent caliber; this stays the constant because f_Q's
+        D05-4 time-invariance and the routing contract both consume it.
+        """
         if mode is Mode.STR:
             return self.geo.D_m / 2.0
         if mode is Mode.SLS:
@@ -54,6 +59,39 @@ class ModeLibrary:
         if mode is Mode.SPT:
             return self.geo.wavelength_m / (2.0 * self.beta_span_spt_rad)
         raise ValueError(f"unknown mode {mode!r}")
+
+    def rho_az_ach(self, mode: Mode, psi_bar_rad: float) -> float:
+        """Achieved azimuth resolution AT A SQUALINT [m] (formula-spec §3.1).
+
+            rho_a,ach(m, psi) = rho_a(m, 0) / cos(psi)
+
+        Mechanism (spec §3.1, superseding the old "all three modes scale by
+        cos psi" note, which had the direction wrong): the Doppler caliber is
+        rho_a = Vs / B_d (§3, Kim Eq.(4)-(5) verbatim); with a fixed angular
+        span the beamwidth narrows as cos psi, so rho_a grows as sec psi --
+        squint makes the image COARSER.  Same origin as the duration family's
+        sec^2 factor (bandwidth narrowing with squint).
+
+        Zero-squint anchor regression is exact: rho_az_ach(m, 0) == rho_az(m).
+        The per-mode envelope is enforced by `sss_core.duration`'s guard, not
+        here, so this stays a pure function of (mode, psi).
+        """
+        c = math.cos(psi_bar_rad)
+        if abs(c) < 1e-12:
+            raise ValueError("sec singular: |psi| -> 90 deg outside the envelope")
+        return self.rho_az(mode) / c
+
+    def bandwidth_d_hz(self, mode: Mode, psi_bar_rad: float) -> float:
+        """Doppler bandwidth B_D(m, psi) [Hz] (formula-spec §3.1).
+
+            B_D = Vs / rho_a,ach(m, psi) = Vs * cos(psi) / rho_a(m, 0)
+
+        The literal `Vs * cos(psi) / rho_a,ach(m, psi)` is FORBIDDEN and is
+        not merely a stylistic variant: expanding it under the sec form gives
+        `Vs * cos^2(psi) / rho_a(0)`, one cos factor narrower -- 29.3% at 45
+        deg, i.e. under-conservative (spec §3.1).
+        """
+        return self.geo.vs_mps * math.cos(psi_bar_rad) / self.rho_az(mode)
 
     def beta_span(self, mode: Mode) -> float:
         """Azimuth steering span [rad] the mode must sweep (formula-spec §4.2)."""

@@ -88,7 +88,23 @@
       ],
       "unit": "deg",
       "kim_source": "Table 2, p.19 ('Squint Angle +-12 deg.'); usage: p.20 text 'squint angle of 12 degrees from the first target ... not less than -12 at imaging of the last target'; p.27 text 'squint angle of this mission was within the range of +-12'",
-      "maps_to": "spec D5 alpha envelope / squint interval axis"
+      "maps_to": "spec D5 alpha envelope / squint interval axis",
+      "scope_note": "This is the PLATFORM/MISSION squint range from Kim and stays authoritative for it. Ticket 15 added a separate `mode_squint_envelope_deg` field for the per-mode PHYSICS domain; the two are deliberately not merged, because +-12 deg is a literature value and +-45 deg is a design choice."
+    },
+    "mode_squint_envelope_deg": {
+      "value": {
+        "STR": 45.0,
+        "SLS": 26.9,
+        "SPT": 45.0
+      },
+      "unit": "deg",
+      "kim_source": null,
+      "frozen_by": "ticket 15 (2026-10-03), formula-spec section 3.1 line 91 + spec D12",
+      "derivation": {
+        "STR_SPT": "45 deg design envelope (spec D12-3); no literature source, a registered design choice",
+        "SLS": "26.9 deg is where a_res = 1 - K_c/K_a <= 0 for the library k = 0.797317 (D06-3 guard, aasr.py); it is the physical sliding-spotlight boundary, not a choice"
+      },
+      "scope_note": "Per-mode PHYSICS domain for dwell closures, the AASR grid axis and the domain guards. Distinct from `squint_angle_range_deg` above (Kim's mission range)."
     },
     "sliding_factor_k_ladder": {
       "value": 0.797317,

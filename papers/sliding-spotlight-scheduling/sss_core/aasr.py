@@ -67,6 +67,7 @@ from dataclasses import dataclass
 
 import numpy as np
 
+from .duration import SLS_MAX_SQUINT_DEG, SQUINT_ENVELOPE_DEG
 from .modes import Mode, ModeLibrary
 
 # ── registered constants (D06-4/5) ───────────────────────────────────────
@@ -108,7 +109,16 @@ AASR_SENSITIVITY_ALTERNATES_DB = (-10.0, -14.0)  # sensitivity table ONLY
 # densification.  Actual operative axes: rho 24 x psi 37 x k 55
 # (audit-corrected from the stale "24x37x28" wording, 2026-09-29).
 RHO_REQ_AXIS_DEFAULT = tuple(round(0.3 + i * (3.0 - 0.3) / 23, 6) for i in range(24))
-PSI_AXIS_DEG_DEFAULT = tuple(round(-12.0 + i * 24.0 / 36, 6) for i in range(37))
+# Ticket 15: the psi axis extends from the +-12 deg PLATFORM envelope to the
+# +-45 deg MODE envelope.  Point count is held at the previous density
+# (37 pts / 24 deg = 1.5417 pts/deg) -> 136 pts / 90 deg = 0.6667 deg per
+# cell, matching the old 0.6667 deg cell exactly.  Reusing 37 points over 90
+# deg would give 2.5 deg cells -- 3.75x coarser -- and would show up only in
+# `halving_stability`, the most expensive gate step, as a density failure.
+PSI_AXIS_DEG_DEFAULT = tuple(
+    round(-SQUINT_ENVELOPE_DEG + i * (2.0 * SQUINT_ENVELOPE_DEG) / 135, 6)
+    for i in range(136)
+)
 K_AXIS_DEFAULT = tuple(round(i * 0.9 / 54, 6) for i in range(55))  # k in [0, 0.9];
 # k-cell width 0.0167: the SLS library design point k = 1-A must sit in a
 # cell tight enough that its bound (not just its direct value) clears -13 dB
@@ -201,7 +211,7 @@ def aasr_direct(
         den = float(_pattern(np.array(-kat0), vs, geo.D_m) ** 2)
         ratio = num / den
     else:
-        b_d = vs * cos_psi / rho_ach  # D06-1
+        b_d = lib.bandwidth_d_hz(mode, psi_bar_rad)  # D06-1, ticket-15 re-registration
         if mode is Mode.SLS:
             k_a = 2.0 * vs * vs * cos_psi**3 / (lam * r0)
             k_c = (2.0 * vs / lam) * (k * vs / r0) * cos_psi
@@ -310,6 +320,9 @@ class AASRGrid:
         chunk = 32
         for j0 in range(0, len(self._psi_dense), chunk):
             cp = cos_psi[j0 : j0 + chunk][:, None]  # (nc, 1)
+            # Registered B_D = Vs*cos/rho_a(0) (ticket 15), identical to
+            # aasr_direct's band so the grid and the direct path cannot
+            # disagree on the achieved caliber for one (mode, psi).
             b_d = vs * cp / rho_ach  # (nc, 1)
             fr = (b_d * 0.5)[:, :, None] * f[None, None, :]  # (nc, 1, n_f) over +-B_D/2
             if mode is Mode.SLS:
@@ -338,8 +351,18 @@ class AASRGrid:
             raise ValueError(f"PRF {prf_hz} Hz is not a registered key {PRF_KEYS_HZ}")
         if not (self.axes.rho_req[0] - 1e-9 <= rho_req_m <= self.axes.rho_req[-1] + 1e-9):
             raise ValueError(f"rho_req {rho_req_m} m outside grid domain")
-        if not (-12.0 - 1e-9 <= math.degrees(psi_bar_rad) <= 12.0 + 1e-9):
-            raise ValueError("psi_bar outside the +-12 deg platform envelope")
+        # Ticket 15 (punch 7): the guard is MODE-AWARE, not a blanket +-45.
+        # SLS leaves its physical sliding domain at ~26.9 deg (a_res <= 0,
+        # D06-3); admitting 45 deg queries there would let `_locate` clamp a
+        # 45 deg sample into the last in-envelope cell and return 26.9-deg
+        # physics as a 45-deg answer -- a silent wrong value, not a raise.
+        mode = route_mode(rho_req_m, self.lib)
+        env_deg = SLS_MAX_SQUINT_DEG if mode is Mode.SLS else SQUINT_ENVELOPE_DEG
+        if not (-env_deg - 1e-9 <= math.degrees(psi_bar_rad) <= env_deg + 1e-9):
+            raise ValueError(
+                f"psi_bar {math.degrees(psi_bar_rad):.3f} deg outside the "
+                f"{mode.name} envelope +-{env_deg} deg"
+            )
         if not (0.0 - 1e-12 <= k <= self.axes.k[-1] + 1e-12):
             raise ValueError(f"k = {k} outside the grid domain [0, {self.axes.k[-1]}]")
         route_mode(rho_req_m, self.lib)  # unserviceable requirements raise

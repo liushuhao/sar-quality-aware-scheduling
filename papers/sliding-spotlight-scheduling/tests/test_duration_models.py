@@ -36,14 +36,17 @@ from sss_core.duration import (  # noqa: E402
     WINDOW_TAIL_PAD_FROZEN,
     MarginPads,
     duration_point_s,
+    duration_scene_planar_oracle,
     duration_scene_s,
     duration_spt_exact_s,
     freeze_window_tail_pad,
     kim_checker_scene_sls,
     kim_eq23_theta_s1,
     measure_closure_error,
+    mutation_discriminating,
     pad_window_tail,
     scene_minus_point_delta_s,
+    window_tail_pad_report,
 )
 from sss_core.fixture import fixture_value, load_platform_fixture  # noqa: E402
 from sss_core.geometry import DerivedGeometry, look_geometry  # noqa: E402
@@ -192,10 +195,24 @@ def test_analytic_special_spt_symmetry_and_zero_squint(lib):
     assert duration_spt_exact_s(psi, lib) == duration_spt_exact_s(-psi, lib)
     got = duration_spt_exact_s(0.0, lib)
     assert abs(got - 5.28803) < 2e-4
-    # analytic zero-squint scene ratio: T_SLS / T_STR == 1/A exactly
-    # (identical numerator structure at psi=0, sec^2(0)=1)
-    ratio = duration_scene_s(Mode.SLS, 0.0, lib) / duration_scene_s(Mode.STR, 0.0, lib)
-    assert abs(ratio - 1.0 / lib.geo.A) < 1e-12
+    # Ticket 15: the zero-squint T_SLS/T_STR == 1/A identity belongs to the
+    # PLANAR ORACLE, not to production.  It held only because both planar
+    # forms share the (R0*theta_a + Wa) numerator and sec^2(0) = 1.  The
+    # production SLS closure is now the Eq.(22) chain, whose Wa handling
+    # differs, so the ratio is 4.934968 rather than 1/A = 4.933803
+    # (+0.0236%).  Both halves are asserted so neither can drift silently:
+    # the oracle keeps the exact identity, production matches the checker.
+    oracle_ratio = (
+        duration_scene_planar_oracle(Mode.SLS, 0.0, lib)
+        / duration_scene_planar_oracle(Mode.STR, 0.0, lib)
+    )
+    assert abs(oracle_ratio - 1.0 / lib.geo.A) < 1e-12
+    checker_zero = kim_checker_scene_sls(
+        0.0, lib.rho_az(Mode.SLS), lib.geo
+    )["sat_raw_s"]
+    assert duration_scene_s(Mode.SLS, 0.0, lib) == checker_zero
+    prod_ratio = duration_scene_s(Mode.SLS, 0.0, lib) / duration_scene_s(Mode.STR, 0.0, lib)
+    assert abs(prod_ratio - 4.934967753) < 1e-6
 
 
 # ── Kim full-curvature checker (formula-spec §6 table 3 registered chain) ─
@@ -281,25 +298,95 @@ def test_margin_pads_layering():
 
 
 def test_window_tail_pad_frozen_from_measurement(lib):
-    """Frozen pad >= measured max error and follows the registered rule
-    ceil_to_0.5pct(max x 1.5); alarm threshold stays above it (spec D4
-    freeze-before-run: the calibration is re-derived here as evidence)."""
+    """Ticket 15: the pad covers the PRODUCTION closure's distance from the
+    physical reference, which is now identically zero (production IS the
+    Eq.(22)/tan-exact reference in all three modes), so the frozen value is
+    pure conservative slack.
+
+    The oracle gap is RECORDED and gated on the alarm, and the binding-region
+    conservativeness claim is asserted per mode -- the claim the pad's
+    docstring makes, and the one that must never silently reverse.
+    """
     cal = freeze_window_tail_pad(lib)
-    assert cal["max_abs_rel_err"] <= WINDOW_TAIL_PAD_FROZEN
     assert cal["frozen_pad"] == pytest.approx(WINDOW_TAIL_PAD_FROZEN)
+    assert cal["production_residual"] == 0.0
     assert WINDOW_TAIL_PAD_FROZEN < PAD_ALARM_THRESHOLD
-    # residual direction: at the envelope edges (where the tail pad binds)
-    # the SLS closure OVERestimates the checker (conservative, feasible set
-    # shrinks); the small near-broadside underestimate (-0.02%) is covered
-    # by the frozen pad in both directions.
+    assert cal["oracle_gaps_within_alarm"], cal["per_mode"]
+    assert cal["conservative_where_claimed"], cal["per_mode"]
+
+    # per-mode detail, so a failure names the mode rather than a bool
+    sls = cal["per_mode"]["SLS"]
+    # conservative where it matters: the oracle OVER-counts above the binding
+    # threshold, so a too-large oracle shrinks the feasible set
+    assert sls["min_rel_err"] > 0.0
+    # and the interior dip is bounded by the frozen pad in magnitude
     sls_errs = [
-        (abs(r["psi_bar_deg"]), r["rel_err"])
-        for r in measure_closure_error(lib)
-        if r["mode"] == "SLS"
+        r["rel_err"] for r in measure_closure_error(lib) if r["mode"] == "SLS"
     ]
-    edge = [e for a, e in sls_errs if a > 11.9]
-    assert min(edge) > 0.0
-    assert min(e for _, e in sls_errs) > -WINDOW_TAIL_PAD_FROZEN
+    assert min(sls_errs) > -WINDOW_TAIL_PAD_FROZEN
+    # STR is negative everywhere by construction; conservativeness is NOT
+    # claimed for it, only magnitude, and it is four orders below the pad
+    str_ = cal["per_mode"]["STR"]
+    assert not str_["conservative_claimed"]
+    assert str_["max_abs_rel_err"] < WINDOW_TAIL_PAD_FROZEN
+
+
+def test_oracle_gap_is_discriminating_at_high_squint(lib):
+    """Mutation witness: reverting production to the planar oracle must be
+    visible, and only at high squint.
+
+    The SLS gap is 0.42% at 12 deg -- swallowed by any 1% tolerance, so a
+    12-deg fixture proves nothing -- but 2.10% at the 26.9 deg boundary.  STR
+    (0.0009%) and SPT (0) cannot witness a revert at all, which is why the
+    ticket's mutation fixture must be SLS at >= 26 deg.
+    """
+    d = mutation_discriminating(lib, tol=5e-3)
+    assert d["SLS"]["separable"], d["SLS"]
+    assert d["SLS"]["max_gap"] > 0.02
+    # the 12-deg trap, asserted so nobody "simplifies" the fixture back to it
+    gap_12 = abs(
+        duration_scene_planar_oracle(Mode.SLS, math.radians(12.0), lib)
+        - duration_scene_s(Mode.SLS, math.radians(12.0), lib)
+    ) / duration_scene_s(Mode.SLS, math.radians(12.0), lib)
+    assert gap_12 < WINDOW_TAIL_PAD_FROZEN  # 12 deg CANNOT witness a revert
+    assert not d["STR"]["separable"]
+    assert not d["SPT"]["separable"]
+
+
+def test_high_squint_production_matches_physical_reference(lib):
+    """The production closure IS the physical reference at high squint.
+
+    This is the direct high-squint witness the ticket requires in place of the
+    M?NC anchor re-pin: the anchor moves by 2.1e-6 s at +-3.356 deg, far
+    below its 1e-3 tolerance, so it cannot certify the STR switch.
+    """
+    # SLS production == Eq.(22) checker, at the binding edge
+    for deg in (12.0, 26.9):
+        psi = math.radians(deg)
+        assert duration_scene_s(Mode.SLS, psi, lib) == kim_checker_scene_sls(
+            psi, lib.rho_az(Mode.SLS), lib.geo
+        )["sat_raw_s"]
+    # STR production == tan-exact scene transit, at both envelope edges
+    for deg in (12.0, 45.0):
+        psi = math.radians(deg)
+        geo = lib.geo
+        exact = (
+            (geo.R0_m * (math.tan(psi + geo.theta_a_rad / 2)
+                         - math.tan(psi - geo.theta_a_rad / 2))
+             + geo.scene_wa_m) / geo.vs_mps
+        )
+        assert duration_scene_s(Mode.STR, psi, lib) == pytest.approx(exact, rel=1e-12)
+
+
+def test_squint_envelope_guards_fail_loud(lib):
+    """Outside a mode's own envelope the closure refuses rather than
+    returning an uncertifiable number (ticket 15)."""
+    for mode, deg in ((Mode.STR, 50.0), (Mode.SLS, 30.0), (Mode.SPT, 50.0)):
+        with pytest.raises(ValueError, match="envelope"):
+            duration_scene_s(mode, math.radians(deg), lib)
+    # in-envelope queries still work
+    assert duration_scene_s(Mode.STR, math.radians(45.0), lib) > 0.0
+    assert duration_scene_s(Mode.SLS, math.radians(26.9), lib) > 0.0
 
 
 def test_sat_margin_constant(lib):

@@ -158,19 +158,47 @@ def shared_lib_tests() -> dict:
 
 def grid_halving(lib: ModeLibrary, n_samples: int = 20) -> dict:
     """Preregistered sampling program (ticket-06 test program, same seed):
-    Random(20260927), uniform within axes + uniform PRF keys."""
-    rng = random.Random(20260927)
-    from .aasr import PRF_KEYS_HZ, RHO_REQ_AXIS_DEFAULT
+    Random(20260927), uniform within axes + uniform PRF keys.
 
-    samples = [
-        (
-            rng.uniform(RHO_REQ_AXIS_DEFAULT[0], RHO_REQ_AXIS_DEFAULT[-1]),
-            math.radians(rng.uniform(-12.0, 12.0)),
-            rng.uniform(0.0, 0.9),
-            rng.choice(PRF_KEYS_HZ),
+    Ticket 15: the psi draw follows the grid axis instead of a hardcoded
+    +-12 deg.  The old literal covered 24 of the new 90 deg domain (26.7%),
+    so `halving_stability` could report PASS while blind to exactly the
+    regime the expansion stresses -- the subtlest of the seven +-12 sites.
+
+    The draw is MODE-AWARE (punch 7): the grid's psi axis spans +-45 deg, but
+    a sample routed to SLS is only meaningful inside that mode's 26.9 deg
+    sliding boundary.  Drawing psi uniformly over the whole axis and letting
+    `_domain_check` reject the out-of-envelope ones would make this gate fail
+    for a domain reason rather than a density reason, and -- worse -- it would
+    silently shrink the effective sample count below the preregistered 20.
+    Each sample therefore draws psi inside its own routed mode's envelope.
+    """
+    rng = random.Random(20260927)
+    from .aasr import PRF_KEYS_HZ, PSI_AXIS_DEG_DEFAULT, RHO_REQ_AXIS_DEFAULT
+    from .duration import SLS_MAX_SQUINT_DEG, SQUINT_ENVELOPE_DEG
+    from .aasr import route_mode
+
+    samples = []
+    for _ in range(n_samples):
+        rho = rng.uniform(RHO_REQ_AXIS_DEFAULT[0], RHO_REQ_AXIS_DEFAULT[-1])
+        try:
+            mode = route_mode(rho, lib)
+        except ValueError:
+            continue  # unserviceable requirement; not a grid sample
+        env = SLS_MAX_SQUINT_DEG if mode is Mode.SLS else SQUINT_ENVELOPE_DEG
+        samples.append(
+            (
+                rho,
+                math.radians(rng.uniform(-env, env)),
+                rng.uniform(0.0, 0.9),
+                rng.choice(PRF_KEYS_HZ),
+            )
         )
-        for _ in range(n_samples)
-    ]
+    if len(samples) < n_samples:
+        raise ValueError(
+            f"sampling program produced {len(samples)} of {n_samples} preregistered "
+            "grid samples -- the draw is vacuous and must not be scored"
+        )
     grid = AASRGrid(lib)
     report = grid.halving_stability(samples)
     ok = report["within_preregistered_bound"]

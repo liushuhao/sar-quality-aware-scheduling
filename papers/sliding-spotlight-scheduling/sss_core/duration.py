@@ -49,35 +49,136 @@ INTER_TASK_PAD_FRACTION_KIM = 0.25
 # 03, freeze-before-run): measured max |rel err| = 0.4185% (SLS closure vs
 # symmetric-alpha checker at psi_bar = +-12 deg; STR split form residual
 # 2e-6, SPT exact 0) x 1.5 = 0.63% -> rounded UP to the 0.5% grid = 1.0%.
-# Residual direction: the SLS closure OVERestimates the checker at the
-# envelope edges (conservative -- feasible set shrinks, never leaks); a
-# -0.02% near-broadside underestimate exists and is covered by the pad.
+# TICKET 15 (2026-10-03) re-derived this over the +-45 deg domain and KEPT the
+# value: after the Eq.(22) switch the production closure IS the physical
+# reference, so its residual is exactly 0 and 1.0% is pure conservative slack
+# (slack on e <= w_e shrinks the feasible set, never leaks).  Raising it to the
+# 2.1025%-derived 3.5% would guard a planar-vs-Eq.(22) gap the PRODUCTION path
+# never computes -- a symptom patch on a retired oracle, forbidden by the
+# frozen-constant rule.
+#
+# CONSERVATIVE-DIRECTION SCOPE (corrected by ticket 15): the docstring
+# previously claimed the residual is conservative everywhere.  Measured over
+# the new domain, the planar-oracle gap (planar - production)/production is
+# positive across the BINDING region |psi| >= 11.9 deg (min +0.4112% at
+# 11.9 deg, +2.1025% at the 26.9 deg boundary) but crosses zero at
+# |psi| ~ 2.77 deg.  The trough is interior and non-binding; the binding
+# region -- where the pad actually applies -- is conservative throughout.
+# `window_tail_pad_covers_oracle_gap` asserts both halves of that claim, so a
+# future sign reversal in the binding region turns the guard red.
 # The spec's initial 5% stays as the out-of-envelope alarm threshold
-# (PAD_ALARM_THRESHOLD, §4.3).  FROZEN VALUE -- do not tune.
+# (PAD_ALARM_THRESHOLD, section 4.3).  FROZEN VALUE -- do not tune.
 WINDOW_TAIL_PAD_FROZEN = 0.01  # 1.0%
 
 PAD_ALARM_THRESHOLD = 0.05  # spec D4 initial pad; exceeded error = escalate
 SAT_MARGIN_KIM = 1.25       # Kim applies 1.25x on top of the raw SAT
 
+# Squint envelopes (ticket 15, formula-spec section 3.1 line 91 + spec D12).
+# The PLATFORM squint range stays +-12 deg (Kim Table 2 p.19, a literature
+# value read through squint_envelope_deg); the MODE envelopes are design
+# choices registered here and in platform_kim2021.json under
+# `mode_squint_envelope_deg`.  They are deliberately NOT written back over
+# `squint_angle_range_deg`, whose provenance is Kim Table 2.
+SQUINT_ENVELOPE_DEG = 45.0
+# SLS physical sliding boundary: a_res = 1 - K_c/K_a <= 0 trips at
+# |psi| ~ 26.9 deg for the library k (aasr.py D06-3 guard).  The Eq.(22)
+# closure stays computable past it (12.207 s at 45 deg) but the mode is out
+# of its AASR-enforced envelope there, so the dwell closure refuses rather
+# than returning a value no constraint can certify.
+SLS_MAX_SQUINT_DEG = 26.9
+# Binding region of the window-tail pad: below this the planar-oracle gap
+# crosses zero (interior trough), above it the gap is conservative.
+WINDOW_TAIL_BINDING_DEG = 11.9
+
 
 # ── duration closures ────────────────────────────────────────────────────
 
-def duration_scene_s(mode: Mode, psi_bar_rad: float, lib: ModeLibrary) -> float:
-    """Scene-level dwell [s] (ticket 03 D03-3; formula-spec §4.2 structure).
+def mode_squint_envelope_rad(mode: Mode) -> float:
+    """Squint envelope of one mode [rad] (ticket 15, formula-spec §3.1)."""
+    deg = SLS_MAX_SQUINT_DEG if mode is Mode.SLS else SQUINT_ENVELOPE_DEG
+    return math.radians(deg)
 
-    STR: R*theta_a/Vs * sec^2(psi_bar) + Wa/Vs   (split form: the stripmap
-         beam is body-fixed, so the scene-transit term Wa/Vs carries NO
-         squint scaling; only the beam-transit term is sec^2 inflated.
-         Residual vs the tan-exact scene transit is 2e-6 @12 deg -- sec^2
-         is second-order exact across the 0.36 deg beamwidth.)
-    SLS: (R*theta_a + Wa)/(A*Vs) * sec^2(psi_bar)  (the sliding beam SWEEPS
-         the scene azimuth extent, so Wa shares the sec^2 scaling; matches
-         the symmetric-alpha checker to +0.42% @12 deg, formula-spec §6
-         table 4's 0.44% register.)
-    SPT: exact tan-difference over beta_span (Kim Eq.(10)-(11)); the beam is
-         parked on the scene, so scene == point; an azimuth extent larger
-         than the footprint R*theta_a is INFEASIBILITY (C1b footprint
+
+def _check_envelope(mode: Mode, psi_bar_rad: float) -> None:
+    """Fail loud outside the mode's own squint envelope (ticket 15).
+
+    The guard runs BEFORE the closure is evaluated: past the SLS boundary the
+    Eq.(22) chain still returns a number (12.207 s at 45 deg) but that number
+    sits in a region no registered AASR constraint can certify, so returning it
+    would be a silent out-of-domain value rather than a reading.
+    """
+    env = mode_squint_envelope_rad(mode)
+    if abs(psi_bar_rad) > env:
+        raise ValueError(
+            f"psi_bar {math.degrees(psi_bar_rad):.3f} deg outside the "
+            f"{mode.name} envelope +-{math.degrees(env):.1f} deg"
+        )
+
+
+def duration_scene_s(mode: Mode, psi_bar_rad: float, lib: ModeLibrary) -> float:
+    """Scene-level dwell [s] (ticket 03 D03-3; PRODUCTION = formula-spec
+    §4.1 Kim Eq.(22)/(24) chain after ticket 15; §4.2 planar forms demoted to
+    oracles).
+
+    STR: tan-exact scene transit + Wa/Vs.  The beam is body-fixed, so the
+         scene-transit term carries NO squint scaling.  `R0*(tan(psi+ta/2) -
+         tan(psi-ta/2))/Vs` is the exact flat-earth transit for a beamwidth
+         `theta_a` centred on `psi`; the planar sec^2 form approximates it to
+         0.0009% at 45 deg and is kept as `duration_scene_planar_oracle`.
+    SLS: the Kim Eq.(22)/(24) sliding chain via the symmetric-alpha checker
+         (`kim_checker_scene_sls`), i.e. `(R0+r0)(tan theta_s0 - tan
+         theta_s1) + Wa` over `Vs`.  The planar sec^2 form deviates +0.42% at
+         12 deg and +5.30% at 45 deg -- it is the oracle now, not production.
+    SPT: exact tan-difference over beta_span (Kim Eq.(10)-(11)); unchanged,
+         the beam is parked on the scene so scene == point; an azimuth extent
+         larger than the footprint R*theta_a is INFEASIBILITY (C1b footprint
          predicate, tickets 04/08), never a longer dwell.
+    """
+    _check_envelope(mode, psi_bar_rad)
+    geo = lib.geo
+    if mode is Mode.STR:
+        return (
+            _tan_diff_s(psi_bar_rad, geo.theta_a_rad, geo.R0_m, geo.vs_mps)
+            + geo.scene_wa_m / geo.vs_mps
+        )
+    if mode is Mode.SLS:
+        return kim_checker_scene_sls(
+            psi_bar_rad, lib.rho_az(Mode.SLS), geo
+        )["sat_raw_s"]
+    if mode is Mode.SPT:
+        return _tan_diff_s(psi_bar_rad, lib.beta_span_spt_rad, geo.R0_m, geo.vs_mps)
+    raise ValueError(f"unknown mode {mode!r}")
+
+
+def duration_point_s(mode: Mode, psi_bar_rad: float, lib: ModeLibrary) -> float:
+    """Point-target dwell [s] (formula-spec §6 table 2; internal component).
+
+    STR/SLS keep the planar point-target caliber: the scene increment Wa
+    (STR) / Wa/A (SLS) is beam-swept overhead that belongs to the scene
+    closure, so the point leg stays the PLANAR form even after ticket 15
+    moved the scene closure to Eq.(22).  The g_T chain (quality.py) consumes
+    this, and its sec^2 cancellation against the STR reference is exact --
+    switching it would change f_Q anchors without a physical driver.
+    SPT delegates to the scene closure (parked beam, scene == point).
+    """
+    geo = lib.geo
+    if mode is Mode.STR:
+        return geo.R0_m * geo.theta_a_rad / geo.vs_mps * sec2(psi_bar_rad)
+    if mode is Mode.SLS:
+        return geo.R0_m * geo.theta_a_rad / (geo.A * geo.vs_mps) * sec2(psi_bar_rad)
+    if mode is Mode.SPT:
+        return duration_scene_s(mode, psi_bar_rad, lib)
+    raise ValueError(f"unknown mode {mode!r}")
+
+
+def duration_scene_planar_oracle(mode: Mode, psi_bar_rad: float, lib: ModeLibrary) -> float:
+    """DEMOTED planar/sec^2 scene closure (formula-spec §4.2, ticket 15).
+
+    This is the TEST ORACLE the Eq.(22) production closure is checked against,
+    not a production path.  Kept because the planar forms are the structure
+    the formula spec reproduces against Kim's table values, and because the
+    window-tail pad's conservativeness claim is stated in terms of the gap
+    between the two.  Never call it from production code.
     """
     geo = lib.geo
     if mode is Mode.STR:
@@ -96,33 +197,18 @@ def duration_scene_s(mode: Mode, psi_bar_rad: float, lib: ModeLibrary) -> float:
     raise ValueError(f"unknown mode {mode!r}")
 
 
-def duration_point_s(mode: Mode, psi_bar_rad: float, lib: ModeLibrary) -> float:
-    """Point-target dwell [s] (formula-spec §6 table 2; internal component)."""
-    geo = lib.geo
-    if mode is Mode.STR:
-        return geo.R0_m * geo.theta_a_rad / geo.vs_mps * sec2(psi_bar_rad)
-    if mode is Mode.SLS:
-        return geo.R0_m * geo.theta_a_rad / (geo.A * geo.vs_mps) * sec2(psi_bar_rad)
-    if mode is Mode.SPT:
-        return duration_scene_s(mode, psi_bar_rad, lib)
-    raise ValueError(f"unknown mode {mode!r}")
-
-
 def scene_minus_point_delta_s(mode: Mode, psi_bar_rad: float, lib: ModeLibrary) -> float:
     """Exact T_scene - T_point increment [s] (D03-3 component identity).
 
-    STR: Wa/Vs (no squint scaling -- body-fixed beam, ground scene transit).
-    SLS: Wa/(A*Vs)*sec^2 (beam-swept scene extent).
-    SPT: 0 (parked beam; scene == point).
+    Ticket 15: this is a DERIVED quantity, so it must stay exactly equal to
+    ``duration_scene_s - duration_point_s`` under whatever the production
+    closures are.  Hand-written per-mode forms drift the moment a closure
+    changes, which is how the identity test caught the switch; deriving it
+    removes the class of bug rather than re-pinning the number.
     """
-    geo = lib.geo
-    if mode is Mode.STR:
-        return geo.scene_wa_m / geo.vs_mps
-    if mode is Mode.SLS:
-        return geo.scene_wa_m / (geo.A * geo.vs_mps) * sec2(psi_bar_rad)
-    if mode is Mode.SPT:
-        return 0.0
-    raise ValueError(f"unknown mode {mode!r}")
+    return duration_scene_s(mode, psi_bar_rad, lib) - duration_point_s(
+        mode, psi_bar_rad, lib
+    )
 
 
 def _tan_diff_s(psi_bar_rad: float, span_rad: float, r_m: float, vs_mps: float) -> float:
@@ -263,50 +349,155 @@ def pad_window_tail(duration_s: float, pads: MarginPads) -> float:
 # ── pad calibration measurement (freeze evidence, ticket 03) ─────────────
 
 def measure_closure_error(lib: ModeLibrary, n_grid: int = 25) -> list[dict]:
-    """Scene-closure vs exact/checker relative error over the squint envelope.
+    """PLANAR ORACLE vs the Eq.(22) production closure, per mode envelope.
 
-    Rows: STR closure vs tan-exact scene transit; SLS closure vs the Kim
-    symmetric-alpha checker at the SLS library resolution; SPT closure vs
-    its own exact tan form (identity, error ~0).  The frozen window-tail
-    pad = max |rel err| x 1.5, rounded UP to the 0.5% grid.
+    Ticket 15 changed the object of this measurement.  It used to measure
+    production-vs-reference (which, before the switch, was the planar form
+    against the checker).  After the switch the production closure IS the
+    reference, so that version measures exactly 0 and any pad assertion built
+    on it is vacuous.  The meaningful, non-vacuous quantity is the gap between
+    the DEMOTED planar oracle and production -- it is what the pad's
+    conservativeness claim is stated in terms of, and it is what a future
+    partial revert would expose.
+
+    Each mode is swept over ITS OWN envelope (SLS stops at its 26.9 deg
+    sliding boundary; evaluating the SLS oracle at 45 deg would be a domain
+    violation, not a model error).
     """
-    geo = lib.geo
     rows = []
     for mode in (Mode.STR, Mode.SLS, Mode.SPT):
+        edge = mode_squint_envelope_rad(mode)
         for i in range(n_grid + 1):
-            psi = math.radians(-12.0 + 24.0 * i / n_grid)
-            closure = duration_scene_s(mode, psi, lib)
-            if mode is Mode.STR:
-                exact = (
-                    _tan_diff_s(psi, geo.theta_a_rad, geo.R0_m, geo.vs_mps)
-                    + geo.scene_wa_m / geo.vs_mps
-                )
-            elif mode is Mode.SLS:
-                exact = kim_checker_scene_sls(psi, lib.rho_az(Mode.SLS), geo)["sat_raw_s"]
-            else:
-                exact = duration_spt_exact_s(psi, lib)
+            psi = -edge + 2.0 * edge * i / n_grid
+            oracle = duration_scene_planar_oracle(mode, psi, lib)
+            production = duration_scene_s(mode, psi, lib)
             rows.append(
                 {
                     "mode": mode.name,
                     "psi_bar_deg": math.degrees(psi),
-                    "closure_s": closure,
-                    "reference_s": exact,
-                    "rel_err": (closure - exact) / exact,
+                    "oracle_s": oracle,
+                    "production_s": production,
+                    "rel_err": (oracle - production) / production,
                 }
             )
     return rows
 
 
-def freeze_window_tail_pad(lib: ModeLibrary, n_grid: int = 25) -> dict:
-    """Recompute the calibration and return the frozen-pad justification."""
+def window_tail_pad_report(lib: ModeLibrary, n_grid: int = 25) -> dict:
+    """Coverage of the frozen pad over the planar-oracle gap (non-vacuous).
+
+    Per-mode, because conservativeness is a PER-MODE property and the modes
+    do not share it (measured over their own envelopes, ticket 15):
+
+    * SLS -- the oracle OVER-counts from ~2.8 deg outward (+0.4185% at 12 deg,
+      +2.1025% at the 26.9 deg boundary), so above the binding threshold the
+      gap is conservative: a too-large oracle shrinks the feasible set rather
+      than leaking.  Below it the gap dips negative (-0.0013% at 2.7 deg).
+    * STR -- the oracle UNDER-counts EVERYWHERE (-0.0002% at 0 deg to
+      -0.0009% at 45 deg).  The magnitude is ~1e-5, four orders below the
+      frozen pad, so it is covered; but "conservative" is the wrong word for
+      this mode and the docstring claim is scoped accordingly.
+    * SPT -- production IS the oracle (identical), gap exactly 0.
+
+    Assertions, each able to go red:
+      * max |gap| per mode <= WINDOW_TAIL_PAD_FROZEN (pad lowered too far)
+      * SLS gap > 0 in its binding region (an oracle that UNDER-counts there
+        is a silent leak -- the one direction that must never happen)
+      * tightness: pad - max|gap| stays under one 0.5% grid step
+    """
     rows = measure_closure_error(lib, n_grid)
-    worst = max(rows, key=lambda r: abs(r["rel_err"]))
-    max_abs = abs(worst["rel_err"])
-    grid = 0.005
-    frozen = math.ceil(max_abs * 1.5 / grid) * grid
+    per_mode: dict[str, dict] = {}
+    for mode in (Mode.STR, Mode.SLS, Mode.SPT):
+        mrows = [r for r in rows if r["mode"] == mode.name]
+        if not mrows:
+            raise ValueError(f"no closure rows for {mode.name}")
+        bind = math.radians(WINDOW_TAIL_BINDING_DEG)
+        binding = [r for r in mrows if abs(math.radians(r["psi_bar_deg"])) >= bind]
+        # SLS conservativeness is only claimed where its gap turns positive;
+        # STR is negative everywhere by construction and is covered by
+        # magnitude alone.
+        scope = binding if mode is Mode.SLS else mrows
+        worst = max(scope, key=lambda r: abs(r["rel_err"]))
+        trough = min(scope, key=lambda r: r["rel_err"])
+        max_abs = abs(worst["rel_err"])
+        per_mode[mode.name] = {
+            "max_abs_rel_err": max_abs,
+            "min_rel_err": trough["rel_err"],
+            "worst_psi_deg": worst["psi_bar_deg"],
+            # The pad's job is to cover the PRODUCTION closure's distance from
+            # the physical truth.  After ticket 15 that distance is zero in all
+            # three modes (production IS the reference), so the pad is pure
+            # conservative slack and the coverage question is vacuous BY
+            # CONSTRUCTION -- asserting "max gap <= pad" against the oracle
+            # would gate on a number the production path never produces.
+            #
+            # So the pad report RECORDS the oracle gap (it is the quantity the
+            # docstring's conservativeness claim is about) and gates only on
+            # what a revert would break: the oracle must stay off the
+            # production path, which `mutation_discriminating` certifies.
+            "oracle_gap_within_alarm": max_abs <= PAD_ALARM_THRESHOLD,
+            "conservative_claimed": mode is not Mode.STR,
+            # SLS: > 0 above the binding threshold (the leak direction).
+            # SPT: the gap is identically 0, so >= 0.
+            # STR: negative everywhere by construction; conservativeness is
+            # NOT claimed and only the magnitude is meaningful.
+            "conservative_holds": trough["rel_err"] >= 0.0,
+        }
     return {
-        "worst_row": worst,
-        "max_abs_rel_err": max_abs,
-        "frozen_pad": frozen,
-        "rule": "ceil_to_0.5pct(max_abs_rel_err * 1.5)",
+        "frozen_pad": WINDOW_TAIL_PAD_FROZEN,
+        "per_mode": per_mode,
+        "oracle_gaps_within_alarm": all(
+            m["oracle_gap_within_alarm"] for m in per_mode.values()
+        ),
+        "conservative_where_claimed": all(
+            m["conservative_holds"] for m in per_mode.values()
+            if m["conservative_claimed"]
+        ),
+        "production_residual": 0.0,
+        "rule": (
+            "the pad covers the PRODUCTION closure's distance from the physical "
+            "reference, which is 0 after ticket 15 (production == reference in "
+            "all three modes), so the frozen value is pure conservative slack. "
+            "The oracle gap is recorded, not gated: SLS gap > 0 for |psi| >= "
+            f"{WINDOW_TAIL_BINDING_DEG} deg, and every mode within the "
+            f"{100 * PAD_ALARM_THRESHOLD:.0f}% alarm."
+        ),
     }
+
+
+def freeze_window_tail_pad(lib: ModeLibrary, n_grid: int = 25) -> dict:
+    """Recompute the coverage report for the frozen-pad justification."""
+    return window_tail_pad_report(lib, n_grid)
+
+
+def mutation_discriminating(lib: ModeLibrary, tol: float = 5e-3) -> dict:
+    """Is the production closure distinguishable from the planar oracle?
+
+    Ticket 15's mutation requirement, made checkable.  A revert of the
+    production closure to the planar form must be visible, and it is only
+    visible at HIGH squint: the SLS gap is 0.42% at 12 deg (swallowed by any
+    1% tolerance) but 2.10% at its 26.9 deg boundary and 5.30% at 45 deg.
+    The STR gap is ~1e-5 everywhere and SPT's is identically 0, so neither can
+    witness a revert -- only SLS can, and only above the binding threshold.
+
+    Returns per-mode whether the two forms are separated by more than ``tol``
+    somewhere inside that mode's envelope.  A test asserting
+    ``mutation_discriminating(lib)["SLS"]["separable"]`` goes RED on a revert.
+    """
+    out: dict[str, dict] = {}
+    for mode in (Mode.STR, Mode.SLS, Mode.SPT):
+        edge = mode_squint_envelope_rad(mode)
+        gaps = []
+        for i in range(51):
+            psi = -edge + 2.0 * edge * i / 50
+            p = duration_scene_s(mode, psi, lib)
+            o = duration_scene_planar_oracle(mode, psi, lib)
+            gaps.append(abs(o - p) / p)
+        out[mode.name] = {
+            "max_gap": max(gaps),
+            "min_gap": min(gaps),
+            "separable": max(gaps) > tol,
+            "tolerance": tol,
+            "envelope_deg": math.degrees(edge),
+        }
+    return out

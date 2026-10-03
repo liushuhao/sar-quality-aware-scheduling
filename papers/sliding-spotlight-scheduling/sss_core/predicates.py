@@ -88,15 +88,25 @@ CALIBRATION_KIM_RMT_S = 1.84
 
 def _t_env_max(lib: ModeLibrary) -> float:
     """Envelope reference dwell (D09-3): largest library-mode scene dwell at
-    the +-12 deg envelope edge (frozen fixture, no experimental freedom)."""
+    that mode's OWN squint envelope edge (frozen fixture, no experimental
+    freedom).
+
+    Ticket 15 moved the reference from the single 12 deg platform edge to the
+    per-mode envelope (STR/SPT 45 deg, SLS 26.9 deg).  Measured rescale
+    6.7178 s -> 10.5830 s (1.5754x), argmax SLS -> SPT: leaving the reference
+    at 12 deg would under-normalise every C3/C4 value by that factor while the
+    raw quantities were unchanged -- a pure unit drift (spec 存量默认值漂移).
+    """
     return max(_scene_durations(lib).values())
 
 
 def _scene_durations(lib: ModeLibrary) -> dict:
-    from .duration import duration_scene_s
+    from .duration import duration_scene_s, mode_squint_envelope_rad
 
-    psi_edge = math.radians(12.0)
-    return {m: duration_scene_s(m, psi_edge, lib) for m in Mode}
+    return {
+        m: duration_scene_s(m, mode_squint_envelope_rad(m), lib)
+        for m in Mode
+    }
 
 
 def c2_transfer_requirement_s(

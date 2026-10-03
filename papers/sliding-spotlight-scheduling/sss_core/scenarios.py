@@ -38,7 +38,7 @@ import random
 from pathlib import Path
 
 from .aasr import AASR_THRESHOLD_DB, aasr_direct, route_mode
-from .duration import MarginPads, duration_scene_s
+from .duration import SQUINT_ENVELOPE_DEG, MarginPads, duration_scene_s
 from .fixture import fixture_value, load_platform_fixture
 from .geometry import squint_at
 from .modes import Mode, ModeLibrary
@@ -122,8 +122,11 @@ def generate_scenario(
     bands = load_rho_bands()  # D08-10 fail loud
     half_w = INTERVAL_HALF_WIDTH_S[interval]
     psi_max_window = abs(squint_at(half_w, 0.0, lib.geo))
-    if psi_max_window > math.radians(12.0):
-        raise ValueError("window exceeds the +-12 deg squint envelope (D08-5 guard)")
+    if psi_max_window > math.radians(SQUINT_ENVELOPE_DEG):
+        raise ValueError(
+            f"window exceeds the +-{SQUINT_ENVELOPE_DEG:.0f} deg squint envelope "
+            "(D08-5 guard, ticket-15 widened)"
+        )
 
     rng = random.Random(seed)
     tasks = []

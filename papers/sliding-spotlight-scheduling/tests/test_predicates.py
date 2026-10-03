@@ -89,9 +89,17 @@ def test_c4_chain_bytes_and_mode_blind(lib):
     assert b == pytest.approx(3630.0 * 5.0 * 10000 * 3 * 2 / 8)
     assert c4_memory_bytes(Mode.SLS, 5.0, 0.5, 3630.0, lib) == b
     n = c4_memory_normalized(Mode.STR, 5.0, 0.5, 3630.0, lib)
-    assert 0.0 < n < 1.0  # 5 s sits inside the 6.72 s envelope reference
+    # Ticket 15: the envelope reference moved from the 12 deg platform edge
+    # (6.7178 s, argmax SLS) to the per-mode envelope (10.5830 s, argmax SPT
+    # at 45 deg) -- a 1.5754x rescale.  Both ends of this test are re-pinned
+    # to that reference, not loosened: 5 s still sits inside it, and the
+    # "beyond" probe has to move past 10.583 s.
+    assert 0.0 < n < 1.0  # 5 s sits inside the 10.58 s envelope reference
     assert c4_ok(Mode.STR, 5.0, 0.5, 3630.0, lib)
-    assert not c4_ok(Mode.STR, 7.5, 0.5, 3630.0, lib)  # beyond the envelope
+    assert not c4_ok(Mode.STR, 11.5, 0.5, 3630.0, lib)  # beyond the envelope
+    # the reference itself is pinned, so a future silent move turns red
+    from sss_core.predicates import _t_env_max as _env_ref
+    assert _env_ref(lib) == pytest.approx(10.5830, rel=1e-4)
 
 
 # ── conflict predicate (D09-7) ───────────────────────────────────────────
