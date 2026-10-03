@@ -86,25 +86,40 @@ C4_RANGE_SAMPLES_NR = 10_000
 CALIBRATION_KIM_RMT_S = 1.84
 
 
-def _t_env_max(lib: ModeLibrary) -> float:
+def _t_env_max(lib: ModeLibrary, r0_m: float | None = None) -> float:
     """Envelope reference dwell (D09-3): largest library-mode scene dwell at
-    that mode's OWN squint envelope edge (frozen fixture, no experimental
-    freedom).
+    that mode's OWN squint envelope edge.
 
-    Ticket 15 moved the reference from the single 12 deg platform edge to the
-    per-mode envelope (STR/SPT 45 deg, SLS 26.9 deg).  Measured rescale
-    6.7178 s -> 10.5830 s (1.5754x), argmax SLS -> SPT: leaving the reference
-    at 12 deg would under-normalise every C3/C4 value by that factor while the
-    raw quantities were unchanged -- a pure unit drift (spec 存量默认值漂移).
+    Ticket 17 adjudication (2026-10-03, the C3/C4 caliber split).  Per-task
+    geometry (ticket 16) moved the MEASURED dwell onto a per-task caliber
+    while this REFERENCE stayed library-geometry, and a task with r0 13.5%
+    above base produced a dwell of 10.8512 s against a reference of
+    10.5830 s -- a normalized 1.0253, i.e. a false constraint violation
+    (measured on 25 of 40 real-window scenarios, 38 tasks, worst 1.1721).
+
+    The fix is NOT a per-task reference (that makes C3/C4 a self-comparison
+    and destroys the discrimination D09-3 requires) and NOT a loosened
+    global constant (that drops the budget's bite).  It is to keep the
+    reference a PLATFORM-level upper bound -- "the largest dwell the
+    admissible envelope admits" -- evaluated at the geometry of the task
+    being measured:
+
+      * ``r0_m is None`` (every pre-ticket-16 family) -> the library constant,
+        so the frozen families stay bit-identical;
+      * ``r0_m`` given -> the same envelope edge evaluated at THAT task's
+        slant range, which is the true bound for that task.
+
+    Budget stays 1.0 in both cases, so exceeding the reference still means
+    the dwell leaves the certified envelope.
     """
-    return max(_scene_durations(lib).values())
+    return max(_scene_durations(lib, r0_m).values())
 
 
-def _scene_durations(lib: ModeLibrary) -> dict:
+def _scene_durations(lib: ModeLibrary, r0_m: float | None = None) -> dict:
     from .duration import duration_scene_s, mode_squint_envelope_rad
 
     return {
-        m: duration_scene_s(m, mode_squint_envelope_rad(m), lib)
+        m: duration_scene_s(m, mode_squint_envelope_rad(m), lib, r0_m=r0_m)
         for m in Mode
     }
 
@@ -162,10 +177,18 @@ def c2_transfer_ok(
     return (t_j - t_i) >= req["requirement_s"] - 1e-12
 
 
-def c3_energy_normalized(mode: Mode, dur_s: float, lib: ModeLibrary) -> float:
-    """Normalized weighted dwell in [0, ~1] against the library envelope
-    (D09-3); budget = 1.0."""
-    ref = max(C3_WEIGHTS.values()) * _t_env_max(lib)
+def c3_energy_normalized(
+    mode: Mode, dur_s: float, lib: ModeLibrary, r0_m: float | None = None
+) -> float:
+    """Normalized weighted dwell in [0, ~1] against the envelope reference
+    (D09-3); budget = 1.0.
+
+    ``r0_m`` (ticket 17 adjudication): the per-task slant range the measured
+    dwell was computed with.  Passing it evaluates the reference on the SAME
+    caliber; omitting it uses the library constant, which is what every
+    pre-ticket-16 family does.
+    """
+    ref = max(C3_WEIGHTS.values()) * _t_env_max(lib, r0_m)
     return C3_WEIGHTS[mode] * dur_s / ref
 
 
@@ -190,14 +213,24 @@ def c4_memory_normalized(
     rho_req_m: float,
     prf_hz: float,
     lib: ModeLibrary,
+    r0_m: float | None = None,
 ) -> float:
-    """Memory against the envelope reference (D09-3); budget = 1.0."""
-    ref = prf_hz * _t_env_max(lib) * C4_RANGE_SAMPLES_NR * C4_BITS_PER_COMPONENT * 2 / 8.0
+    """Memory against the envelope reference (D09-3); budget = 1.0.
+
+    ``r0_m``: see ``c3_energy_normalized`` -- same-caliber reference.
+    """
+    ref = (
+        prf_hz * _t_env_max(lib, r0_m) * C4_RANGE_SAMPLES_NR
+        * C4_BITS_PER_COMPONENT * 2 / 8.0
+    )
     return c4_memory_bytes(mode, dur_s, rho_req_m, prf_hz, lib) / ref
 
 
-def c3_ok(mode: Mode, dur_s: float, lib: ModeLibrary, budget: float = 1.0) -> bool:
-    return c3_energy_normalized(mode, dur_s, lib) <= budget + 1e-12
+def c3_ok(
+    mode: Mode, dur_s: float, lib: ModeLibrary,
+    budget: float = 1.0, r0_m: float | None = None,
+) -> bool:
+    return c3_energy_normalized(mode, dur_s, lib, r0_m) <= budget + 1e-12
 
 
 def c4_ok(
@@ -207,8 +240,12 @@ def c4_ok(
     prf_hz: float,
     lib: ModeLibrary,
     budget: float = 1.0,
+    r0_m: float | None = None,
 ) -> bool:
-    return c4_memory_normalized(mode, dur_s, rho_req_m, prf_hz, lib) <= budget + 1e-12
+    return (
+        c4_memory_normalized(mode, dur_s, rho_req_m, prf_hz, lib, r0_m)
+        <= budget + 1e-12
+    )
 
 
 def schedule_conflict(t_i: float, dur_i: float, t_j: float, dur_j: float) -> bool:

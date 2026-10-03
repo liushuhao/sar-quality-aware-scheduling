@@ -284,9 +284,17 @@ class SchedulingProblem:
                 violations += 1.0
         for i in order:
             plan = self.plans[i]
-            if not c3_ok(plan.mode, self._dwell(i, starts[i]), self.lib):
+            # ticket 17: pass the SAME per-task geometry the dwell was
+            # measured with, so the C3/C4 reference is on the same caliber
+            if not c3_ok(
+                plan.mode, self._dwell(i, starts[i]), self.lib,
+                r0_m=plan.r0_m,
+            ):
                 violations += 1.0
-            if not c4_ok(plan.mode, self._dwell(i, starts[i]), plan.rho_req_m, plan.prf_hz, self.lib):
+            if not c4_ok(
+                plan.mode, self._dwell(i, starts[i]), plan.rho_req_m,
+                plan.prf_hz, self.lib, r0_m=plan.r0_m,
+            ):
                 violations += 1.0
 
         f1 = sum(self.plans[i].priority_f for i in order) / max(self.total_priority, 1e-12)

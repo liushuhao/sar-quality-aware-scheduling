@@ -97,6 +97,11 @@ R_PASS_SPAN_S = 120.0            # per-side propagation span around the pass
 R_PROP_STEP_S = 1.0              # geometry sampling step
 R_PASSES = 2                     # ticket: longest visible window over 2 passes
 R_INCIDENCE_BAND_DEG = (30.0, 60.0)
+# Fractional guard inside the mode envelope.  The sampling grid and the
+# end-check bracket can each land a hair outside; 1% is far above both
+# (the sampling step is ~0.4% of the envelope at n_scan=240) and far below
+# any physically meaningful narrowing.
+R_ENVELOPE_GUARD_FRACTION = 0.01
 R_DENSITY_BY_INDEX = {1: 20, 2: 100, 3: 300, 4: 500}
 R_FAMILY_REGISTRY = {
     1: ("R1C", 20, "C"),
@@ -396,18 +401,41 @@ def generate_real_scenario(
             ]
             vmin_t, tca = min(cand)
 
+            # Ticket 16: the task's own slant range, from the incidence at the
+            # window centre.  The envelope and end-check legs MUST use it --
+            # with the library R0 they emitted windows whose edges reached
+            # 48.7 deg, past the 45 deg envelope, and the evaluator then
+            # re-derived them with the per-task R0 and found those tasks
+            # unschedulable (measured: 11 of 40 units failed at CV = 2.0, all
+            # SPT tasks).  Same split-caliber class as the anchor defect.
+            mid_guess = tca
+            try:
+                _, _, r0_task = look_geometry(
+                    lib.geo.altitude_m,
+                    satellite_to_target_vector(state(mid_guess), target)[4],
+                )
+            except ValueError:
+                continue
+
             env_rad = mode_squint_envelope_rad(mode)
+            # The mask insets by one grid step (windows.mask_intervals), but
+            # the END-CHECK leg then re-evaluates the dwell at those
+            # endpoints with its own finer bracket, which can land a hair
+            # outside the envelope: measured 45.016 deg against a 45.0 deg
+            # boundary.  An explicit guard margin, well above the sampling
+            # resolution, makes the emitted window strictly interior.
+            env_guard = env_rad * (1.0 - R_ENVELOPE_GUARD_FRACTION)
             env_iv = mask_intervals(
                 (tca - R_PASS_SPAN_S, tca + R_PASS_SPAN_S),
-                lambda dt, _t=tca: abs(
-                    squint_at(dt, _t, lib.geo)
-                ) <= env_rad,
+                lambda dt, _t=tca, _r0=r0_task: abs(
+                    squint_at(dt, _t, lib.geo, r0_m=_r0)
+                ) <= env_guard,
                 n_scan=240,
             )
             if not env_iv:
                 continue
-            dur = lambda x, _t=tca: duration_scene_s(
-                mode, squint_at(x, _t, lib.geo), lib
+            dur = lambda x, _t=tca, _r0=r0_task: duration_scene_s(
+                mode, squint_at(x, _t, lib.geo, r0_m=_r0), lib, r0_m=_r0
             )
             end_iv = []
             for lo, hi in env_iv:
@@ -424,25 +452,28 @@ def generate_real_scenario(
                 continue
             width = sum(hi - lo for lo, hi in window)
             if best is None or width > best[0]:
-                best = (width, window, tca, vmin_t, pass_i)
+                best = (width, window, tca, vmin_t, pass_i, r0_task)
 
         if best is None:
             removals["no_window"] += 1
             continue
 
-        width, window, t_ca, vmin_t, pass_i = best
+        width, window, t_ca, vmin_t, pass_i, best_r0 = best
         w_lo = min(lo for lo, _ in window)
         w_hi = max(hi for _, hi in window)
         mid = 0.5 * (w_lo + w_hi)
-        # per-task geometry for the manifest (ticket piece 1/3)
+        # per-task geometry for the manifest (ticket piece 1/3).  r0_m is
+        # CARRIED from the leg computation, not recomputed: the envelope and
+        # end-check legs used the incidence at t_ca, so re-deriving R0 at the
+        # window midpoint would register one geometry and certify another.
         geo_at = satellite_to_target_vector(
             kepler_to_eci(elements, epoch + timedelta(seconds=pass_i * 600.0 + mid)),
             target,
         )
         incidence_deg = geo_at[4]
-        _, _, r0_m = look_geometry(lib.geo.altitude_m, incidence_deg)
+        r0_m = best_r0
         aasr_db = _aasr(
-            mode, squint_at(mid, t_ca, lib.geo), lib.geo.k,
+            mode, squint_at(mid, t_ca, lib.geo, r0_m=r0_m), lib.geo.k,
             PRF_PRODUCTION_HZ, lib,
             spt_scene_wa_m=(l_az_m if mode is Mode.SPT else None),
         )["aasr_db"]
