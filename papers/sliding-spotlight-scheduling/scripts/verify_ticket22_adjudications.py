@@ -12,8 +12,12 @@ between the adjudication and the artifacts is caught BEFORE the freeze.
 READS ONLY: papers/sliding-spotlight-scheduling/experiments/results/**
 WRITES:      nothing (stdout report only)
 
+Run with ``python -B`` (or PYTHONDONTWRITEBYTECODE=1) so that importing
+``sss_core`` does not drop ``__pycache__/*.pyc`` next to the sources -- the
+read-only claim then covers the filesystem, not just the artifacts.
+
 Usage (repo root):
-    PYTHONHASHSEED=0 "/d/Program Files/Python/python" \
+    PYTHONHASHSEED=0 "/d/Program Files/Python/python" -B \
         papers/sliding-spotlight-scheduling/scripts/verify_ticket22_adjudications.py
 
 rc:
@@ -150,7 +154,40 @@ def main() -> int:
             return EXIT_USAGE
     lib = ModeLibrary.from_fixture()
 
-    print("=== A3 / root cause: the coverage comparison is guaranteed ===")
+    # Anti-false-green census: every glob below is vacuously satisfiable when its
+    # directory is empty (all([]) / median([]) pass silently).  Pin the exact
+    # expected counts BEFORE any check runs, so an incomplete artifact tree is a
+    # hard usage error rather than a green run over nothing.
+    census = {
+        "matrix_units": len(list(MATRIX.glob("pilot_*.json"))),
+        "scenario_manifests": len(list(SCENARIOS.glob("*.json"))),
+        "probe_manifests": len(list(PROBE_MANIFESTS.glob("*.json"))),
+        "convergence_units": len(list(CONVERGENCE.glob("pilot_*.json"))),
+    }
+    bad = [f"{k}={v} != {n}" for k, v, n in (
+        ("matrix_units", census["matrix_units"], 50),
+        ("scenario_manifests", census["scenario_manifests"], 50),
+        ("probe_manifests", census["probe_manifests"], 25),
+        ("convergence_units", census["convergence_units"], 45),
+    ) if v != n]
+    for code in TICKET_A4_SINGLE_MANIFEST:
+        n = len(list(SCENARIOS.glob(f"{code}_seed*.json")))
+        if n != 10:
+            bad.append(f"{code}_manifests={n} != 10")
+    for code in TICKET_A4_PROBE_FAMILY:
+        n = len(list(PROBE_MANIFESTS.glob(f"{code}_seed*.json")))
+        if n != 5:
+            bad.append(f"{code}_manifests={n} != 5")
+    print("=== artifact census (anti-false-green) ===")
+    print(f"       {census}")
+    if bad:
+        for b in bad:
+            print(f"FAIL   census: {b}", file=sys.stderr)
+        print("ABORT: artifact tree incomplete -- a check over missing inputs "
+              "would pass vacuously", file=sys.stderr)
+        return EXIT_USAGE
+
+    print("\n=== A3 / root cause: the coverage comparison is guaranteed ===")
     units = exact = 0
     for p in MATRIX.glob("pilot_*.json"):
         art = json.loads(p.read_text(encoding="utf-8"))
@@ -160,6 +197,12 @@ def main() -> int:
     check("a3_exact_ties", exact, TICKET_A3_EXACT_TIE)
 
     print("\n=== A3 / estimands: three rejected are tied, one carries spread ===")
+    # NOTE on discriminating power: `dq`, `dom` and `mq` are zero BY CONSTRUCTION
+    # (the anchor is the coverage-maximal point, so anything conditioned on
+    # f1 >= anchor_f1 admits only the anchor itself).  Asserting they are zero
+    # confirms the construction, not a data property -- only `dq_all > 0` is the
+    # discriminating check, and the zero checks guard against a future change
+    # that would quietly make them non-zero.
     est, lost = a3_estimands()
     usable = sum(len(v) for v in est["dq_all"].values())
     check("a3_usable_units", usable, TICKET_A3_USABLE)
@@ -191,6 +234,13 @@ def main() -> int:
         print(f"       (one-sided pooled p = {p:.3e})")
 
     print("\n=== A4 / structural dimension: reachable AASR range per family ===")
+    # CALIBER (ticket line "R 的口径"), stated here so the anchors are not
+    # unfalsifiable constants: the matrix families are scanned at their BASE
+    # seed manifest only (M1NC_100 / M2WF_400 / M2WH_200 / M3NC_300 /
+    # M4WH_500); the density-probe families were drawn over 5 seeds and their
+    # R_fam is the MAX over those 5 manifests.  A uniform rule does not
+    # reproduce all nine values (scanning every matrix seed gives M2WF 5.498 /
+    # M2WH 5.487 / M4WH 5.505; taking the first probe seed gives P6WH 5.320).
     for code in TICKET_A4_SINGLE_MANIFEST:
         found = sorted(SCENARIOS.glob(f"{code}_seed*.json"))
         if not found:
@@ -225,6 +275,11 @@ def main() -> int:
               1 if abs(r_coarse - r) <= 1e-3 else 0, 1)
 
     print("\n=== A4 / platform dimension: the platform CAN express >= 6 dB ===")
+    # CALIBER: k is held at the library design point lib.geo.k (= 1 - A), which is
+    # what every registered scenario family uses.  Scanning k freely over
+    # [0, 0.9] instead yields 78.47 dB -- a DIFFERENT question (the grid's full
+    # k extent), not a correction of this one.  Both are printed so the caliber
+    # is visible rather than implied.
     vals = []
     for prf in PRF_KEYS_HZ:
         for mode in Mode:
@@ -242,6 +297,17 @@ def main() -> int:
           tol=0.02)
     check("a4_platform_alive",
           1 if prange >= TICKET_A4_THRESHOLD_DB else 0, 1)
+    # the single-PRF worst slice the ticket quotes (SLS @ 3044 Hz)
+    sls3044 = []
+    for d in range(-45, 46):
+        try:
+            sls3044.append(aasr_direct(
+                Mode.SLS, math.radians(d), lib.geo.k, 3044.0, lib)["aasr_db"])
+        except ValueError:
+            pass
+    if sls3044:
+        check("a4_platform_worst_slice_sls_3044",
+              round(max(sls3044) - min(sls3044), 2), 48.20, tol=0.02)
 
     print("\n=== A4 / budget dependence: the plateau criterion is live ===")
     ladder: dict[int, dict] = {}
@@ -259,6 +325,10 @@ def main() -> int:
     med_delta = abs(statistics.median([ladder[s][b1] for s in seeds])
                     - statistics.median([ladder[s][b0] for s in seeds]))
     unit_delta = max(abs(ladder[s][b1] - ladder[s][b0]) for s in seeds)
+    # CALIBER: med_delta is the DIFFERENCE OF MEDIANS across the top budget pair
+    # (= 1.917193 - 0.025145 = 1.892048).  The median of per-seed deltas is a
+    # different and much smaller quantity (0.036611); conflating them would
+    # understate the drift by ~50x, so the definition is pinned here.
     check("a4_m2wh_median_delta", round(med_delta, 6),
           TICKET_A4_M2WH_MEDIAN_DELTA, tol=1e-5)
     check("a4_m2wh_unit_delta", round(unit_delta, 6),
