@@ -1,0 +1,217 @@
+{
+  "budget_ladder": [
+    [
+      40,
+      60
+    ],
+    [
+      80,
+      120
+    ],
+    [
+      160,
+      240
+    ]
+  ],
+  "families": {
+    "R1C": {
+      "P1": {
+        "statement": "median distinct_fq 16.5 >= 3 on a CONVERGED ladder -- front is rich at sufficient budget",
+        "status": "EVALUABLE",
+        "threshold": 3,
+        "threshold_met": true,
+        "top_median": 16.5
+      },
+      "P3_promotion": {
+        "fires_anywhere": false,
+        "spread_max_all_budgets": 3.898793,
+        "spread_median_by_budget": [
+          1.454364,
+          1.41494,
+          3.20292
+        ],
+        "threshold_db": 6.0
+      },
+      "convergence_verdict": "CONVERGED",
+      "coverage_at_top_budget": {
+        "anchor_f1_star_median": 0.878871,
+        "max_f1_star_median": 1.0
+      },
+      "distinct_fq_median_by_budget": [
+        15.0,
+        15.5,
+        16.5
+      ],
+      "front_size_median_by_budget": [
+        40.0,
+        80.0,
+        160.0
+      ],
+      "per_mode_fq_at_top_budget": {
+        "STR": {
+          "max_fq": 0.692008,
+          "median_fq": 0.664444,
+          "min_fq": 0.569302,
+          "n_members": 1600
+        }
+      },
+      "saturation_signature": true,
+      "top_pair_max_unit_delta": 2,
+      "top_pair_median_delta": 1.0
+    },
+    "R2F": {
+      "P1": {
+        "statement": "ladder UNCONVERGED -- no physical claim permitted for this band",
+        "status": "NOT-YET-TESTED",
+        "threshold": 3,
+        "threshold_met": true,
+        "top_median": 35.5
+      },
+      "P3_promotion": {
+        "fires_anywhere": false,
+        "spread_max_all_budgets": 3.573157,
+        "spread_median_by_budget": [
+          0.036367,
+          1.929279,
+          2.245465
+        ],
+        "threshold_db": 6.0
+      },
+      "convergence_verdict": "UNCONVERGED",
+      "coverage_at_top_budget": {
+        "anchor_f1_star_median": 0.45763,
+        "max_f1_star_median": 0.46081
+      },
+      "distinct_fq_median_by_budget": [
+        7.0,
+        24.5,
+        35.5
+      ],
+      "front_size_median_by_budget": [
+        7.0,
+        30.0,
+        57.0
+      ],
+      "per_mode_fq_at_top_budget": {
+        "SLS": {
+          "max_fq": 46.813303,
+          "median_fq": 46.813303,
+          "min_fq": 46.813303,
+          "n_members": 6
+        },
+        "SLS+SPT": {
+          "max_fq": 46.756112,
+          "median_fq": 42.081116,
+          "min_fq": 20.600869,
+          "n_members": 432
+        },
+        "SPT": {
+          "max_fq": 46.840427,
+          "median_fq": 46.589413,
+          "min_fq": 41.711704,
+          "n_members": 117
+        }
+      },
+      "saturation_signature": false,
+      "top_pair_max_unit_delta": 34,
+      "top_pair_median_delta": 11.0
+    },
+    "R3H": {
+      "P1": {
+        "statement": "ladder UNCONVERGED -- no physical claim permitted for this band",
+        "status": "NOT-YET-TESTED",
+        "threshold": 3,
+        "threshold_met": true,
+        "top_median": 12.0
+      },
+      "P3_promotion": {
+        "fires_anywhere": false,
+        "spread_max_all_budgets": 0.156814,
+        "spread_median_by_budget": [
+          0.0,
+          8e-06,
+          0.001952
+        ],
+        "threshold_db": 6.0
+      },
+      "convergence_verdict": "UNCONVERGED",
+      "coverage_at_top_budget": {
+        "anchor_f1_star_median": 0.310824,
+        "max_f1_star_median": 0.310824
+      },
+      "distinct_fq_median_by_budget": [
+        2.0,
+        6.0,
+        12.0
+      ],
+      "front_size_median_by_budget": [
+        2.0,
+        7.5,
+        12.5
+      ],
+      "per_mode_fq_at_top_budget": {
+        "SLS+SPT+STR": {
+          "max_fq": 21.84517,
+          "median_fq": 12.581169,
+          "min_fq": 9.192772,
+          "n_members": 133
+        }
+      },
+      "saturation_signature": false,
+      "top_pair_max_unit_delta": 21,
+      "top_pair_median_delta": 6.0
+    },
+    "R4H": {
+      "P1": {
+        "statement": "ladder UNCONVERGED -- no physical claim permitted for this band",
+        "status": "NOT-YET-TESTED",
+        "threshold": 3,
+        "threshold_met": true,
+        "top_median": 5.0
+      },
+      "P3_promotion": {
+        "fires_anywhere": false,
+        "spread_max_all_budgets": 0.287174,
+        "spread_median_by_budget": [
+          0.0,
+          0.0,
+          0.000173
+        ],
+        "threshold_db": 6.0
+      },
+      "convergence_verdict": "UNCONVERGED",
+      "coverage_at_top_budget": {
+        "anchor_f1_star_median": 0.218592,
+        "max_f1_star_median": 0.218592
+      },
+      "distinct_fq_median_by_budget": [
+        2.0,
+        3.0,
+        5.0
+      ],
+      "front_size_median_by_budget": [
+        2.0,
+        3.0,
+        5.5
+      ],
+      "per_mode_fq_at_top_budget": {
+        "SLS+SPT+STR": {
+          "max_fq": 19.342245,
+          "median_fq": 13.883503,
+          "min_fq": 7.413299,
+          "n_members": 63
+        }
+      },
+      "saturation_signature": false,
+      "top_pair_max_unit_delta": 7,
+      "top_pair_median_delta": 2.0
+    }
+  },
+  "freeze": {
+    "P1": "median distinct_fq >= 3 at the top budget, EVALUABLE only on a CONVERGED ladder; UNCONVERGED is NOT-YET-TESTED",
+    "P3": "promotion fires iff spread_db >= 6.0; two-dimensional verdict (structural x budget convergence)",
+    "P4": "closure PATTERN vs overload (the level alone is near-tautological)",
+    "plateau_rule": "CONVERGED iff |median top-pair delta| <= 1.0 AND max unit |delta| <= 2.0"
+  },
+  "schema": "v2-results-table/1.0"
+}
