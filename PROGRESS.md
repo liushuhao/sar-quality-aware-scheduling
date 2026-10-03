@@ -266,3 +266,16 @@
 **一处过期自述已修**：`consumed_gates.scope_caveat` 仍称红线检查「prose-only」——脚本落地后该句变假，已改。
 
 **剩余自陈局限（不掩盖）**：`check_red_lines.py` 校验的是 **45° 包络常量已注册**，不校验披露**文字**正确——后者是文档评审义务，非机检可及。已登记入冻结 `independent_review_3.remaining_caveat`。
+
+### [16:57] 锚几何修复后的全套回归 + **主实验点火**
+
+**全套回归**：本域 `198 passed, 1 skipped, 1 xfailed in 1073.14s`（与修复前同数，skip/xfail 未净增）⇒ 锚改用逐任务几何**未引入任何回归**。冻结 50 anchor 逐位一致（上条已证）。
+
+**主实验点火**（`.scratch/sliding-spotlight-scheduling/v2-run/`，冻结六族零 diff）：
+- 预算阶梯按**冻结注册**执行：40/60 → 80/120 → 160/240（**160/240 为上限**，320/480 额度已耗尽，禁消费）
+- 家族 R1C/R2F/R3H/R4H × 10 seed × 3 档 = **120 单元**
+- 命令形如：
+  `PYTHONHASHSEED=0 python -B papers/sliding-spotlight-scheduling/scripts/run_matrix.py --generator realwindow --platform <spec.json> --variants 1,2,3,4 --pop 40 --gen 60 --scenarios-dir .scratch/.../v2-run/scenarios --matrix-dir .scratch/.../v2-run/p40g60`
+- 估算求解耗时：40/60 档约 2 min、80/120 约 8 min、160/240 约 30 min（按 v1 实测 2.85 s/单元线性外推）
+
+**点火前状态**：prereg v2 已获三轮独立审查 **ACCEPT**；四门禁 rc=0；冒烟 exit 0 且 cv 精确 0。
