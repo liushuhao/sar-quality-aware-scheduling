@@ -1,0 +1,32 @@
+{
+  "calibers": {
+    "v1": {
+      "artifacts": "experiments/results/{matrix,scenarios,probe_convergence,probe_density,pilot,verify}",
+      "comparable_to_v2": false,
+      "families": [
+        "M1NC",
+        "M2WH",
+        "M3NC",
+        "M2WF",
+        "M4WH",
+        "P6WH",
+        "P7WH",
+        "P8WH",
+        "P9WH"
+      ],
+      "meaning": "dwell closure = planar sec^2 (formula-spec 4.2)",
+      "produced_before": "ticket 15, commits 20ff465 / d0d32f2",
+      "reason": "the Eq.(22) closure deviates from the planar form by up to 5.30% at 45 deg and 2.10% at the SLS 26.9 deg boundary"
+    },
+    "v2": {
+      "artifacts": "experiments/v2_results/, .scratch/sliding-spotlight-scheduling/v2-run/",
+      "comparable_to_v1": false,
+      "meaning": "dwell closure = Kim Eq.(22)/(24) chain; per-task slant range",
+      "produced_after": "ticket 16/17",
+      "reason": "different dwell closure AND different geometry caliber (per-task R0)"
+    }
+  },
+  "rule": "any paper or gate statement that consumes a number MUST carry the caliber tag of its source; an untagged number is treated as incomparable rather than as current",
+  "schema": "caliber-registry/1.0",
+  "why": "Ticket 15 replaced the production dwell closure with the Kim Eq.(22) chain. Every artifact produced before that commit is caliber v1 and its numbers are NOT comparable to post-switch runs without saying so. The v2 freeze requires the caliber tag to travel with any consumption of these numbers."
+}
