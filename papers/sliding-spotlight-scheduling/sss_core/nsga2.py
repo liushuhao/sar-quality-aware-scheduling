@@ -125,17 +125,33 @@ def promotion_spread_db(sp: SchedulingProblem, front_records: list[dict]) -> dic
     """Unenforced AASR spread over the front candidates (D12-3): per
     candidate, the max direct AASR over its selected tasks (per-task scene
     extent for SPT, D08-2); spread = max - min across candidates.
-    Threshold and derivation chain live in experiments/promotion_prereg.json."""
+    Threshold and derivation chain live in experiments/promotion_prereg.json.
+
+    Ticket 17: two defects, both measured.  The squint here was computed with
+    the LIBRARY R0 (fifth instance of the caliber split), and an SLS task
+    whose per-task geometry places the start outside the sliding domain made
+    ``aasr_direct`` RAISE -- killing the unit mid-solve rather than yielding a
+    reading.  A promotion readout is by definition an UNENFORCED measurement
+    (D12-3), so an out-of-domain sample is recorded as +inf dB (infinitely bad
+    AASR), which keeps the spread meaningful and the unit alive.
+    """
     vals = []
     for rec in front_records:
         cand_max = None
         for i_str, start in rec["starts"].items():
             plan = sp.plans[int(i_str)]
-            psi = squint_at(start, plan.t_ca_s, sp.lib.geo)
-            db = aasr_direct(
-                plan.mode, psi, sp.lib.geo.k, plan.prf_hz, sp.lib,
-                spt_scene_wa_m=(plan.azimuth_size_m if plan.mode is Mode.SPT else None),
-            )["aasr_db"]
+            psi = squint_at(start, plan.t_ca_s, sp.lib.geo, r0_m=plan.r0_m)
+            try:
+                db = aasr_direct(
+                    plan.mode, psi, sp.lib.geo.k, plan.prf_hz, sp.lib,
+                    spt_scene_wa_m=(
+                        plan.azimuth_size_m if plan.mode is Mode.SPT else None
+                    ),
+                )["aasr_db"]
+            except ValueError:
+                # unenforced readout outside the physical sliding domain:
+                # infinitely bad AASR, not a crash (D12-3 semantics)
+                db = float("inf")
             cand_max = db if cand_max is None else max(cand_max, db)
         if cand_max is not None:
             vals.append(cand_max)

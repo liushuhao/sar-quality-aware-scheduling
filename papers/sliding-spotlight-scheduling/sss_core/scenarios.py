@@ -472,11 +472,33 @@ def generate_real_scenario(
         )
         incidence_deg = geo_at[4]
         r0_m = best_r0
-        aasr_db = _aasr(
-            mode, squint_at(mid, t_ca, lib.geo, r0_m=r0_m), lib.geo.k,
-            PRF_PRODUCTION_HZ, lib,
-            spt_scene_wa_m=(l_az_m if mode is Mode.SPT else None),
-        )["aasr_db"]
+        # The AASR gate is a WINDOW property, not a point property: the worst
+        # case is at the window's high-squint end, and for SLS the squint can
+        # leave the physical sliding domain before the midpoint does.
+        # Measured: evaluating at the midpoint raised a_res <= 0 on R2F/R3H
+        # units even though every window endpoint was inside the envelope.
+        # So: sample the window, keep the worst (least negative) dB, and treat
+        # any out-of-domain sample as a REMOVAL with the aasr reason -- never
+        # as a crash.
+        aasr_vals: list[float] = []
+        for lo, hi in window:
+            n_pts = 11
+            for j in range(n_pts):
+                tt = lo + (hi - lo) * j / (n_pts - 1)
+                try:
+                    aasr_vals.append(_aasr(
+                        mode, squint_at(tt, t_ca, lib.geo, r0_m=r0_m),
+                        lib.geo.k, PRF_PRODUCTION_HZ, lib,
+                        spt_scene_wa_m=(l_az_m if mode is Mode.SPT else None),
+                    )["aasr_db"])
+                except ValueError:
+                    # out of the physical sliding domain at this sample: the
+                    # window is not serviceable, so it cannot pass the gate
+                    aasr_vals.append(float("-inf"))
+        if not aasr_vals:
+            removals["aasr"] += 1
+            continue
+        aasr_db = max(aasr_vals)
         if not (aasr_db <= AASR_THRESHOLD_DB):
             removals["aasr"] += 1
             continue
