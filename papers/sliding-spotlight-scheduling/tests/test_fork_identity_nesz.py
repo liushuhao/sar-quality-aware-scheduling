@@ -117,11 +117,73 @@ def test_fork_quality_score_matches_shared():
 # ── self-containment and manifest scope guards ───────────────────────────
 
 def test_fork_self_contained_no_sar_sim_import():
-    """Fork source must not import the shared library (fork isolation)."""
-    src = (FORK_DOMAIN / "sss_core" / "metrics" / "nesz.py").read_text(encoding="utf-8")
-    assert not re.search(r"^\s*(from|import)\s+sar_sim\b", src, re.MULTILINE), (
-        "fork file imports from sar_sim -- runtime dependency on the shared "
-        "library breaks fork isolation (ADR GRILL-002)"
+    """No file under sss_core/ may import the shared library at runtime.
+
+    Ticket 16 (2026-10-03): this guard used to read ONE file
+    (``sss_core/metrics/nesz.py``), which left every future fork file free to
+    ``import sar_sim`` with nothing to catch it -- the manifest's
+    self-containment clause was enforced only on the file that existed when
+    it was written.  Widened to the whole tree.
+    """
+    offenders = []
+    for src in sorted((FORK_DOMAIN / "sss_core").rglob("*.py")):
+        text = src.read_text(encoding="utf-8")
+        if re.search(r"^\s*(from|import)\s+sar_sim\b", text, re.MULTILINE):
+            offenders.append(src.relative_to(FORK_DOMAIN).as_posix())
+    assert not offenders, (
+        "fork files import from sar_sim -- runtime dependency on the shared "
+        f"library breaks fork isolation (ADR GRILL-002): {offenders}"
+    )
+
+
+def test_no_shared_only_symbol_defined_anywhere_in_the_fork():
+    """Manifest clause 2, enforced across the whole tree.
+
+    ``test_fork_scope_matches_manifest_f01`` asserts on the MODULE OBJECT
+    ``fork_nesz``; a shared symbol copied into any other fork file was
+    invisible to it.  This guard walks the tree instead, so a shared-library
+    symbol with no manifest entry turns red wherever it lands.
+    """
+    import ast
+
+    denied = {
+        name for name in vars(shared_nesz)
+        if not name.startswith("__")
+    }
+    # symbols the manifest DOES license: F-01 (NESZ kernel, FORK_MANIFEST.md:37
+    # "3 functions + 4 constants") and F-02 (real-window geometry, ticket 16).
+    licensed = {
+        # F-01
+        "nesz_linear", "nesz_db", "quality_score",
+        "_K_NESZ_DEFAULT", "_THETA_REF_DEG", "_THETA_REF", "_COS3_THETA_REF",
+        # F-02
+        "solve_kepler", "_rgf", "_rgi", "_rgu", "kepler_to_eci",
+        "propagate_orbit", "MU_EARTH",
+        "KeplerianElement", "ECIState",
+        "_compute_off_nadir_angle", "_off_nadir_to_incidence",
+        "_determine_look_direction", "satellite_to_target_vector",
+        "lat_lon_to_ecef", "eci_to_ecef_rotation",
+    }
+    denied -= licensed
+
+    offenders = []
+    for src in sorted((FORK_DOMAIN / "sss_core").rglob("*.py")):
+        tree = ast.parse(src.read_text(encoding="utf-8"))
+        for node in tree.body:
+            name = None
+            if isinstance(node, (ast.FunctionDef, ast.ClassDef)):
+                name = node.name
+            elif isinstance(node, ast.Assign):
+                for t in node.targets:
+                    if isinstance(t, ast.Name):
+                        name = t.id
+            if name and name in denied:
+                offenders.append(
+                    f"{src.relative_to(FORK_DOMAIN).as_posix()}:{name}"
+                )
+    assert not offenders, (
+        "shared-library symbols defined inside the fork without a manifest "
+        f"entry (write it back to FORK_MANIFEST.md first): {offenders}"
     )
 
 
