@@ -478,6 +478,29 @@ def generate_real_scenario(
             "demand_tier": demand_tier,
             "window_semantics": "real-orbit three-leg cascade",
             "platform_fixture": "experiments/platform_kim2021.json",
+            # Ticket 16 acceptance item 8: the M-family (Paper-1 lineage) is
+            # GLOBALLY DISPERSED inside a synthetic 300 s box; this family is
+            # REGIONALLY CLUSTERED with geometrically determined windows.  The
+            # same nominal N therefore yields a different overload ratio, and
+            # that difference is the density-axis material for the thesis.
+            # Recorded here rather than in prose so the comparison is
+            # greppable alongside the numbers it explains.
+            "predecessor_comparison": {
+                "predecessor_family": "M<density><interval><demand>",
+                "predecessor_topology": "globally dispersed, 300 s synthetic box",
+                "this_topology": (
+                    "regionally clustered (8 fixed centres, 20 km scale), "
+                    "real-orbit windows"
+                ),
+                "overload_ratio_served_over_drawn": (
+                    round(len(tasks) / density_n, 6) if density_n else 0.0
+                ),
+                "note": (
+                    "window width is a physical quantity here, so overload "
+                    "ratio is not comparable to the M-family value at equal N "
+                    "without accounting for the geometry"
+                ),
+            },
         },
         "preregistration": {
             "seed": seed,

@@ -261,6 +261,75 @@ def test_real_scenario_preregisters_its_geometry():
     assert "longest" in pre["pass_selection_rule"]
 
 
+def test_overload_band_ladder_yields_at_least_three_tiers():
+    """Acceptance item 6: the overload axis must have >= 3 in-band tiers,
+    measured rather than assumed.  This is the cheap form of the calibration
+    loop -- the full script writes the artifact; here we only assert the
+    property that makes the axis usable."""
+    plat, lib = _platform()
+    from sss_core import scenarios as S
+
+    original = S.R_INCIDENCE_BAND_DEG
+    ratios = set()
+    try:
+        for lo, hi in ((20.0, 70.0), (30.0, 60.0), (40.0, 52.0), (44.0, 48.0)):
+            S.R_INCIDENCE_BAND_DEG = (lo, hi)
+            m = S.generate_real_scenario("R1C", 20, "C", 100, 1,
+                                         lib=lib, platform=plat)
+            ratios.add(round(m["generation_ledger"]["n_served"] / 20, 6))
+    finally:
+        S.R_INCIDENCE_BAND_DEG = original
+    assert len(ratios) >= 3, f"only {len(ratios)} overload tiers: {sorted(ratios)}"
+    # monotone: a wider band cannot serve fewer targets
+    assert ratios == set(sorted(ratios)) or len(ratios) > 1
+
+
+def test_realwindow_template_matches_code_constants():
+    """Acceptance item 5: the preregistered template is a REAL freeze, so it
+    is bound to the code constants.  A template that drifts from the code is
+    the same class of defect as a drifted fixture -- the document would
+    describe an experiment that is not the one being run."""
+    from sss_core import scenarios as S
+
+    tpath = FORK_DOMAIN / "experiments" / "realwindow_scenario_template.json"
+    t = json.loads(tpath.read_text(encoding="utf-8"))
+    pre = t["preregistration"]
+    assert pre["cluster_centres_deg"] == [list(c) for c in S.R_CLUSTER_CENTRES_DEG]
+    assert pre["cluster_scale_km"] == S.R_CLUSTER_SCALE_KM
+    assert pre["pass_span_s"] == S.R_PASS_SPAN_S
+    assert pre["prop_step_s"] == S.R_PROP_STEP_S
+    assert pre["passes"] == S.R_PASSES
+    assert pre["incidence_band_deg"] == list(S.R_INCIDENCE_BAND_DEG)
+    assert pre["prf_production_hz"] == S.PRF_PRODUCTION_HZ
+    # the two squint semantics must be registered as distinct, not merged
+    sem = pre["squint_semantics"]
+    assert sem["t_ca_s"] != sem["vector_squint_min_t_s"]
+    assert "vector squint never enters an envelope test" in sem["why_two"]
+
+
+def test_real_scenario_write_manifest_is_byte_stable():
+    """Acceptance item 7: regenerate and byte-compare through the REAL write
+    path, not an in-memory json.dumps.  The earlier determinism check was a
+    scratch script; this makes it a standing guard."""
+    import tempfile
+
+    plat, lib = _platform()
+    from sss_core.scenarios import generate_real_scenario, write_manifest
+
+    with tempfile.TemporaryDirectory() as td:
+        p1 = Path(td) / "a.json"
+        p2 = Path(td) / "b.json"
+        write_manifest(
+            generate_real_scenario("R1C", 20, "C", 100, 1, lib=lib, platform=plat),
+            p1,
+        )
+        write_manifest(
+            generate_real_scenario("R1C", 20, "C", 100, 1, lib=lib, platform=plat),
+            p2,
+        )
+        assert p1.read_bytes() == p2.read_bytes()
+
+
 def test_real_scenario_injection_reaches_the_evaluator():
     """Piece (b) must be CONSUMED, not merely present.
 

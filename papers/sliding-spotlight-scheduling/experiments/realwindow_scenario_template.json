@@ -1,0 +1,75 @@
+{
+  "meta": {
+    "document_type": "real_window_scenario_template",
+    "version": "1.0.0-ticket16",
+    "frozen_by": "ticket 16 (2026-10-03)",
+    "usage": "One manifest per R<density><requirement> real-window family instance. Frozen BEFORE generation (ticket acceptance item 5). Every field under 'preregistration' is a design decision; editing it after a scenario has been generated is a prereg violation, exactly as for the M-family template.",
+    "differs_from": "scenario_manifest_template.json -- the M-family template's 300 s box retires here. Window width is a physical quantity computed from real orbit geometry, so there is no interval_width placeholder and no PASS_HORIZON.",
+    "platform_orbit_is_required": "The orbit is an input, not a default. generate_real_scenario raises rather than inventing one, so this template registers the orbit's provenance and the caller must supply matching elements."
+  },
+
+  "scenario": {
+    "family_code": "<R1C | R2F | R3H | R4H>",
+    "density_n_targets": "<20 | 100 | 300 | 500>",
+    "demand_tier": "<C | F | H>",
+    "window_semantics": "real-orbit three-leg cascade: incidence mask n mode squint envelope n end-check",
+    "platform_fixture": "experiments/platform_kim2021.json"
+  },
+
+  "preregistration": {
+    "seed": "<variant_index*100 + seed_index>",
+    "variant_index": "<1 | 2 | 3 | 4>",
+    "seed_rule": "variant_index*100 + seed_index (ticket-02 template)",
+
+    "pads": {
+      "inter_task_fraction": 0.25,
+      "window_tail_fraction": 0.01
+    },
+    "prf_production_hz": 3630.0,
+    "priority_convention": "randint(1,10) (Paper-1 generate_all_scenarios.py:133)",
+
+    "cluster_centres_deg": [
+      [56.0, 22.0], [34.0, -118.0], [-12.0, -46.0], [48.0, 121.0],
+      [-33.0, 151.0], [20.0, 77.0], [62.0, -70.0], [5.0, 100.0]
+    ],
+    "cluster_scale_km": 20.0,
+    "cluster_assignment_rule": "target i -> centre i % 8 (fixed order, no shuffle)",
+
+    "pass_span_s": 120.0,
+    "prop_step_s": 1.0,
+    "passes": 2,
+    "pass_selection_rule": "longest visible window over 2 passes (D13)",
+
+    "incidence_band_deg": [30.0, 60.0],
+
+    "platform_orbit": {
+      "provenance": "design geometry: h=570 km, i=45 deg (platform_kim2021.json)",
+      "semi_major_axis_m": "<computed: R_EARTH + altitude>",
+      "eccentricity": 0.001,
+      "inclination_deg": 45.0,
+      "raan_deg": 0.0,
+      "arg_perigee_deg": 0.0,
+      "true_anomaly_deg": 0.0,
+      "epoch": "<datetime>",
+      "note": "supplied by the caller; the generator refuses to invent one"
+    },
+
+    "squint_semantics": {
+      "t_ca_s": "the ZERO of sss_core.geometry.squint_at -- drives the dwell closure and the AASR bandwidth",
+      "vector_squint_min_t_s": "the minimum of the forked VECTOR squint (realwindows.satellite_to_target_vector) -- the point the incidence mask is evaluated at",
+      "why_two": "These are different physical quantities with different zero points, measured: the vector minimum sits ~600 s away from the planar zero, and at closest approach they read 12.749 deg vs 0.000 deg on the same target. The mode-envelope leg consumes ONLY squint_at; the vector squint never enters an envelope test."
+    },
+
+    "removal_cascade_first_match": ["below_finest", "footprint", "no_window", "aasr"],
+    "ledger_rule": "sum(removals) + n_served == n_drawn (D08-9 semantics)"
+  },
+
+  "per_task_geometry_fields": {
+    "r0_m": "slant range at this task's incidence (look_geometry Eq.2-3)",
+    "incidence_deg": "incidence angle at the window centre",
+    "vector_squint_min_t_s": "vector-squint minimum within the incidence leg",
+    "lat_deg": "target latitude (cluster centre + scatter)",
+    "lon_deg": "target longitude",
+    "window_width_s": "cascade width, a physical quantity in the M family"
+  }
+}
