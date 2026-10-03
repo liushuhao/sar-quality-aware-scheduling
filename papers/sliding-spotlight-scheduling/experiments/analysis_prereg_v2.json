@@ -97,8 +97,17 @@
   },
 
   "capacity_artifacts": {
-    "status": "NOT YET DERIVED in v2. The serial-bound derivation and its measured value belong to the ticket-17 items that follow this freeze; until they land, no specific capacity number may appear in the paper",
-    "rule": "the serial-bound transfer term is min-over-pairs (a legal lower bound); the observation is the closure DEVIATION PATTERN vs the overload axis, never the closure level itself (which is near-tautological at a single constant)"
+    "serial_bound_derivation": {
+      "definition": "the maximum served-priority fraction attainable when tasks are placed one at a time in descending priority order, each starting no earlier than the previous task's padded dwell plus its C2 transfer requirement (min-over-pairs transfer, the legal lower bound -- an average or worst-case transfer is not a strict bound)",
+      "measured_v1_synthetic_families": {
+        "M1NC": 0.3435, "M2WF": 0.0372, "M2WH": 0.0303,
+        "M3NC": 0.0186, "M4WH": 0.0142
+      },
+      "caliber": "these are the SYNTHETIC M-family values, measured before the Eq.(22) switch; v2 recomputes them on the R families and registers the recomputed values in an amendment BEFORE the run",
+      "why_the_window_width_dominates": "in every measured family the serial bound is set by how many tasks fit given the C2 gap, not by priority ordering -- the windows are narrow relative to the transfer requirement, which is why the bound falls as density rises"
+    },
+    "closure_reading": "closure = served_fraction / serial_bound. This is a CONTAINMENT reading (how close to the sequential limit the parallel schedule gets), NOT a validation score: at a single constant reference the level is near-tautological. The observation is the closure DEVIATION PATTERN vs the overload axis, and specifically where the transfer regime changes",
+    "rule": "until the v2 recomputation lands, no capacity NUMBER may appear in the paper; the v1 values above are registered here as the derivation and caliber, not as a v2 result"
   },
 
   "caliber_and_gates": {
@@ -139,18 +148,23 @@
       "note": "the v1 evidence supports non-firing but on the SYNTHETIC families; the real-window families have different geometry and the prediction is re-tested, not inherited"
     },
     "P4_capacity": {
-      "quantity": "closure of served against the serial bound, per overload band",
-      "prediction": "WITHHELD until the serial-bound derivation lands (see capacity_artifacts). No capacity number may be predicted before its derivation is registered.",
-      "refutation": "n/a until registered",
-      "reason": "predicting a number whose derivation does not yet exist would be a retrofit, which is the thing this file is meant to prevent"
+      "quantity": "closure = served_fraction / serial_bound, per overload band (the serial bound's derivation and v1 measurement are registered under capacity_artifacts)",
+      "prediction": "the closure DEVIATION PATTERN vs the overload axis is NOT flat: it changes regime where the transfer requirement begins to bind, i.e. where the C2 gap exceeds the window width and the serial bound starts falling with density",
+      "refutation": "the closure pattern is flat across all overload bands (no regime change within the measured range)",
+      "prediction_is_about_pattern_not_level": "the closure LEVEL at a single constant reference is near-tautological and is NOT predicted; only the pattern is",
+      "swap_rate_observation": {
+        "quantity": "swap rate (fraction of selected-set changes between consecutive front members) vs overload",
+        "status": "OBSERVATIONAL, not a prediction -- the ticket registers it as an optional observation item, so it carries no refutation condition and must be reported as exploratory if at all"
+      }
     }
   },
 
   "stratum_rule_determinacy": {
     "problem": "the reviewer found the stratum rule under-specified: 'all-STR degenerate-anchor family OR median distinct_fq < 2' has no defined analogue of M1NC's all-STR property for the R families, and a per-seed median can flip between strata on a reseed",
     "fix": "the rule is evaluated ONCE, on the registered base seed and the base budget, per family -- not per seed and not averaged over the ladder. A family's stratum is a property of that family's registered base run",
-    "all_STR_clause_for_R_families": "the R families are defined by demand tier, not by mode, so the all-STR clause is replaced by its measurable content: a family is structural-null if distinct_fq at the registered base run is IDENTICALLY 1 for every unit (zero spread), which is the condition that makes dq_all's sd exactly zero",
-    "median_clause": "median distinct_fq < 2 is evaluated at the registered base seed and base budget only"
+    "all_STR_clause_for_R_families": "the R families are defined by demand tier, not by mode, so the all-STR clause is replaced by its measurable content: a family is structural-null if the front's f_q RANGE (max f_q - min f_q over front records) is zero to floating-point for every unit. Measured on v1: M1NC and M3NC have f_q range 1.110e-16 across all their units while the three non-degenerate families range 2.4-3.6. This is the condition that makes dq_all's sd exactly zero, and it is stated on the RANGE rather than on distinct_fq because distinct_fq rounds at 1e-6 and would misclassify a family whose spread is small but non-zero",
+    "median_clause": "median distinct_fq < 2 is evaluated at the registered base seed and base budget only",
+    "redundancy_note": "on the v1 evidence the range clause is subsumed by the median clause (all three degenerate families already have median distinct_fq < 2). It is retained because the two clauses fail differently: a family with genuinely rich fronts but zero per-unit range would be caught only by the range clause"
   },
 
   "freezes": {
@@ -171,7 +185,9 @@
     }
   },
   "consumed_gates": {
-    "scripts/verify_ticket22_adjudications.py": "43 checks, rc=0 -- every number this freeze quotes from v1 reproduces",
-    "scripts/verify_claim_traces.py": "11/11 claims provenance-verified, rc=0"
+    "scripts/verify_ticket22_adjudications.py": "43 checks, rc=0. SCOPE: this validates the TICKET-22 ADJUDICATION, a historical record that correctly still reflects the n=30 stratum that note assumed. It does NOT validate this freeze's operative stratum (n=20).",
+    "scripts/verify_prereg_v2.py": "validates THIS freeze's own numbers: the 49/50 tie count, dq_all spread, the stratum rule's outcome (structural-null M1NC/M2WF/M3NC, primary M2WH+M4WH), the pooled n=20 / sd / MDE, and the presence of a refutation on every prediction",
+    "scripts/verify_claim_traces.py": "11/11 claims provenance-verified, rc=0",
+    "scope_caveat": "no gate covers the red-line machine checks in forbidden; those are prose-only in this freeze and are landed separately (ticket 17)"
   }
 }
