@@ -201,3 +201,15 @@
 ### [14:05] 票 16 全套测试确认
 
 本域套件 **`194 passed, 1 skipped, 1 xfailed in 1089.75s`**（票 15 收官时 165 ⇒ **+29**；**零失败**，skip/xfail 与基线同为 1+1 未净增）。冻结六族 196 文件零 diff，`src/sar_sim` 零改动。
+
+### [14:39] 票 16 completed（9/9）+ 票 17 验收项 3 完成
+
+**票 16 收尾三项**（`e9b1e48` `2b0d8f4`）：
+- **场景模板预注册** `realwindow_scenario_template.json` 落盘 + **与代码常量绑定的漂移守卫**（7 字段全对，漂移即红）
+- **过载比校准环**（验收项 6）：`scripts/calibrate_overload.py`，rc=0。**入射带是真旋钮**（需求档不是——C/H 各档比值完全相同），实测 **0.85 / 0.50 / 0.40 / 0.25 共 4 档 ≥ 注册下限 3**，全部损失来自 `no_window`。只写 `--out`，冻结六族 196 文件零 diff
+- **高 cross-track 变异夹具**：R2F 细需求族路由到 SLS/SPT，实测 R0 跨度 **671–1026 km（1.53×）**、最强任务 **+32.30%** 偏离库常数；守卫自检要求跨度 >20% 才接受自己为证人。**回退注入 ⇒ 2 守卫变红**，还原后 19 passed
+- **前篇对照注记**落 manifest `scenario.predecessor_comparison`（含 overload ratio 0.5）
+
+**票 17 验收项 3（参数化）**（`2b15b79`）：`MatrixDirs` 把四条路径全部字段化并穿透 `load_progress`/`ensure_manifests`/单元循环；默认值**逐位复现**原行为（冻结可复现），真窗跑**必须**显式传目录。`--generator realwindow` 无 `--platform` 时**拒绝**（轨道是注册输入，驱动无权自造）。
+
+**全套确认**：`198 passed, 1 skipped, 1 xfailed in 1266.12s`（票 15 收官 165 ⇒ **+33**，零失败，skip/xfail 未净增）。冻结六族 196 文件零 diff，`src/sar_sim` 零改动。
