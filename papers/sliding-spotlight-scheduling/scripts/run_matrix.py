@@ -40,6 +40,7 @@ FORK = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(FORK))
 
 from sss_core.scenarios import (  # noqa: E402
+    R_FAMILY_REGISTRY,
     VARIANT_REGISTRY,
     generate_scenario,
     write_manifest,
@@ -109,6 +110,20 @@ def atomic_write_json(path: Path, obj: dict) -> None:
     os.replace(tmp, path)
 
 
+def _repo_relative(path: Path) -> str:
+    """Path relative to the repo root when possible, else absolute.
+
+    The progress record used to call relative_to(REPO) unconditionally, which
+    broke the moment the output directory left the tree -- i.e. exactly the
+    case ticket 17 parameterisation exists to support (measured: the first
+    real-window smoke run died here, after generating every manifest).
+    """
+    try:
+        return str(path.relative_to(FORK.parent.parent))
+    except ValueError:
+        return str(path)
+
+
 def load_progress(progress_path: Path | None = None) -> dict | None:
     progress_path = progress_path or PROGRESS_PATH
     for cand in (progress_path, progress_path.with_suffix(".json.bak")):
@@ -145,14 +160,21 @@ def ensure_manifests(
             if lib is None:
                 from sss_core.modes import ModeLibrary
                 lib = ModeLibrary.from_fixture()
+            # The two families have different registry arities -- M is
+            # (code, density, interval, tier), R is (code, density, tier) --
+            # so the tail is passed BY KEYWORD.  Positional unpacking made
+            # the R tier collide with `variant_index` (measured, not inferred).
             if generator is None:
+                interval, tier = rest
                 manifest = generate(
-                    code, density, *rest, seed, variant_index=vidx, lib=lib,
+                    code, density, interval, tier, seed,
+                    variant_index=vidx, lib=lib,
                 )
             else:
+                (tier,) = rest
                 manifest = generate(
-                    code, density, *rest, seed, variant_index=vidx,
-                    lib=lib, platform=platform,
+                    code, density, tier, seed,
+                    variant_index=vidx, lib=lib, platform=platform,
                 )
             fresh = json.dumps(manifest, indent=2, sort_keys=True,
                                ensure_ascii=False) + "\n"
@@ -224,10 +246,18 @@ def main(argv=None) -> int:
             epoch,
         )
 
+    # the two families live in SEPARATE registries with different arities;
+    # picking the wrong one is a silent shape error, not a KeyError
+    registry = R_FAMILY_REGISTRY if args.generator == "realwindow"         else VARIANT_REGISTRY
     vmap = {}
     for tok in args.variants.split(","):
         vidx = int(tok.strip())
-        vmap[vidx] = VARIANT_REGISTRY[vidx]
+        if vidx not in registry:
+            raise SystemExit(
+                f"variant {vidx} is not in the {args.generator} registry "
+                f"(available: {sorted(registry)})"
+            )
+        vmap[vidx] = registry[vidx]
 
     head = git_head()
     print(f"matrix code identity: git HEAD {head}", flush=True)
@@ -286,7 +316,7 @@ def main(argv=None) -> int:
         exit_code = proc.returncode
         counts[exit_code] = counts.get(exit_code, 0) + 1
         rec = {
-            "manifest": str(mpath.relative_to(FORK.parent.parent)),
+            "manifest": _repo_relative(mpath),
             "manifest_sha1": sha,
             "exit": exit_code,
             "wall_s": round(wall, 1),
@@ -294,7 +324,7 @@ def main(argv=None) -> int:
         if exit_code == EXIT_OK:
             art = json.loads(expected_artifact.read_text(encoding="utf-8"))
             rec.update({
-                "artifact": str(expected_artifact.relative_to(FORK.parent.parent)),
+                "artifact": _repo_relative(expected_artifact),
                 "front_size": art["front_size"],
                 "anchor_f1_star": art["anchor_f1_star"],
                 "max_f1_star": art["max_f1_star_on_front"],

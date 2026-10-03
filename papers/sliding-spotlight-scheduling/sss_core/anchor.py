@@ -109,9 +109,18 @@ def greedy_anchor(
     )
 
     def dwell_at(plan: TaskPlan, t: float) -> float:
+        # ticket 16: the anchor must precompile and place against the SAME
+        # per-task geometry the evaluator scores with.  Using the library R0
+        # here made 8 of 10 anchor starts fall outside their own precompiled
+        # feasible set on the real-window family (measured CV 0.0646), because
+        # the evaluator re-precompiles with r0_m and the two disagreed.
         if freeze_durations:
-            return duration_scene_s(plan.mode, 0.0, lib)
-        return duration_scene_s(plan.mode, squint_at(t, plan.t_ca_s, lib.geo), lib)
+            return duration_scene_s(plan.mode, 0.0, lib, r0_m=plan.r0_m)
+        return duration_scene_s(
+            plan.mode,
+            squint_at(t, plan.t_ca_s, lib.geo, r0_m=plan.r0_m),
+            lib, r0_m=plan.r0_m,
+        )
 
     # precompile with the SAME frozen-dwell wrapper (D11-8 scope)
     if freeze_durations:
@@ -130,14 +139,14 @@ def greedy_anchor(
         if not starts:
             return True
         times = sorted(starts.items(), key=lambda kv: kv[1])
-        psi_self = squint_at(cand, plan.t_ca_s, lib.geo)
+        psi_self = squint_at(cand, plan.t_ca_s, lib.geo, r0_m=plan.r0_m)
         dur_self = dwell_at(plan, cand)
         pred = [(j, t) for j, t in times if t <= cand + 1e-12]
         succ = [(j, t) for j, t in times if t > cand + 1e-12]
         if pred:
             j, tj = pred[-1]
             pj = plans[j]
-            psi_j = squint_at(tj, pj.t_ca_s, lib.geo)
+            psi_j = squint_at(tj, pj.t_ca_s, lib.geo, r0_m=pj.r0_m)
             need = _need_between(
                 dwell_at(pj, tj), abs(psi_self - psi_j),
                 boundary_rate_of(pj.mode, psi_j, lib),
@@ -148,7 +157,7 @@ def greedy_anchor(
         if succ:
             j, tj = succ[0]
             pj = plans[j]
-            psi_j = squint_at(tj, pj.t_ca_s, lib.geo)
+            psi_j = squint_at(tj, pj.t_ca_s, lib.geo, r0_m=pj.r0_m)
             need = _need_between(
                 dur_self, abs(psi_j - psi_self),
                 boundary_rate_of(plan.mode, psi_self, lib),
@@ -167,8 +176,8 @@ def greedy_anchor(
         if repair:
             for j, tj in sorted(starts.items(), key=lambda kv: kv[1]):
                 pj = plans[j]
-                psi_j = squint_at(tj, pj.t_ca_s, lib.geo)
-                psi_self = squint_at(max(ws, tj), plan.t_ca_s, lib.geo)
+                psi_j = squint_at(tj, pj.t_ca_s, lib.geo, r0_m=pj.r0_m)
+                psi_self = squint_at(max(ws, tj), plan.t_ca_s, lib.geo, r0_m=plan.r0_m)
                 need = _need_between(
                     dwell_at(pj, tj), abs(psi_self - psi_j),
                     boundary_rate_of(pj.mode, psi_j, lib),
@@ -218,17 +227,23 @@ def boundary_rate_of(mode, psi_bar_rad: float, lib: ModeLibrary) -> float:
 def _precompile_frozen(manifest: dict, lib: ModeLibrary, pads: MarginPads):
     """Precompile with the zero-squint dwell (D11-8 frozen wrapper)."""
 
-    def duration(t, mode: Mode, _tca: float):
-        return pad_window_tail_(duration_scene_s(mode, 0.0, lib), pads)
+    def duration(t, mode: Mode, _tca: float, r0=None):
+        return pad_window_tail_(duration_scene_s(mode, 0.0, lib, r0_m=r0), pads)
 
     plans = []
     for i, t in enumerate(manifest["tasks"]):
         mode = Mode[t["mode"]]
         t0, t1 = float(t["t_start_s"]), float(t["t_end_s"])
+        # ticket 16: the frozen-dwell variant must use the SAME per-task R0 as
+        # the production precompile, or its intervals describe a different
+        # feasible set than the one it is compared against
+        r0_t = float(t["r0_m"]) if t.get("r0_m") is not None else None
         try:
             from .windows import feasible_subintervals
 
-            fw = feasible_subintervals(lambda tt, m=mode: duration(tt, m, 0.0), t0, t1)
+            fw = feasible_subintervals(
+                lambda tt, m=mode, _r0=r0_t: duration(tt, m, 0.0, _r0), t0, t1
+            )
             intervals = tuple(fw.intervals) if fw else None
         except ValueError:
             intervals = None
