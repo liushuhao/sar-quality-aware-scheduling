@@ -37,6 +37,7 @@ through a diagnostic counter, never silent.
 from __future__ import annotations
 
 import math
+import sys
 from dataclasses import dataclass
 
 from scipy.optimize import brentq
@@ -56,6 +57,8 @@ __all__ = [
     "scan_span_reachable",
     "scan_rate_ok",
     "effective_duration_fn",
+    "intersect_intervals",
+    "mask_intervals",
 ]
 
 
@@ -248,6 +251,94 @@ def windows_with_dip_guard(
 
 
 # ── atomic predicates (single predicate source, spec D9) ────────────────
+
+def intersect_intervals(*interval_sets) -> tuple[tuple[float, float], ...]:
+    """Intersect several unions of closed intervals (ticket 16, cascade 3/3).
+
+    The window of a real-window task is the intersection of three
+    independent leg-sets:
+
+      1. incidence mask  -- from ``sss_core.realwindows`` geometry,
+      2. mode squint envelope -- ``squint_at(t)`` against the per-mode
+         envelope (ticket 15 ``mode_squint_envelope_rad``),
+      3. the end-check set -- ``feasible_subintervals`` over the padded dwell.
+
+    Each leg is computed by its OWN owner and this function only intersects;
+    it never re-derives a leg's predicate.  That is the "no private
+    reimplementation" rule applied structurally rather than by convention --
+    a new leg is added by passing another interval set, not by editing here.
+
+    Semantics: closed intervals, zero-length members preserved (a
+    measure-zero feasible point is a legitimate degenerate window, D04-1/D04-4),
+    and an EMPTY intersection returns an empty tuple -- the caller decides
+    whether that means "removed" (generation cascade) or "unschedulable"
+    (a CV violation, D10-3).  This function raises on neither.
+    """
+    live = [tuple(iv) for iv in interval_sets if iv is not None]
+    if not live:
+        return ()
+    live.sort(key=lambda ivs: len(ivs))  # smallest first: cheapest to empty out
+    current = live[0]
+    for other in live[1:]:
+        merged: list[tuple[float, float]] = []
+        i = j = 0
+        while i < len(current) and j < len(other):
+            lo = max(current[i][0], other[j][0])
+            hi = min(current[i][1], other[j][1])
+            if lo <= hi:
+                merged.append((lo, hi))
+            if current[i][1] < other[j][1]:
+                i += 1
+            else:
+                j += 1
+        current = tuple(merged)
+        if not current:
+            return ()
+    return current
+
+
+def mask_intervals(span: tuple[float, float], mask_fn, n_scan: int = 200) -> tuple[tuple[float, float], ...]:
+    """Sample a boolean mask over a span and return the maximal runs (leg 1/2).
+
+    ``mask_fn(t) -> bool``.  Grid sampling followed by a run merge: the same
+    discretisation the end-check path already uses (``feasible_subintervals``
+    defaults to n_scan=200), so the legs agree on resolution and no leg is
+    silently finer than another.
+
+    The returned runs are INSET by one grid step at each end.  This is not
+    cosmetic: a later leg evaluates the dwell closure at the interval
+    endpoints, and a run that ends exactly on a mask boundary can land a
+    step outside it -- measured, a run ending at the SLS envelope boundary
+    overshot by 0.04 deg and the envelope guard raised.  Insetting guarantees
+    each leg's consumers stay strictly inside the leg that produced them.
+    """
+    a, b = float(span[0]), float(span[1])
+    if b < a:
+        raise ValueError(f"mask span inverted: [{a}, {b}]")
+    step = (b - a) / n_scan if n_scan else 0.0
+    # inset must absorb grid rounding as well as the step itself: a run
+    # closing on the last in-mask sample lands a ULP past the boundary
+    # (measured 5.000000000000001 against a <= 5.0 mask), which is enough to
+    # make a later leg's own guard raise.
+    inset = (1e-9 if step == 0.0 else step) + 8.0 * abs(a + b) * sys.float_info.epsilon
+    runs: list[tuple[float, float]] = []
+    start: float | None = None
+    for i in range(n_scan + 1):
+        t = a + i * step
+        ok = bool(mask_fn(t))
+        if ok and start is None:
+            start = t
+        elif not ok and start is not None:
+            lo, hi = start + inset, t - inset
+            if lo <= hi:
+                runs.append((lo, hi))
+            start = None
+    if start is not None:
+        lo, hi = start + inset, b - inset
+        if lo <= hi:
+            runs.append((lo, hi))
+    return tuple(runs)
+
 
 def feasible_at(t: float, effective_duration, window_end: float, tol_g: float = 1e-12) -> bool:
     """Atomic end-check: t + T_eff(t) <= w_e (shared by every consumer)."""

@@ -415,5 +415,83 @@ def test_empty_window_and_degenerate_point():
         assert lo == pytest.approx(hi, abs=1e-6)
 
 
+# ── ticket 16: cascade intersection (three-piece, leg 3/3) ───────────────
+
+def test_intersect_intervals_algebra():
+    """The cascade core: intersection of closed-interval unions."""
+    from sss_core.windows import intersect_intervals as ix
+
+    assert ix(((0, 10), (20, 30)), ((5, 25),)) == ((5, 10), (20, 25))
+    assert ix(((0, 10), (20, 30)), ((5, 8), (22, 28))) == ((5, 8), (22, 28))
+    # disjoint legs produce an EMPTY set -- never a silent fallback
+    assert ix(((0, 10),), ((20, 30),)) == ()
+    # a superset leg is a no-op
+    assert ix(((0, 10), (20, 30)), ((0, 30),)) == ((0, 10), (20, 30))
+    # measure-zero feasible points survive (D04-1 closed convention)
+    assert ix(((5, 5),), ((0, 10),)) == ((5, 5),)
+    # an empty leg empties the result rather than being ignored
+    assert ix(((0, 10),), ()) == ()
+    assert ix((), ((0, 10),)) == ()
+
+
+def test_intersect_is_commutative_and_idempotent():
+    from sss_core.windows import intersect_intervals as ix
+
+    a = ((0, 10), (20, 30))
+    b = ((5, 25),)
+    c = ((22, 28),)
+    assert ix(a, b, c) == ix(c, b, a)
+    assert ix(a, b) == ix(b, a)
+    assert ix(a, a) == a
+
+
+def test_mask_intervals_runs():
+    from sss_core.windows import mask_intervals
+
+    # runs are inset by one grid step plus a few ULP (see the docstring), so
+    # the expected values are grid-derived, not the raw mask bounds
+    full = mask_intervals((0, 10), lambda t: True, n_scan=10)
+    assert len(full) == 1
+    assert full[0][0] == pytest.approx(1.0, abs=1e-9)
+    assert full[0][1] == pytest.approx(9.0, abs=1e-9)
+    assert mask_intervals((0, 10), lambda t: False, n_scan=10) == ()
+    band = mask_intervals((0, 10), lambda t: 3 <= t <= 7, n_scan=10)
+    assert len(band) == 1
+    assert band[0][0] == pytest.approx(4.0, abs=1e-9)
+    assert band[0][1] == pytest.approx(7.0, abs=1e-9)
+    with pytest.raises(ValueError):
+        mask_intervals((10, 0), lambda t: True, n_scan=10)
+
+
+def test_mask_run_endpoints_satisfy_their_own_mask():
+    """The inset must actually hold: every returned endpoint passes the mask
+    that produced it.  Without this the cascade can hand a later leg a point
+    outside the envelope (measured: a run ending on the SLS boundary
+    overshot by 0.04 deg and the guard raised)."""
+    from sss_core.windows import mask_intervals
+
+    mask = lambda t: 2.0 <= t <= 5.0
+    for lo, hi in mask_intervals((0.0, 10.0), mask, n_scan=100):
+        assert mask(lo) and mask(hi), (lo, hi)
+        assert lo >= 2.0 and hi <= 5.0
+
+
+def test_cascade_three_legs_actually_narrows():
+    """The cascade must be a real intersection, not a pass-through: each leg
+    removes something, and the result is narrower than every input."""
+    from sss_core.windows import intersect_intervals as ix, mask_intervals
+
+    span = (0.0, 60.0)
+    incidence = mask_intervals(span, lambda t: 10 <= t <= 50, n_scan=60)
+    envelope = mask_intervals(span, lambda t: 5 <= t <= 45, n_scan=60)
+    endcheck = ((15.0, 40.0),)
+    out = ix(incidence, envelope, endcheck)
+    assert out == ((15.0, 40.0),)
+    # each leg alone is wider than the cascade
+    out_w = out[0][1] - out[0][0]
+    assert incidence[0][1] - incidence[0][0] > out_w
+    assert envelope[0][1] - envelope[0][0] > out_w
+
+
 if __name__ == "__main__":
     sys.exit(pytest.main([__file__, "-v"]))
