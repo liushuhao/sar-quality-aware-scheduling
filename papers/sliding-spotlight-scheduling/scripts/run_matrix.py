@@ -74,6 +74,7 @@ EXIT_OK = 0
 EXIT_ZERO_OUTPUT = 4
 EXIT_GENERATION_DEFECT = 5
 EXIT_VARIANT_EMPTY = 6
+EXIT_UNIT_SETUP_ERROR = 7
 
 
 def git_head() -> str:
@@ -360,6 +361,21 @@ def main(argv=None) -> int:
     if succeeded == 0:
         print("ALARM: zero units succeeded (silent-zero guard)", flush=True)
         return EXIT_ZERO_OUTPUT
+    # exit 1 is run_pilot's SETUP-ERROR code -- a crash, never a normal outcome.
+    # It used to be counted in the totals and then ignored, so a run in which
+    # 11 of 40 units crashed still exited 0.  Measured on 2026-10-03: five
+    # distinct real defects (anchor caliber, generator cascade caliber, C3/C4
+    # caliber, AASR gate point-vs-window, promotion readout) all presented as
+    # exit 1 and the first four runs reported success.
+    if counts.get(1, 0):
+        print(
+            f"ALARM: {counts[1]} unit(s) failed with exit 1 (setup error). "
+            "A setup error is a crash, not an outcome -- the run is NOT clean. "
+            "Re-run the affected units after fixing the cause; per-unit stderr "
+            "is in the pilot subprocess output, not in this summary.",
+            flush=True,
+        )
+        return EXIT_UNIT_SETUP_ERROR
     for code in empty_variants:
         if by_variant.get(code, {}).get(11, 0) == SEEDS_PER_VARIANT:
             print(f"ALARM: variant {code} empty front on all seeds", flush=True)
