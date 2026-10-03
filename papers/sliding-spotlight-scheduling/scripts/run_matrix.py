@@ -26,12 +26,14 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import math
 import json
 import os
 import shutil
 import subprocess
 import sys
 import time
+from dataclasses import dataclass
 from pathlib import Path
 
 FORK = Path(__file__).resolve().parent.parent
@@ -48,6 +50,24 @@ MATRIX_DIR = FORK / "experiments" / "results" / "matrix"
 PROGRESS_PATH = MATRIX_DIR / "_progress.json"
 PILOT_SCRIPT = FORK / "scripts" / "run_pilot.py"
 SEEDS_PER_VARIANT = 10
+
+
+@dataclass
+class MatrixDirs:
+    """Where a run reads and writes (ticket 17 acceptance item 3).
+
+    The six frozen result families under ``experiments/results/`` must not be
+    re-run in place, so every path the driver touches is an injected field
+    rather than a module global.  The defaults reproduce the original
+    behaviour exactly -- a caller that passes nothing still writes to the
+    frozen directories, which is why a real-window run MUST pass explicit
+    directories rather than relying on the default.
+    """
+
+    scenarios: Path = SCENARIOS_DIR
+    matrix: Path = MATRIX_DIR
+    progress: Path = PROGRESS_PATH
+    pilot_script: Path = PILOT_SCRIPT
 
 EXIT_OK = 0
 EXIT_ZERO_OUTPUT = 4
@@ -89,8 +109,9 @@ def atomic_write_json(path: Path, obj: dict) -> None:
     os.replace(tmp, path)
 
 
-def load_progress() -> dict | None:
-    for cand in (PROGRESS_PATH, PROGRESS_PATH.with_suffix(".json.bak")):
+def load_progress(progress_path: Path | None = None) -> dict | None:
+    progress_path = progress_path or PROGRESS_PATH
+    for cand in (progress_path, progress_path.with_suffix(".json.bak")):
         if cand.exists():
             try:
                 return json.loads(cand.read_text(encoding="utf-8"))
@@ -99,21 +120,40 @@ def load_progress() -> dict | None:
     return None
 
 
-def ensure_manifests(variants: dict[int, tuple]) -> dict[str, Path]:
-    """Generate missing manifests; byte-verify existing ones (determinism)."""
+def ensure_manifests(
+    variants: dict[int, tuple],
+    dirs: "MatrixDirs | None" = None,
+    generator=None,
+    platform=None,
+) -> dict[str, Path]:
+    """Generate missing manifests; byte-verify existing ones (determinism).
+
+    ``generator`` defaults to the synthetic-box ``generate_scenario``; the
+    real-window family injects ``generate_real_scenario`` instead, so the
+    driver need not know which family it is driving.
+    """
+    dirs = dirs or MatrixDirs()
+    generate = generator or generate_scenario
     paths: dict[str, Path] = {}
     lib = None
-    for vidx, (code, density, interval, tier) in sorted(variants.items()):
+    for vidx, spec in sorted(variants.items()):
+        code, density = spec[0], spec[1]
+        rest = tuple(spec[2:])
         for si in range(SEEDS_PER_VARIANT):
             seed = vidx * 100 + si
-            path = SCENARIOS_DIR / f"{code}_seed{seed}.json"
+            path = dirs.scenarios / f"{code}_seed{seed}.json"
             if lib is None:
                 from sss_core.modes import ModeLibrary
                 lib = ModeLibrary.from_fixture()
-            manifest = generate_scenario(
-                code, density, interval, tier, seed,
-                variant_index=vidx, lib=lib,
-            )
+            if generator is None:
+                manifest = generate(
+                    code, density, *rest, seed, variant_index=vidx, lib=lib,
+                )
+            else:
+                manifest = generate(
+                    code, density, *rest, seed, variant_index=vidx,
+                    lib=lib, platform=platform,
+                )
             fresh = json.dumps(manifest, indent=2, sort_keys=True,
                                ensure_ascii=False) + "\n"
             if path.exists():
@@ -134,7 +174,55 @@ def main(argv=None) -> int:
     ap.add_argument("--gen", type=int, default=60)
     ap.add_argument("--variants", default="1,2,3,4,5",
                     help="variant indexes into VARIANT_REGISTRY, comma-sep")
+    # ticket 17 item 3: explicit directories + generator injection, so the
+    # frozen families can never be re-run in place by accident
+    ap.add_argument("--scenarios-dir", default=None,
+                    help="override the scenario output directory")
+    ap.add_argument("--matrix-dir", default=None,
+                    help="override the pilot artifact directory")
+    ap.add_argument("--generator", choices=("synthetic", "realwindow"),
+                    default="synthetic", help="which generator to drive")
+    ap.add_argument("--platform", default=None,
+                    help="JSON file with the platform orbit (required for "
+                         "--generator realwindow: the orbit is a registered "
+                         "input, not something the driver may invent)")
     args = ap.parse_args(argv)
+
+    dirs = MatrixDirs()
+    if args.scenarios_dir:
+        dirs.scenarios = Path(args.scenarios_dir)
+    if args.matrix_dir:
+        dirs.matrix = Path(args.matrix_dir)
+        dirs.progress = dirs.matrix / "_progress.json"
+
+    generator = None
+    platform = None
+    if args.generator == "realwindow":
+        if not args.platform:
+            raise SystemExit(
+                "--generator realwindow requires --platform (the orbit is a "
+                "registered input)"
+            )
+        from datetime import datetime
+
+        from sss_core.realwindows import KeplerianElement
+        from sss_core.scenarios import generate_real_scenario
+
+        generator = generate_real_scenario
+        spec = json.loads(Path(args.platform).read_text(encoding="utf-8"))
+        epoch = datetime.fromisoformat(spec["epoch"])
+        platform = (
+            KeplerianElement(
+                semi_major_axis=float(spec["semi_major_axis_m"]),
+                eccentricity=float(spec["eccentricity"]),
+                inclination=math.radians(float(spec["inclination_deg"])),
+                raan=math.radians(float(spec["raan_deg"])),
+                arg_perigee=math.radians(float(spec["arg_perigee_deg"])),
+                true_anomaly=math.radians(float(spec["true_anomaly_deg"])),
+                epoch=epoch,
+            ),
+            epoch,
+        )
 
     vmap = {}
     for tok in args.variants.split(","):
@@ -144,7 +232,7 @@ def main(argv=None) -> int:
     head = git_head()
     print(f"matrix code identity: git HEAD {head}", flush=True)
 
-    progress = load_progress()
+    progress = load_progress(dirs.progress)
     if progress is None:
         progress = {"schema": "matrix-progress/1.0", "code_head": head,
                     "pop": args.pop, "gen": args.gen, "units": {}}
@@ -152,7 +240,7 @@ def main(argv=None) -> int:
         raise SystemExit(
             f"CODE IDENTITY CHANGED since matrix start: progress head "
             f"{progress['code_head']} != current {head}. Resume refused "
-            f"(caliber mixing guard). Delete {PROGRESS_PATH} only after "
+            f"(caliber mixing guard). Delete {dirs.progress} only after "
             f"deciding old artifacts are void."
         )
     elif (progress.get("pop"), progress.get("gen")) != (args.pop, args.gen):
@@ -162,8 +250,8 @@ def main(argv=None) -> int:
             f"({args.pop},{args.gen}). Refused (analysis_prereg.json)."
         )
 
-    paths = ensure_manifests(vmap)
-    MATRIX_DIR.mkdir(parents=True, exist_ok=True)
+    paths = ensure_manifests(vmap, dirs=dirs, generator=generator, platform=platform)
+    dirs.matrix.mkdir(parents=True, exist_ok=True)
 
     counts: dict[int, int] = {}
     empty_variants: set[str] = set()
@@ -172,7 +260,7 @@ def main(argv=None) -> int:
         rec = progress["units"].get(key)
         sha = manifest_sha1(mpath)
         code, seed_s = mpath.stem.split("_seed")
-        expected_artifact = MATRIX_DIR / f"pilot_{code}_seed{seed_s}.json"
+        expected_artifact = dirs.matrix / f"pilot_{code}_seed{seed_s}.json"
         if (
             rec is not None
             and rec.get("exit") == EXIT_OK
@@ -186,12 +274,12 @@ def main(argv=None) -> int:
         t0 = time.monotonic()
         env = dict(os.environ, PYTHONHASHSEED="0")
         proc = subprocess.run(
-            [sys.executable, str(PILOT_SCRIPT),
+            [sys.executable, str(dirs.pilot_script),
              "--manifest", str(mpath),
              "--seed", seed_s,
              "--pop", str(args.pop),
              "--gen", str(args.gen),
-             "--out", str(MATRIX_DIR)],
+             "--out", str(dirs.matrix)],
             env=env, capture_output=True, text=True,
         )
         wall = time.monotonic() - t0
@@ -218,7 +306,7 @@ def main(argv=None) -> int:
             rec["note"] = "empty front (no feasible individual) -- recorded outcome"
             empty_variants.add(code)
         progress["units"][key] = rec
-        atomic_write_json(PROGRESS_PATH, progress)
+        atomic_write_json(dirs.progress, progress)
         lines = (proc.stdout or "").strip().splitlines()
         tail = lines[-1] if lines else (proc.stderr or "").strip().splitlines()[-1:]
         print(f"[{key}] exit={exit_code} wall={wall:.1f}s {tail}", flush=True)
