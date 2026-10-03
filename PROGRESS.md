@@ -380,3 +380,18 @@
 **核心结果（受冻结约束）**：R1C **CONVERGED、P1 成立**（dfq 16.5 ≥ 3）；R2F/R3H/R4H **UNCONVERGED ⇒ P1 NOT-YET-TESTED**（阈值虽达但阶梯仍在涨，冻结禁作物理声明）。promotion 结构维**在真几何下翻转**（R2F/R3H/R4H R_fam 6.82 ≥ 6.0 ⇒ ALIVE × UNCONVERGED ⇒ NO CLAIM）。合成对照证明**闭式变更对锚值零影响**（五族三档 Δ 精确 0.0）⇒ 真窗差异归因几何；且**合成族 dfq 本身也随预算陡增** ⇒ 丰富度增长**主要来自预算而非几何**。
 
 **全程未使用「前沿塌缩」「相变」任何字样**（红线机检 rc=0）。
+
+### [21:11] **收官回归（全绿）**
+
+| 面 | 结果 | rc |
+|---|---|---|
+| 本域 `papers/sliding-spotlight-scheduling/tests/` | **198 passed, 1 skipped, 1 xfailed**（收集 200） | 0 |
+| 共享库 `src/tests/` | **145 passed**（= 基线 N0，零回归） | 0 |
+| `verify_prereg_v2.py`（冻结自检 28 checks） | PASS | 0 |
+| `check_red_lines.py`（红线五条） | PASS | 0 |
+| `verify_ticket22_adjudications.py`（43 checks） | PASS | 0 |
+| `verify_claim_traces.py` | 11/11 claims | 0 |
+
+skip/xfailed 仍是基线那两条（1 条件跳过 + 1 xfailed = R12 exit-11 缺陷标记），**未净增、未删除**。
+
+**冻结边界**：`experiments/results/` 六族 **196 文件零 diff**；`git diff paper2-m1-baseline..HEAD -- src/sar_sim` **空**；工作树**净**，本会话 **47 commits**。
