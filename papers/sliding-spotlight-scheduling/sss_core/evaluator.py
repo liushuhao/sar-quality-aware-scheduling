@@ -111,7 +111,15 @@ def decode_tau(tau: float, intervals) -> float:
 
 @dataclass
 class TaskPlan:
-    """Per-task precompilation consumed by evaluation (fixed at setup)."""
+    """Per-task precompilation consumed by evaluation (fixed at setup).
+
+    Ticket 16 adds the per-task geometry block: ``r0_m`` / ``incidence_deg``
+    are None for every pre-ticket-16 family (their manifests carry no
+    geometry), which is what keeps the frozen result families bit-identical.
+    ``t_ca_s`` is the ZERO of ``squint_at`` -- NOT the zero of the shared
+    library's vector squint, which is a different quantity with a different
+    zero point (measured: the vector minimum sits 600 s away).
+    """
 
     index: int
     priority: int
@@ -122,6 +130,9 @@ class TaskPlan:
     azimuth_size_m: float
     intervals: tuple | None  # None = unschedulable (empty feasible set)
     priority_f: float
+    r0_m: float | None = None
+    incidence_deg: float | None = None
+    vector_squint_min_t_s: float | None = None
 
     @property
     def schedulable(self) -> bool:
@@ -130,7 +141,13 @@ class TaskPlan:
 
 def precompile_tasks(manifest: dict, lib: ModeLibrary) -> list[TaskPlan]:
     """Precompile per-task feasible subintervals with the manifest's OWN
-    window-tail pad (D04-2/D10-8 single source: manifest pads)."""
+    window-tail pad (D04-2/D10-8 single source: manifest pads).
+
+    Ticket 16: a task may carry its own geometry block (``r0_m`` /
+    ``incidence_deg`` / ``vector_squint_min_t_s``).  Absent block -> the
+    library constants, which is every pre-ticket-16 manifest, so those stay
+    bit-identical.
+    """
     pads = MarginPads(
         float(manifest["preregistration"]["pads"]["inter_task_fraction"]),
         float(manifest["preregistration"]["pads"]["window_tail_fraction"]),
@@ -140,10 +157,23 @@ def precompile_tasks(manifest: dict, lib: ModeLibrary) -> list[TaskPlan]:
         mode = Mode[t["mode"]]  # manifests store the enum NAME (STR/SLS/SPT)
         t0, t1 = float(t["t_start_s"]), float(t["t_end_s"])
         t_ca = float(t["t_ca_s"])
+        # per-task geometry (ticket 16); absent on every pre-ticket-16 manifest
+        r0_t = float(t["r0_m"]) if t.get("r0_m") is not None else None
+        inc_t = (
+            float(t["incidence_deg"])
+            if t.get("incidence_deg") is not None else None
+        )
+        vsq_t = (
+            float(t["vector_squint_min_t_s"])
+            if t.get("vector_squint_min_t_s") is not None else None
+        )
 
-        def duration(t, _mode=mode, _tca=t_ca):
+        def duration(t, _mode=mode, _tca=t_ca, _r0=r0_t):
             return pad_window_tail(
-                duration_scene_s(_mode, squint_at(t, _tca, lib.geo), lib), pads
+                duration_scene_s(
+                    _mode, squint_at(t, _tca, lib.geo, r0_m=_r0), lib, r0_m=_r0
+                ),
+                pads,
             )
 
         try:
@@ -162,6 +192,9 @@ def precompile_tasks(manifest: dict, lib: ModeLibrary) -> list[TaskPlan]:
                 azimuth_size_m=float(t["azimuth_size_m"]),
                 intervals=intervals,
                 priority_f=float(t["priority"]),
+                r0_m=r0_t,
+                incidence_deg=inc_t,
+                vector_squint_min_t_s=vsq_t,
             )
         )
     return plans
@@ -207,7 +240,10 @@ class SchedulingProblem:
     def _dwell(self, i: int, start: float) -> float:
         plan = self.plans[i]
         return duration_scene_s(
-            plan.mode, squint_at(start, plan.t_ca_s, self.lib.geo), self.lib
+            plan.mode,
+            squint_at(start, plan.t_ca_s, self.lib.geo, r0_m=plan.r0_m),
+            self.lib,
+            r0_m=plan.r0_m,
         )
 
     # ── evaluate ─────────────────────────────────────────────────────
@@ -232,8 +268,8 @@ class SchedulingProblem:
 
         for a, b in zip(order, order[1:]):
             pa, pb = self.plans[a], self.plans[b]
-            psi_a = squint_at(starts[a], pa.t_ca_s, self.lib.geo)
-            psi_b = squint_at(starts[b], pb.t_ca_s, self.lib.geo)
+            psi_a = squint_at(starts[a], pa.t_ca_s, self.lib.geo, r0_m=pa.r0_m)
+            psi_b = squint_at(starts[b], pb.t_ca_s, self.lib.geo, r0_m=pb.r0_m)
             req = c2_transfer_requirement_s(
                 self._dwell(a, starts[a]),
                 self.lib,
@@ -258,8 +294,13 @@ class SchedulingProblem:
             [
                 f_q_per_task(
                     self.plans[i].mode,
-                    squint_at(starts[i], self.plans[i].t_ca_s, self.lib.geo),
-                    self.lib.geo.R0_m,
+                    squint_at(
+                        starts[i], self.plans[i].t_ca_s, self.lib.geo,
+                        r0_m=self.plans[i].r0_m,
+                    ),
+                    # per-task slant range (ticket 16); None -> library constant
+                    self.lib.geo.R0_m if self.plans[i].r0_m is None
+                    else self.plans[i].r0_m,
                     self.lib,
                 )
                 for i in order

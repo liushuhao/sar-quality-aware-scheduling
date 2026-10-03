@@ -115,7 +115,12 @@ def _check_envelope(mode: Mode, psi_bar_rad: float) -> None:
         )
 
 
-def duration_scene_s(mode: Mode, psi_bar_rad: float, lib: ModeLibrary) -> float:
+def duration_scene_s(
+    mode: Mode,
+    psi_bar_rad: float,
+    lib: ModeLibrary,
+    r0_m: float | None = None,
+) -> float:
     """Scene-level dwell [s] (ticket 03 D03-3; PRODUCTION = formula-spec
     §4.1 Kim Eq.(22)/(24) chain after ticket 15; §4.2 planar forms demoted to
     oracles).
@@ -133,20 +138,27 @@ def duration_scene_s(mode: Mode, psi_bar_rad: float, lib: ModeLibrary) -> float:
          the beam is parked on the scene so scene == point; an azimuth extent
          larger than the footprint R*theta_a is INFEASIBILITY (C1b footprint
          predicate, tickets 04/08), never a longer dwell.
+
+    ``r0_m`` (ticket 16): per-task slant-range override.  Measured across a
+    20-70 deg incidence band, R0 moves -22.2% to +71.9%, so a real-window
+    task imaged away from the design incidence has a materially different
+    dwell.  ``None`` means "use the library constant", which is what every
+    pre-ticket-16 family does -- so their results stay bit-identical.
     """
     _check_envelope(mode, psi_bar_rad)
     geo = lib.geo
+    r0 = geo.R0_m if r0_m is None else float(r0_m)
     if mode is Mode.STR:
         return (
-            _tan_diff_s(psi_bar_rad, geo.theta_a_rad, geo.R0_m, geo.vs_mps)
+            _tan_diff_s(psi_bar_rad, geo.theta_a_rad, r0, geo.vs_mps)
             + geo.scene_wa_m / geo.vs_mps
         )
     if mode is Mode.SLS:
         return kim_checker_scene_sls(
-            psi_bar_rad, lib.rho_az(Mode.SLS), geo
+            psi_bar_rad, lib.rho_az(Mode.SLS), geo, r0_m=r0
         )["sat_raw_s"]
     if mode is Mode.SPT:
-        return _tan_diff_s(psi_bar_rad, lib.beta_span_spt_rad, geo.R0_m, geo.vs_mps)
+        return _tan_diff_s(psi_bar_rad, lib.beta_span_spt_rad, r0, geo.vs_mps)
     raise ValueError(f"unknown mode {mode!r}")
 
 
@@ -231,9 +243,17 @@ def duration_spt_exact_s(psi_bar_rad: float, lib: ModeLibrary) -> float:
 # ── Kim full-curvature scene checker (D03-1) ─────────────────────────────
 
 def kim_checker_scene_sls(
-    psi_bar_rad: float, rho_req_m: float, geo: DerivedGeometry
+    psi_bar_rad: float,
+    rho_req_m: float,
+    geo: DerivedGeometry,
+    r0_m: float | None = None,
 ) -> dict:
     """Scene-level sliding-spotlight SAT via the symmetric-alpha construction.
+
+    ``r0_m`` (ticket 16): per-task slant-range override; see
+    ``duration_scene_s``.  Only the R0 *reads* are overridden -- ``r0`` in
+    the returned dict is Kim's Eq.(16) rotation-centre radius, a different
+    quantity, and is left alone.
 
     Chain (formula-spec §4.1/§4.3, D03-1): Eq.(14) alpha_req = lambda/(2 rho)
     -> Eq.(16) r0 = R0*theta_a/(alpha_req - theta_a) -> Eq.(18)
@@ -241,16 +261,17 @@ def kim_checker_scene_sls(
     Eq.(22) first form with the scene edges symmetric about psi_bar ->
     SAT = L/Vs (raw; x1.25 margin separate).
     """
+    R0 = geo.R0_m if r0_m is None else float(r0_m)
     theta_a = geo.theta_a_rad
     alpha_req = geo.wavelength_m / (2.0 * rho_req_m)
-    r0 = geo.R0_m * theta_a / (alpha_req - theta_a)
-    dtheta_broad = (geo.R0_m * theta_a + geo.scene_wa_m) / r0
+    r0 = R0 * theta_a / (alpha_req - theta_a)
+    dtheta_broad = (R0 * theta_a + geo.scene_wa_m) / r0
     alpha = dtheta_broad + theta_a
     hi = psi_bar_rad + alpha / 2.0
     lo = psi_bar_rad - alpha / 2.0
     if abs(math.cos(hi)) < 1e-12 or abs(math.cos(lo)) < 1e-12:
         raise ValueError("checker domain: squint + alpha/2 reaches 90 deg")
-    big_l = geo.R0_m * (math.tan(hi) - math.tan(lo)) + geo.scene_wa_m
+    big_l = R0 * (math.tan(hi) - math.tan(lo)) + geo.scene_wa_m
     sat_raw = big_l / geo.vs_mps
     return {
         "L_m": big_l,

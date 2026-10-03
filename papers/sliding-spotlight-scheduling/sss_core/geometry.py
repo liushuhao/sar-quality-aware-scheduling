@@ -48,12 +48,20 @@ def look_geometry(altitude_m: float, theta_inc_deg: float) -> tuple[float, float
     return math.degrees(theta_look), math.degrees(beta), r0_m
 
 
-def squint_at(t: float, t_ca: float, lib_geo) -> float:
+def squint_at(t: float, t_ca: float, lib_geo, r0_m: float | None = None) -> float:
     """Planar squint angle [rad] at time t for a target whose closest
     approach is t_ca (single shared source: window precompilation, the
     evaluator dwell chain and the scenario generator all consume THIS
-    function -- ticket 10 D10-7)."""
-    return math.atan(lib_geo.vs_mps * (t - t_ca) / lib_geo.R0_m)
+    function -- ticket 10 D10-7).
+
+    ``r0_m`` (ticket 16): per-task slant-range override.  This is the
+    squint that drives the dwell closure and the AASR bandwidth -- it is NOT
+    the shared library's vector squint, which is the full along-track
+    off-nadir angle at the target (see sss_core/realwindows.py).  The two
+    have different zero points as well as different scales.
+    """
+    r0 = lib_geo.R0_m if r0_m is None else float(r0_m)
+    return math.atan(lib_geo.vs_mps * (t - t_ca) / r0)
 
 
 def vs_inertial(altitude_m: float) -> float:

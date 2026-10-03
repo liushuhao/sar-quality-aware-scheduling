@@ -49,7 +49,7 @@ from sss_core.duration import (  # noqa: E402
     window_tail_pad_report,
 )
 from sss_core.fixture import fixture_value, load_platform_fixture  # noqa: E402
-from sss_core.geometry import DerivedGeometry, look_geometry  # noqa: E402
+from sss_core.geometry import DerivedGeometry, look_geometry, squint_at  # noqa: E402
 from sss_core.modes import SPT_DESIGN_RHO_M, Mode, ModeLibrary, sec2  # noqa: E402
 
 KIM_SAT_FOUR = [8.38, 8.18, 8.08, 8.13]  # targets 1-4, txt:1302
@@ -387,6 +387,52 @@ def test_squint_envelope_guards_fail_loud(lib):
     # in-envelope queries still work
     assert duration_scene_s(Mode.STR, math.radians(45.0), lib) > 0.0
     assert duration_scene_s(Mode.SLS, math.radians(26.9), lib) > 0.0
+
+
+# ── ticket 16: per-task geometry injection ──────────────────────────────
+
+def test_per_task_r0_override_is_none_identical(lib):
+    """The override must be a NO-OP when it carries the library constant --
+    that is what keeps the frozen result families bit-identical."""
+    for mode in (Mode.STR, Mode.SLS, Mode.SPT):
+        psi = math.radians(12.0)
+        base = duration_scene_s(mode, psi, lib)
+        same = duration_scene_s(mode, psi, lib, r0_m=lib.geo.R0_m)
+        assert base == same, mode
+    assert squint_at(20.0, 0.0, lib.geo) == squint_at(
+        20.0, 0.0, lib.geo, r0_m=lib.geo.R0_m
+    )
+
+
+def test_per_task_r0_override_moves_the_dwell(lib):
+    """And it must NOT be a no-op in general: R0 spans -22%..+72% across a
+    20-70 deg incidence band, so a task away from the design incidence has
+    a materially different dwell.  A guard that only checked the None case
+    would pass a stubbed override."""
+    design = lib.geo.R0_m
+    lo = duration_scene_s(Mode.STR, math.radians(12.0), lib, r0_m=design * 0.7780)
+    hi = duration_scene_s(Mode.STR, math.radians(12.0), lib, r0_m=design * 1.7194)
+    mid = duration_scene_s(Mode.STR, math.radians(12.0), lib)
+    assert lo < mid < hi
+    # the measured span, not a token difference
+    assert (hi - lo) / mid > 0.4
+
+
+def test_squint_at_r0_override_reduces_the_angle_at_fixed_dt(lib):
+    """Larger slant range -> smaller planar squint at the same offset.
+
+    The relation is ``atan(x/r)``, so it is NOT proportional to r -- the
+    ratio between the two angles is close to but below the R0 ratio, and
+    that is the correct behaviour (a longer range flattens the apparent
+    cross-track excursion at a fixed along-track offset).
+    """
+    ratio = 1.7
+    a = squint_at(20.0, 0.0, lib.geo)
+    b = squint_at(20.0, 0.0, lib.geo, r0_m=lib.geo.R0_m * ratio)
+    assert b < a
+    # strictly below the R0 ratio, and close to it at this offset
+    assert 1.0 < a / b < ratio
+    assert abs(a / b - ratio) < 0.05
 
 
 def test_sat_margin_constant(lib):
