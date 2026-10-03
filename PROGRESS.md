@@ -112,4 +112,29 @@
 
 **其余处置**：ψ 轴取 **136 点**（保密度；naive 37 点/90° 会粗 3.75× 并让最后的 `halving_stability` FAIL）｜`_domain_check` 改**模式感知**（STR/SPT 45°、SLS 26.9°）｜**f_Q 保持零斜视常数**（D05-4 时间不变性保留，`rho_a,ach` 只上报不进 f_Q 表达式）｜5 个未列红名单的破测补入（含 `test_aasr_grid.py:124`，推翻本票「aasr 域变更碰不到」的判断）｜M?NC 锚值**记为期望零变化**（实测 STR 切换在 ±3.356° 只动 2.144e-6 s ≪ 1e-3 容差 ⇒ 0.8931 不动；真实证人是直接断言不是锚值）｜项 13 内部恒等链 `f_Q = (g_T/ρ_a²)·1/ρ_rg²`，比值恒 4.9338（容差 3e-4）。
 
+### [13:05] 票 15 completed — commits `20ff465` + `d0d32f2`
+
+**已验证据**：
+- 本域套件 `165 passed, 1 skipped, 1 xfailed in 1101.44s`（基线 159 → **+6 新守卫**；skip/xfail **未净增**，仍是那两条 R12/exit-11 标记）
+- 共享库 `145 passed in 207.98s`（**零回归**）
+- `scripts/verify_claim_traces.py` → `11/11 claims provenance-verified / no open defects`，**rc=0**（formula-spec 升 v1.3 后仍全绿）
+- `scripts/verify_ticket22_adjudications.py` → `0 failure(s) over 43 checks`，**rc=0**（物理改动不影响票 22 裁决，因其只读冻结工件）
+- 冻结六族：`git diff --stat -- experiments/results/` **空**，196 文件数不变，`src/sar_sim` 零改动
+
+**落地要点**：
+- 生产闭式：SLS = Eq.(22) 校核器链（45° 偏 5.30% 是唯一真物理问题）；STR = tan 精确（45° 仅偏 0.0009%，切换为口径统一）；**SPT 不动**（已是 Eq.(10)-(11) 精确式）
+- 七处 ±12° 全切换 + **模式感知域守卫**（STR/SPT 45°、SLS 26.9°）+ ψ 轴 **136 点保密度**（naive 37 点会粗 3.75× 并让最后的 `halving_stability` FAIL）
+- `T_env_max` 10.5830 s（argmax SPT@45°），`C3/C4` 归一化因子 1.5754×
+- `B_D` 纠正为注册式（原实现是 §3.1 明令禁用的 cos² 口径，45° 处欠保守 **29.3%**）
+- 垫维持 1.00%，`window_tail_pad_report` 改为**记录** oracle 缺口 + 按模式断言保守方向（SLS 绑定区 min **+0.4112%** 全正；STR 全域为负故**不宣称保守**，只受垫覆盖）
+- `scene_minus_point_delta_s` 改为**派生** `T_scene − T_point`（消除该类漂移，而非重 pin 数字）
+
+**变异红证 2 条（红→绿双向贴证）**：A（SLS 回退平面）4 红 / B（STR 回退平面）2 红，含专设高斜视证人 `test_high_squint_production_matches_physical_reference`。
+
+**破测 5 项全处置**（重 pin 禁放宽）：含 `scene_minus_point_component_identity`（改生产函数为派生）、`SLS/STR==1/A`（恒等式归 oracle，生产侧 pin 新比值 4.934967753）、`T_env_max` 探针移至 11.5 s + **pin 10.5830**、`grid_halving` 抽样改模式感知 + **样本数不足即 raise**、`test_grid_out_of_domain_raises`（13° 对 STR 合法、46° 才 raise）。
+
+**新增 6 个守卫**：`test_oracle_gap_is_discriminating_at_high_squint`（含 **12° 陷阱反向断言**）、`test_high_squint_production_matches_physical_reference`、`test_squint_envelope_guards_fail_loud`、`test_mode_squint_envelope_matches_fixture`、`test_seven_psi_sites_all_track_the_mode_envelope`（行为绑定替代源码 grep）、`test_t_env_max_tracks_the_per_mode_envelope` + `test_fQ_inverse_rho_a_squared_identity`（验收项 13 内部恒等链，隐含量 `1/ρ_rg = 2.0`）。
+
+**一处自查纠错**：验收项 13 我先写成 `f_Q = (g_T/ρ_a²)·1/ρ_rg²`、隐含量 4.9338（实为 `1/A`），实测正解是 `f_Q = (g_T/ρ_a)·(1/ρ_rg)`、隐含量 **2.0**，已改。
+
 （每票完成后追加：`[HH:MM] TICKET 票NN → completed (<hash>) — <计数> / exit code`）
