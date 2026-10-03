@@ -122,11 +122,15 @@ def main() -> int:
     # the freeze must REGISTER the rule that produced that outcome, and the
     # rule text must be the one the check just applied -- otherwise a gutted
     # rule leaves every downstream number green (measured: it did)
+    # Round-3 review finding: `"2" in rule` is satisfied by "20", so a rule
+    # with a DIFFERENT threshold stayed green. Parse the number instead.
+    import re as _re
     rule = pc["stratum_rule"]
     check("rule_states_both_clauses",
           1 if ("degenerate-anchor" in rule and "distinct_fq" in rule) else 0, 1)
-    check("rule_declares_median_threshold",
-          1 if "2" in rule else 0, 1)
+    thr = _re.search(r"distinct_fq\s*<\s*(\d+)", rule)
+    check("rule_threshold_is_parseable", 1 if thr else 0, 1)
+    check("rule_threshold_value", int(thr.group(1)) if thr else -1, 2)
 
     pooled = [v for c in primary for v in by_fam[c]]
     check("primary_pooled_n", len(pooled), 20)

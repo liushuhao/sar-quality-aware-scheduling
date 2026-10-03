@@ -77,20 +77,55 @@ def _is_reporting_falsification(text: str, pos: int) -> bool:
 
 
 def _is_prohibition(text: str, pos: int) -> bool:
-    """True when the hit sits inside a prohibition ON ITS OWN LINE.
+    """True when the hit is inside a prohibition that GOVERNS it.
 
-    Deliberately line-scoped.  A character window was measured to produce a
-    FALSE NEGATIVE: a JSON key 260 characters earlier contained the word
-    "forbidden" (a meta-comment about the forbidden list), which cleared a
-    genuine phase-transition claim injected right after it.  A prohibition is
-    a statement ABOUT the phrase, so it is always on the same line as the
-    phrase; anything wider lets an unrelated mention launder a real claim.
+    Two shapes count, both measured in this repository:
+
+      BEFORE  "禁「前沿塌缩」类声明"        -- marker precedes the phrase
+      AFTER   "'X' and 'Y' are forbidden"   -- marker follows and governs
+                                             the quoted phrases on the line
+
+    Round-3 review finding: mere co-occurrence is NOT enough.  The
+    demonstrated false negative was one sentence carrying a marker that
+    belonged to its first clause and laundered a claim in its second:
+
+        "The regime is forbidden to be called a phase transition; yet the
+         front collapse is real."
+
+    So a marker shields a hit only when no SENTENCE terminator separates
+    them.  A semicolon does not count: the same prohibition routinely reads
+    "'X' and 'Y' are forbidden declarations in every branch" with both
+    phrases governed by one trailing marker.
     """
     nl = chr(10)
     line_start = text.rfind(nl, 0, pos) + 1
     line_end = text.find(nl, pos)
-    line = text[line_start:line_end if line_end != -1 else len(text)].lower()
-    return any(m.lower() in line for m in PROHIBITION_MARKERS)
+    line = text[line_start:line_end if line_end != -1 else len(text)]
+    before = line[:pos - line_start].lower()
+    after = line[pos - line_start:].lower()
+
+    def _nearest(hay: str) -> int:
+        best = -1
+        for m in PROHIBITION_MARKERS:
+            i = hay.rfind(m.lower())
+            if i > best:
+                best = i
+        return best
+
+    # A CLAUSE terminator also separates: the demonstrated laundering is
+    # "forbidden to be called a phase transition; yet the front collapse is
+    # real" -- a semicolon ends the governed clause.  The legitimate AFTER
+    # shape ("'X' and 'Y' are forbidden declarations") is a single clause
+    # with no internal terminator, so a clause-level test keeps it while
+    # catching the laundering.
+    CLAUSE_END = (";", "；", ".", "。")
+    pre = _nearest(before)
+    if pre != -1 and not any(t in before[pre:] for t in CLAUSE_END):
+        return True
+    post = _nearest(after)
+    if post != -1 and not any(t in after[:post] for t in CLAUSE_END):
+        return True
+    return False
 
 
 def scan_texts(paths, patterns, label, violations, cleared):
