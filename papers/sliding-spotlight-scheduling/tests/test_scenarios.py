@@ -261,6 +261,44 @@ def test_real_scenario_preregisters_its_geometry():
     assert "longest" in pre["pass_selection_rule"]
 
 
+def test_high_cross_track_fixture_rejects_a_reverted_injection():
+    """Ticket 16 mutation item: the fixture must be HIGH CROSS-TRACK, or the
+    revert stays invisible.
+
+    The R1C probe sits near the design incidence, where the per-task R0 is
+    within 0.01% of the library constant -- reverting the injection changes
+    nothing you can see.  The fine-demand family routes to SLS/SPT at
+    incidence angles far from design: measured R0 spread 671-1026 km (1.53x)
+    with the strongest task +32.30% off the library constant.  That is the
+    fixture with real discriminating power.
+    """
+    plat, lib = _platform()
+    from sss_core.duration import duration_scene_s
+    from sss_core.evaluator import SchedulingProblem
+    from sss_core.geometry import squint_at
+    from sss_core.scenarios import generate_real_scenario
+
+    m = generate_real_scenario("R2F", 100, "F", 200, 2, lib=lib, platform=plat)
+    sp = SchedulingProblem(m, lib)
+    bearing = [p for p in sp.plans if p.r0_m is not None]
+    assert bearing, "no task carries geometry"
+    base = lib.geo.R0_m
+    spread = max(abs(p.r0_m - base) for p in bearing) / base
+    assert spread > 0.20, (
+        f"fixture lost its cross-track spread ({spread:.4f}); a revert would "
+        "be invisible again"
+    )
+    plan = max(bearing, key=lambda p: abs(p.r0_m - base))
+    with_injection = sp._dwell(plan.index, plan.t_ca_s)
+    without = duration_scene_s(
+        plan.mode, squint_at(plan.t_ca_s, plan.t_ca_s, lib.geo), lib
+    )
+    assert with_injection != without
+    assert abs(with_injection - without) / without > 0.05, (
+        "high cross-track fixture still too weak to witness a revert"
+    )
+
+
 def test_overload_band_ladder_yields_at_least_three_tiers():
     """Acceptance item 6: the overload axis must have >= 3 in-band tiers,
     measured rather than assumed.  This is the cheap form of the calibration
