@@ -261,6 +261,12 @@ def main() -> int:
                       "difference to geometry.",
                "note": "the v1 column is the FROZEN artifact (read-only); the "
                        "v2 column is a fresh run in .scratch, never in place",
+               "premise_check": "the v2 column is only a synthetic control if it "
+                                "actually consumed the SYNTHETIC manifests. That "
+                                "is verified per artifact below by reading each "
+                                "pilot's own manifest back and checking its "
+                                "schema and family code, so the attribution is "
+                                "not resting on an unrecorded premise.",
                "families": {}}
     syn_levels = {}
     for name, _ in SYNTHETIC_BUDGETS:
@@ -276,8 +282,25 @@ def main() -> int:
         for fam, arts_v1 in sorted(frozen.items()):
             a1 = statistics.median(x["anchor_f1_star"] for x in arts_v1)
             d1 = statistics.median(distinct_fq(x) for x in arts_v1)
+            # premise check: prove the v2 column ran the SYNTHETIC manifests
+            premise = {"checked_artifacts": 0, "schema_ok": 0, "family_ok": 0}
+            if name in syn_levels and fam in syn_levels[name]:
+                for art in syn_levels[name][fam]:
+                    mp = Path(art["manifest"])
+                    if not mp.is_absolute():
+                        mp = FORK.parents[1] / mp
+                    premise["checked_artifacts"] += 1
+                    try:
+                        mm = json.loads(mp.read_text(encoding="utf-8"))
+                    except (OSError, ValueError):
+                        continue
+                    if mm.get("schema") == "scenario-manifest/1.0":
+                        premise["schema_ok"] += 1
+                    if mm.get("scenario", {}).get("family_code") == fam:
+                        premise["family_ok"] += 1
             row = {"v1_frozen": {"anchor_f1_star": round(a1, 6),
-                                 "distinct_fq_median": d1}}
+                                 "distinct_fq_median": d1},
+                   "premise_check": premise}
             for name, _ in SYNTHETIC_BUDGETS:
                 if name not in syn_levels or fam not in syn_levels[name]:
                     continue

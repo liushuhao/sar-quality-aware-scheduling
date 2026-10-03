@@ -2,6 +2,11 @@
   "families": {
     "M1NC": {
       "anchor_delta_at_40g60": 0.0,
+      "premise_check": {
+        "checked_artifacts": 10,
+        "family_ok": 10,
+        "schema_ok": 10
+      },
       "syn_p160g240": {
         "anchor_f1_star": 0.877258,
         "distinct_fq_median": 1.0
@@ -21,6 +26,11 @@
     },
     "M2WF": {
       "anchor_delta_at_40g60": 0.0,
+      "premise_check": {
+        "checked_artifacts": 10,
+        "family_ok": 10,
+        "schema_ok": 10
+      },
       "syn_p160g240": {
         "anchor_f1_star": 0.314956,
         "distinct_fq_median": 7.0
@@ -40,6 +50,11 @@
     },
     "M2WH": {
       "anchor_delta_at_40g60": -0.0,
+      "premise_check": {
+        "checked_artifacts": 10,
+        "family_ok": 10,
+        "schema_ok": 10
+      },
       "syn_p160g240": {
         "anchor_f1_star": 0.37977,
         "distinct_fq_median": 8.5
@@ -59,6 +74,11 @@
     },
     "M3NC": {
       "anchor_delta_at_40g60": -0.0,
+      "premise_check": {
+        "checked_artifacts": 10,
+        "family_ok": 10,
+        "schema_ok": 10
+      },
       "syn_p160g240": {
         "anchor_f1_star": 0.230171,
         "distinct_fq_median": 1.0
@@ -78,6 +98,11 @@
     },
     "M4WH": {
       "anchor_delta_at_40g60": 0.0,
+      "premise_check": {
+        "checked_artifacts": 10,
+        "family_ok": 10,
+        "schema_ok": 10
+      },
       "syn_p160g240": {
         "anchor_f1_star": 0.113657,
         "distinct_fq_median": 2.5
@@ -97,6 +122,7 @@
     }
   },
   "note": "the v1 column is the FROZEN artifact (read-only); the v2 column is a fresh run in .scratch, never in place",
+  "premise_check": "the v2 column is only a synthetic control if it actually consumed the SYNTHETIC manifests. That is verified per artifact below by reading each pilot's own manifest back and checking its schema and family code, so the attribution is not resting on an unrecorded premise.",
   "schema": "v2-confound-control/1.0",
   "why": "the real-window results differ from the frozen ones in TWO ways -- the Eq.(22) closure and the real-orbit geometry. Re-running the SYNTHETIC families under the v2 closure at the same budget ladder attributes the difference to geometry."
 }

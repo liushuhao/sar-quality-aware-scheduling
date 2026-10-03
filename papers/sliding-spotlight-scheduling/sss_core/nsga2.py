@@ -13,6 +13,7 @@ Exit codes (D11, distinguishing -- never fake success):
 from __future__ import annotations
 
 import json
+import math
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -155,9 +156,19 @@ def promotion_spread_db(sp: SchedulingProblem, front_records: list[dict]) -> dic
             cand_max = db if cand_max is None else max(cand_max, db)
         if cand_max is not None:
             vals.append(cand_max)
-    spread = (max(vals) - min(vals)) if len(vals) >= 2 else 0.0
+    # A candidate whose AASR left the physical sliding domain is +inf (see
+    # above).  Letting that flow into the spread would make inf >= 6.0 read as
+    # "promote" -- the OPPOSITE of the intent, since an infinitely bad
+    # unenforced AASR is not a reason to add a third objective.  Those
+    # candidates are excluded from the spread and reported separately, so the
+    # decision stays a statement about finite, comparable readings.
+    finite = [v for v in vals if math.isfinite(v)]
+    n_infinite = len(vals) - len(finite)
+    spread = (max(finite) - min(finite)) if len(finite) >= 2 else 0.0
     from sss_core.aasr import AASR_THRESHOLD_DB
     decision = "promote" if spread >= PROMOTION_SPREAD_DB else "no_promotion"
+    if n_infinite:
+        decision = f"{decision} (excluded {n_infinite} out-of-domain candidate(s))"
     return {
         "per_candidate_max_db": vals,
         "spread_db": spread,

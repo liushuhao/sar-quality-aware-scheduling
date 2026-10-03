@@ -335,8 +335,16 @@ def promotion_replay(pilot: dict, manifest: dict, lib: ModeLibrary) -> dict:
             cand_max = db if cand_max is None else max(cand_max, db)
         if cand_max is not None:
             vals.append(cand_max)
-    spread = (max(vals) - min(vals)) if len(vals) >= 2 else 0.0
+    # must mirror promotion_spread_db exactly (nsga2.py), including the
+    # out-of-domain exclusion -- this step exists to re-derive the decision
+    # independently, so any divergence between the two would surface as a
+    # spurious mismatch rather than as a real drift
+    finite = [v for v in vals if math.isfinite(v)]
+    n_infinite = len(vals) - len(finite)
+    spread = (max(finite) - min(finite)) if len(finite) >= 2 else 0.0
     derived = "promote" if spread >= PROMOTION_THRESHOLD_DB else "no_promotion"
+    if n_infinite:
+        derived = f"{derived} (excluded {n_infinite} out-of-domain candidate(s))"
     recorded = pilot["promotion"]["decision"]
     ok = derived == recorded
     return _step("promotion_replay", "PASS" if ok else "FAIL",
