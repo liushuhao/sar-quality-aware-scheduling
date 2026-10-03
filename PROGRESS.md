@@ -356,3 +356,27 @@
 **verify 门禁补两步**（`v2_artifacts` / `caliber_registry`，均 PASS）：前者要求结果表**与**收敛报告**同时存在且族集合一致**（缺报告 = 不可采信态，非部分成功）；后者要求两个 caliber 齐备且**互相声明不可比**。
 
 **门禁套件实测**：本域 `198 passed, 1 skipped, 1 xfailed`（= 收集 200，与新 pin 一致）；共享库 145 passed。
+
+### [20:50] 票 17 确认轮无阻塞 → **四票全部 completed**
+
+**第四轮独立确认审查**（rule 10 退出标准）：**无阻塞发现**。两条残留已当场修掉（`fcfe0ee`）：
+
+1. **合成族对照的「前提」曾无记录**：anchor Δ=0.0 只证明「重跑复现了冻结锚值」，不证明「重跑的是合成 manifest」。该前提**可从工件验证**（每个 pilot 记录所读 manifest，schema 区分 `1.0` / `2.0-realwindow`，family_code 区分 M/R）⇒ 现**逐工件核对并落盘**，**50/50 全 VERIFIED**（审查者指出的「未记录前提」已变为**已验证前提**）。
+2. **promotion 的 `+inf` 会读成「fires」**：域外样本记 +inf ⇒ `spread = inf ≥ 6.0` ⇒ decision 变 `promote`，与意图**相反**（无限差的未强制 AASR 不构成加第三目标维的理由）。现将域外候选**排除出 spread 并计入 decision 串**；`verify.py` 的独立 replay **同镜像**（否则两者会静默分歧）。
+
+**票 17 Status → completed（19/19 验收）**。
+
+**四票终态**：
+
+| 票 | Status | 关键产出 |
+|---|---|---|
+| 22 | completed 7/7 | A3 主比较重裁 + A4 两维标定 + 对照实验 + 43 checks 机检 |
+| 15 | completed 13/13 | Eq.(22) 生产闭式 + ±45° 逐模式域 + 165 passed + 变异红证 2 |
+| 16 | completed 9/9 | fork write-back 三件 + 三件套级联 + 真窗族 + 校准环 + 198 passed |
+| 17 | completed 19/19 | prereg v2（四轮审查 ACCEPT）+ 主实验 270 单元全 exit 0 + 四工件 + 门禁六步 |
+
+**主实验总账**：真窗 120 单元（4 族 × 10 seed × 3 预算）+ 合成对照 150 单元（5 族 × 10 seed × 3 预算）= **270 单元全部 exit 0、CV 全部精确 0**。
+
+**核心结果（受冻结约束）**：R1C **CONVERGED、P1 成立**（dfq 16.5 ≥ 3）；R2F/R3H/R4H **UNCONVERGED ⇒ P1 NOT-YET-TESTED**（阈值虽达但阶梯仍在涨，冻结禁作物理声明）。promotion 结构维**在真几何下翻转**（R2F/R3H/R4H R_fam 6.82 ≥ 6.0 ⇒ ALIVE × UNCONVERGED ⇒ NO CLAIM）。合成对照证明**闭式变更对锚值零影响**（五族三档 Δ 精确 0.0）⇒ 真窗差异归因几何；且**合成族 dfq 本身也随预算陡增** ⇒ 丰富度增长**主要来自预算而非几何**。
+
+**全程未使用「前沿塌缩」「相变」任何字样**（红线机检 rc=0）。
