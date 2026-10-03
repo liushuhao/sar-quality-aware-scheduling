@@ -59,6 +59,49 @@ def distinct_fq(art: dict) -> int:
     return len({round(r["f_q"], 6) for r in art["front"]})
 
 
+def nondominated_front(front: list[dict]) -> list[dict]:
+    """The genuine Pareto set: strictly-dominated members AND exact duplicates
+    removed.
+
+    Ticket 17 acceptance item 16.  pymoo's ``only_non_dominated_front`` keeps
+    ULP-level duplicates, so a family whose f_q barely varies ends up with
+    dozens of copies of one point -- a "front" that is one point repeated.
+
+    Two passes, because a single pairwise test is wrong in both directions:
+
+      * a pairwise "someone is >= me" test makes DUPLICATES exclude each
+        other, so a front of pure duplicates yields ZERO survivors (measured:
+        R1C reported 0 non-dominated, which is impossible for a front that
+        spans a real f1 range);
+      * requiring a STRICT improvement misses the duplicates entirely
+        (measured: that version reported 0 redundancies across 2883
+        members, hiding an 81% defect).
+
+    So: pass 1 drops members with a strictly better member; pass 2 keeps one
+    representative per distinct (f1_star, f_q) pair among the survivors.
+    """
+    strict_survivors = []
+    for i, x in enumerate(front):
+        beaten = any(
+            (y["f1_star"] > x["f1_star"] or y["f_q"] > x["f_q"])
+            and y["f1_star"] >= x["f1_star"]
+            and y["f_q"] >= x["f_q"]
+            for j, y in enumerate(front)
+            if j != i
+        )
+        if not beaten:
+            strict_survivors.append(x)
+    seen: set[tuple[float, float]] = set()
+    unique = []
+    for x in strict_survivors:
+        key = (x["f1_star"], x["f_q"])
+        if key in seen:
+            continue
+        seen.add(key)
+        unique.append(x)
+    return unique
+
+
 def main() -> int:
     lib = ModeLibrary.from_fixture()
     levels = {name: load_level(name) for name, _ in BUDGETS}
@@ -117,9 +160,19 @@ def main() -> int:
                 } or {"?"}
                 per_mode["+".join(sorted(modes))].append(r["f_q"])
 
+        nd_front = [nondominated_front(a["front"])
+                    for a in levels[BUDGETS[-1][0]][fam]]
+        nd_counts = [len(x) for x in nd_front]
         report["families"][fam] = {
-            "distinct_fq_median_by_budget": med,
             "front_size_median_by_budget": [statistics.median(x) for x in fs],
+            "nondominated_front_median_at_top": statistics.median(nd_counts),
+            "redundant_member_fraction_at_top": round(
+                1.0 - statistics.median(nd_counts) / statistics.median(fs[-1]), 4
+            ) if statistics.median(fs[-1]) else 0.0,
+            "distinct_fq_of_nondominated_median": statistics.median(
+                [len({round(r["f_q"], 6) for r in x}) for x in nd_front]
+            ),
+            "distinct_fq_median_by_budget": med,
             "top_pair_median_delta": round(top_med, 4),
             "top_pair_max_unit_delta": round(top_unit, 4),
             "convergence_verdict": "CONVERGED" if converged else "UNCONVERGED",

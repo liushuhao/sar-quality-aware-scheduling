@@ -156,6 +156,55 @@ def shared_lib_tests() -> dict:
     return _step("shared_lib_tests", "PASS" if ok else "FAIL", detail)
 
 
+DOMAIN_N0 = 200          # --collect-only, 2026-10-03 (198 passed + 1 skipped + 1 xfailed)
+
+
+def domain_tests() -> dict:
+    """The DOMAIN suite (papers/sliding-spotlight-scheduling/tests/).
+
+    Ticket 17 acceptance item 14.  The gate previously ran only the shared
+    library, so "gate PASS" said nothing about the artifacts it exists to
+    police -- the two suites are disjoint by construction.
+
+    Counted the same way as ``shared_lib_tests``: collected == N0, zero
+    failed, exit 0.  The expected count is pinned so a silent collection
+    failure (this project has hit ``No tests collected`` reporting exit 0
+    under a wrapped interpreter) cannot read as a pass.
+
+    The full domain suite takes ~18 min because the +/-45 deg AASR grid is
+    built several times, so this step is opt-out via ``run_shared_tests``
+    style flags rather than always-on in the light invocations.
+    """
+    import os
+    import re
+
+    env = dict(os.environ)
+    env["PYTHONPATH"] = str(REPO_ROOT / "src")
+    suite = str(FORK_DOMAIN / "tests")
+    proc = subprocess.run(
+        [sys.executable, "-B", "-m", "pytest", suite, "-q", "-p", "no:cacheprovider"],
+        cwd=REPO_ROOT, capture_output=True, text=True, env=env,
+    )
+    tail = proc.stdout.strip().splitlines()[-1] if proc.stdout.strip() else ""
+    m_p = re.search(r"(\d+) passed", tail)
+    m_f = re.search(r"(\d+) failed", tail)
+    m_c = re.search(r"(\d+) (?:collected|selected)", tail)
+    passed = int(m_p.group(1)) if m_p else 0
+    failed = int(m_f.group(1)) if m_f else 0
+    collected = passed + failed
+    ok = (
+        proc.returncode == 0
+        and passed == DOMAIN_N0
+        and failed == 0
+        and collected == DOMAIN_N0
+    )
+    detail = {
+        "exit": proc.returncode, "passed": passed, "failed": failed,
+        "expected_n0": DOMAIN_N0, "tail": tail,
+    }
+    return _step("domain_tests", "PASS" if ok else "FAIL", detail)
+
+
 def grid_halving(lib: ModeLibrary, n_samples: int = 20) -> dict:
     """Preregistered sampling program (ticket-06 test program, same seed):
     Random(20260927), uniform within axes + uniform PRF keys.
@@ -371,6 +420,7 @@ def run_gate(pilot_path: Path, manifest_path: Path,
     registry = {
         "m1_double_check": lambda: m1_double_check(),
         "shared_lib_tests": lambda: shared_lib_tests(),
+        "domain_tests": lambda: domain_tests(),
         "claim_provenance": lambda: claim_provenance(),
         "grid_halving": lambda: grid_halving(lib),
         "predicate_source": lambda: predicate_source(),
@@ -386,6 +436,10 @@ def run_gate(pilot_path: Path, manifest_path: Path,
     for name in order:
         if name == "shared_lib_tests" and not run_shared_tests:
             results.append(_step("shared_lib_tests", "SKIPPED",
+                                 "disabled for light invocation"))
+            continue
+        if name == "domain_tests" and not run_shared_tests:
+            results.append(_step("domain_tests", "SKIPPED",
                                  "disabled for light invocation"))
             continue
         results.append(registry[name]())
