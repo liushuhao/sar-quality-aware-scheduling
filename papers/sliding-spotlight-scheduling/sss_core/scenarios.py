@@ -339,6 +339,14 @@ def generate_real_scenario(
     rng = random.Random(seed)
     tasks = []
     removals = {"below_finest": 0, "footprint": 0, "no_window": 0, "aasr": 0}
+    # ticket 23 (R15): per-pass footprint bookkeeping -- the gate moved from
+    # a pre-loop library-R0 check into the pass loop, where the pass's own
+    # slant range is known.  Attribution (registered in ticket 23, template
+    # cascade order unchanged): footprint removal iff best is None AND at
+    # least one pass was footprint-evaluable AND every evaluable pass
+    # failed; passes without a computable slant range count neither pass
+    # nor fail.
+    fp_pass = fp_fail = fp_evaluable = 0
     h_draws = 0
     window_widths = []
 
@@ -371,9 +379,11 @@ def generate_real_scenario(
 
         target = GroundTarget(target_id=f"R{idx}", lat=lat, lon=lon)
         mode = route_mode(rho_req, lib)
-        if not footprint_ok(mode, l_az_m, lib):
-            removals["footprint"] += 1
-            continue
+        # ticket 23 (R15): the footprint gate is evaluated PER PASS with the
+        # pass's own slant range (see the r0_task block below) -- the
+        # pre-loop library-R0 check it replaces could misjudge the SPT bound
+        # by the R0 ratio (r0_task spans -22%/+72% of the library value
+        # across the incidence band).
 
         # two passes (ticket: longest visible window over 2 orbit passes)
         best = None
@@ -417,6 +427,17 @@ def generate_real_scenario(
             except ValueError:
                 continue
 
+            # ticket 23 (R15): per-task footprint bound at THIS pass's own
+            # slant range.  First-match attribution: a pass that cannot
+            # produce a slant range is not footprint-evaluable (neither
+            # pass nor fail); the target is footprint-removed only when
+            # EVERY evaluable pass fails the bound.
+            fp_evaluable += 1
+            if not footprint_ok(mode, l_az_m, lib, r0_m=r0_task):
+                fp_fail += 1
+                continue
+            fp_pass += 1
+
             env_rad = mode_squint_envelope_rad(mode)
             # The mask insets by one grid step (windows.mask_intervals), but
             # the END-CHECK leg then re-evaluates the dwell at those
@@ -455,7 +476,12 @@ def generate_real_scenario(
                 best = (width, window, tca, vmin_t, pass_i, r0_task)
 
         if best is None:
-            removals["no_window"] += 1
+            if fp_evaluable and fp_pass == 0:
+                # every evaluable pass failed the per-task footprint bound:
+                # first-match cascade attribution stays "footprint"
+                removals["footprint"] += 1
+            else:
+                removals["no_window"] += 1
             continue
 
         width, window, t_ca, vmin_t, pass_i, best_r0 = best
@@ -490,6 +516,7 @@ def generate_real_scenario(
                         mode, squint_at(tt, t_ca, lib.geo, r0_m=r0_m),
                         lib.geo.k, PRF_PRODUCTION_HZ, lib,
                         spt_scene_wa_m=(l_az_m if mode is Mode.SPT else None),
+                        r0_m=r0_m,
                     )["aasr_db"])
                 except ValueError:
                     # out of the physical sliding domain at this sample: the

@@ -156,7 +156,7 @@ def shared_lib_tests() -> dict:
     return _step("shared_lib_tests", "PASS" if ok else "FAIL", detail)
 
 
-DOMAIN_N0 = 200          # --collect-only, 2026-10-03 (198 passed + 1 skipped + 1 xfailed)
+DOMAIN_N0 = 208          # --collect-only, 2026-10-04 (206 passed + 1 skipped + 1 xfailed; ticket 23 added 8)
 
 
 def domain_tests() -> dict:
@@ -327,11 +327,19 @@ def promotion_replay(pilot: dict, manifest: dict, lib: ModeLibrary) -> dict:
         cand_max = None
         for i_str, start in rec["starts"].items():
             plan = sp_plans[int(i_str)]
-            psi = squint_at(start, plan.t_ca_s, lib.geo)
-            db = aasr_direct(
-                plan.mode, psi, lib.geo.k, plan.prf_hz, lib,
-                spt_scene_wa_m=(plan.azimuth_size_m if plan.mode is Mode.SPT else None),
-            )["aasr_db"]
+            psi = squint_at(start, plan.t_ca_s, lib.geo, r0_m=plan.r0_m)
+            try:
+                db = aasr_direct(
+                    plan.mode, psi, lib.geo.k, plan.prf_hz, lib,
+                    spt_scene_wa_m=(plan.azimuth_size_m if plan.mode is Mode.SPT else None),
+                    r0_m=plan.r0_m,
+                )["aasr_db"]
+            except ValueError:
+                # unenforced readout outside the physical sliding domain:
+                # infinitely bad AASR, not a crash (D12-3 semantics) --
+                # mirrors nsga2.py promotion_spread_db verbatim; without
+                # this catch the finite-exclusion branch below is dead code
+                db = float("inf")
             cand_max = db if cand_max is None else max(cand_max, db)
         if cand_max is not None:
             vals.append(cand_max)
@@ -379,8 +387,10 @@ def scatter_precheck(manifest: dict, lib: ModeLibrary) -> dict:
     for t in manifest["tasks"]:
         mode = Mode[t["mode"]]
         t0, t1, tca = float(t["t_start_s"]), float(t["t_end_s"]), float(t["t_ca_s"])
+        r0_t = t.get("r0_m")
+        r_m = lib.geo.R0_m if r0_t is None else float(r0_t)
         vals = [
-            f_q_per_task(mode, squint_at(tt, tca, lib.geo), lib.geo.R0_m, lib)
+            f_q_per_task(mode, squint_at(tt, tca, lib.geo, r0_m=r0_t), r_m, lib)
             for tt in (t0, 0.5 * (t0 + t1), t1)
         ]
         mu = sum(vals) / len(vals)
@@ -412,7 +422,10 @@ def _per_mode_means(manifest: dict, lib: ModeLibrary) -> dict:
     acc: dict[str, list] = {}
     for t in manifest["tasks"]:
         mode = Mode[t["mode"]]
-        q = f_q_per_task(mode, 0.0, lib.geo.R0_m, lib)
+        r0_t = t.get("r0_m")
+        q = f_q_per_task(
+            mode, 0.0, lib.geo.R0_m if r0_t is None else float(r0_t), lib
+        )
         acc.setdefault(mode.name, []).append(q)
     return {k: sum(v) / len(v) for k, v in acc.items()}
 
