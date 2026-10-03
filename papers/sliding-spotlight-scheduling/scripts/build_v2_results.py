@@ -36,6 +36,13 @@ from sss_core.modes import ModeLibrary, Mode  # noqa: E402
 RUN = FORK.parents[1] / ".scratch" / "sliding-spotlight-scheduling" / "v2-run"
 OUT = FORK / "experiments" / "v2_results"
 BUDGETS = [("p40g60", (40, 60)), ("p80g120", (80, 120)), ("p160g240", (160, 240))]
+# Synthetic control: the SAME families re-run under the v2 closure.  It
+# separates "the Eq.(22) switch" from "the real-orbit geometry" -- ticket 17's
+# confound-removal item.  Prefixed syn_ so it can never be mistaken for a
+# frozen family artifact.
+SYNTHETIC_BUDGETS = [("syn_p40g60", (40, 60)), ("syn_p80g120", (80, 120)),
+                     ("syn_p160g240", (160, 240))]
+FROZEN_V1_MATRIX = FORK.parents[1] / "papers" / "sliding-spotlight-scheduling"     / "experiments" / "results" / "matrix"
 
 PLATEAU_MEDIAN_DB = 1.0
 PLATEAU_UNIT_DB = 2.0
@@ -245,7 +252,52 @@ def main() -> int:
                       "ran 320/480); raising it for a verdict is a new decision, "
                       "not a default",
     }
+    # ---- confound control: synthetic families, v2 closure vs frozen v1 ----
+    control = {"schema": "v2-confound-control/1.0",
+               "why": "the real-window results differ from the frozen ones in "
+                      "TWO ways -- the Eq.(22) closure and the real-orbit "
+                      "geometry. Re-running the SYNTHETIC families under the "
+                      "v2 closure at the same budget ladder attributes the "
+                      "difference to geometry.",
+               "note": "the v1 column is the FROZEN artifact (read-only); the "
+                       "v2 column is a fresh run in .scratch, never in place",
+               "families": {}}
+    syn_levels = {}
+    for name, _ in SYNTHETIC_BUDGETS:
+        d = RUN / name
+        if d.is_dir():
+            syn_levels[name] = load_level(name)
+    if syn_levels:
+        frozen = {}
+        for p in sorted(FROZEN_V1_MATRIX.glob("pilot_*.json")):
+            art = json.loads(p.read_text(encoding="utf-8"))
+            fam = Path(art["manifest"]).name.rsplit("_seed", 1)[0]
+            frozen.setdefault(fam, []).append(art)
+        for fam, arts_v1 in sorted(frozen.items()):
+            a1 = statistics.median(x["anchor_f1_star"] for x in arts_v1)
+            d1 = statistics.median(distinct_fq(x) for x in arts_v1)
+            row = {"v1_frozen": {"anchor_f1_star": round(a1, 6),
+                                 "distinct_fq_median": d1}}
+            for name, _ in SYNTHETIC_BUDGETS:
+                if name not in syn_levels or fam not in syn_levels[name]:
+                    continue
+                arts = syn_levels[name][fam]
+                row[name] = {
+                    "anchor_f1_star": round(
+                        statistics.median(x["anchor_f1_star"] for x in arts), 6),
+                    "distinct_fq_median": statistics.median(
+                        distinct_fq(x) for x in arts),
+                }
+            if SYNTHETIC_BUDGETS[0][0] in row:
+                row["anchor_delta_at_40g60"] = round(
+                    row[SYNTHETIC_BUDGETS[0][0]]["anchor_f1_star"] - a1, 6)
+            control["families"][fam] = row
+
     OUT.mkdir(parents=True, exist_ok=True)
+    (OUT / "confound_control.json").write_text(
+        json.dumps(control, indent=2, sort_keys=True, ensure_ascii=False) + chr(10),
+        encoding="utf-8",
+    )
     (OUT / "convergence_report.json").write_text(
         json.dumps(conv, indent=2, sort_keys=True, ensure_ascii=False) + chr(10),
         encoding="utf-8",
@@ -263,6 +315,10 @@ def main() -> int:
             f"promo_max={v['P3_promotion']['spread_max_all_budgets']:.4f}"
         )
     print(f"written: {path}")
+    if control["families"]:
+        print("confound control (anchor delta at 40/60, v2 vs frozen v1):")
+        for fam, row in control["families"].items():
+            print(f"  {fam:7} d(anchor)={row.get('anchor_delta_at_40g60')}")
     return 0
 
 

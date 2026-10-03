@@ -1,0 +1,90 @@
+{
+  "families": {
+    "M1NC": {
+      "anchor_delta_at_40g60": 0.0,
+      "syn_p160g240": {
+        "anchor_f1_star": 0.877258,
+        "distinct_fq_median": 1.0
+      },
+      "syn_p40g60": {
+        "anchor_f1_star": 0.877258,
+        "distinct_fq_median": 1.0
+      },
+      "syn_p80g120": {
+        "anchor_f1_star": 0.877258,
+        "distinct_fq_median": 1.0
+      },
+      "v1_frozen": {
+        "anchor_f1_star": 0.877258,
+        "distinct_fq_median": 1.0
+      }
+    },
+    "M2WF": {
+      "anchor_delta_at_40g60": 0.0,
+      "syn_p40g60": {
+        "anchor_f1_star": 0.314956,
+        "distinct_fq_median": 2.0
+      },
+      "syn_p80g120": {
+        "anchor_f1_star": 0.314956,
+        "distinct_fq_median": 3.0
+      },
+      "v1_frozen": {
+        "anchor_f1_star": 0.314956,
+        "distinct_fq_median": 1.5
+      }
+    },
+    "M2WH": {
+      "anchor_delta_at_40g60": -0.0,
+      "syn_p160g240": {
+        "anchor_f1_star": 0.374775,
+        "distinct_fq_median": 7
+      },
+      "syn_p40g60": {
+        "anchor_f1_star": 0.37977,
+        "distinct_fq_median": 2.5
+      },
+      "syn_p80g120": {
+        "anchor_f1_star": 0.37977,
+        "distinct_fq_median": 5.0
+      },
+      "v1_frozen": {
+        "anchor_f1_star": 0.37977,
+        "distinct_fq_median": 2.0
+      }
+    },
+    "M3NC": {
+      "anchor_delta_at_40g60": -0.0,
+      "syn_p40g60": {
+        "anchor_f1_star": 0.230171,
+        "distinct_fq_median": 1.0
+      },
+      "syn_p80g120": {
+        "anchor_f1_star": 0.230171,
+        "distinct_fq_median": 1.0
+      },
+      "v1_frozen": {
+        "anchor_f1_star": 0.230171,
+        "distinct_fq_median": 1.0
+      }
+    },
+    "M4WH": {
+      "anchor_delta_at_40g60": 0.0,
+      "syn_p40g60": {
+        "anchor_f1_star": 0.113657,
+        "distinct_fq_median": 1.5
+      },
+      "syn_p80g120": {
+        "anchor_f1_star": 0.113657,
+        "distinct_fq_median": 2.0
+      },
+      "v1_frozen": {
+        "anchor_f1_star": 0.113657,
+        "distinct_fq_median": 2.0
+      }
+    }
+  },
+  "note": "the v1 column is the FROZEN artifact (read-only); the v2 column is a fresh run in .scratch, never in place",
+  "schema": "v2-confound-control/1.0",
+  "why": "the real-window results differ from the frozen ones in TWO ways -- the Eq.(22) closure and the real-orbit geometry. Re-running the SYNTHETIC families under the v2 closure at the same budget ladder attributes the difference to geometry."
+}
