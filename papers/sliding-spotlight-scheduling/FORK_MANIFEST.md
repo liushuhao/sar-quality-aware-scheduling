@@ -39,6 +39,30 @@
 | 数值一致性要求 | 逐位一致（同一操作序列，同解释器下浮点确定）；守卫用**精确相等**断言 |
 | 语义注记 | `quality_score` 仅诊断用；本篇目标 f_Q 为独立逐模式量（spec D6），不得与本核混淆 |
 
+### F-02 — 真轨道窗几何核（票 16，2026-10-03 登记）
+
+**登记时点**：本条目在**复制之前**登记（回写条款 1 的固定顺序：登记 → 复制 → 补守卫）。裁剪面由 2 视角独立 subagent 审查后择优（票 body「开工前设计裁决」节留痕）。
+
+| 字段 | 值 |
+|---|---|
+| 源文件 | `src/sar_sim/generator/orbit.py`、`src/sar_sim/generator/visibility.py`（几何子集）、`src/sar_sim/generator/target.py`（两个几何 helper）@ `paper2-m1-baseline`（60ee1e8） |
+| 分叉文件 | `sss_core/realwindows.py`（单模块，避免碎片化） |
+| 复制符号 | **orbit**：`solve_kepler`, `_rgf`, `_rgi`, `_rgu`, `kepler_to_eci`, `propagate_orbit`, 常量 `MU_EARTH`；**visibility 几何子集**：`_compute_off_nadir_angle`, `_off_nadir_to_incidence`, `_determine_look_direction`, `satellite_to_target_vector`；**target**：`lat_lon_to_ecef`, `compute_earth_rotation_angle`, `eci_to_ecef_rotation`, 常量 `EARTH_EQUATORIAL_RADIUS`, `EARTH_FLATTENING`, `EARTH_POLAR_RADIUS`, `EARTH_E2`（后四者是 `lat_lon_to_ecef` 的**必需** WGS-84 依赖链：`EARTH_E2` 由 `EARTH_POLAR_RADIUS`/`EARTH_EQUATORIAL_RADIUS` 派生，后者再由 `EARTH_FLATTENING` 派生——AST 实测确认函数体直接引用，排除即断链） |
+| 分叉内独立定义（**非复制**） | `KeplerianElement`、`ECIState` —— 纯 `@dataclass(frozen=True)` 数据类，无方法体依赖（仅 `__post_init__` 校验），本地定义是**切断**共享类型边界而非跨越。**F-01 的排除先例在此不适用**：F-01 排除 `aggregate_quality` 是因其类型 `ScheduledObservation` 携带行为与调度器所有权纠缠，纯数据类不同 |
+| 排除符号及理由 | `find_visibility_windows`, `visibility_matrix`（**票 16 裁剪的核心**）：二者返回 `ObservationWindow` 共享类型，且窗口**语义**（掩码判定、处置计数、簇生成）必须由本篇 `sss_core.predicates` 独占——票面明令「禁生成器私有重实现」，复制过来即制造第二套窗口语义；`make_targets`（目标工厂，票 16 自带地理簇生成器）；`EARTH_RADIUS_MEAN_M`（**F-01 已排除**，重复复制即制造第二源；F-02 引用分叉自身 `sss_core.geometry.R_EARTH_M`，值同为 6371000.0，由常量双源守卫钉死）。**WGS-84 四常量已在复制面内**（初稿曾误列排除，AST 实测 `lat_lon_to_ecef` 函数体直接引用 `EARTH_EQUATORIAL_RADIUS` 与 `EARTH_E2`，排除即 NameError） |
+| 数值一致性要求 | 逐位一致；守卫用**精确相等**断言 |
+| 语义注记（**关键**） | 共享库的 `squint_deg`（`visibility.py:154-159`，`arcsin(\|los·track\|/\|los\|)`）与本篇 `sss_core.geometry.squint_at`（`atan(Vs·(t−t_ca)/R0)`）**不是同一个物理量**：前者是目标处的**全沿轨偏航角**（实测 600 s 内 6.542°–19.843°，跨度 13.3°，几乎不随窗内时间变化），后者是**窗内相对最近点的偏移**（以 `t_ca` 为零点，±12° 摆动）。实测同目标同几何下 `dt=0` 时二者为 12.749° vs 0.000°，**无法通过标定互相换算**。⇒ 三级联：**入射掩码腿**消费向量 incidence，**模式包络腿必须消费 `squint_at(t)`**（它才是驱动 `duration_scene_s` 与 AASR `b_d` 的那个斜视），向量 squint **不得**代入包络判定 |
+
+**F-02 守卫**（`tests/test_fork_identity_realwindows.py`，票 16 产出）：
+
+| Manifest 项 | 被守卫符号 | 断言形态 |
+|---|---|---|
+| F-02 | `propagate_orbit`, `solve_kepler` | ≥3 组固定 `KeplerianElement` 夹具逐位一致；**禁只给 raan=0/arg_perigee=0 的圆轨道**（会掩盖旋转矩阵错误，本仓历史事故模式）；含 `e≥0.05` 使 Newton 迭代 >1 步 |
+| F-02 | `satellite_to_target_vector` | 七元组（含 incidence 与 squint）逐位一致 |
+| F-02（常量双源） | `R_EARTH_M` / `MU_EARTH_M3_S2` | 分叉 `geometry.py` 常量 == 共享 `nesz.EARTH_RADIUS_MEAN_M` / `orbit.MU_EARTH` |
+| F-02（范围） | 全 fork 符号集 | 恰好 F-01+F-02 登记符号；`find_visibility_windows`/`visibility_matrix` **必须缺席**（最锋利的一条） |
+| 回写条款 2 | 全树自含 | 复用 `test_fork_identity_nesz.py` 的两个全树守卫（票 16 已扩面） |
+
 ## 守卫覆盖映射表（manifest 项 ↔ 守卫测试）
 
 守卫测试文件：`papers/sliding-spotlight-scheduling/tests/test_fork_identity_nesz.py`
@@ -50,7 +74,8 @@
 | F-01 | `quality_score` | `test_fork_quality_score_matches_shared` | 固定输入逐位一致 + q(θ_ref)=1 精确 |
 | F-01（包边界） | 模块解析 | `test_guard_anti_alias_modules_distinct` | 两侧 `__file__` 路径不同（反别名，防同名包 import 竞争假绿） |
 | F-01（包边界） | 模块注册 | `test_guard_anti_alias_sys_modules_keys_distinct` | `sys.modules` 两个全限定名各自注册且文件不同 |
-| 回写条款 2 | 分叉自含性 | `test_fork_self_contained_no_sar_sim_import` | 源码 regex：fork 文件禁 `import sar_sim` |
+| 回写条款 2 | 分叉自含性 | `test_fork_self_contained_no_sar_sim_import` | **全树** `rglob("sss_core/**/*.py")` 源码 regex：禁 `import sar_sim`（票 16 扩面：原实现只查 `metrics/nesz.py` 单文件，新 fork 文件不受约束） |
+| 回写条款 2 | 分叉自含性（全树符号） | `test_no_shared_only_symbol_defined_anywhere_in_the_fork` | **全树** AST 扫描：任一 fork 文件顶层定义的共享库专有符号即红（票 16 扩面：原 `test_fork_scope_matches_manifest_f01` 用 `hasattr` 绑在单模块对象上，符号复制进新文件不可见） |
 | 复制清单条款 3 | 最小复制面 | `test_fork_scope_matches_manifest_f01` | fork 恰好定义 F-01 符号集，且不含共享库独有符号 |
 
 覆盖率声明：F-01 全部复制符号均有恒等式守卫 + 包级反别名/自含/范围守卫，manifest 覆盖率 100%。新增 F-NN 时映射表必须同步加行，否则回写不完整。
