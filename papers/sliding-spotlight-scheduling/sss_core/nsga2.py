@@ -148,6 +148,7 @@ def promotion_spread_db(sp: SchedulingProblem, front_records: list[dict]) -> dic
                     spt_scene_wa_m=(
                         plan.azimuth_size_m if plan.mode is Mode.SPT else None
                     ),
+                    r0_m=plan.r0_m,
                 )["aasr_db"]
             except ValueError:
                 # unenforced readout outside the physical sliding domain:

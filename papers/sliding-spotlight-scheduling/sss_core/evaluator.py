@@ -275,8 +275,8 @@ class SchedulingProblem:
                 self.lib,
                 self.pads,
                 d_psi_rad=abs(psi_b - psi_a),
-                omega_start=boundary_rate(pa.mode, psi_a, self.lib),
-                omega_end=boundary_rate(pb.mode, psi_b, self.lib),
+                omega_start=boundary_rate(pa.mode, psi_a, self.lib, r0_m=pa.r0_m),
+                omega_end=boundary_rate(pb.mode, psi_b, self.lib, r0_m=pb.r0_m),
             )
             gap = starts[b] - starts[a]
             violations += max(0.0, req["requirement_s"] - gap - C2_TOL_S)

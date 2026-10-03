@@ -24,4 +24,4 @@ metadata:
 
 **未做（留痕）**：`.planning/workflow-memory.json` 里两条 `ppw:*` 记录保留未删——它是历史数据不是损坏资产，且已无读取方（唯一读者是刚删的技能）；其余 memory/plan 文档中的历史提及同样保留。
 
-相关 [[paper2-goal-card-handoff-20261002]] [[feedback-grep-filename-is-not-reading-content]]。
+相关 [[project-paper2-goal-card-handoff-20261002]] [[feedback-grep-filename-is-not-reading-content]]。

@@ -149,8 +149,8 @@ def greedy_anchor(
             psi_j = squint_at(tj, pj.t_ca_s, lib.geo, r0_m=pj.r0_m)
             need = _need_between(
                 dwell_at(pj, tj), abs(psi_self - psi_j),
-                boundary_rate_of(pj.mode, psi_j, lib),
-                boundary_rate_of(plan.mode, psi_self, lib), lib, pads,
+                boundary_rate_of(pj.mode, psi_j, lib, r0_m=pj.r0_m),
+                boundary_rate_of(plan.mode, psi_self, lib, r0_m=plan.r0_m), lib, pads,
             )
             if cand - tj < need - C2_TOL_S:
                 return False
@@ -160,8 +160,8 @@ def greedy_anchor(
             psi_j = squint_at(tj, pj.t_ca_s, lib.geo, r0_m=pj.r0_m)
             need = _need_between(
                 dur_self, abs(psi_j - psi_self),
-                boundary_rate_of(plan.mode, psi_self, lib),
-                boundary_rate_of(pj.mode, psi_j, lib), lib, pads,
+                boundary_rate_of(plan.mode, psi_self, lib, r0_m=plan.r0_m),
+                boundary_rate_of(pj.mode, psi_j, lib, r0_m=pj.r0_m), lib, pads,
             )
             if tj - cand < need - C2_TOL_S:
                 return False
@@ -180,8 +180,8 @@ def greedy_anchor(
                 psi_self = squint_at(max(ws, tj), plan.t_ca_s, lib.geo, r0_m=plan.r0_m)
                 need = _need_between(
                     dwell_at(pj, tj), abs(psi_self - psi_j),
-                    boundary_rate_of(pj.mode, psi_j, lib),
-                    boundary_rate_of(plan.mode, psi_self, lib), lib, pads,
+                    boundary_rate_of(pj.mode, psi_j, lib, r0_m=pj.r0_m),
+                    boundary_rate_of(plan.mode, psi_self, lib, r0_m=plan.r0_m), lib, pads,
                 )
                 candidates.append(tj + need)
             candidates = sorted(set(candidates))
@@ -216,12 +216,17 @@ def greedy_anchor(
     )
 
 
-def boundary_rate_of(mode, psi_bar_rad: float, lib: ModeLibrary) -> float:
+def boundary_rate_of(
+    mode,
+    psi_bar_rad: float,
+    lib: ModeLibrary,
+    r0_m: float | None = None,
+) -> float:
     """Thin single-source re-export (keeps the maneuver implementation the
     only boundary-rate definition, D09-6)."""
     from .maneuver import boundary_rate as _br
 
-    return _br(mode, psi_bar_rad, lib)
+    return _br(mode, psi_bar_rad, lib, r0_m=r0_m)
 
 
 def _precompile_frozen(manifest: dict, lib: ModeLibrary, pads: MarginPads):

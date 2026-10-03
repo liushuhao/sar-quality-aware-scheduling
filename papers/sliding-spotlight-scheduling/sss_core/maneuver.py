@@ -90,9 +90,21 @@ def alpha_max_rad_s2() -> float:
     return tau_z / i_z
 
 
-def boundary_rate(mode: Mode, psi_bar_rad: float, lib: ModeLibrary) -> float:
-    """|dpsi/dt| of the beam pointing at the aperture centre (D07-1)."""
-    lever = lib.geo.vs_mps * math.cos(psi_bar_rad) / lib.geo.R0_m
+def boundary_rate(
+    mode: Mode,
+    psi_bar_rad: float,
+    lib: ModeLibrary,
+    r0_m: float | None = None,
+) -> float:
+    """|dpsi/dt| of the beam pointing at the aperture centre (D07-1).
+
+    ``r0_m`` is the slant range of the task the rate is quoted for; None
+    falls back to the library R0, which is the calibration caliber (Kim RMT
+    comparison) -- per-task production consumers must pass their own range
+    (residual R14: the lever drifted +-42% against per-task geometry).
+    """
+    r0 = lib.geo.R0_m if r0_m is None else r0_m
+    lever = lib.geo.vs_mps * math.cos(psi_bar_rad) / r0
     if mode is Mode.STR:
         return 0.0
     if mode is Mode.SLS:

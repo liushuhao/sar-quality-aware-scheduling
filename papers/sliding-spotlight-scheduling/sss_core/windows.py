@@ -369,19 +369,28 @@ def window_feasibility(
     return feasible_at(t, effective, window_end)
 
 
-def footprint_ok(mode: Mode, l_az_m: float, lib: ModeLibrary) -> bool:
+def footprint_ok(
+    mode: Mode,
+    l_az_m: float,
+    lib: ModeLibrary,
+    r0_m: float | None = None,
+) -> bool:
     """C1b azimuth-footprint clause, mode-scoped (D04-3).
 
     SPT: hard bound L_az <= R0*theta_a -- the parked beam must contain the
     scene (formula-spec §4.2: R0*theta_a ~ 4.87 km vs 5 km scene, no
-    margin).  STR/SLS: by-construction satisfied -- the scene azimuth
-    extent is already inside their dwell closures (T_STR carries Wa/Vs,
-    T_SLS carries Wa inside the swept angle), so strip-map-like coverage of
-    extended scenes is a dwell question, not a footprint question.  Generic
-    per-target L_az != Wa scenes belong to ticket 08.
+    margin).  ``r0_m`` is the task's own slant range; None falls back to
+    the library R0, which is the synthetic-generator caliber only (real
+    geometry carries per-task R0, residual R15).  STR/SLS:
+    by-construction satisfied -- the scene azimuth extent is already
+    inside their dwell closures (T_STR carries Wa/Vs, T_SLS carries Wa
+    inside the swept angle), so strip-map-like coverage of extended scenes
+    is a dwell question, not a footprint question.  Generic per-target
+    L_az != Wa scenes belong to ticket 08.
     """
     if mode is Mode.SPT:
-        return l_az_m <= lib.geo.R0_m * lib.geo.theta_a_rad
+        r0 = lib.geo.R0_m if r0_m is None else r0_m
+        return l_az_m <= r0 * lib.geo.theta_a_rad
     if mode in (Mode.STR, Mode.SLS):
         return True
     raise ValueError(f"unknown mode {mode!r}")
