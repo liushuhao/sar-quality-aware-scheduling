@@ -254,6 +254,56 @@ def grid_halving(lib: ModeLibrary, n_samples: int = 20) -> dict:
     return _step("grid_halving", "PASS" if ok else "FAIL", report)
 
 
+def v2_artifacts_present() -> dict:
+    """Ticket 17 acceptance item 12: the real-window results must be
+    traceable to their artifacts.
+
+    Checks that the v2 artifacts exist and that the convergence report is
+    PRESENT ALONGSIDE the results table -- a richness statement without its
+    ladder evidence is not a claim (freeze red line), so a table without its
+    report is an inadmissible state, not a partial success.
+    """
+    base = FORK_DOMAIN / "experiments" / "v2_results"
+    table = base / "results_table.json"
+    conv = base / "convergence_report.json"
+    detail = {"results_table": table.is_file(), "convergence_report": conv.is_file()}
+    if not detail["results_table"]:
+        return _step("v2_artifacts", "FAIL", dict(detail, note="results table missing"))
+    if not detail["convergence_report"]:
+        return _step(
+            "v2_artifacts", "FAIL",
+            dict(detail, note="convergence report missing -- a richness claim "
+                             "without ladder evidence is inadmissible"),
+        )
+    rep = json.loads(table.read_text(encoding="utf-8"))
+    convd = json.loads(conv.read_text(encoding="utf-8"))
+    detail["families"] = sorted(rep.get("families", {}))
+    detail["verdicts"] = {
+        f: v.get("convergence", v.get("convergence_verdict"))
+        for f, v in convd.get("verdicts", {}).items()
+    }
+    ok = bool(detail["families"]) and set(detail["families"]) == set(detail["verdicts"])
+    return _step("v2_artifacts", "PASS" if ok else "FAIL", detail)
+
+
+def caliber_registry_present() -> dict:
+    """Ticket 17 acceptance item 12: the frozen families must carry a caliber
+    tag, so a v1 number can never be read as current."""
+    reg = FORK_DOMAIN / "experiments" / "caliber_registry.json"
+    if not reg.is_file():
+        return _step("caliber_registry", "FAIL", {"note": "caliber registry missing"})
+    data = json.loads(reg.read_text(encoding="utf-8"))
+    cals = data.get("calibers", {})
+    ok = {"v1", "v2"} <= set(cals) and all(
+        cals[c].get("comparable_to_" + ("v2" if c == "v1" else "v1")) is False
+        for c in ("v1", "v2")
+    )
+    return _step(
+        "caliber_registry", "PASS" if ok else "FAIL",
+        {"calibers": sorted(cals), "cross_comparable": False if ok else "unset"},
+    )
+
+
 def predicate_source() -> dict:
     """Ticket-09 acceptance item: the C2 requirement resolves to
     sss_core.predicates and the evaluator hook confirms it."""
@@ -421,6 +471,8 @@ def run_gate(pilot_path: Path, manifest_path: Path,
         "m1_double_check": lambda: m1_double_check(),
         "shared_lib_tests": lambda: shared_lib_tests(),
         "domain_tests": lambda: domain_tests(),
+        "v2_artifacts": lambda: v2_artifacts_present(),
+        "caliber_registry": lambda: caliber_registry_present(),
         "claim_provenance": lambda: claim_provenance(),
         "grid_halving": lambda: grid_halving(lib),
         "predicate_source": lambda: predicate_source(),
@@ -438,7 +490,7 @@ def run_gate(pilot_path: Path, manifest_path: Path,
             results.append(_step("shared_lib_tests", "SKIPPED",
                                  "disabled for light invocation"))
             continue
-        if name == "domain_tests" and not run_shared_tests:
+        if name in ("domain_tests", "v2_artifacts", "caliber_registry")                 and not run_shared_tests:
             results.append(_step("domain_tests", "SKIPPED",
                                  "disabled for light invocation"))
             continue
