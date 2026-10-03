@@ -1,6 +1,6 @@
 # 公式规格（冻结版）— 滑聚/聚束变时长 SAR 调度：驻留时长 + 逐模式分辨率 + AASR/RASR
 
-- 版本: v1.2（2026-10-02，票 21 blocking gate 产出：勘误登记 §8.8——Song 符号源文献矛盾裁定、§2 源 2 引文回抄更正、25% 裕度计数 2→4、g_T 空指针改声明、`numerical_check.py` 死指针（3 处）改指存活 pytest 守卫 + 独立复算撤回一条错误论证（§5 桥接句不成立，Song 未给 $\mathrm{sign}(K_a)$）、撤回一条自查误判；公式本体与数值结论零改动，出处全部登记 `experiments/claim_trace.json` 由 `verify_claim_traces.py` 机检）；v1.1（2026-09-30，票 18 blocking gate 产出：新增 §3.1 逐模式 $\rho_a(m,\bar\psi)$ 封闭式 + dated 取代 §3 斜视注记（方向 cos→sec）+ Eq.(12)/(13) 约定钉死（Kim p.9 原文留痕）+ B_D 第三消费方登记 + §4.2/§4.3 生产层反转标记；勘误登记 §8.7；v1.0.1 = 2026-09-27 票 01 产出 + 两路 fresh 审查勘误轮，登记见 §8.6；v1.0 = 票 01 SLS/时长公式族 blocking gate 产出）
+- 版本: v1.3（2026-10-03，票 15 物理层落地：勘误登记 §8.9——驻留生产闭式切 Eq.(22)/(24) 链（§4.2 平面式降为测试 oracle）、逐模式斜视包络落 fixture（STR/SPT ±45° 设计界，SLS ±26.9° 为 $a_{\mathrm{res}}\le0$ 物理边界，非选择）、$T_{\mathrm{env,max}}$ 6.7178→10.5830 s（1.5754×，argmax SLS→SPT）、窗尾垫维持 1.00%（生产残差恒 0，纯保守余量）、$B_D$ 纠正为注册式（原实现的 cos² 口径 45° 处欠保守 29.3%）、$f_Q$ 维持零斜视口径、验收项 13 内部恒等链 $f_Q=(g_T/\rho_a)\cdot(1/\rho_{\mathrm{rg}})$；**公式本体与数值零改动**，仅落地裁决与两条被推翻的执行者初稿记录）；v1.2（2026-10-02，票 21 blocking gate 产出：勘误登记 §8.8——Song 符号源文献矛盾裁定、§2 源 2 引文回抄更正、25% 裕度计数 2→4、g_T 空指针改声明、`numerical_check.py` 死指针（3 处）改指存活 pytest 守卫 + 独立复算撤回一条错误论证（§5 桥接句不成立，Song 未给 $\mathrm{sign}(K_a)$）、撤回一条自查误判；公式本体与数值结论零改动，出处全部登记 `experiments/claim_trace.json` 由 `verify_claim_traces.py` 机检）；v1.1（2026-09-30，票 18 blocking gate 产出：新增 §3.1 逐模式 $\rho_a(m,\bar\psi)$ 封闭式 + dated 取代 §3 斜视注记（方向 cos→sec）+ Eq.(12)/(13) 约定钉死（Kim p.9 原文留痕）+ B_D 第三消费方登记 + §4.2/§4.3 生产层反转标记；勘误登记 §8.7；v1.0.1 = 2026-09-27 票 01 产出 + 两路 fresh 审查勘误轮，登记见 §8.6；v1.0 = 票 01 SLS/时长公式族 blocking gate 产出）
 - 状态: **FROZEN**——后续实现票（映射表、时长模块、AASR 硬约束、质量指标、窗域预编译）以本文件为**唯一公式来源**；修改须经新 blocking gate。
 - 上游: `.scratch/sliding-spotlight-scheduling/issues/01-sls-formula-blocking-gate.md`（8 项验收 §9 对照）
 - 裁决对象: `archive/next-paper-formalization/blueprint-draft.md` §2.2(c)/附 A/附 B（蓝图是二手源，本规格全部公式从 PDF 原文符号级复原，未照抄蓝图）
@@ -373,6 +373,23 @@ $\beta_{req}=\lambda/2\rho_a$（Kim Eq.(5)）、SAT=SAL/V 框架、SPT 斜视 $\
 6. **🟢 撤回一条自查发现（Kim p.9 桥接句标签，原判有误）**：本轮初查曾据 `.txt` 抽取件（`Since  ( ) = sin  + and`，符号被丢）判定 §3.1「pymupdf 逐字抽取」标签失实。**经 pymupdf（fitz 1.27.2.3）直抽 PDF p.9 复核：该句结构完整、字形呈 mojibake**（`ටోඬమା౞మ(௧ି௧బ)మ= sin ቀ𝜓௦బ+ … ఏౌశቁ and … = sin ቀ𝜓௦భ− ఏౌశቁ, Equation (12) can be expressed simply as Equation (13).`），与规格渲染式同构 ⇒ **规格标签正确，不改**。教训：`.txt` 抽取件不能裁决一条声明来自**另一种抽取器**的引文。
 
 **机检口径**：本轮 11 条 claim 中，销账 5 条（§8.8-1~5 覆盖 F1×3 / F2×4 / F3 / F5 的重复归并），`claim_trace.json` 对应 `status` 转 `verified`/`closed` 后 `verify_claim_traces.py --strict` 应 rc=0。**回归面**：两个互不相交测试面（`src/tests/` 共享库 145 + 本域 `papers/sliding-spotlight-scheduling/tests/`），计数以 `--co` 实测为准，勿写死。
+
+### 8.9 勘误登记（v1.3，2026-10-03 票 15；物理层落地 append-only）
+
+本轮**未改动任何公式本体**——§3.1 的 $\rho_{a,\mathrm{ach}}$ 式、§4.1 的 Eq.(20)-(24) 链、§5 的 AASR 族全部原样；本节登记的是**落地裁决**与其**被推翻的候选**。
+
+1. **驻留生产闭式 = Eq.(22)/(24) 链（spec D4 反转的落地，票 15）**。§4.2 的平面 $\sec^2$ 闭式**降级为测试 oracle**（实现为 `duration_scene_planar_oracle`），不再进生产路径。落地口径：
+   - **SLS**：生产 = `kim_checker_scene_sls` 的 `sat_raw_s`，即 §4.1 Eq.(22)/(24) 的对称 α 构造。平面式在 $\bar\psi=12°$ 偏 **+0.4185%**、在 SLS 物理边界 $26.9°$ 偏 **+2.1025%**、在 $45°$ 偏 **+5.3048%**——后者超 1% 冻结垫 5.3 倍，故必须切。
+   - **STR**：生产 = tan 精确场景渡越 `_tan_diff_s(ψ,θ_a,R_0,V_s) + W_a/V_s`。实测平面式在 $45°$ 仅偏 **−0.0009%**（$\theta_a=0.36°$ 极窄 ⇒ $\sec^2$ 线性化几乎无损），**切换不动物理**，理由是口径统一与消除「STR 也在 45° 失效」的误读。
+   - **SPT**：**不动**。`_tan_diff_s` 本就是 §4.1 Eq.(10)-(11) 的精确式，$45°$ 处与平面线性式仅差 **−0.0890%**。
+2. **逐模式斜视包络（§3.1 域的具体化）**：STR/SPT **±45°**（spec D12-3 设计界，**无文献源**，注册的设计选择）；SLS **±26.9°**，该值**不是选择**而是 $a_{\mathrm{res}}=1-K_c/K_a\le 0$ 在库 $k=0.797317$ 处的物理滑聚边界（D06-3 守卫）。登记于 `experiments/platform_kim2021.json#modes.mode_squint_envelope_deg`，**与 Kim Table 2 的 ±12° 任务包络分列两个字段**（前者物理域、后者文献任务域，合并即洗白来源）。
+3. **$T_{\mathrm{env,max}}$ 迁移（本轮推翻执行者初稿）**：C3/C4 归一化参考从「单一 12° 平台边」改为「逐模式包络边」，实测 **6.7178 s → 10.5830 s（1.5754×）**，argmax **SLS → SPT**。⚠️ 执行者初稿取 **12.8548 s / 1.91×**，那是**旧平面式在 45° 的值**，**违反本规格自设的 SLS ≤26.9° 包络**，已作废。
+4. **窗尾垫维持 1.00%（本轮推翻执行者初稿）**：切换后生产闭式**即**物理参考，生产残差**恒 0**，1.00% 退化为纯保守余量（`e ≤ w_e` 的余量只缩可行集、不漏解）。⚠️ 执行者初稿据「SLS 平面 oracle 在包络边偏 2.1025%」推出「垫须升至 3.50%」，**该推理作废**：抬垫守的是一条**生产路径永不计算**的残差，属对已退役 oracle 的症状加垫。`WINDOW_TAIL_PAD_FROZEN` 冻结值不变，`window_tail_pad_report()` 改为**记录** oracle 缺口并按模式断言保守方向（SLS 绑定区 $\ge 11.9°$ 全为正，min **+0.4112%**；STR 全域为负但量级 $10^{-5}$，故**不宣称保守**，只受垫覆盖）。
+5. **$B_D$ 口径纠正（执行者与独立审查双方各错一半，实测定案）**：注册式为 $B_D=V_s\cos\bar\psi/\rho_a(m,0)$。⚠️ 实现原写 `Vs*cos(psi)/rho_az_ach`，在 §3.1 的 sec 形式下展开即 $V_s\cos^2\bar\psi/\rho_a(m,0)$，**正是 §3.1 明令禁用的 cos² 口径**——$45°$ 处比注册式窄 **29.3%**，**欠保守**。独立审查误判为「代码已等于注册式、无需改动」，实测推翻：**须改**。现实现为 `ModeLibrary.bandwidth_d_hz`（注册式），SLS@45° = **10716.99 Hz**，与 §3.1 SANITY 登记值 **10717.0 Hz** 逐位吻合。
+6. **$f_Q$ 维持零斜视口径（执行范围裁决）**：§3.1 的 $\rho_{a,\mathrm{ach}}(m,\bar\psi)$ 已函数化并供 $B_D$ 与上报使用，但 **$f_Q$ 表达式仍取零斜视常数 $\rho_a(m,0)$**。理由：D05-4 时间不变性与 `verify.py::scatter_precheck` 的「结构散布 ~2e-4、已知结果」两条注册断言都建立在常口径上；令 $f_Q$ 随 $\bar\psi$ 变会同时失效二者，且超出本票授权。
+7. **验收项 13 的内部恒等链**（承接 §8.8-4 的「g_T 无外部文献源」裁决）：$f_{Q,i}=(\rho_{\mathrm{rg}}\rho_a)^{-1}g_T(R_0/R)^3$，在 $R=R_0$ 下化为 $f_Q=(g_T/\rho_a)\cdot(1/\rho_{\mathrm{rg}})$，隐含量 $1/\rho_{\mathrm{rg}}=2.0$ 为**模式无关常数**（$\rho_{\mathrm{rg}}=0.5$ m 设计锚，D05-1）⇒ 这就是「$f_Q\propto 1/\rho_a$」的精确陈述。守卫 `tests/test_quality_fq.py::test_fQ_inverse_rho_a_squared_identity`，容差 3e-4（容 SPT 的 D05-3 残差 0.022%）。
+
+**冻结声明**：本节为 append-only 勘误，§1–§7 的公式本体与数值**零改动**；本轮改动全部落在实现层与 fixture 的包络登记字段。
 
 ---
 

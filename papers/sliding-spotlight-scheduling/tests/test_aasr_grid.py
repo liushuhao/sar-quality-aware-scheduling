@@ -121,8 +121,15 @@ def test_grid_out_of_domain_raises(grid):
         grid.query_bound_db(2.0, 0.0, 0.5, 2000.0)
     with pytest.raises(ValueError, match="outside grid domain"):
         grid.query_bound_db(0.2, 0.0, 0.5, 2300.0)
+    # Ticket 15: the psi guard is MODE-AWARE, so "out of domain" is now
+    # relative to the routed mode's envelope.  rho_req 2.0 routes to STR
+    # (+-45 deg), so 13 deg is legal there and only 46 deg must raise; an
+    # SLS-routed requirement still refuses past 26.9 deg.
+    grid.query_bound_db(2.0, math.radians(13.0), 0.5, 2300.0)  # no raise now
     with pytest.raises(ValueError, match="envelope"):
-        grid.query_bound_db(2.0, math.radians(13.0), 0.5, 2300.0)
+        grid.query_bound_db(2.0, math.radians(46.0), 0.5, 2300.0)
+    with pytest.raises(ValueError, match="envelope"):
+        grid.query_bound_db(0.5, math.radians(27.9), 0.5, 2300.0)
     with pytest.raises(ValueError, match="outside the grid domain"):
         grid.query_bound_db(2.0, 0.0, 0.95, 2300.0)
 

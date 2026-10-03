@@ -94,6 +94,55 @@ def test_us5_pixel_area_monotonicity(lib):
     assert areas[Mode.STR] > areas[Mode.SLS] > areas[Mode.SPT]
 
 
+def test_fQ_inverse_rho_a_squared_identity(lib):
+    """Ticket 15 acceptance item 13: f_Q's dependence on resolution,
+    re-derived as an INTERNAL identity chain.
+
+    Per the F3 adjudication (ticket 21), g_T has NO external literature
+    anchor -- Song's full text has zero hits for NESZ/noise-equivalent and
+    Cumming & Wong is not in the library -- so the law cannot be checked
+    against a source value.  It is pinned instead by the algebraic identity
+    the implementation already satisfies:
+
+        f_Q,i = (rho_rg * rho_a,ach)^-1 * g_T * (R0/R)^3
+              = (g_T / rho_a) * 1/rho_rg          at R = R0
+
+    so f_Q / (g_T / rho_a) is the mode-independent constant 1/rho_rg = 2.0
+    (rho_rg is the 0.5 m design anchor, D05-1).  This is the exact statement
+    that f_Q scales as 1/rho_a -- finer mode, larger f_Q -- which is the
+    property the D05-5 double-weighting note has to disclose.  The SPT leg
+    carries the registered D05-3 residual (tan-exact vs the sec^2
+    linearisation, 0.022%), inside the 3e-4 tolerance.
+    """
+    rho_rg = ground_range_resolution_m(lib)
+    one_over_rho_rg = 1.0 / rho_rg
+    assert one_over_rho_rg == pytest.approx(2.0, rel=1e-12)
+    for mode in MODES:
+        fq = f_q_per_task(mode, 0.0, lib.geo.R0_m, lib)
+        implied = fq / (dwell_gain(mode, 0.0, lib) / lib.rho_az(mode))
+        assert abs(implied - one_over_rho_rg) / one_over_rho_rg <= 3e-4, mode
+    # and the direction of the law itself: finer resolution -> larger f_Q
+    fqs = [f_q_per_task(m, 0.0, lib.geo.R0_m, lib) for m in MODES]
+    assert fqs[0] < fqs[1] < fqs[2]  # STR (coarsest) < SLS < SPT (finest)
+
+
+def test_fq_keeps_the_zero_squint_resolution(lib):
+    """Ticket 15 (punch 5): f_Q stays on the zero-squint caliber.
+
+    ``rho_az_ach`` exists and is exercised elsewhere, but f_Q deliberately
+    does NOT consume it: D05-4 time-invariance and the `scatter_precheck`
+    gate's registered "~2e-4 structural scatter" both assume a constant
+    resolution caliber.  Making f_Q squint-dependent would silently falsify
+    both, and that is outside this ticket's authority.
+    """
+    for mode in MODES:
+        vals = [
+            f_q_per_task(mode, math.radians(p), lib.geo.R0_m, lib)
+            for p in (0.0, 12.0, 26.0)
+        ]
+        assert max(vals) - min(vals) <= 3e-4 * vals[0], mode
+
+
 def test_us5_fQ_dimension_and_exact_anchors(lib):
     """f_Q in m^-2; exact anchors {0.811, 19.735, 54.832} (D05-6)."""
     for mode in MODES:
