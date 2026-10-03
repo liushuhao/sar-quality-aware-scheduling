@@ -185,3 +185,15 @@
 - ⇒ inset 改为「一步长 + 8 ULP」，并新增 `test_mask_run_endpoints_satisfy_their_own_mask` 钉死该性质。
 
 **测试**：本文件 16 → **18**。
+
+### [13:45] 票 16 真窗族生成器落地（commit `9bc5947`）
+
+**`generate_real_scenario`**：R1C/R2F/R3H/R4H 四族，每任务窗由真实轨道几何经三件套级联生成，**窗宽是物理量**（设计轨道实测 201.06 s）。平台轨道为**必填参数**（`ValueError` 拒绝默认），因本族的要点就是几何是注册输入而非生成器自造。
+
+**实测（seed 100, density 20, demand C）**：抽 20 → 服务 10，`no_window` 剔除 10（真实几何拒收一半，300 s 方框不可能产生这种处置）；窗宽 mean/min/max 全为 201.063262 s；逐任务带 `r0_m=775274.2` / `incidence_deg=44.987` / `vector_squint_min_t_s=7.085`（与 `t_ca_s=0.0` **分列**，实测二者确非同一点）。
+
+**确定性实测**：同 seed 两次生成 **byte-identical**，异 seed 不同；台账守恒 10+10=20。
+
+**变异红证（票面要求 ≥1）第一轮 = 假绿，已修**：回退 evaluator 的逐任务注入后 **22 个 duration 守卫全绿**——因为它们直接测 `duration_scene_s`，不经消费方。⇒ 新增端到端守卫 `test_real_scenario_injection_reaches_the_evaluator`：用真实 manifest 断言 evaluator **自己的** `_dwell` 与库常数 dwell 不同；回退后变红且诊断为两值相同（`1.3027299992939185 != 1.3027299992939185`），恰证「几何停止被读」。还原后 37 passed。
+
+**一处自查修正**：注入在设计轨道附近只差 **0.0097%**（R0 775274 vs 775426），单看数值近乎无差——这正是「字段登记了但没消费」能长期潜伏的原因，故守卫必须比较**两条路径**而非比较差值大小。
