@@ -6,6 +6,7 @@ Expectations follow the D08 registrations: bands frozen by THIS ticket
 per-task-Wa AASR gating (D08-2), first-match removal cascade with an exact
 ledger (D08-9), and byte-identical same-seed reruns (spec 确定性).
 """
+import copy
 import json
 import math
 import sys
@@ -178,6 +179,133 @@ def test_pending_bands_fail_loud(monkeypatch, lib):
     )
     with pytest.raises(ValueError, match="pending"):
         generate_scenario("M1NC", 20, "N", "C", seed=100, variant_index=1, lib=lib)
+
+
+# ── ticket 16: real-window family R<density><requirement> ───────────────
+
+def _platform():
+    """Design orbit: 570 km, 45 deg inclination -- the fixture geometry."""
+    from datetime import datetime
+
+    from sss_core.realwindows import KeplerianElement
+
+    lib = ModeLibrary.from_fixture()
+    a = 6_371_000.0 + lib.geo.altitude_m
+    epoch = datetime(2026, 1, 1)
+    el = KeplerianElement(
+        semi_major_axis=a, eccentricity=0.001,
+        inclination=math.radians(45.0), raan=0.0, arg_perigee=0.0,
+        true_anomaly=0.0, epoch=epoch,
+    )
+    return (el, epoch), lib
+
+
+def test_real_scenario_requires_platform_oracle():
+    """The orbit is a registered input, not something the generator invents."""
+    from sss_core.scenarios import generate_real_scenario
+
+    _, lib = _platform()
+    with pytest.raises(ValueError, match="platform orbit"):
+        generate_real_scenario("R1C", 20, "C", seed=100, lib=lib)
+
+
+def test_real_scenario_ledger_and_geometry_fields():
+    plat, lib = _platform()
+    from sss_core.scenarios import generate_real_scenario
+
+    m = generate_real_scenario("R1C", 20, "C", seed=100, variant_index=1,
+                               lib=lib, platform=plat)
+    assert m["schema"] == "scenario-manifest/2.0-realwindow"
+    led = m["generation_ledger"]
+    assert sum(led["removals"].values()) + led["n_served"] == led["n_drawn"]
+    assert led["n_served"] > 0, "no task survived the real geometry"
+    for t in m["tasks"]:
+        # piece (a): per-task geometry IS in the manifest
+        assert t["r0_m"] > 0.0
+        assert 0.0 < t["incidence_deg"] < 90.0
+        assert t["lat_deg"] is not None and t["lon_deg"] is not None
+        # the two squint zero points are both registered, and they are NOT
+        # the same quantity (measured: the vector minimum sits far away)
+        assert "t_ca_s" in t and "vector_squint_min_t_s" in t
+        assert t["t_start_s"] < t["t_end_s"]
+        assert t["window_width_s"] > 0.0
+
+
+def test_real_scenario_same_seed_is_byte_identical():
+    plat, lib = _platform()
+    from sss_core.scenarios import generate_real_scenario
+
+    a = generate_real_scenario("R1C", 20, "C", 100, 1, lib=lib, platform=plat)
+    b = generate_real_scenario("R1C", 20, "C", 100, 1, lib=lib, platform=plat)
+    c = generate_real_scenario("R1C", 20, "C", 101, 1, lib=lib, platform=plat)
+    sa = json.dumps(a, indent=2, sort_keys=True, ensure_ascii=False)
+    sb = json.dumps(b, indent=2, sort_keys=True, ensure_ascii=False)
+    sc = json.dumps(c, indent=2, sort_keys=True, ensure_ascii=False)
+    assert sa == sb, "same seed must regenerate byte-identically"
+    assert sa != sc, "different seed must not reproduce"
+
+
+def test_real_scenario_preregisters_its_geometry():
+    plat, lib = _platform()
+    from sss_core.scenarios import (
+        R_CLUSTER_CENTRES_DEG,
+        R_INCIDENCE_BAND_DEG,
+        generate_real_scenario,
+    )
+
+    m = generate_real_scenario("R1C", 20, "C", 100, 1, lib=lib, platform=plat)
+    pre = m["preregistration"]
+    assert pre["cluster_centres_deg"] == [list(c) for c in R_CLUSTER_CENTRES_DEG]
+    assert pre["incidence_band_deg"] == list(R_INCIDENCE_BAND_DEG)
+    assert pre["passes"] >= 1
+    assert "longest" in pre["pass_selection_rule"]
+
+
+def test_real_scenario_injection_reaches_the_evaluator():
+    """Piece (b) must be CONSUMED, not merely present.
+
+    A manifest can carry the geometry block and the evaluator can ignore it
+    -- that is the "field registered but never read" break, and it is exactly
+    what the ticket forbids.  This guard builds a real manifest, then asserts
+    the evaluator's own dwell for a geometry-bearing task differs from the
+    library-constant dwell.  Reverting the injection turns it red.
+    """
+    plat, lib = _platform()
+    from sss_core.duration import duration_scene_s
+    from sss_core.evaluator import SchedulingProblem
+    from sss_core.geometry import squint_at
+    from sss_core.scenarios import generate_real_scenario
+
+    m = generate_real_scenario("R1C", 20, "C", 100, 1, lib=lib, platform=plat)
+    sp = SchedulingProblem(m, lib)
+    bearing = [j for j, p in enumerate(sp.plans) if p.r0_m is not None]
+    assert bearing, "no task carries the geometry block -- the manifest is a fiction"
+    i = bearing[0]
+    plan = sp.plans[i]
+    assert plan.r0_m != lib.geo.R0_m, "fixture picked a task at the design R0"
+    with_injection = sp._dwell(i, plan.t_ca_s)
+    without = duration_scene_s(
+        plan.mode, squint_at(plan.t_ca_s, plan.t_ca_s, lib.geo), lib
+    )
+    assert with_injection != without, (
+        "evaluator ignored the per-task geometry -- reverting the injection "
+        "would be invisible"
+    )
+
+
+def test_real_scenario_injection_absent_leaves_precompile_untouched():
+    """And the mirror image: a manifest WITHOUT the block must precompile
+    exactly as before, which is what keeps the frozen families safe."""
+    plat, lib = _platform()
+    from sss_core.evaluator import SchedulingProblem
+    from sss_core.scenarios import generate_real_scenario
+
+    m = generate_real_scenario("R1C", 20, "C", 100, 1, lib=lib, platform=plat)
+    stripped = copy.deepcopy(m)
+    for t in stripped["tasks"]:
+        t.pop("r0_m", None)
+    sp = SchedulingProblem(stripped, lib)
+    assert all(p.r0_m is None for p in sp.plans)
 
 
 if __name__ == "__main__":

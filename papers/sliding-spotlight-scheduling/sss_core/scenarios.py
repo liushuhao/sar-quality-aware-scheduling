@@ -40,7 +40,7 @@ from pathlib import Path
 from .aasr import AASR_THRESHOLD_DB, aasr_direct, route_mode
 from .duration import SQUINT_ENVELOPE_DEG, MarginPads, duration_scene_s
 from .fixture import fixture_value, load_platform_fixture
-from .geometry import squint_at
+from .geometry import look_geometry, squint_at
 from .modes import Mode, ModeLibrary
 from .windows import footprint_ok
 
@@ -76,6 +76,34 @@ PRF_PRODUCTION_HZ = 3630.0  # platform operating point (design convention)
 ANCHOR_T_DISPERSION_LIMIT = 1.10  # spec D10 / Testing Decisions (preregistered)
 H_MIX_DOCUMENTED_RANGE = (0.35, 0.65)  # documentation value; the test asserts
 # the EXACT Bernoulli realization count for the seed (D08-9)
+
+
+# ── real-window family R<density><requirement> (ticket 16) ───────────────
+#
+# The 300 s box retires here: each task's window is the three-leg cascade
+# (incidence mask n mode envelope n end-check) computed from real orbit
+# geometry, so its width is a physical quantity rather than a constant.
+#
+# Cluster geometry is PREREGISTERED (ticket acceptance item 5): cluster
+# centres on a fixed lat/lon grid, cluster scale L, density N and demand tier
+# are all bound before any run, and the seed rule is the matrix convention
+# (variant_index*100 + seed_index).
+R_CLUSTER_CENTRES_DEG = (
+    (56.0, 22.0), (34.0, -118.0), (-12.0, -46.0), (48.0, 121.0),
+    (-33.0, 151.0), (20.0, 77.0), (62.0, -70.0), (5.0, 100.0),
+)
+R_CLUSTER_SCALE_KM = 20.0        # cluster radius; targets scatter inside it
+R_PASS_SPAN_S = 120.0            # per-side propagation span around the pass
+R_PROP_STEP_S = 1.0              # geometry sampling step
+R_PASSES = 2                     # ticket: longest visible window over 2 passes
+R_INCIDENCE_BAND_DEG = (30.0, 60.0)
+R_DENSITY_BY_INDEX = {1: 20, 2: 100, 3: 300, 4: 500}
+R_FAMILY_REGISTRY = {
+    1: ("R1C", 20, "C"),
+    2: ("R2F", 100, "F"),
+    3: ("R3H", 300, "H"),
+    4: ("R4H", 500, "H"),
+}
 
 
 def load_rho_bands() -> dict:
@@ -236,6 +264,255 @@ def generate_scenario(
 
 
 from .geometry import squint_at as _squint_at  # D10-7 single source
+
+
+# ── real-window family generator (ticket 16) ─────────────────────────────
+
+def generate_real_scenario(
+    family_code: str,
+    density_n: int,
+    demand_tier: str,
+    seed: int,
+    variant_index: int | None = None,
+    lib: ModeLibrary | None = None,
+    platform=None,
+) -> dict:
+    """Generate one R<density><requirement> real-window scenario manifest.
+
+    Each task gets a window that is the three-leg cascade over real orbit
+    geometry: incidence mask (from the forked ``realwindows`` kernel) n mode
+    squint envelope n end-check.  Nothing here re-derives a leg's predicate;
+    the legs are computed by their owners and ``intersect_intervals`` only
+    intersects.
+
+    Two squint zero points are registered per task and they are NOT the same
+    point (measured: the vector squint minimum sits 600 s away from the
+    ``squint_at`` zero).  ``t_ca_s`` is the ``squint_at`` zero that drives the
+    dwell; ``vector_squint_min_t_s`` is the vector minimum that the incidence
+    mask is evaluated at.
+
+    Determinism: the only stochastic source is ``random.Random(seed)``,
+    consumed in a fixed per-target order, and the platform orbit is passed in
+    rather than drawn, so the same seed reproduces the manifest byte-identically.
+    """
+    import math as _math
+    from datetime import datetime, timedelta
+
+    from .duration import MarginPads as _Pads
+    from .duration import duration_scene_s, mode_squint_envelope_rad, pad_window_tail
+    from .realwindows import (
+        ECIState,
+        GroundTarget,
+        KeplerianElement,
+        kepler_to_eci,
+        satellite_to_target_vector,
+    )
+    from .windows import (
+        effective_duration_fn,
+        feasible_subintervals,
+        intersect_intervals,
+        mask_intervals,
+    )
+    from .aasr import aasr_direct as _aasr
+
+    if demand_tier not in ("C", "F", "H"):
+        raise ValueError(f"invalid demand tier {demand_tier!r}")
+    if density_n not in R_DENSITY_BY_INDEX.values():
+        raise ValueError(f"invalid density {density_n}")
+    lib = lib or ModeLibrary.from_fixture()
+    if platform is None:
+        raise ValueError(
+            "generate_real_scenario requires the platform orbit; refusing to "
+            "invent one silently (the geometry is a registered input)"
+        )
+    elements, epoch = platform
+    bands = load_rho_bands()
+    pads = _Pads.standard()
+    step = timedelta(seconds=R_PROP_STEP_S)
+    span = timedelta(seconds=R_PASS_SPAN_S)
+
+    rng = random.Random(seed)
+    tasks = []
+    removals = {"below_finest": 0, "footprint": 0, "no_window": 0, "aasr": 0}
+    h_draws = 0
+    window_widths = []
+
+    n_clusters = len(R_CLUSTER_CENTRES_DEG)
+    for idx in range(density_n):
+        # fixed draw order: cluster -> demand -> size -> priority
+        clat, clon = R_CLUSTER_CENTRES_DEG[idx % n_clusters]
+        # scatter inside the cluster (a few km, well inside R_CLUSTER_SCALE_KM)
+        scale = R_CLUSTER_SCALE_KM * 1000.0
+        lat = clat + rng.uniform(-1.0, 1.0) * (scale / 111_320.0)
+        lon = clon + rng.uniform(-1.0, 1.0) * (
+            scale / (111_320.0 * max(_math.cos(_math.radians(clat)), 1e-6))
+        )
+        if demand_tier == "H":
+            use_coarse = rng.random() < 0.5
+            h_draws += int(use_coarse)
+            band = bands["coarse"] if use_coarse else bands["fine"]
+        else:
+            band = bands["coarse"] if demand_tier == "C" else bands["fine"]
+        rho_req = rng.uniform(*band)
+        l_az_m = (
+            rng.uniform(2000.0, 5000.0) if band == bands["coarse"]
+            else rng.uniform(1000.0, 3000.0)
+        )
+        priority = rng.randint(1, 10)
+
+        if rho_req < lib.rho_az(Mode.SPT) - 1e-12:
+            removals["below_finest"] += 1
+            continue
+
+        target = GroundTarget(target_id=f"R{idx}", lat=lat, lon=lon)
+        mode = route_mode(rho_req, lib)
+        if not footprint_ok(mode, l_az_m, lib):
+            removals["footprint"] += 1
+            continue
+
+        # two passes (ticket: longest visible window over 2 orbit passes)
+        best = None
+        for pass_i in range(R_PASSES):
+            t0 = epoch + timedelta(seconds=pass_i * 600.0)
+            state = lambda dt, _s=t0: kepler_to_eci(elements, _s + timedelta(seconds=dt))
+
+            def incidence_ok(dt, _st=state, _tg=target):
+                try:
+                    *_, inc_deg, _look, _sq = satellite_to_target_vector(
+                        _st(dt), _tg
+                    )
+                except ValueError:
+                    return False
+                return R_INCIDENCE_BAND_DEG[0] <= inc_deg <= R_INCIDENCE_BAND_DEG[1]
+
+            inc_iv = mask_intervals((-R_PASS_SPAN_S, R_PASS_SPAN_S),
+                                    incidence_ok, n_scan=240)
+            if not inc_iv:
+                continue
+            # vector-squint minimum inside the incidence leg
+            cand = [
+                (abs(satellite_to_target_vector(state(0.5 * (lo + hi)), target)[6]), 0.5 * (lo + hi))
+                for lo, hi in inc_iv
+            ]
+            vmin_t, tca = min(cand)
+
+            env_rad = mode_squint_envelope_rad(mode)
+            env_iv = mask_intervals(
+                (tca - R_PASS_SPAN_S, tca + R_PASS_SPAN_S),
+                lambda dt, _t=tca: abs(
+                    squint_at(dt, _t, lib.geo)
+                ) <= env_rad,
+                n_scan=240,
+            )
+            if not env_iv:
+                continue
+            dur = lambda x, _t=tca: duration_scene_s(
+                mode, squint_at(x, _t, lib.geo), lib
+            )
+            end_iv = []
+            for lo, hi in env_iv:
+                fw = feasible_subintervals(
+                    effective_duration_fn(dur, pads), lo, hi, n_scan=240
+                )
+                end_iv.extend(fw.intervals)
+            if not end_iv:
+                continue
+            window = intersect_intervals(
+                tuple(env_iv), tuple(end_iv)
+            )
+            if not window:
+                continue
+            width = sum(hi - lo for lo, hi in window)
+            if best is None or width > best[0]:
+                best = (width, window, tca, vmin_t, pass_i)
+
+        if best is None:
+            removals["no_window"] += 1
+            continue
+
+        width, window, t_ca, vmin_t, pass_i = best
+        w_lo = min(lo for lo, _ in window)
+        w_hi = max(hi for _, hi in window)
+        mid = 0.5 * (w_lo + w_hi)
+        # per-task geometry for the manifest (ticket piece 1/3)
+        geo_at = satellite_to_target_vector(
+            kepler_to_eci(elements, epoch + timedelta(seconds=pass_i * 600.0 + mid)),
+            target,
+        )
+        incidence_deg = geo_at[4]
+        _, _, r0_m = look_geometry(lib.geo.altitude_m, incidence_deg)
+        aasr_db = _aasr(
+            mode, squint_at(mid, t_ca, lib.geo), lib.geo.k,
+            PRF_PRODUCTION_HZ, lib,
+            spt_scene_wa_m=(l_az_m if mode is Mode.SPT else None),
+        )["aasr_db"]
+        if not (aasr_db <= AASR_THRESHOLD_DB):
+            removals["aasr"] += 1
+            continue
+
+        window_widths.append(width)
+        tasks.append({
+            "t_start_s": round(w_lo, 9),
+            "t_end_s": round(w_hi, 9),
+            "t_ca_s": round(t_ca, 9),
+            "azimuth_size_m": round(l_az_m, 6),
+            "priority": priority,
+            "rho_req_m": round(rho_req, 9),
+            "mode": mode.name,
+            "prf_hz": PRF_PRODUCTION_HZ,
+            # ── per-task real geometry (ticket 16, piece 1/3) ──
+            "r0_m": round(r0_m, 6),
+            "incidence_deg": round(incidence_deg, 6),
+            "vector_squint_min_t_s": round(vmin_t, 9),
+            "lat_deg": round(lat, 6),
+            "lon_deg": round(lon, 6),
+            "window_width_s": round(width, 6),
+        })
+
+    assert sum(removals.values()) + len(tasks) == density_n, "R-family ledger"
+    manifest = {
+        "schema": "scenario-manifest/2.0-realwindow",
+        "scenario": {
+            "family_code": family_code,
+            "density_n_targets": density_n,
+            "demand_tier": demand_tier,
+            "window_semantics": "real-orbit three-leg cascade",
+            "platform_fixture": "experiments/platform_kim2021.json",
+        },
+        "preregistration": {
+            "seed": seed,
+            "variant_index": variant_index,
+            "seed_rule": "variant_index*100 + seed_index (ticket-02 template)",
+            "pads": {
+                "inter_task_fraction": pads.inter_task_fraction,
+                "window_tail_fraction": pads.window_tail_fraction,
+            },
+            "prf_production_hz": PRF_PRODUCTION_HZ,
+            "cluster_centres_deg": [list(c) for c in R_CLUSTER_CENTRES_DEG],
+            "cluster_scale_km": R_CLUSTER_SCALE_KM,
+            "pass_span_s": R_PASS_SPAN_S,
+            "prop_step_s": R_PROP_STEP_S,
+            "passes": R_PASSES,
+            "incidence_band_deg": list(R_INCIDENCE_BAND_DEG),
+            "pass_selection_rule": (
+                f"longest visible window over {R_PASSES} passes (D13)"
+            ),
+        },
+        "generation_ledger": {
+            "n_drawn": density_n,
+            "removals": removals,
+            "n_served": len(tasks),
+            "h_coarse_draws": h_draws,
+            "window_width_s_mean": (
+                round(sum(window_widths) / len(window_widths), 6)
+                if window_widths else 0.0
+            ),
+            "window_width_s_min": round(min(window_widths), 6) if window_widths else 0.0,
+            "window_width_s_max": round(max(window_widths), 6) if window_widths else 0.0,
+        },
+        "tasks": tasks,
+    }
+    return manifest
 
 
 def write_manifest(manifest: dict, path: Path) -> None:
