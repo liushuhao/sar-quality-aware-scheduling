@@ -137,4 +137,28 @@
 
 **一处自查纠错**：验收项 13 我先写成 `f_Q = (g_T/ρ_a²)·1/ρ_rg²`、隐含量 4.9338（实为 `1/A`），实测正解是 `f_Q = (g_T/ρ_a)·(1/ρ_rg)`、隐含量 **2.0**，已改。
 
+### [13:25] 票 16 开工：fork write-back 三步完成（commit `92dfc35` + `d676cce`）
+
+**守卫缺口修复（复制前的前置，两视角共同指出）**：
+- `test_fork_self_contained_no_sar_sim_import` 原只查 `metrics/nesz.py` 单文件 ⇒ 新 fork 文件写 `import sar_sim` 无人拦截
+- `test_fork_scope_matches_manifest_f01` 用 `hasattr` 绑在单模块对象 ⇒ 符号复制进新文件不可见，**manifest 条款 2 只是文本承诺**
+- 两者均扩为全 `sss_core` 树扫描。**反验**：注入探针文件（`from sar_sim.types import ...` + 重定义被排除的 `aggregate_quality`）⇒ 2 守卫变红，含旧守卫看不见的新文件符号；移除后全绿
+
+**F-02 fork 落地**（回写条款固定顺序：登记 → 复制 → 守卫）：
+- 裁剪面：`orbit.py` 全量 + `visibility.py` **几何子集** + `target.py` 两 helper + WGS-84 常量链；**排除** `find_visibility_windows`/`visibility_matrix`（返回共享 `ObservationWindow` 且携带第二套窗口语义，违票面「禁私有重实现」）
+- `KeplerianElement`/`ECIState` **本地独立定义**（纯 frozen dataclass）——F-01 的排除先例针对带行为的方法型类型，纯数据类不适用
+- 守卫 `test_fork_identity_realwindows.py` **14 passed**（与 F-01 合计 22）。**反验**：地球自转角速率扰动 1e−11 ⇒ 2 守卫变红
+
+**两个 squint 是不同物理量（实测坐实，两视角的共同担忧被改写为「缺两个原子」）**：
+- 共享向量 squint = 目标处**全沿轨偏航角**（600 s 内 6.542°–19.843°，窗内几乎不动）
+- 分叉 `squint_at` = **窗内相对 t_ca 的偏移**（±12° 摆动）
+- **零点也不重合**：向量最小点在 dt=−600 s，`squint_at` 零点在 dt=0
+⇒ manifest 须登记**两个零点**字段；包络腿只消费 `squint_at`，向量 squint 仅诊断上报
+
+**逐任务几何注入的物理必要性（实测）**：`R0` 随入射角在 20–70° 带内变动 **−22.20% ~ +71.94%** ⇒ piece-b 不是装饰性的。裁决走**最小改动面**：`TaskPlan` 扩展逐任务几何 + `duration_scene_s`/`squint_at` 接受可选 R0 覆盖（None ⇒ `lib.geo`），使旧 M/P 族**逐位不变**（冻结六族零 diff）。
+
+**入射窗实测**：设计几何下 300 s 过境入射角 45.007°→47.393° 平滑变化，20–70° 掩码全程 in_band ⇒ 入射腿可用。
+
+**未验项（明确标记，未当作完成）**：`duration.py:141,145-149,166,168` 的 `geo.R0_m` 直接引用尚未覆盖注入。
+
 （每票完成后追加：`[HH:MM] TICKET 票NN → completed (<hash>) — <计数> / exit code`）
