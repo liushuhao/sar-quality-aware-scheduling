@@ -3,7 +3,7 @@
 ## State
 - **票 23 completed（2026-10-04）**：逐任务 r0_m 口径收口（R14+R15+第八处 aasr_direct）。两 commit：`dd3aa92`（三函数签名+全链透传+8 测试+变异红证 6/6+AST 守卫）→ `d4921e9`（scenarios 真窗两门+verify 四镜像+DOMAIN_N0 208+recompute_r_fam.py）。真窗阶梯重跑 **120/120 exit0**（head 统一 d4921e9），旧件存档 `v2-run-preT23/`。判词全保持：R1C DEAD×CONVERGED（P1 EVALUABLE）；R2F/R3H/R4H ALIVE×UNCONVERGED ⇒ **NO CLAIM**；promotion 全档 <6.0（R2F 顶档 3.57→5.22 dB，仍未触发）。细节见 PROGRESS.md「票 23」节。
 - **根因排查产出的关键事实**：台账 R14/R15 之外漏记的第八处= `aasr_direct`（库 R0 进 SPT kat0 与 promotion spread）；「修=作废 270 单元」是未实测假设——实测 R1C 全 STR 零变化、manifests 40/40 byte-identical、变化仅经 C2 model 分支（~1e-3 s/对）与 SPT kat0；R1C 注册值 4.0032 在新口径 max-over-seeds 下精确复现。
-- **上游升级（用户拍板「修」）已闭环**：ARS 插件 3.22.2→3.23.0（**重启生效**）+ marketplace current + vendors ff（ARS/caveman）；`upstream-status.py` behind=0。残留：C:\Users\33151 项目路径 local-scope 旧版（ARS 3.22.2/caveman 3.0.0）与用户级混版，建议 update 或移除（subagent 审查建议，低危）。
+- **上游升级（用户拍板「修」）已闭环**：ARS 插件 3.22.2→3.23.0（**重启生效**）+ marketplace current + vendors ff（ARS/caveman）；`upstream-status.py` behind=0。local-scope 混版已清（2026-10-04）：registry 两条 local 冗余注册删除（备份 installed_plugins.json.bak-20261004-localscope），无引用旧缓存目录 GC，缓存收敛单版本 3.23.0/3.1.0。
 - 台账 open=4：**R7**（12 技能名候选逐 diff 人审，整块时间）、**R12**（exit-11 CLI 不可达）、**R13**（SAT_MARGIN_KIM 测试自指）、**R16**（红线分类器逗号/转折洗白句，语料零命中）。
 - 用户拍板待办：真窗三族 R2F/R3H/R4H **加预算出 P1 判决与否**（维持 NOT-YET-TESTED/NO CLAIM，不加预算即按现判词进写作）。
 

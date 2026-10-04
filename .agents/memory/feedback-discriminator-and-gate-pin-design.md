@@ -15,4 +15,4 @@ metadata:
 
 **Why:** 判别力缺口在「测试绿」表面下不可见，只有变异红证/首次 pin 变更才暴露；STR 的 boundary_rate 恒 0 使 STR 任务对 omega 口径天然免疫（判别器必须选 SLS/SPT 任务）。
 
-**How to apply:** 写变异红证时先列「该语义单元的全部代码行」，变异一次退光；门禁 pin 改动时对照实现语义（passed vs collected vs selected）；涉及恒零/恒真分支（STR/SLS r0 不变式）的判别器必须避开。相关 [[feedback-cost-claims-need-measurement]] [[feedback-assert-silent-skip]]
+**How to apply:** 写变异红证时先列「该语义单元的全部代码行」，变异一次退光；门禁 pin 改动时对照实现语义（passed vs collected vs selected）；涉及恒零/恒真分支（STR/SLS r0 不变式）的判别器必须避开。相关 [[feedback-cost-claims-need-measurement]] [[feedback-instrument-measurement-traps]]
