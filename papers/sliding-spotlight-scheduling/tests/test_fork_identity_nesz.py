@@ -160,8 +160,10 @@ def test_no_shared_only_symbol_defined_anywhere_in_the_fork():
         "solve_kepler", "_rgf", "_rgi", "_rgu", "kepler_to_eci",
         "propagate_orbit", "MU_EARTH",
         "KeplerianElement", "ECIState",
-        "_compute_off_nadir_angle", "_off_nadir_to_incidence",
-        "_determine_look_direction", "satellite_to_target_vector",
+        # ticket 24: _off_nadir_to_incidence is gone from the fork -- incidence
+        # is now the target-side vector angle, computed in _target_incidence_angle.
+        "_compute_off_nadir_angle", "_determine_look_direction",
+        "_target_incidence_angle", "satellite_to_target_vector",
         "lat_lon_to_ecef", "eci_to_ecef_rotation",
     }
     denied -= licensed

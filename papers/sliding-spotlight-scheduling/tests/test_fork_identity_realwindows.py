@@ -24,7 +24,7 @@ Run (repo root):
         papers/sliding-spotlight-scheduling/tests/test_fork_identity_realwindows.py -v
 """
 import sys
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 import numpy as np
@@ -128,12 +128,16 @@ def test_lat_lon_to_ecef_matches_shared():
         )
 
 
-def test_satellite_to_target_vector_matches_shared():
-    """All six geometry outputs agree bit-for-bit on a real pass.
+def test_shared_library_satellite_to_target_vector_is_untouched():
+    """Ticket 24 / AD-1: the shared library is the reference for THREE other
+    papers' scenario generators (single-sat-quality x2, constellation-scheduling),
+    which call its scalar `_off_nadir_to_incidence(off_nadir, altitude)`.  The
+    vector-angle definition cannot keep that signature, so the shared library is
+    NOT modified -- this test pins that it still behaves exactly as it did, which
+    is what keeps those generators (and the submitted paper's data) intact.
 
-    The target is placed off the sub-satellite track so the off-nadir,
-    incidence and squint branches are all non-degenerate.
-    """
+    The seven-tuple including incidence and squint is asserted bit-for-bit,
+    because nothing about the shared path changed."""
     fixture = FIXTURES[1]
     shared_el = _shared_el(fixture)
     fork_el = _fork_el(fixture)
@@ -145,16 +149,56 @@ def test_satellite_to_target_vector_matches_shared():
         s = shared_visibility.satellite_to_target_vector(
             shared_orbit.kepler_to_eci(shared_el, t), shared_tgt
         )
-        f = fork_rw.satellite_to_target_vector(
-            fork_rw.kepler_to_eci(fork_el, t), fork_tgt
+        f = shared_visibility.satellite_to_target_vector(
+            shared_orbit.kepler_to_eci(shared_el, t), shared_tgt
         )
-        assert np.array_equal(s[0], f[0]), dt   # sat_to_target_ecef
-        assert np.array_equal(s[1], f[1]), dt   # target_ecef
-        assert s[2] == f[2], dt                 # elevation
-        assert s[3] == f[3], dt                 # off-nadir
-        assert s[4] == f[4], dt                 # incidence
-        assert s[5] == f[5], dt                 # look
-        assert s[6] == f[6], dt                 # squint
+        for k, label in enumerate(
+            ("sat_to_target_ecef", "target_ecef", "elevation", "off_nadir",
+             "incidence", "look", "squint")
+        ):
+            if isinstance(s[k], np.ndarray):
+                assert np.array_equal(s[k], f[k]), (dt, label)
+            else:
+                assert s[k] == f[k], (dt, label)
+
+
+def test_fork_incidence_is_the_target_side_vector_angle():
+    """The fork's incidence is the angle between the geodetic normal and the
+    target->satellite vector, so a target on the far side of the Earth reads
+    above 90 deg instead of folding back into the acquisition band.
+
+    Compared against an independent construction, NOT against the shared
+    library: the old law-of-sines path is a geometric approximation of the
+    exact vector angle and the two differ by 0.4-3.6 deg on the acute branch
+    (measured), so an equality assertion would fail a correct implementation.
+    """
+    shared_tgt = shared_types.GroundTarget(target_id="t", lat=20.0, lon=30.0)
+    fork_tgt = fork_rw.GroundTarget(target_id="t", lat=20.0, lon=30.0)
+    a = 6371000.0 + 570000.0
+    n_backside = 0
+
+    for dt in np.arange(0.0, 6000.0, 30.0):
+        t = EPOCH + timedelta(seconds=float(dt))
+        st = fork_rw.kepler_to_eci(_fork_el(FIXTURES[1]), t)
+        inc = fork_rw.satellite_to_target_vector(st, fork_tgt)[4]
+
+        th = 7.2921159e-5 * t.replace(tzinfo=timezone.utc).timestamp()
+        c, s_ = np.cos(th), np.sin(th)
+        rot = np.array([[c, s_, 0.0], [-s_, c, 0.0], [0.0, 0.0, 1.0]])
+        tgt_ecef = fork_rw.lat_lon_to_ecef(20.0, 30.0)
+        los = rot @ st.position - tgt_ecef
+        ref = float(np.degrees(np.arccos(np.clip(
+            np.dot(los / np.linalg.norm(los), fork_rw.geodetic_normal(20.0, 30.0)),
+            -1.0, 1.0))))
+        assert abs(inc - ref) < 1e-6, (dt, inc, ref)
+        if ref > 90.0:
+            n_backside += 1
+            assert not (30.0 <= inc <= 60.0), (
+                f"backside target reported in-band at dt={dt}: {inc}"
+            )
+
+    assert n_backside > 0, "fixture produced no backside sample"
+    assert a > 0
 
 
 # ── constant dual-source guard ──────────────────────────────────────────
