@@ -447,3 +447,13 @@ skip/xfailed 仍是基线那两条（1 条件跳过 + 1 xfailed = R12 exit-11 �
 - **promotion 读数**：全档 <6.0 未触发；R2F 顶档 max 3.573→**5.224 dB**（距阈 0.78 dB，仍 ALIVE×UNCONVERGED ⇒ NO CLAIM）。dfq 随预算陡增保持（R2F 10.5→26→37）。
 - 门禁：verify_prereg_v2 28 checks / verify_ticket22 43 checks / claim_traces 11/11 --strict / red_lines 62 files rc=0 / run_verify（见下）；`experiments/results/` 六族冻结件零 diff。
 - 旧阶梯存档 `v2-run-preT23/`；R_fam 复算件 `v2-run/r_fam_recompute_t23.json`。
+
+## 2026-10-04 P0（审查发现，未修复）：真窗四族全量目标物理不可见
+
+**发现路径**：用户审查 geo-map.html（本会话生成的目标分布×星下点轨迹图）发现簇压轨迹（SAR 不能看星下点）→ 量簇-轨迹距离 2722~11977 km 与"全任务入射角带内"矛盾 → 解剖 R1C task0：星下点距目标 10,499 km 而内核报入射角 45.0° → 全量仰角实测。
+
+**根因**：`sss_core/realwindows.py:_compute_off_nadir_angle` 天底角在地平线外**折返**（可见极限 65.4°，背面目标折回 16-40°）；`_off_nadir_to_incidence` 正弦定理换算 + `asin` 只回 [0°,90°] 支——背面目标真入射角（ψ+η，实测例 134.7°）被静默折成 45° 假带内值；`scenarios.py:394 incidence_ok` 无地平线守卫。**共享库 `src/sar_sim/generator/visibility.py:48` 同型同源**（Paper 1 合成窗未触发）。
+
+**实测**：真窗四族全部 460 个"幸存"任务在服务窗内 5 点采样仰角全 <0（0 可见）；"50% 幸存率"= 8 簇中 4 簇落在折返假入射角环带的整数巧合。全链（manifest→三腿窗→求解→v2_results→收敛判决→票 23 复算）内部自洽但物理语义为零；合成族 M 不受影响。
+
+**修复方向（用户已提，未实施）**：入射换算改向量夹角定义（acos(目标天顶单位矢·目标→卫星单位矢)，返回 [0,180] 无分支丢失；可见性 ⟺ 入射角 <90°）+ 变异红证 + 460 任务仰角等价检查。**连带**：共享库 visibility.py 同步裁决、票 16/23 重开、真窗场景重设计（修复后两圈 ±120s 弧下可能 0 簇可见，需重议圈数/历元/簇心摆位）。台账 **R17**。
