@@ -518,3 +518,17 @@ skip/xfailed 仍是基线那两条（1 条件跳过 + 1 xfailed = R12 exit-11 �
 - **MINOR**：`visibility.py` 的 `.timestamp()` 实为 `:124-125`。
 
 **票面形态变更**：票 24 从「共享库同步修」改为「fork 内新路径 + 共享库只增不改 + fork 身份守卫修订」，红线解除留痕已改写为「未解除」。
+
+### gate-review 确认轮（票 24/25）：5 CLOSED / 1 PARTIALLY + 5 新 MAJOR → 已修票
+
+- **旧发现**：6 项中 5 项 CLOSED（共享库零字节、死 API 归属已补、t_ca 读者补全、MUST-1 判别力、MUST-7 预闸、no-op 四点）；1 项 PARTIALLY（密度阶梯算术已对，但**与日程跨度硬矛盾**）。
+- **MAJOR-1（最重，主线程复算确认）**：**(20,0) 只有 1.0 趟/24h**——我 spec 与票里写的「4 趟/日程」是把 **48 h 窗口数字当成 24 h**。按容量 24（窗宽 210 s）算，N=200 需 9 趟 ⇒ 跨度 4.5 天。进一步实测发现**窗宽与趟数反相关、无单一最优**：`(20,0)` 1.0 趟/24h / 窗宽 210 s / 容量 24；`(30,100)` 2.0 趟/24h / 窗宽 80–140 s / 容量 9–16；`(30,0)`/`(34,−118)` 1.5 趟/24h。⇒ **用户拍板「缩短跨度 + 降阶梯」**：阶梯 `20/50/100`、**日程跨度 3 天**（新 AD-9，跨度作为预注册量；N=100 需 5 趟，实测趟间隔 510 min ≈ 8.5 h ⇒ 3 天约 8–9 趟，余量须实测不得凭线性外推）。N=150/200 出局。
+- **MAJOR-2**：FORK_MANIFEST 修订范围欠估——删 fork 两个 helper 会同时失效 `:50`（复制符号列）、`:53`（逐位一致要求）、`:61`（守卫表行）与 `tests/test_fork_identity_nesz.py:163`（许可符号集），**四处须同 commit**。
+- **MAJOR-3**：守卫①不可实施（首版写「共享库对三个生成器逐位一致」——共享库对共享库恒真，零判别力；真保证是 `FORK_MANIFEST.md:21` 已有的 `src/sar_sim` 零 diff 断言，**复用并实跑留档**即可）。
+- **MAJOR-4**：偏离面比首版写的更广——**R21 改 fork 的 ECEF 旋转会使 `s[0]`/`s[2]`/`s[3]`/`s[6]` 全部发散**，不只是 incidence/elevation。现存 `test_fork_identity_realwindows.py:145-152` 对 `s[0]` 断言 `array_equal`、对 `s[3]/s[6]` 断言 `==` ⇒ **R21 落地后必然红**，故 R21 与 AD-1 必须同 commit，守卫须逐项声明可比/不可比。
+- **MAJOR-5**：锐角等价断言「与旧 asin 路径逐位同值」不可证伪（旧路径同票删除后无参照源）⇒ 判据写实为「与**共享库保留的** `_off_nadir_to_incidence(off_nadir,h)` 之差 < 1e-9°」（共享库那版本票不删，可 import 作参照）。
+- **MAJOR-6**：冻结 prereg 模板 `realwindow_scenario_template.json:13` 登记 `"<20|100|300|500>"` 须按 append-only 加 `amendment_<date>_<slug>` 字段（禁原地改）；且 **`verify_prereg_v2.py` 对模板与阶梯零 grep 命中** ⇒ 该漂移当前无人看守，须补守卫。
+- **既存 bug（非本轮引入，确认轮发现）**：`sss_core/scenarios.py:110` 的 `R4H=500` 与 `scripts/recompute_r_fam.py:49` 的 `R4H=400` **已经分叉**；R4H 出局后两处都删并留痕（`verify_prereg_v2` 不查此表，故此前未被发现）。
+- **MINOR**：`t_ca_at` 须用**闭区间** `lo<=t<=hi`（`windows.py:90` 闭区间约定 + `decode_tau` 在 τ→1 返回 `hi`），写成半开区间会在 τ=1 取错窗；跨窗重叠实测不发生（趟间隔 8.5 h ≫ 单趟 210 s）但须作断言钉死。
+
+**主线程自查补漏**：票 24 改写时丢了三个死 API 的删除（`incidence_in_band`/`closest_approach_states`/`iter_states`，`realwindows.py:323/341/362`，grep 复验零调用者），已补进票 25 并确认 `__all__` 同步；同时核实 fork 范围守卫 `test_fork_exposes_exactly_the_registered_f02_symbols` 是**单向断言**（只查登记符号存在），故删 fork 内部两个 helper 不会让它红——方案自洽。
