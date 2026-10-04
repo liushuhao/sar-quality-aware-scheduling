@@ -65,6 +65,25 @@ EARTH_FLATTENING = 1.0 / 298.257223563
 EARTH_POLAR_RADIUS = EARTH_EQUATORIAL_RADIUS * (1.0 - EARTH_FLATTENING)
 EARTH_E2 = 1.0 - (EARTH_POLAR_RADIUS**2) / (EARTH_EQUATORIAL_RADIUS**2)
 
+
+def geodetic_normal(lat: float, lon: float) -> np.ndarray:
+    """Unit normal of the WGS-84 ellipsoid at (lat, lon).
+
+    Ticket 24: the incidence angle is measured against THIS, not against the
+    geocentric radius -- the two differ by up to ~0.19 deg at mid-latitudes,
+    which is the same order as the band edges the window cascade tests against.
+    """
+    lat_r, lon_r = np.radians(lat), np.radians(lon)
+    sin_lat, cos_lat = np.sin(lat_r), np.cos(lat_r)
+    p = EARTH_EQUATORIAL_RADIUS / np.sqrt(1.0 - EARTH_E2 * sin_lat**2)
+    n = np.array([
+        cos_lat * np.cos(lon_r) / p,
+        cos_lat * np.sin(lon_r) / p,
+        sin_lat / p * (1.0 - EARTH_E2) / (1.0 - EARTH_E2 * sin_lat**2),
+    ])
+    return n / np.linalg.norm(n)
+
+
 MU_EARTH = 3.986004418e14  # m^3/s^2
 
 
@@ -241,7 +260,13 @@ def eci_to_ecef_rotation(dt_seconds: float) -> np.ndarray:
 def _compute_off_nadir_angle(
     sat_ecef: np.ndarray, target_ecef: np.ndarray
 ) -> float:
-    """Angle between nadir and line-of-sight [deg]."""
+    """Angle between nadir and line-of-sight [deg].
+
+    NOTE (ticket 24): this is the SATELLITE-CENTRED off-nadir angle.  On its
+    own it carries no visibility information -- past the horizon it folds back
+    and a target the satellite cannot see reads the same as one it can.  It is
+    retained as a reported quantity only; incidence no longer derives from it.
+    """
     los = target_ecef - sat_ecef
     nadir = -sat_ecef
     cos_off_nadir = np.dot(los, nadir) / (
@@ -251,22 +276,37 @@ def _compute_off_nadir_angle(
     return np.degrees(np.arccos(cos_off_nadir))
 
 
-def _off_nadir_to_incidence(
-    off_nadir_deg: float, sat_altitude_m: float
+def _target_incidence_angle(
+    sat_ecef: np.ndarray,
+    target_ecef: np.ndarray,
+    lat: float,
+    lon: float,
 ) -> float:
-    """Off-nadir (satellite-centred) -> incidence (target-centred) [deg].
+    """Incidence angle at the target: the vector angle [deg] in [0, 180].
 
-    Law of sines in the satellite-centre-target triangle:
-        sin(theta_i) = (R_e + h) / R_e * sin(eta)
+    Ticket 24 / AD-1.  Defined as the angle between the local geodetic normal
+    and the target->satellite unit vector.  The previous definition chained
+    the off-nadir angle through the law of sines and took an ``arcsin``, which
+    returns only the [0, 90] branch: a target on the far side of the Earth
+    (true incidence 134.7 deg in the recorded case) came back as a
+    plausible-looking 45 deg, i.e. INSIDE the 30-60 deg acquisition band.
+
+    Measured consequence at (45N, 0E) over one revolution: the true incidence
+    never leaves [94.7, 168.6] deg -- the target is never visible at all --
+    while the old path reported an in-band value at 1200 of 1200 samples.
+
+    Why the definition rather than a horizon guard: the folded off-nadir angle
+    and the near-side angle are not distinguishable from ``(off_nadir, h)``
+    alone, so a bare off-nadir -> incidence converter cannot carry a
+    visibility guard by construction.  Measuring the angle directly removes the
+    ambiguity instead of papering over it.
     """
-    if off_nadir_deg <= 0.0:
+    los = sat_ecef - target_ecef
+    norm = np.linalg.norm(los)
+    if norm <= 0.0:  # pragma: no cover -- coincident positions are not physical
         return 0.0
-    R_e = R_EARTH_M
-    R = R_e + sat_altitude_m
-    ratio = R / R_e
-    sin_incidence = ratio * np.sin(np.radians(off_nadir_deg))
-    sin_incidence = np.clip(sin_incidence, -1.0, 1.0)
-    return np.degrees(np.arcsin(sin_incidence))
+    up = geodetic_normal(lat, lon)
+    return float(np.degrees(np.arccos(np.clip(np.dot(los / norm, up), -1.0, 1.0))))
 
 
 def _determine_look_direction(
@@ -291,7 +331,15 @@ def satellite_to_target_vector(
     with ``sss_core.geometry.squint_at``.
     """
     target_ecef = lat_lon_to_ecef(target.lat, target.lon, target.altitude_m)
-    R_eci_to_ecef = eci_to_ecef_rotation(satellite_state.time.timestamp())
+    # ticket 24 / R21: the epoch is naive, so .timestamp() would read it in the
+    # machine's LOCAL timezone -- a 120.33 deg phase error on a UTC+8 box, and
+    # "byte-identical from seed" would only hold for same-timezone machines.
+    # Pin the frame explicitly instead.
+    if satellite_state.time.tzinfo is None:
+        _t = satellite_state.time.replace(tzinfo=timezone.utc)
+    else:
+        _t = satellite_state.time
+    R_eci_to_ecef = eci_to_ecef_rotation(_t.timestamp())
     sat_ecef = R_eci_to_ecef @ satellite_state.position
     sat_vel_ecef = R_eci_to_ecef @ satellite_state.velocity
 
@@ -306,7 +354,11 @@ def satellite_to_target_vector(
     elevation_deg = np.degrees(np.arcsin(sin_elev))
 
     off_nadir_deg = _compute_off_nadir_angle(sat_ecef, target_ecef)
-    incidence_deg = _off_nadir_to_incidence(off_nadir_deg, h_sat)
+    # ticket 24: incidence is the target-side vector angle, NOT a conversion of
+    # the off-nadir angle -- see _target_incidence_angle for why.
+    incidence_deg = _target_incidence_angle(
+        sat_ecef, target_ecef, target.lat, target.lon
+    )
     look = _determine_look_direction(sat_ecef, sat_vel_ecef, target_ecef)
 
     los_unit = sat_to_target_ecef / distance
