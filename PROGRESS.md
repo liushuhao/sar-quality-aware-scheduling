@@ -420,3 +420,30 @@ skip/xfailed 仍是基线那两条（1 条件跳过 + 1 xfailed = R12 exit-11 �
 `boundary_rate`（`maneuver.py:95`）在**逐任务路径上**（C2 转移项，`evaluator.py:278-279` 调用）却读**库常数** `lib.geo.R0_m` ⇒ **第六处口径分裂**，杠杆项 `Vs·cosψ/R0` 随逐任务 R0 变动 **±42%**（实测 R0×0.778 → 1.229e-2 vs 基线 9.559e-3；R0×1.719 → 5.561e-3）。
 **不修的理由**：修它会使刚完成的 270 单元主实验全部失效，须重跑全阶梯（约 50 min 求解）。**故显式记账为延后债**，下一轮若动 C2 语义必须连带处理。
 同类待查（低危，因 STR 立即返回 0、SLS/SPT 才读）：`windows.py:384` `footprint_ok` 的 SPT 足印界读库 R0。
+
+## 票 23：逐任务 r0_m 口径收口（2026-10-03/04，用户拍板：修 R14/R15 + 根因排查指令）
+
+### 根因排查（「修根不修面」指令的直接产物）
+
+同根因模式「凡以库几何为基准的量在逐任务路径上脱钩」全仓 AST/grep sweep，命中**三处**生产路径（台账只记了两处）：
+1. `boundary_rate`（maneuver.py:95）——R14，C2 杠杆项 ±42%
+2. `footprint_ok`（windows.py:384）——R15，SPT 足印界
+3. **`aasr_direct`（aasr.py:200）——第八处，台账漏记**：无 r0 形参，K_a/K_c/k_at0 全库 R0，直连真窗 AASR 门与 promotion spread（R_fam 判词来源）
+
+分类排除（合法库口径，守卫白名单钉死）：duration 点目标口径（g_T 比值内 R0 相消）、planar oracle、kim_eq23 内部恒等、anchor fallback-setup 标定检查、quality.q_rad (R_ref/R)³ 参考归一化、AASRGrid._build_dense（k_c/k_a 精确相消+平台级注册口径）。gate-review 一轮 FAIL→修（B1：verify.py promotion_replay 漏镜像+finite 排除分支死代码；B2：:312 错分类+白名单缺项）→确认解除。
+
+### 实施（两 commit）
+
+- `dd3aa92`：三函数 `r0_m=None`（None=标定/合成口径）+ evaluator C2 对 / anchor fits+repair 六处（经 boundary_rate_of）/ nsga2 promotion 透传；8 新测试；变异红证 **6/6**（M2 判别器=end-to-end evaluate() + 二分 straddle——omega 单项 delta ~1e-3 s，STR 两口径全零故测试任务用 SLS）；静态守卫测试（AST 白名单外 `geo.R0_m` 直读即红）。
+- `d4921e9`：scenarios.py 真窗 footprint 门移 pass 循环（该 pass r0_task 判定；归因规则注册：footprint 移除 ⟺ 全部可评估 pass 失败，不可评估不计）+ 真窗 AASR 门透传；verify.py 四镜像点（promotion_replay 补 `ValueError→inf` catch 对齐 nsga2；scatter/_per_mode_means 透传 manifest r0）；DOMAIN_N0 200→208；`recompute_r_fam.py` 落成已提交脚本（Y5）。
+
+### 重跑与实测（「修=作废 270 单元」假设被证伪）
+
+- 双面回归：本域 **206 passed + 1 skipped + 1 xfailed**（收集 208，skip/xf 净增 0）+ 共享库 **145 passed**，均 rc=0。
+- 最小单元（rule 11）：R1C 负控 10/10 **数值零变化**（全 STR 两口径 omega 全零+AASR r0 不变式）；R2F 正控真变化（f1 0.327→0.367 等）；manifests **40/40 byte-identical**（RNG 序未动，footprint 门结构性 no-op——Y2 预测命中：R 族 r0_task∈[817,1024] km 全高于库 768 km）。
+- 合成不变式：M1NC 单元对 v2-run syn 基线 **0 diff**；M 五族 anchor Δ=0.0（confound control 再生成）。
+- 全真窗阶梯：**120/120 exit 0**（p40g60 补跑对齐 HEAD d4921e9；三档 head 统一）；逐单元 diff 分类与预登记预期逐项吻合——变化集中在 R2F/R3H/R4H 的 front/promotion（footprint 类=0，非空即 bug 的断言未触发）。
+- **R_fam 复算（已提交脚本口径）**：R1C **DEAD**（base 4.0018 / max-over-seeds **4.0032=票 17 注册值精确复现**）；R2F/R3H/R4H **ALIVE**（6.8296/6.9109/6.9104，票 17 散文值差 ≤0.09 dB，判据 6.0 不变）。两维判词不变：R1C DEAD×CONVERGED；三细/混族 ALIVE×UNCONVERGED ⇒ **NO CLAIM**。
+- **promotion 读数**：全档 <6.0 未触发；R2F 顶档 max 3.573→**5.224 dB**（距阈 0.78 dB，仍 ALIVE×UNCONVERGED ⇒ NO CLAIM）。dfq 随预算陡增保持（R2F 10.5→26→37）。
+- 门禁：verify_prereg_v2 28 checks / verify_ticket22 43 checks / claim_traces 11/11 --strict / red_lines 62 files rc=0 / run_verify（见下）；`experiments/results/` 六族冻结件零 diff。
+- 旧阶梯存档 `v2-run-preT23/`；R_fam 复算件 `v2-run/r_fam_recompute_t23.json`。

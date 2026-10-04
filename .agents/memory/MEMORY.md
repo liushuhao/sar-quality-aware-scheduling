@@ -67,3 +67,6 @@
 - [Paper2 四票全完成 20261003](project-paper2-four-tickets-complete.md) — 22/15/16/17 全 completed；270 单元全 exit 0；R1C P1 成立、另三族 NOT-YET-TESTED；promotion 结构维真几何翻转(6.82 ALIVE)；预算额度已耗尽，加预算须拍板
 - [逐实体几何注入引发口径分裂](feedback-caliber-split-on-geometry-injection.md) — 注入后凡以库几何为基准的量都会脱钩；注入前先 grep 全部基准量，修法是基准在被测几何上求上界而非改成逐实体
 - [守卫的洗白与假绿](feedback-gate-laundering-and-tau-green.md) — 禁令标记可洗白同行真声明(三轮才修对)；子串匹配当数值比对("2" in "20")；审查者的"事实错误"也要自己复算再采纳
+- [feedback-cost-claims-need-measurement](feedback-cost-claims-need-measurement.md) — 「修=X 作废/成本 Y」须实测;R14 ±42% 是杠杆比非输出漂移,270 单元作废论被重跑证伪
+- [feedback-discriminator-and-gate-pin-design](feedback-discriminator-and-gate-pin-design.md) — 判别器三课:半变异假绿/行为隔离不可能用 AST 结构断言/门禁 pin 语义须匹配实现
+- [project-paper2-ticket23-r0-caliber-closed](project-paper2-ticket23-r0-caliber-closed.md) — 票 23 闭环(2026-10-04):r0_m 全链收口,阶梯 120/120 重跑,判词全保持,写作取数走 v2_results

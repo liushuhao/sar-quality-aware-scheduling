@@ -156,7 +156,9 @@ def shared_lib_tests() -> dict:
     return _step("shared_lib_tests", "PASS" if ok else "FAIL", detail)
 
 
-DOMAIN_N0 = 208          # --collect-only, 2026-10-04 (206 passed + 1 skipped + 1 xfailed; ticket 23 added 8)
+DOMAIN_N0 = 206          # --collect-only 2026-10-04: 206 passed (ticket 23 added 8)
+DOMAIN_N0_SKIPPED = 1    # baseline conditional skip -- silent removal reads red
+DOMAIN_N0_XFAILED = 1    # baseline xfail (R12 exit-11 marker) -- ditto
 
 
 def domain_tests() -> dict:
@@ -188,18 +190,29 @@ def domain_tests() -> dict:
     tail = proc.stdout.strip().splitlines()[-1] if proc.stdout.strip() else ""
     m_p = re.search(r"(\d+) passed", tail)
     m_f = re.search(r"(\d+) failed", tail)
-    m_c = re.search(r"(\d+) (?:collected|selected)", tail)
+    # The quiet tail carries no "collected" figure, so the gate pins the
+    # PASSED count plus the baseline non-pass pair explicitly: a silent
+    # collection loss drops `passed`, and removing the known skip/xfail
+    # (the R12 marker) must read red just the same.  The pre-ticket-23
+    # condition `collected = passed + failed == N0` was unsatisfiable
+    # whenever the suite carried its 1 skipped + 1 xfail -- first exposed
+    # when ticket 23 raised the pin.
+    m_s = re.search(r"(\d+) skipped", tail)
+    m_x = re.search(r"(\d+) xfailed", tail)
     passed = int(m_p.group(1)) if m_p else 0
     failed = int(m_f.group(1)) if m_f else 0
-    collected = passed + failed
+    skipped = int(m_s.group(1)) if m_s else 0
+    xfailed = int(m_x.group(1)) if m_x else 0
     ok = (
         proc.returncode == 0
         and passed == DOMAIN_N0
         and failed == 0
-        and collected == DOMAIN_N0
+        and skipped == DOMAIN_N0_SKIPPED
+        and xfailed == DOMAIN_N0_XFAILED
     )
     detail = {
         "exit": proc.returncode, "passed": passed, "failed": failed,
+        "skipped": skipped, "xfailed": xfailed,
         "expected_n0": DOMAIN_N0, "tail": tail,
     }
     return _step("domain_tests", "PASS" if ok else "FAIL", detail)

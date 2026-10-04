@@ -1,10 +1,10 @@
 {
   "action_required": true,
-  "manifest": "papers\\sliding-spotlight-scheduling\\experiments\\results\\scenarios\\M1NC_seed100.json",
+  "manifest": "experiments\\results\\scenarios\\M1NC_seed100.json",
   "n_fail": 0,
-  "n_pass": 8,
+  "n_pass": 12,
   "n_report": 1,
-  "pilot": "papers\\sliding-spotlight-scheduling\\experiments\\results\\pilot\\pilot_M1NC_seed100.json",
+  "pilot": "..\\..\\.scratch\\sliding-spotlight-scheduling\\v2-run\\syn_p40g60\\pilot_M1NC_seed100.json",
   "schema": "verify-report/1.0",
   "steps": [
     {
@@ -18,10 +18,63 @@
         "expected_n0": 145,
         "failed": 0,
         "passed": 145,
-        "tail": "145 passed, 1 warning in 189.30s (0:03:09)"
+        "tail": "145 passed, 1 warning in 232.20s (0:03:52)"
       },
       "status": "PASS",
       "step": "shared_lib_tests"
+    },
+    {
+      "detail": {
+        "exit": 0,
+        "expected_n0": 206,
+        "failed": 0,
+        "passed": 206,
+        "skipped": 1,
+        "tail": "206 passed, 1 skipped, 1 xfailed, 1 warning in 1222.31s (0:20:22)",
+        "xfailed": 1
+      },
+      "status": "PASS",
+      "step": "domain_tests"
+    },
+    {
+      "detail": {
+        "convergence_report": true,
+        "families": [
+          "R1C",
+          "R2F",
+          "R3H",
+          "R4H"
+        ],
+        "results_table": true,
+        "verdicts": {
+          "R1C": "CONVERGED",
+          "R2F": "UNCONVERGED",
+          "R3H": "UNCONVERGED",
+          "R4H": "UNCONVERGED"
+        }
+      },
+      "status": "PASS",
+      "step": "v2_artifacts"
+    },
+    {
+      "detail": {
+        "calibers": [
+          "v1",
+          "v2"
+        ],
+        "cross_comparable": false
+      },
+      "status": "PASS",
+      "step": "caliber_registry"
+    },
+    {
+      "detail": {
+        "exit": 0,
+        "restore_required": false,
+        "summary": "no open defects registered"
+      },
+      "status": "PASS",
+      "step": "claim_provenance"
     },
     {
       "detail": {
@@ -43,7 +96,7 @@
     {
       "detail": {
         "derived_decision": "no_promotion",
-        "recomputed_spread_db": 0.0015175806568663575,
+        "recomputed_spread_db": 0.0015175829323119672,
         "recorded_decision": "no_promotion",
         "threshold_db": 6.0
       },

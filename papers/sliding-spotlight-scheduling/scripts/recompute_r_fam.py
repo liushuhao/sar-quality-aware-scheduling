@@ -5,8 +5,13 @@ ticket-17 values 4.0032 / 6.8213 / 6.8216 / 6.8213 existed only as analysis
 prose; gate-review Y5).
 
 CALIBER (registered here so the numbers are falsifiable):
-  * scan axes: task x 11 in-window starts x routed mode x 4 registered PRFs
-    (PRF_KEYS_HZ) -- the ticket-17 analysis caliber;
+  * scan axes: task x 11 in-window starts x routed mode, at the task's
+    registered production PRF (t["prf_hz"]) -- the ticket-17 analysis
+    caliber, same convention as reachable_range_db in
+    verify_ticket22_adjudications.py (a first version of this script
+    misread the prose "registered PRF" as the 4-key PRF scan, which
+    produces ~60 dB nonsense: aliasing at an unregistered-for-the-task
+    PRF is physical garbage, not a promotion reading);
   * squint AND aasr_direct both quote the TASK's own r0_m (ticket 23); the
     pre-ticket-23 readout used the library R0 inside aasr_direct, which is
     exactly the eighth caliber-split instance this ticket closes;
@@ -37,7 +42,7 @@ sys.path.insert(0, str(FORK))
 REPO = FORK.parents[1]
 sys.path.insert(0, str(REPO / "src"))
 
-from sss_core.aasr import PRF_KEYS_HZ, aasr_direct  # noqa: E402
+from sss_core.aasr import aasr_direct  # noqa: E402
 from sss_core.geometry import squint_at  # noqa: E402
 from sss_core.modes import Mode, ModeLibrary  # noqa: E402
 
@@ -46,8 +51,15 @@ N_STARTS = 11
 THRESHOLD_DB = 6.0
 
 
-def family_r(manifest: dict, lib: ModeLibrary) -> tuple[float, int, int]:
-    """(R_fam dB, n_samples_used, n_excluded_out_of_domain) for one manifest."""
+def family_r(
+    manifest: dict, lib: ModeLibrary, per_task_r0: bool = True
+) -> tuple[float, int, int]:
+    """(R_fam dB, n_samples_used, n_excluded_out_of_domain) for one manifest.
+
+    per_task_r0=True is the ticket-23 caliber; False reproduces the
+    ticket-17 readout (library R0 inside aasr_direct -- the eighth split
+    instance) and must land on the registered 4.0032 / 6.8213 / 6.8216 /
+    6.8213 values before the new numbers are admissible."""
     vals = []
     excluded = 0
     for t in manifest["tasks"]:
@@ -55,20 +67,20 @@ def family_r(manifest: dict, lib: ModeLibrary) -> tuple[float, int, int]:
         t0, t1 = float(t["t_start_s"]), float(t["t_end_s"])
         t_ca = float(t["t_ca_s"])
         r0 = t.get("r0_m")
-        r0 = float(r0) if r0 is not None else lib.geo.R0_m
+        r0 = (float(r0) if r0 is not None else lib.geo.R0_m) if per_task_r0 else None
         wa = float(t["azimuth_size_m"])
+        prf = float(t["prf_hz"])
         for i in range(N_STARTS):
             tt = t0 + (t1 - t0) * i / (N_STARTS - 1)
             psi = squint_at(tt, t_ca, lib.geo, r0_m=r0)
-            for prf in PRF_KEYS_HZ:
-                try:
-                    vals.append(aasr_direct(
-                        mode, psi, lib.geo.k, prf, lib,
-                        spt_scene_wa_m=(wa if mode is Mode.SPT else None),
-                        r0_m=r0,
-                    )["aasr_db"])
-                except ValueError:
-                    excluded += 1
+            try:
+                vals.append(aasr_direct(
+                    mode, psi, lib.geo.k, prf, lib,
+                    spt_scene_wa_m=(wa if mode is Mode.SPT else None),
+                    r0_m=r0,
+                )["aasr_db"])
+            except ValueError:
+                excluded += 1
     if not vals:
         raise ValueError("no AASR sample reachable in the physical domain")
     return max(vals) - min(vals), len(vals), excluded
@@ -89,6 +101,9 @@ def main() -> int:
             print(f"ABORT: no manifests for {code} under {scen}", file=sys.stderr)
             return 2
         base = next(p for p in manifests if p.stem.endswith(f"seed{base_seed}"))
+        r_old, _, _ = family_r(
+            json.loads(base.read_text(encoding="utf-8")), lib, per_task_r0=False
+        )
         r_base, n_used, n_excl = family_r(json.loads(base.read_text(encoding="utf-8")), lib)
         per_seed = {}
         for p in manifests:
@@ -97,6 +112,7 @@ def main() -> int:
         r_max = max(per_seed.values())
         struct = lambda r: "ALIVE" if r >= THRESHOLD_DB else "DEAD"
         rows[code] = {
+            "r_ticket17_reproduction_lib_r0_db": round(r_old, 4),
             "r_base_seed_db": round(r_base, 4),
             "r_max_over_seeds_db": round(r_max, 4),
             "verdict_base": struct(r_base),
@@ -105,7 +121,8 @@ def main() -> int:
             "n_excluded_base": n_excl,
             "per_seed_db": per_seed,
         }
-        print(f"{code}: base-seed R={r_base:.4f} dB ({struct(r_base)})  "
+        print(f"{code}: ticket-17 lib-R0 reproduction R={r_old:.4f} dB  |  "
+              f"per-task-r0 base-seed R={r_base:.4f} dB ({struct(r_base)})  "
               f"max-over-10-seeds R={r_max:.4f} dB ({struct(r_max)})  "
               f"[samples {n_used}, excluded {n_excl}]")
     print("\nthreshold: R >= 6.0 dB => STRUCTURALLY ALIVE (frozen); "

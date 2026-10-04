@@ -18,7 +18,7 @@
       "P1_status": "NOT-YET-TESTED",
       "convergence": "UNCONVERGED",
       "promotion_fires_anywhere": false,
-      "top_pair_max_unit_delta": 34,
+      "top_pair_max_unit_delta": 44,
       "top_pair_median_delta": 11.0
     },
     "R3H": {
@@ -26,16 +26,16 @@
       "P1_status": "NOT-YET-TESTED",
       "convergence": "UNCONVERGED",
       "promotion_fires_anywhere": false,
-      "top_pair_max_unit_delta": 21,
-      "top_pair_median_delta": 6.0
+      "top_pair_max_unit_delta": 27,
+      "top_pair_median_delta": 5.5
     },
     "R4H": {
       "P1_statement": "ladder UNCONVERGED -- no physical claim permitted for this band",
       "P1_status": "NOT-YET-TESTED",
       "convergence": "UNCONVERGED",
       "promotion_fires_anywhere": false,
-      "top_pair_max_unit_delta": 7,
-      "top_pair_median_delta": 2.0
+      "top_pair_max_unit_delta": 14,
+      "top_pair_median_delta": 4.0
     }
   }
 }
