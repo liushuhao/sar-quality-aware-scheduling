@@ -72,3 +72,4 @@
 - [project-paper2-ticket23-r0-caliber-closed](project-paper2-ticket23-r0-caliber-closed.md) — 票 23 闭环(2026-10-04):r0_m 全链收口,阶梯 120/120 重跑,判词全保持,写作取数走 v2_results
 - [Paper2 P0 真窗地平线折叠](paper2-p0-realwindow-horizon-fold.md) — 20261004 真窗四族 460/460 目标物理不可见；天底角折返+asin丢钝角支；修复=向量夹角定义待拍板；共享库同型；台账R17
 - [Paper2 L1 产品目录口径缝](paper2-l1-product-catalog-limitation.md) — SPT点目标/SLS场景非对称约定已落盘 limitations-material.md；写作期必读；跨模式经济比较已撤回
+- [同类物理违反全仓审计 20261004](same-class-physics-violations-sweep-20261004.md) — F1-F7分类学×三路复核;新确认3项(R18三腿缺交/R19 Ch5缺自转+折返)+共享库潜伏群(R20 C1假PASS活边,Paper1安全)+时区依赖(R21);Ch5 gen守卫复核成立

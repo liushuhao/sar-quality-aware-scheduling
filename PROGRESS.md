@@ -459,3 +459,21 @@ skip/xfailed 仍是基线那两条（1 条件跳过 + 1 xfailed = R12 exit-11 �
 **修复方向（用户已提，未实施）**：入射换算改向量夹角定义（acos(目标天顶单位矢·目标→卫星单位矢)，返回 [0,180] 无分支丢失；可见性 ⟺ 入射角 <90°）+ 变异红证 + 460 任务仰角等价检查。**连带**：共享库 visibility.py 同步裁决、票 16/23 重开、真窗场景重设计（修复后两圈 ±120s 弧下可能 0 簇可见，需重议圈数/历元/簇心摆位）。台账 **R17**。
 - **二次排查精化（同日）**：守卫正典位置 = 共享库 `_check_geometric_constraints`（elevation<min_elevation→False，visibility.py:183）。P1（手写几何但逐时刻过检查，min_elevation=5.0 注册）、Ch4（向量化 `elevs>=min_elev(5.0)`）均干净；唯一绕过者 = paper2 fork（刻意不带 find_visibility_windows 时把仰角腿一起丢）。裸函数 `_off_nadir_to_incidence` 结构上无法自带守卫（折返角与近侧角在 (off_nadir,h) 上不可区分），守卫必须在调用点；结构性修法 = `satellite_to_target_vector` 改向量夹角返回真入射角 [0,180]。其余 asin/acos 位点（geometry.py:45 / duration.py:301 / quality.py:282）逐一排除。
 - **物理核对分级（用户已批，R17 开票验收范围）**：T1 真窗几何链全换算（定义域+越界行为+第三方交叉验证，绑修复票）；T2 自推导无外部锚量补域声明+物理对照；T3 有文献锚族抽查。T1/T2 派 fresh subagent 核对。
+
+
+## 2026-10-04 同类物理违反全仓审计（故障模式分类学 × 三路 fresh subagent × 主线程复核）
+
+**缺陷类**（P0 抽象）：F1 逆三角丢支 / F2 非单调折返 / F3 静默 clip 吞不可行值 / F4 缺物理守卫 / F5 错根·象限 / F6 域外静默 / F7 物理不变量破坏。扫描面 = 共享库 src/sar_sim + fork sss_core 全文件 + Ch5 实验层；三路 subagent 独立审，主线程对全部新确认项做代码读数+数值探针复核。
+
+**新确认违反 3**（台账 R18/R19）：
+1. **fork `scenarios.py:469` 三腿级联缺入射交集**——`window = intersect(env_iv, end_iv)`，`inc_iv`(:403) 只用于选锚点 tca；发射窗不受 30–60° 入射带约束，windows.py:256 注册的三腿级联（incidence ∩ envelope ∩ end-check）与实现不符。机制级确认；冻结产物全伪影下真 pass 量级不可测，修 P0 后转正。
+2. **Ch5 `ch4_run_pilot.py:192` compute_sat_position 缺 −ω_e·t 地球自转项**——:299 注释写出正确公式但代码未实现，半轨星下点漂移 ~11.9°@500km；pilot 全部窗口几何在"非自转地球"帧内自洽（可实现的另一个宇宙，非本地球）。
+3. **Ch5 `ch4_run_pilot.py:244` 正弦定理+asin 折返（P0 同型）**——当前场景参数端到端 0 触发（72 窗全合法、最低真仰角 +43°），但 containment 是涌现性质而非设计守卫：γ=90°（垂直经线目标）折叠 θ=47.95° vs INC_MAX=47 裕度仅 0.95°；对抗扫描（lat≤60° 全经度）8610 个背面带内样本；单/双平面 config、INC_MAX≥48、目标盒贴近相邻平面中点任一即击穿。
+
+**共享库潜伏群**（台账 R20；**Paper1 已投数值在折叠轴上安全**——主链被 visibility.py:183 仰角守卫先行保护，探针三 instrument 预设全拒背面目标）：`nesz.py:109` 折返+clip 静默吞 η>64.4°→90°；**活边 = `verification/constraints.py:182` C1 对窗间隙时刻假 PASS**（解码时刻 t∈[t_earliest,t_latest] 含间隙、C1 无窗口包含检查：elev=−40° 目标真入射 130.0° 折成 49.98° 判 PASS；Paper1 最终解窗口包含故已投结果不受影响，so_f1.py:598 GA-P 事后校验路径为残留风险）；so_f1.py:420/568 无 cache 回退路径 f2 均匀 +10.9%（标准 runner 全部先 precompute_geometry，不触发）；nesz.py:47 elevation_to_off_nadir 域混用（真入射存进 phi_min/max，偏 9.42°，零活消费者）。
+
+**可复现性类（非物理，台账 R21）**：fork realwindows.py:294 + 共享库 visibility.py:124 用 naive datetime 的 `.timestamp()` 喂 ECEF 旋转 → 按机器本地时区解释 → 地球相位 120.33°（UTC+8）机器依赖；"byte-identical from seed" 仅同时区机器成立。
+
+**复核为真 / 判良性**：① Ch5 gen:434 `elevs >= min_elev(5.0)` 守卫先行声明独立复核**成立**（106 窗×3 时刻真实轨道重算：min elev 28.1°、θ∈[18.31,46.62] 全带内、0 折叠受害）；② fork 侧 windows 不变量（对抗构造全过）、机动闭合解（d_omega 负不可达、接缝欠预测封顶 4.8ms）、duration 根选择（顺序依赖但当前域恒选中物理根）、椭球/球混用（入射 +0.161°/仰角 −0.585°，亚度量级）、geometry.py:64 atan≡atan2（r0>0 恒成立）均良性；③ **P0 更强证据**：冻结轨道+epoch 全圈 5s 步扫描——8 簇在两个生成盒内真可见且带内样本数 = 0（5/8 簇整圈不可见），R-family served 任务 100% 折叠伪影，比 R17 的"460/460 仰角<0"更进一步。
+
+**待用户裁决**：R18/R19/R20/R21 修复排期与 R17 合并方式（推荐 R18+R21 并入 R17 修复票同批改，R19/R20 各自开票——Ch5 未投稿可慢修但 C1 假 PASS 活边优先）。
