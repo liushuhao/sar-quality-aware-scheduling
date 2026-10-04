@@ -1,20 +1,14 @@
 # Handoff
 
 ## State
-- **票 23 completed（2026-10-04）**：逐任务 r0_m 口径收口（R14+R15+第八处 aasr_direct）。两 commit：`dd3aa92`（三函数签名+全链透传+8 测试+变异红证 6/6+AST 守卫）→ `d4921e9`（scenarios 真窗两门+verify 四镜像+DOMAIN_N0 208+recompute_r_fam.py）。真窗阶梯重跑 **120/120 exit0**（head 统一 d4921e9），旧件存档 `v2-run-preT23/`。判词全保持：R1C DEAD×CONVERGED（P1 EVALUABLE）；R2F/R3H/R4H ALIVE×UNCONVERGED ⇒ **NO CLAIM**；promotion 全档 <6.0（R2F 顶档 3.57→5.22 dB，仍未触发）。细节见 PROGRESS.md「票 23」节。
-- **根因排查产出的关键事实**：台账 R14/R15 之外漏记的第八处= `aasr_direct`（库 R0 进 SPT kat0 与 promotion spread）；「修=作废 270 单元」是未实测假设——实测 R1C 全 STR 零变化、manifests 40/40 byte-identical、变化仅经 C2 model 分支（~1e-3 s/对）与 SPT kat0；R1C 注册值 4.0032 在新口径 max-over-seeds 下精确复现。
-- **上游升级（用户拍板「修」）已闭环**：ARS 插件 3.22.2→3.23.0（**重启生效**）+ marketplace current + vendors ff（ARS/caveman）；`upstream-status.py` behind=0。local-scope 混版已清（2026-10-04）：registry 两条 local 冗余注册删除（备份 installed_plugins.json.bak-20261004-localscope），无引用旧缓存目录 GC，缓存收敛单版本 3.23.0/3.1.0。
-- 台账 open=4：**R7**（12 技能名候选逐 diff 人审，整块时间）、**R12**（exit-11 CLI 不可达）、**R13**（SAT_MARGIN_KIM 测试自指）、**R16**（红线分类器逗号/转折洗白句，语料零命中）。
-- 用户拍板待办：真窗三族 R2F/R3H/R4H **加预算出 P1 判决与否**（维持 NOT-YET-TESTED/NO CLAIM，不加预算即按现判词进写作）。
+- **P0（2026-10-04，用户审图发现）：真窗四族 460/460 目标物理不可见**——`realwindows.py` 天底角地平线外折返 + `_off_nadir_to_incidence` asin 丢钝角支 + 无地平线守卫，背面目标折返出假带内入射角；共享库 `src/sar_sim/generator/visibility.py:48` 同型潜伏（Paper1 未触发）。全链（manifest→三腿窗→求解→v2_results→收敛判决→票 23）物理语义为零；合成族 M 不受影响。证据链/修复方向全录：项目记忆 `paper2-p0-realwindow-horizon-fold.md` + 台账 **R17** + PROGRESS.md「2026-10-04 P0」节（commit `df15c96`）。
+- 修复方向已与用户对齐（**未实施**）：入射换算改向量夹角定义（acos 目标天顶·目标→卫星，WGS-84 椭球法线，返回 [0,180]；可见 ⟺ <90°）+ 变异红证 + 460 任务仰角等价检查。实测修复后两圈 ±120s 弧下可能 **0 簇可见** ⇒ 真窗场景设计（圈数/历元/簇心摆位）需随 spec 修正案重议。
 
 ## Next
-1. **写作期启动**（四票+票 23 全闭环，数字全部逐任务口径）：主结果表/消融/limitation 取数走 `experiments/v2_results/` + `recompute_r_fam.py`，禁引 v2-run-preT23 旧数。
-2. R12+R13 同批修（独立小票，修法在 `test_pilot_exit_codes.py` docstring / 补 `SAT_MARGIN_KIM==1.25` 断言；R12 修时连带 #15 零长窗 ZeroDivisionError 守卫）。
-3. R7 技能上游逐个核 diff → `skill-sync.sh apply`（禁盲自动）。
+1. **用户拍板 P0 处置**：实施向量夹角修复（票 16/23 重开）+ 共享库 visibility.py 是否同步修 + 真窗场景重设计方向。修复前**禁引任何 v2_results 真窗数字**。
+2. 重议"三族加预算"拍板项——已被 P0 降级作废（数据物理无效），收敛三层报告分析（两层报告/D+B/加预算）待真窗数据重做后再议。
+3. 写作期素材已备：`.scratch/.../limitations-material.md`（L1 逐模式产品目录+撤回跨模式经济比较）、`pipeline-audit.html`（人话审查版）、`geo-map.html`（注意：图上轨迹已修复为内核 timestamp 约定，任务窗口=圈本地时间约定见图注）。
 
 ## Context
-- **票 23 方法论沉淀（3 条记忆已写）**：①校准口径分裂的根因模式=「库几何基准量 vs 逐任务被测量」，静态 AST 守卫+白名单是第九处防线；②「修=X 作废」类成本声明必须实测（R14 的 ±42% 是杠杆比值非输出漂移，需求漂移被 fallback 常数与 dwell 主导项吸收）；③判别器设计：行为隔离不可能时（dwell 与 r0 共变）用 AST 结构断言补，变异红证按「整语义单元」退（半变异不红=假绿）。
-- **kill test 三分支不变**：`unconverged` ⇒ 报 NOT-YET-CONVERGED + 不作物理声明 + 加预算=新决策须拍板。
-- **本机陷阱（沿用）**：`run_matrix` 的 progress 守卫回退读 `_progress.json.bak`——重置时两个都要删；裸 `python` 假零绿 ⇒ 一律 `"/d/Program Files/Python/python"`；长批中途禁改 `~/.claude` 配置（hermes 热重载）；后台任务 exit code 取 raw（管道后 `$?` 拿 tail 的）。
-- **冻结粒度**：`experiments/results/` 六族 196 文件零 diff 是底线；授权写入仅 append-only amendment / caliber 标记 / git tag。R_fam 口径变动走 `recompute_r_fam.py` 脚本头登记。
-- **写交接件的判据**：凡写「某文件里有某内容」必须本轮打开 grep 到那一行。
+- "50% 幸存率"= 8 簇中 4 簇落在折返假入射角环带的整数巧合；档位数粒度诊断已查（`_fq_noise_probe.py`：≥3 门槛对粒度稳健）；两套诊断脚本在 `.scratch/sliding-spotlight-scheduling/_geo*.py`、`_fq_noise_probe.py` 可复跑。
+- 收尾已过 closeout-sweep（FAIL 0/NOTE 15=既有基线）；工作树净（.scratch/.agents/.remember 均 gitignore）；P0 已双写沉淀（Claude/ZCode 项目记忆+索引、两侧 core-memories、R17 台账）。
