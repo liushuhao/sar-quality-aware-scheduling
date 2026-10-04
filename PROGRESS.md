@@ -532,3 +532,31 @@ skip/xfailed 仍是基线那两条（1 条件跳过 + 1 xfailed = R12 exit-11 �
 - **MINOR**：`t_ca_at` 须用**闭区间** `lo<=t<=hi`（`windows.py:90` 闭区间约定 + `decode_tau` 在 τ→1 返回 `hi`），写成半开区间会在 τ=1 取错窗；跨窗重叠实测不发生（趟间隔 8.5 h ≫ 单趟 210 s）但须作断言钉死。
 
 **主线程自查补漏**：票 24 改写时丢了三个死 API 的删除（`incidence_in_band`/`closest_approach_states`/`iter_states`，`realwindows.py:323/341/362`，grep 复验零调用者），已补进票 25 并确认 `__all__` 同步；同时核实 fork 范围守卫 `test_fork_exposes_exactly_the_registered_f02_symbols` 是**单向断言**（只查登记符号存在），故删 fork 内部两个 helper 不会让它红——方案自洽。
+
+### gate-review 第三轮：verdict BLOCKED（3 项阻塞）→ 已修 → 第四轮放行确认
+
+三项阻塞，主线程逐条独立复算后**全部成立**（含我自己一轮二次错误）：
+
+- **BLOCK-1 趟数标签自相矛盾**：主线程二次错误。原始「4 趟/48h」实为「2 趟/24h」；
+  我中间误标「1.0 趟/24h」（把 2 次/48h 当成每天 1 次）。**第三轮裁定 2.0 为正确值**，
+  主线程独立复算确证：24h 与 72h 两种跨度 × merge 阈值 {300s,600s} 四种组合
+  **全部给出 2.00 趟/24h**。⇒ 3 天 = 6 趟、N=100 需 5 趟、**余量 1 趟，设计成立**。
+  票 25 与 spec 六处「1.0」标签已改；AD-4 正文残留的「4 趟/日程」一并修。
+  **纠错留痕保留在案**（三轮各自错在哪），不删。
+- **BLOCK-2 锐角等价断言不可实施 + 容差自相矛盾**：首版参照源写
+  `fork._compute_off_nadir_angle`，而该函数被本票 :37 删除 ⇒ 断言无法构造；
+  且容差 `< 1e-9°` 与同句自述的「球面 vs WGS-84 法线差 ~0.6°」矛盾 ⇒ **正确实现也会红**。
+  改为：参照源用**共享库** `_compute_off_nadir_angle`（`visibility.py:27`）+
+  `_off_nadir_to_incidence`（`:48`）（本票保留不动，可 import）；
+  容差改**双判据**——① 球面对球面 `< 1e-9°`（隔离法线差异，证公式等价）
+  ② 实际 WGS-84 口径 `< 1.0°`（容许 0.6° 模型差）。
+- **BLOCK-3 R4H「族表分叉」是我的误读，非 bug**：`scripts/recompute_r_fam.py:49` 的
+  `FAMILIES = {..., "R4H": 400}` 其值是 **`base_seed`**（`:98` 以 `for code, base_seed`
+  解包后拼 `seed{base_seed}`），**不是** `sss_core/scenarios.py:110` 的 `n_targets`（R4H=500）。
+  两者是**不同量** ⇒ 无分叉。票面该条已撤回，只保留「R4H 出局时两处条目一并删除」。
+
+另确认 4 项 CLOSED（FORK_MANIFEST 四处联动、零字节守卫复用、R21 四元组发散同 commit、
+prereg 模板 append-only + 守卫补漏），行号抽查 20+ 处仅 3 处 MINOR（已在票面就地修正）。
+
+**升级闸（rule 10）**：同一审者累计 3 轮未清零 → 按规则连同证据呈用户拍板。
+用户 2026-10-05 令「继续」⇒ 进第四轮（放行前最后一轮），若仍有阻塞项则不再自审迭代。
