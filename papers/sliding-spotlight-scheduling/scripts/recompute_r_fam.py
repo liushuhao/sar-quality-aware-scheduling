@@ -129,8 +129,9 @@ def main() -> int:
           "ALIVE x UNCONVERGED => NO CLAIM (frozen four-cell wording)")
     if args.out:
         Path(args.out).write_text(
-            json.dumps({"caliber": "ticket x 11 starts x routed mode x 4 PRFs, "
-                                  "per-task r0_m, out-of-domain excluded",
+            json.dumps({"caliber": "ticket x 11 starts x routed mode, at the task's "
+                                  "registered production PRF, per-task r0_m, "
+                                  "out-of-domain excluded",
                         "threshold_db": THRESHOLD_DB,
                         "families": rows}, indent=2, ensure_ascii=False),
             encoding="utf-8")
