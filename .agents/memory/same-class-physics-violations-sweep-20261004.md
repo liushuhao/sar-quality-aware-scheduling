@@ -23,3 +23,5 @@ metadata:
 **How to apply:** 修复排期推荐：R18+R21 并入 R17 修复票同批（fork 同文件/同 write-back 面）；R19 Ch5 开票慢修（未投稿）；R20 优先修 C1 假 PASS（verify 前置窗口包含检查），其余随 R17 共享库裁决。修复前禁引 v2_results 真窗数字不变。
 
 相关：[[paper2-p0-realwindow-horizon-fold]]
+
+**二次复核轮（同日，零修正）+ Paper1 影响核对收口**：三项新违反全部确认——R18/R19 代码读数复验+封数探针（缺自转 11.86°/半轨@500km）；C1 假 PASS 升级为主线程直调真实 verify_c1 复现（折返 φ=40°→0 违规，真值 134.5° 远带外）。**Paper1 报告数字不受影响**，六条证据链：①生成链仰角守卫先行（visibility.py:183）②质量链 θ=90°−elev 无反三角 ③全部 driver 先 precompute_geometry ④报告 frontier=pymoo res.X（G≤0）且 G=0⟺严格窗内→窗内换算精确 ≤2.3e-13° ⑤正文 small-paper-ijae.tex:495 明示 C1 属窗生成侧执行 ⑥GeomCache 污染列零消费。残留=res.X is None 零可行回退+GA-P best 事后校验（罚项压制下病态运行才触发；原始逐解 pkl 已清不可事后复核，审稿人质疑则重跑复验——风险方向=高估 f2/f3 利我方向，须诚实披露）。commit b537da1。
