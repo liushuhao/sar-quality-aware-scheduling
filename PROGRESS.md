@@ -499,8 +499,22 @@ skip/xfailed 仍是基线那两条（1 条件跳过 + 1 xfailed = R12 exit-11 �
 
 **发现 E — 区域尺度**：20°N/0° 域心最稳（4 趟/周期、窗宽 200–220 s；30°N 波动 0–190 s）。1000 km 边长 5×5 网格 25/25 可服务、入射角离散 28.7°；300 km 仅 9.1° 异质性不足；2000 km = 264 s 沿迹时间 > 最长窗 210 s，单趟装不下。
 
-**用户拍板（四项）**：① 密度阶梯缩到 20/50/100/200（落在 1/3/7/14 趟，矩阵规模约原 40%，**不需追加预算**——BLOCKED.md 备注 1 预算耗尽约束保持）；② R17 + 过境枚举**同批修**（分开则中间态必然归零、易被误读为修复失败）；③ 多圈支持改 `TaskPlan` 为**每窗口一个 t_ca**（T0 schema 收口；`squint_at(t,t_ca)` 假设单次最近接近点在多圈下已不成立）；④ 共享库 `visibility.py` 本轮**不动**，R20 C1 活边另开票。
+**用户拍板（四项）**：① 密度阶梯缩到 20/50/100/200（落在 1/3/5/9 趟（=ceil(N/24)；gate-review 复算纠正，首版 1/3/7/14 算术不可能），矩阵规模约原 40%，**不需追加预算**——BLOCKED.md 备注 1 预算耗尽约束保持）；② R17 + 过境枚举**同批修**（分开则中间态必然归零、易被误读为修复失败）；③ 多圈支持改 `TaskPlan` 为**每窗口一个 t_ca**（T0 schema 收口；`squint_at(t,t_ca)` 假设单次最近接近点在多圈下已不成立）；④ 共享库 `visibility.py` 本轮**不动**，R20 C1 活边另开票。
 
 **落盘**：`spec-amendment-v06.md`（AD-1..AD-8 架构决策、可逆性矩阵、MUST/WANT、钢人代炼含翻转条件、10 类缺口、票映射）。R18（三腿缺交）+ R21（时区）并入同批。票映射：24 = 几何+时区（T0）、25 = 过境+schema+场景（T0）、26 = R20 活边（T1）、27 = R19 Ch5（T1）。**修正案 DRAFT，待两路 fresh subagent 独立审查**（物理第一性原理 / 实现可行性，已派出）。工作树净（`.scratch` 全 gitignore）。
 
 **未动的既有约束**：BLOCKED.md 备注 2「真窗三族禁 alive/dead 声明」在重跑前保持；备注 1 预算耗尽约束因缩档而不触发；冻结六族零 diff 仍是 MUST-3 硬门。
+
+### gate-review（票 24/25 implement 前定向二审）：四维全 FAIL → 已修票
+
+派 fresh subagent 独立审 24/25 两张 T0 票（criteria: correctness/specification/evidence/regression/safety），**四维全 FAIL**。主线程逐条复算关键项后确认成立并修票：
+
+- **CRITICAL ×3（safety + regression）**：改共享库的 `_off_nadir_to_incidence` 会打断**三篇论文的场景生成器**——`single-sat-quality/experiments/generate_all_scenarios.py:28,344-345`、`single-sat-quality/scripts/generate_s5_scenarios.py:26,146-147`、`constellation-scheduling/experiments/ch4_generate_scenarios.py:49-50,321,430,484,497`，均按 `(off_nadir, altitude)` **标量签名**调用，而向量夹角定义无法保留该签名（折返角与近侧角在 `(η,h)` 上不可区分）。**上一轮「共享库同步修」的拍板被此推翻** ⇒ 用户二次拍板**共享库只增不改**，**goal-card「共享库 `src/` 零修改」红线恢复原状（未解除）**。CRITICAL 未消解而是被承接：改 fork 身份守卫为双验（共享库七元组仍逐位一致 + fork 新定义走自建物理基准），FORK_MANIFEST.md:61 登记同步修订、与守卫同 commit。
+- **MAJOR：密度阶梯算术错误（主线程自查复算确认）**——`20/50/100/200 → 1/3/7/14 趟` 在单趟容量 24 下**不可能**：N=100→7 需 cap∈(14.29,16.67]、N=200→14 需 cap∈(14.29,15.38]、N=20→1 需 cap≥20，交集为空；且与自述「N=500 需 20.7 趟」自相矛盾。正确值 **ceil(N/24) = 1/3/5/9**。spec + 票 25 + 台账 R22 + 本节四处已同步。
+- **MAJOR：`TaskPlan.t_ca_s` 读者漏列**——首版只列四处 verify 镜像，漏 `anchor.py`（6 处 :121,142,149,160,179,180 + 构造 :262）与 `nsga2.py:144`；这两处若沿用标量将**静默用错零点**（比崩溃更坏）。另 `verify_ticket22_adjudications.py` 的 `t_ca_s` 实为 **:139**（票面误引 :133）。
+- **MAJOR：MUST-1「仰角 > 0」无判别力**——elevation 代码路径未被 AD-1 触及，改前改后都过。替换为「**入射角 < 90° 的任务集合非空**」（直测新定义语义）+ 新增「锐角支与旧 asin 路径差异 < 1e-9°」的正面等价断言。
+- **MAJOR：MUST-7 预闸四步无效**——`rebuild_snapshot.py:20-33` 只读缓存 `_progress.json` + `.tex`，**不重新生成场景**，无法见证共享库回归。改为 Paper1 生成器**实跑一个最小单元**新旧对比，预闸降为额外证据并注明覆盖范围。
+- **MAJOR：合成族 no-op 判据空洞**——逐点钉死四条：① `evaluator.py:158` 的 `t0,t1` 必须直取 manifest 值禁反算；② `evaluator.py:138-139` 单窗空列表必须落 `None` 不得翻成可调度；③ `t_ca_at` 在单窗上返回存储原值不重算；④ `decode_tau` 展平并集按原序重建。并新增守卫钉死 evaluator 输出对六族冻结件。
+- **MINOR**：`visibility.py` 的 `.timestamp()` 实为 `:124-125`。
+
+**票面形态变更**：票 24 从「共享库同步修」改为「fork 内新路径 + 共享库只增不改 + fork 身份守卫修订」，红线解除留痕已改写为「未解除」。
