@@ -477,3 +477,8 @@ skip/xfailed 仍是基线那两条（1 条件跳过 + 1 xfailed = R12 exit-11 �
 **复核为真 / 判良性**：① Ch5 gen:434 `elevs >= min_elev(5.0)` 守卫先行声明独立复核**成立**（106 窗×3 时刻真实轨道重算：min elev 28.1°、θ∈[18.31,46.62] 全带内、0 折叠受害）；② fork 侧 windows 不变量（对抗构造全过）、机动闭合解（d_omega 负不可达、接缝欠预测封顶 4.8ms）、duration 根选择（顺序依赖但当前域恒选中物理根）、椭球/球混用（入射 +0.161°/仰角 −0.585°，亚度量级）、geometry.py:64 atan≡atan2（r0>0 恒成立）均良性；③ **P0 更强证据**：冻结轨道+epoch 全圈 5s 步扫描——8 簇在两个生成盒内真可见且带内样本数 = 0（5/8 簇整圈不可见），R-family served 任务 100% 折叠伪影，比 R17 的"460/460 仰角<0"更进一步。
 
 **待用户裁决**：R18/R19/R20/R21 修复排期与 R17 合并方式（推荐 R18+R21 并入 R17 修复票同批改，R19/R20 各自开票——Ch5 未投稿可慢修但 C1 假 PASS 活边优先）。
+
+
+**复核轮（同日，用户令"再确认"+“核对论文一是否受影响”）**：
+- **三项新违反全部确认，零修正**：R18 代码读数复验（inc_iv 仅 :410-412 选锚点；窗口交集 :469 只含 env∩end）；R19a 代码读数复验（compute_sat_position 旋转矩阵无 ω_e 项、:299 注释含正确公式）+ 主线程封数探针（缺自转 11.86°/半轨@500km）；R19b 同型确认；R20 C1 假 PASS 升级为**主线程直调真实 verify_c1 复现**（折返 φ=40° → 0 违规 PASS；换算 45.46° 带内 vs 真值 134.54° 远带外）；R21 封数（naive−UTC = −28800s → 相移 239.67°）。三路报告交叉一致性无矛盾；死 API 声明复核成立（incidence_in_band/closest_approach_states/iter_states 零生产调用者）。
+- **Paper1（single-sat-quality，已投稿）报告数字不受影响**，证据链六条：①数据生成侧可见窗由共享库生成，仰角守卫（visibility.py:183 elevation≥min_elev 先行于入射带）挡住一切背面输入（探针：三 instrument 预设全拒）；②质量评分链 θ=90°−elev 无反三角、窗内 [0°,90°] 精确域；③全部 driver 先 precompute_geometry（scripts/ grep 实证）→ so_f1 无 cache 回退（f2 +10.9%）不触发；④报告 frontier 构成 = pymoo res.X（仅 G≤0 可行解）且 G=0 ⟺ 严格窗内（窗成员 gap 罚进 G，penalty 1e5）→ 报告成员全部窗内，窗内 geom_cache 换算精确（可见域误差 ≤2.3e-13°）→ f2/f3 无折返污染；⑤论文正文 :495 明示「C1 enforced during visibility-window generation」——事后验证器的假 PASS 路径不背书任何论文数字；⑥GeomCache 折返污染诊断列（θ/q）Paper1 零消费。**残留**：res.X is None（最终种群零可行）全种群回退路径与 GA-P best 事后校验（so_f1.py:598）理论上可让越窗成员带折返增益混入，但需罚项压制失效的病态运行；原始逐解 pkl 本地已清，无法事后逐解复核——如审稿人质疑可重跑复验（风险方向=高估 f2/f3，利我方向，须诚实披露）。
