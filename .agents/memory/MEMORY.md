@@ -70,3 +70,5 @@
 - [feedback-cost-claims-need-measurement](feedback-cost-claims-need-measurement.md) — 「修=X 作废/成本 Y」须实测;R14 ±42% 是杠杆比非输出漂移,270 单元作废论被重跑证伪
 - [feedback-discriminator-and-gate-pin-design](feedback-discriminator-and-gate-pin-design.md) — 判别器三课:半变异假绿/行为隔离不可能用 AST 结构断言/门禁 pin 语义须匹配实现
 - [project-paper2-ticket23-r0-caliber-closed](project-paper2-ticket23-r0-caliber-closed.md) — 票 23 闭环(2026-10-04):r0_m 全链收口,阶梯 120/120 重跑,判词全保持,写作取数走 v2_results
+- [Paper2 P0 真窗地平线折叠](paper2-p0-realwindow-horizon-fold.md) — 20261004 真窗四族 460/460 目标物理不可见；天底角折返+asin丢钝角支；修复=向量夹角定义待拍板；共享库同型；台账R17
+- [Paper2 L1 产品目录口径缝](paper2-l1-product-catalog-limitation.md) — SPT点目标/SLS场景非对称约定已落盘 limitations-material.md；写作期必读；跨模式经济比较已撤回

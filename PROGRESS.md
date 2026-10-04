@@ -457,3 +457,4 @@ skip/xfailed 仍是基线那两条（1 条件跳过 + 1 xfailed = R12 exit-11 �
 **实测**：真窗四族全部 460 个"幸存"任务在服务窗内 5 点采样仰角全 <0（0 可见）；"50% 幸存率"= 8 簇中 4 簇落在折返假入射角环带的整数巧合。全链（manifest→三腿窗→求解→v2_results→收敛判决→票 23 复算）内部自洽但物理语义为零；合成族 M 不受影响。
 
 **修复方向（用户已提，未实施）**：入射换算改向量夹角定义（acos(目标天顶单位矢·目标→卫星单位矢)，返回 [0,180] 无分支丢失；可见性 ⟺ 入射角 <90°）+ 变异红证 + 460 任务仰角等价检查。**连带**：共享库 visibility.py 同步裁决、票 16/23 重开、真窗场景重设计（修复后两圈 ±120s 弧下可能 0 簇可见，需重议圈数/历元/簇心摆位）。台账 **R17**。
+- **二次排查精化（同日）**：守卫正典位置 = 共享库 `_check_geometric_constraints`（elevation<min_elevation→False，visibility.py:183）。P1（手写几何但逐时刻过检查，min_elevation=5.0 注册）、Ch4（向量化 `elevs>=min_elev(5.0)`）均干净；唯一绕过者 = paper2 fork（刻意不带 find_visibility_windows 时把仰角腿一起丢）。裸函数 `_off_nadir_to_incidence` 结构上无法自带守卫（折返角与近侧角在 (off_nadir,h) 上不可区分），守卫必须在调用点；结构性修法 = `satellite_to_target_vector` 改向量夹角返回真入射角 [0,180]。其余 asin/acos 位点（geometry.py:45 / duration.py:301 / quality.py:282）逐一排除。
