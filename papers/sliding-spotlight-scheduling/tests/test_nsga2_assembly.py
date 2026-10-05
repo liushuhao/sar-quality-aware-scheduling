@@ -278,5 +278,46 @@ def test_genuine_violation_seed_still_red(lib):
                    pop_size=4, generations=1, seed_individual=x)
 
 
+
+# ── ticket 25: multi-window measure seam in the seed encoder ─────────────
+
+def test_encode_seed_round_trips_all_anchor_starts_on_realwindow(lib):
+    """Field regression (v3 matrix, 2026-10-05): 18/30 units died at the
+    D12-1 round-trip assert because an anchor start sitting EXACTLY on an
+    interval's left edge of a multi-window task loses ~1 ulp through
+    ``tau*total`` and the measure-walk flips it into the PREVIOUS interval
+    -- a different transit hours away (R2F 7/10, R3H 10/10 crash rate).
+    The encoder must reproduce EVERY anchor start on a dense real-window
+    manifest; decode_tau itself stays untouched (frozen path, MUST-3)."""
+    import math
+
+    from datetime import datetime
+
+    from sss_core.anchor import anchor_on_manifest
+    from sss_core.realwindows import KeplerianElement
+    from sss_core.scenarios import generate_real_scenario
+    from sss_core.nsga2 import encode_seed_individual
+
+    a = 6_371_000.0 + lib.geo.altitude_m
+    epoch = datetime(2026, 1, 1)
+    plat = (
+        KeplerianElement(
+            semi_major_axis=a, eccentricity=0.001,
+            inclination=math.radians(45.0), raan=0.0, arg_perigee=0.0,
+            true_anomaly=0.0, epoch=epoch,
+        ),
+        epoch,
+    )
+    # the exact field case that crashed: R2F seed 200 (7/10 seeds died)
+    m = generate_real_scenario("R2F", 50, "F", 200, 2, lib=lib, platform=plat)
+    anchor = anchor_on_manifest(m, lib)
+    assert anchor.starts, "fixture produced an empty anchor"
+    sp = SchedulingProblem(m, lib)
+    x = encode_seed_individual(sp, anchor.starts)
+    for i, start in anchor.starts.items():
+        back = decode_tau(x[sp.n + i], sp.plans[i].intervals)
+        assert abs(back - start) <= 1e-9, (i, start, back)
+
+
 if __name__ == "__main__":
     sys.exit(pytest.main([__file__, "-v"]))

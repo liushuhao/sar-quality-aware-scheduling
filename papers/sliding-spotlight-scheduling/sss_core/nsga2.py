@@ -100,7 +100,21 @@ def encode_seed_individual(sp: SchedulingProblem, starts: dict[int, float]) -> l
     """Inverse of the piecewise decode for a full schedule (D12-1): tau =
     (cumulated measure before the interval + offset) / total measure.
     Round-trips through decode_tau with a 1e-9 tolerance (fail-loud on the
-    cumulative-boundary float edge)."""
+    cumulative-boundary float edge).
+
+    Ticket 25 multi-window seam: an anchor start placed EXACTLY on an
+    interval's left edge sits at a measure boundary of the flattened union.
+    ``tau = cum/total`` then ``s = tau*total`` loses ~1 ulp, and the
+    measure-walk's strict ``s < w`` can flip that dust into the PREVIOUS
+    interval -- whose hi is a different transit hours away (measured:
+    start 92590.9 decoded to 36924.2, killing 18/30 v3 matrix units with
+    R3H at 10/10).  ``decode_tau`` is the frozen decode path and is NOT
+    touched; the encoder instead re-derives tau by a bounded
+    ``math.nextafter`` search across the rounding seam, deterministic and
+    fail-loud when no tau reproduces the start within 1e-9.
+    """
+    import math as _math
+
     x = [0.0] * (2 * sp.n)
     for i, start in starts.items():
         plan = sp.plans[i]
@@ -116,9 +130,31 @@ def encode_seed_individual(sp: SchedulingProblem, starts: dict[int, float]) -> l
         else:
             raise ValueError(f"anchor start {start} outside task {i} feasible set")
         x[sp.n + i] = min(max(tau, 0.0), 1.0)
-        # round-trip guard (D12-1)
-        back = decode_tau(x[sp.n + i], plan.intervals)
-        assert abs(back - start) <= 1e-9, (i, start, back)
+        # round-trip guard (D12-1); on the boundary seam, nudge tau across
+        # the rounding seam in ulp steps -- reproduce first, assert always
+        if abs(decode_tau(x[sp.n + i], plan.intervals) - start) > 1e-9:
+            fixed = None
+            t_up = t_dn = x[sp.n + i]
+            for _ in range(64):
+                t_up = _math.nextafter(t_up, 1.0)
+                if abs(decode_tau(min(t_up, 1.0), plan.intervals) - start) <= 1e-9:
+                    fixed = min(t_up, 1.0)
+                    break
+                t_dn = _math.nextafter(t_dn, 0.0)
+                if t_dn < 0.0:
+                    break
+                if abs(decode_tau(t_dn, plan.intervals) - start) <= 1e-9:
+                    fixed = t_dn
+                    break
+            if fixed is None:
+                raise AssertionError(
+                    f"no tau reproduces anchor start {start!r} on task {i} "
+                    f"(seam nudge exhausted)"
+                )
+            x[sp.n + i] = fixed
+        assert abs(decode_tau(x[sp.n + i], plan.intervals) - start) <= 1e-9, (
+            i, start
+        )
     return x
 
 
