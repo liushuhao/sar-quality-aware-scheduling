@@ -141,14 +141,17 @@ def promotion_spread_db(sp: SchedulingProblem, front_records: list[dict]) -> dic
         cand_max = None
         for i_str, start in rec["starts"].items():
             plan = sp.plans[int(i_str)]
-            psi = squint_at(start, plan.t_ca_s, sp.lib.geo, r0_m=plan.r0_m)
+            # ticket 25: the start sits in ONE transit window; that window's
+            # own zero and slant range drive the squint and the AASR readout
+            w = plan.window_at(start)
+            psi = squint_at(start, w.t_ca_s, sp.lib.geo, r0_m=w.r0_m)
             try:
                 db = aasr_direct(
                     plan.mode, psi, sp.lib.geo.k, plan.prf_hz, sp.lib,
                     spt_scene_wa_m=(
                         plan.azimuth_size_m if plan.mode is Mode.SPT else None
                     ),
-                    r0_m=plan.r0_m,
+                    r0_m=w.r0_m,
                 )["aasr_db"]
             except ValueError:
                 # unenforced readout outside the physical sliding domain:

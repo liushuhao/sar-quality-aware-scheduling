@@ -126,22 +126,36 @@ def a3_estimands() -> tuple[dict, list[str]]:
 
 
 def reachable_range_db(manifest: dict, lib: ModeLibrary, n_pts: int = 21) -> float:
-    """Unenforced AASR range [dB] over task x start x routed mode x registered PRF."""
+    """Unenforced AASR range [dB] over task x start x routed mode x registered PRF.
+
+    Ticket 25: sampling is PER WINDOW -- the old whole-span scan against one
+    scalar t_ca loses its semantics once a task carries multiple transits
+    (each with its own zero).  Legacy manifests (scalar triad) are the
+    single-window special case and reproduce the original sequence."""
     vals = []
     for t in manifest["tasks"]:
         mode = Mode[t["mode"]]
-        t0, t1 = float(t["t_start_s"]), float(t["t_end_s"])
         wa = float(t["azimuth_size_m"])
-        for i in range(n_pts):
-            tt = t0 + (t1 - t0) * i / (n_pts - 1)
-            try:
-                vals.append(aasr_direct(
-                    mode, squint_at(tt, float(t["t_ca_s"]), lib.geo),
-                    lib.geo.k, float(t["prf_hz"]), lib,
-                    spt_scene_wa_m=(wa if mode is Mode.SPT else None),
-                )["aasr_db"])
-            except ValueError:
-                pass  # SLS outside the physical sliding domain (a_res <= 0)
+        if "windows" in t:
+            win_specs = [
+                (float(w["lo_s"]), float(w["hi_s"]), float(w["t_ca_s"]))
+                for w in t["windows"]
+            ]
+        else:
+            win_specs = [
+                (float(t["t_start_s"]), float(t["t_end_s"]), float(t["t_ca_s"]))
+            ]
+        for t0, t1, t_ca in win_specs:
+            for i in range(n_pts):
+                tt = t0 + (t1 - t0) * i / (n_pts - 1)
+                try:
+                    vals.append(aasr_direct(
+                        mode, squint_at(tt, t_ca, lib.geo),
+                        lib.geo.k, float(t["prf_hz"]), lib,
+                        spt_scene_wa_m=(wa if mode is Mode.SPT else None),
+                    )["aasr_db"])
+                except ValueError:
+                    pass  # SLS outside the physical sliding domain (a_res <= 0)
     if not vals:
         raise ValueError("no AASR sample reachable")
     return max(vals) - min(vals)

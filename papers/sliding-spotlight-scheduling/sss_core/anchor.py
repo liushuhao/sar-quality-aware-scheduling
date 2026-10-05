@@ -57,7 +57,7 @@ import math
 from dataclasses import dataclass
 
 from .duration import MarginPads, duration_scene_s
-from .evaluator import C2_TOL_S, TaskPlan, precompile_tasks
+from .evaluator import C2_TOL_S, TaskPlan, TaskWindow, precompile_tasks
 from .geometry import squint_at
 from .maneuver import FALLBACK_MANEUVER_S, calibrate_against_kim
 from .modes import Mode, ModeLibrary
@@ -114,12 +114,15 @@ def greedy_anchor(
         # here made 8 of 10 anchor starts fall outside their own precompiled
         # feasible set on the real-window family (measured CV 0.0646), because
         # the evaluator re-precompiles with r0_m and the two disagreed.
+        # ticket 25: per-WINDOW geometry -- t falls in one transit window,
+        # and that window's own zero and slant range drive the dwell.
+        w = plan.window_at(t)
         if freeze_durations:
-            return duration_scene_s(plan.mode, 0.0, lib, r0_m=plan.r0_m)
+            return duration_scene_s(plan.mode, 0.0, lib, r0_m=w.r0_m)
         return duration_scene_s(
             plan.mode,
-            squint_at(t, plan.t_ca_s, lib.geo, r0_m=plan.r0_m),
-            lib, r0_m=plan.r0_m,
+            squint_at(t, w.t_ca_s, lib.geo, r0_m=w.r0_m),
+            lib, r0_m=w.r0_m,
         )
 
     # precompile with the SAME frozen-dwell wrapper (D11-8 scope)
@@ -139,29 +142,32 @@ def greedy_anchor(
         if not starts:
             return True
         times = sorted(starts.items(), key=lambda kv: kv[1])
-        psi_self = squint_at(cand, plan.t_ca_s, lib.geo, r0_m=plan.r0_m)
+        w_self = plan.window_at(cand)
+        psi_self = squint_at(cand, w_self.t_ca_s, lib.geo, r0_m=w_self.r0_m)
         dur_self = dwell_at(plan, cand)
         pred = [(j, t) for j, t in times if t <= cand + 1e-12]
         succ = [(j, t) for j, t in times if t > cand + 1e-12]
         if pred:
             j, tj = pred[-1]
             pj = plans[j]
-            psi_j = squint_at(tj, pj.t_ca_s, lib.geo, r0_m=pj.r0_m)
+            w_j = pj.window_at(tj)
+            psi_j = squint_at(tj, w_j.t_ca_s, lib.geo, r0_m=w_j.r0_m)
             need = _need_between(
                 dwell_at(pj, tj), abs(psi_self - psi_j),
-                boundary_rate_of(pj.mode, psi_j, lib, r0_m=pj.r0_m),
-                boundary_rate_of(plan.mode, psi_self, lib, r0_m=plan.r0_m), lib, pads,
+                boundary_rate_of(pj.mode, psi_j, lib, r0_m=w_j.r0_m),
+                boundary_rate_of(plan.mode, psi_self, lib, r0_m=w_self.r0_m), lib, pads,
             )
             if cand - tj < need - C2_TOL_S:
                 return False
         if succ:
             j, tj = succ[0]
             pj = plans[j]
-            psi_j = squint_at(tj, pj.t_ca_s, lib.geo, r0_m=pj.r0_m)
+            w_j = pj.window_at(tj)
+            psi_j = squint_at(tj, w_j.t_ca_s, lib.geo, r0_m=w_j.r0_m)
             need = _need_between(
                 dur_self, abs(psi_j - psi_self),
-                boundary_rate_of(plan.mode, psi_self, lib, r0_m=plan.r0_m),
-                boundary_rate_of(pj.mode, psi_j, lib, r0_m=pj.r0_m), lib, pads,
+                boundary_rate_of(plan.mode, psi_self, lib, r0_m=w_self.r0_m),
+                boundary_rate_of(pj.mode, psi_j, lib, r0_m=w_j.r0_m), lib, pads,
             )
             if tj - cand < need - C2_TOL_S:
                 return False
@@ -176,12 +182,19 @@ def greedy_anchor(
         if repair:
             for j, tj in sorted(starts.items(), key=lambda kv: kv[1]):
                 pj = plans[j]
-                psi_j = squint_at(tj, pj.t_ca_s, lib.geo, r0_m=pj.r0_m)
-                psi_self = squint_at(max(ws, tj), plan.t_ca_s, lib.geo, r0_m=plan.r0_m)
+                w_j = pj.window_at(tj)
+                psi_j = squint_at(tj, w_j.t_ca_s, lib.geo, r0_m=w_j.r0_m)
+                c_ref = max(ws, tj)
+                # heuristic estimate site: c_ref need not lie in a window of
+                # THIS task (tj is another task's start), so use the nearest
+                # window -- the candidate itself is membership-gated and then
+                # re-checked by fits() against its true window
+                w_self = plan.window_nearest(c_ref)
+                psi_self = squint_at(c_ref, w_self.t_ca_s, lib.geo, r0_m=w_self.r0_m)
                 need = _need_between(
                     dwell_at(pj, tj), abs(psi_self - psi_j),
-                    boundary_rate_of(pj.mode, psi_j, lib, r0_m=pj.r0_m),
-                    boundary_rate_of(plan.mode, psi_self, lib, r0_m=plan.r0_m), lib, pads,
+                    boundary_rate_of(pj.mode, psi_j, lib, r0_m=w_j.r0_m),
+                    boundary_rate_of(plan.mode, psi_self, lib, r0_m=w_self.r0_m), lib, pads,
                 )
                 candidates.append(tj + need)
             candidates = sorted(set(candidates))
@@ -230,7 +243,13 @@ def boundary_rate_of(
 
 
 def _precompile_frozen(manifest: dict, lib: ModeLibrary, pads: MarginPads):
-    """Precompile with the zero-squint dwell (D11-8 frozen wrapper)."""
+    """Precompile with the zero-squint dwell (D11-8 frozen wrapper).
+
+    Ticket 25: dual-schema like ``precompile_tasks`` -- a ``windows`` list
+    gives per-window [lo, hi] domains (constant dwell per window's own r0);
+    a task without ``windows`` is the single-window synthetic family, whose
+    fields are read straight from the manifest.
+    """
 
     def duration(t, mode: Mode, _tca: float, r0=None):
         return pad_window_tail_(duration_scene_s(mode, 0.0, lib, r0_m=r0), pads)
@@ -238,20 +257,47 @@ def _precompile_frozen(manifest: dict, lib: ModeLibrary, pads: MarginPads):
     plans = []
     for i, t in enumerate(manifest["tasks"]):
         mode = Mode[t["mode"]]
-        t0, t1 = float(t["t_start_s"]), float(t["t_end_s"])
         # ticket 16: the frozen-dwell variant must use the SAME per-task R0 as
         # the production precompile, or its intervals describe a different
         # feasible set than the one it is compared against
         r0_t = float(t["r0_m"]) if t.get("r0_m") is not None else None
-        try:
-            from .windows import feasible_subintervals
+        if "windows" in t:
+            specs = [
+                (
+                    float(w["lo_s"]), float(w["hi_s"]), float(w["t_ca_s"]),
+                    float(w["r0_m"]) if w.get("r0_m") is not None else r0_t,
+                )
+                for w in t["windows"]
+            ]
+        else:
+            specs = [(
+                float(t["t_start_s"]), float(t["t_end_s"]),
+                float(t["t_ca_s"]), r0_t,
+            )]
+        windows = []
+        any_feasible = False
+        for lo, hi, w_tca, w_r0 in specs:
+            try:
+                from .windows import feasible_subintervals
 
-            fw = feasible_subintervals(
-                lambda tt, m=mode, _r0=r0_t: duration(tt, m, 0.0, _r0), t0, t1
+                fw = feasible_subintervals(
+                    lambda tt, m=mode, _r0=w_r0: duration(tt, m, 0.0, _r0),
+                    lo, hi,
+                )
+                ivs = tuple(fw.intervals) if fw else ()
+            except ValueError:
+                ivs = ()
+            any_feasible = any_feasible or any(h > l for l, h in ivs)
+            # the freeze applies to the DWELL only (D11-8 scope): the
+            # window's squint zero stays the manifest's real t_ca, exactly
+            # like the pre-ticket-25 frozen precompile
+            windows.append(
+                TaskWindow(lo=lo, hi=hi, t_ca_s=w_tca, r0_m=w_r0, intervals=ivs)
             )
-            intervals = tuple(fw.intervals) if fw else None
-        except ValueError:
-            intervals = None
+        intervals = (
+            tuple(iv for w in windows for iv in w.intervals)
+            if any_feasible else None
+        )
         plans.append(
             TaskPlan(
                 index=i,
@@ -259,10 +305,11 @@ def _precompile_frozen(manifest: dict, lib: ModeLibrary, pads: MarginPads):
                 rho_req_m=float(t["rho_req_m"]),
                 mode=mode,
                 prf_hz=float(t["prf_hz"]),
-                t_ca_s=float(t["t_ca_s"]),
                 azimuth_size_m=float(t["azimuth_size_m"]),
                 intervals=intervals,
                 priority_f=float(t["priority"]),
+                windows=tuple(windows),
+                r0_m=r0_t,
             )
         )
     return plans

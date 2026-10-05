@@ -137,6 +137,51 @@ def test_anchor_crosscheck_passes(pilot, manifest, lib):
     assert step["detail"]["anchor_f1_star"] == pytest.approx(0.8931, abs=1e-3)
 
 
+def test_evaluator_output_matches_frozen_fronts(lib):
+    """MUST-3 guard (ticket 25): the post-AD-3 evaluator reproduces every
+    frozen front record's f1*/f_q from the frozen manifests.  The front
+    starts are re-encoded through the registered round-trip (1e-9, D12-1),
+    so the assertions carry that tolerance on f_q and an exact-fraction
+    tolerance on f1; a squint/quality-chain drift anywhere flips this red.
+
+    Anti-vacuous: the loop must actually visit all 50 frozen pilots and a
+    floor of front records, so an empty glob cannot pass silently."""
+    from sss_core.evaluator import SchedulingProblem
+    from sss_core.nsga2 import encode_seed_individual
+
+    matrix = FORK_DOMAIN / "experiments" / "results" / "matrix"
+    scenarios = FORK_DOMAIN / "experiments" / "results" / "scenarios"
+    pilots = sorted(matrix.glob("pilot_*.json"))
+    assert len(pilots) == 50, f"frozen pilot census changed: {len(pilots)}"
+    n_records = 0
+    families = set()
+    for p in pilots:
+        art = json.loads(p.read_text(encoding="utf-8"))
+        mpath = scenarios / Path(art["manifest"]).name
+        manifest = load_manifest(mpath)
+        families.add(manifest["scenario"]["family_code"])
+        sp = SchedulingProblem(manifest, lib)
+        for rec in art["front"]:
+            starts = {int(k): float(v) for k, v in rec["starts"].items()}
+            x = encode_seed_individual(sp, starts)
+            ev = sp.evaluate(x)
+            assert ev["f1_star"] == pytest.approx(rec["f1_star"], abs=1e-9), (
+                p.name, rec
+            )
+            assert ev["f_q"] == pytest.approx(rec["f_q"], abs=1e-9), (
+                p.name, rec
+            )
+            # CV belt: the 1e-9 round-trip start dust can cross a steep C2
+            # boundary-rate gradient and produce ~1e-6 s deficits.  Genuine
+            # violations are ~seconds (evaluator C2_TOL_S registration), so
+            # a 1e-3 belt is three orders below anything real while still
+            # catching a violated schedule.
+            assert ev["cv"] <= 1e-3, (p.name, rec)
+            n_records += 1
+    assert families == {"M1NC", "M2WH", "M3NC", "M2WF", "M4WH"}, families
+    assert n_records >= 100, n_records
+
+
 def test_gate_aggregation_fail_exits_20(pilot, manifest, lib):
     """Any FAIL step -> exit 20; REPORT steps never fail the gate."""
     real_replay = promotion_replay

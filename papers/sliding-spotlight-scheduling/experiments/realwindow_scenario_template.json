@@ -71,5 +71,47 @@
     "lat_deg": "target latitude (cluster centre + scatter)",
     "lon_deg": "target longitude",
     "window_width_s": "cascade width, a physical quantity in the M family"
-  }
+  },
+
+  "amendment_20261005_ticket25": {
+    "status": "ACTIVE -- supersedes the v1 fields above for generation; the frozen v1 fields are retained verbatim per append-only discipline",
+    "trigger": "ledger R22: the v1 pass rule (epoch + {0,600} s) is an arbitrary phase point, not a transit; measured 0/8 clusters servable under the ticket-24 incidence fix, 6/8 under true enumeration",
+    "schema": "scenario-manifest/2.1-realwindow",
+    "density_n_targets": "<20 | 50 | 100>",
+    "variant_index": "<1 | 2 | 3>",
+    "family_registry": {
+      "1": "R1C (N=20, C)",
+      "2": "R2F (N=50, F)",
+      "3": "R3H (N=100, H)",
+      "retired": "R4H (N=500) -- AD-5: single-transit STR capacity 24 => ceil(N/24) passes; N>=150 exceeds the registered span. The v1 registry slot 4 and recompute_r_fam.py FAMILIES entry are removed together."
+    },
+    "dense_domain": {
+      "centre_deg": [20.0, 0.0],
+      "side_km": 1000.0,
+      "grid_n": 5,
+      "grid_spacing_km": 250.0,
+      "scatter_half_cell_km": 125.0,
+      "assignment_rule": "target i -> node i % 25 (row-major), uniform jitter within own cell",
+      "servability_evidence": "probe 2026-10-05: 25/25 nodes carry >=1 in-band transit in 72 h; gap-merge pass counts invariant across {150,300,600,1200} s on all nodes; centre node 2.00 transits/24h (registered value reproduced)",
+      "must5_criterion_note": "v1 finding-A wording ('best incidence in [30,60]') is satisfied by the OPERATIVE criterion '>=1 in-band transit per node' (25/25). The literal min-over-span reading fails at the centre (21.7 deg: near-nadir passes exist there but simply yield no in-band window); registered so the criterion is falsifiable."
+    },
+    "span_days": 3.0,
+    "enumeration": {
+      "scan_step_s": 15.0,
+      "gap_merge_s": 300.0,
+      "gap_merge_robustness_s": [150.0, 600.0, 1200.0],
+      "gap_merge_status": "registered band parameter (pass counts invariant across the range, probe-measured); NOT a physical lower bound",
+      "edge_refinement": "bisection, 24 iterations (sub-millisecond)",
+      "t_ca_rule": "vector-squint minimum of the pass segment = closest approach; may sit at a near-nadir point OUTSIDE the band (that is the planar model's anchor, not an in-band point)",
+      "window_cascade": "incidence runs n envelope n end-check n AASR, per window (AD-6: the incidence leg JOINS the intersection; every emitted window is four-leg clean)",
+      "in_sim_ground_track_repeat": "14.97 orbits ~= 23.93 h (two-body propagator: no J2 nodal drift; the v1 '14.75 orbits' figure included J2 and applies to the physical orbit, not the simulated one)"
+    },
+    "window_schema": {
+      "task_fields_removed": "scalar t_ca_s / r0_m / incidence_deg / window_width_s / vector_squint_min_t_s (per-window now; a multi-window manifest keeping a scalar t_ca would silently mis-feed consumers)",
+      "task_fields_kept": "t_start_s / t_end_s (window-span scalars, used for ordering), azimuth_size_m, priority, rho_req_m, mode, prf_hz, lat_deg, lon_deg",
+      "windows_entry": "lo_s / hi_s / t_ca_s / r0_m / incidence_deg / width_s -- one entry per surviving cascade window, sorted by lo_s; r0_m is the pass's closest-approach range (the planar model's R0), incidence_deg is measured at the window midpoint",
+      "consumer_contract": "all squint/dwell/AASR consumers go through TaskPlan.t_ca_at(t) / window_at(t) (closed-interval lookup); the flattened feasible union keeps manifest window order (decode_tau measure-walk unchanged); 2N decision variables unchanged -- transit choice is implicit in tau"
+    },
+    "squint_semantics_update": "the v1 'two zero points' note is superseded for the R family: under enumeration each window's t_ca_s IS its pass's vector-squint minimum, so the planar zero and the vector minimum coincide by construction (the v1 separation existed because the old code picked in-band run midpoints). The mode-envelope leg still consumes ONLY sss_core.geometry.squint_at; the vector squint never enters an envelope test."
+    }
 }

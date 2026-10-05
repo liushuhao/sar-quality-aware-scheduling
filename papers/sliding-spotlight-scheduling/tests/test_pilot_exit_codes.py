@@ -25,8 +25,6 @@ import subprocess
 import sys
 from pathlib import Path
 
-import pytest
-
 FORK_DOMAIN = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(FORK_DOMAIN))
 sys.path.insert(0, str(FORK_DOMAIN.parent.parent / "src"))
@@ -106,43 +104,28 @@ def test_fixture_all_infeasible_actually_is(tmp_path):
 def test_run_pilot_exits_11_on_all_infeasible_manifest(tmp_path):
     """The registered-but-untested branch: no feasible individual survived.
 
-    xfail(strict=True), and the reason is a REAL DEFECT found while writing
-    this test on 2026-10-02, not a missing feature:
+    History: when this test was written (2026-10-02) it caught a REAL
+    defect -- run_pilot.py computed the greedy anchor and passed it to
+    run_nsga2 BEFORE the empty-front check, so an all-infeasible scenario
+    died at the seed-CV assertion (exit 1) instead of reporting 11.
+    Fixed in ticket 25 (R12): run_pilot checks schedulability after
+    precompilation and returns EXIT_EMPTY_FRONT directly; an empty anchor
+    no longer reaches the seed encoder.
 
-        run_pilot.py computes the greedy anchor and passes it to run_nsga2
-        BEFORE the empty-front check.  With every task unschedulable the
-        anchor vector has cv=1.0, so nsga2.py:178
-        (`assert ev["cv"] <= CV_DUST_TOL`) fires and the process dies with
-        exit 1 and a traceback.  The EXIT_EMPTY_FRONT branch at
-        run_pilot.py:77-78 is therefore UNREACHABLE through the CLI: an
-        all-infeasible scenario reports a crash, not the distinguishing
-        code it was written for.
-
-    Measured traceback (pop=8 gen=2 seed=100 on a 1.2 s-span manifest):
-        AssertionError: seed individual CV=1.0
-
-    Deliberately NOT written as `assert rc == 1`: pinning the crash would
-    lock in the defect and make the suite green on wrong behaviour.  Under
-    strict xfail the assertion states the CONTRACT (11); the moment
-    run_pilot.py checks schedulability before building the anchor, this
-    test XPASSes and strict mode turns that into a failure demanding the
-    marker be removed.
-
-    Fix location for whoever takes it: in run_pilot.main, after
-    precompile_tasks and before anchor_on_manifest, return
-    EXIT_EMPTY_FRONT if no plan is schedulable.
+    The assertion is the CONTRACT (11).  The guard below keeps the fixture
+    honest: if the manifest stops being all-infeasible, this test would
+    pass for an unrelated reason.
     """
     m = _write(tmp_path, _respan(_load_manifest(), 1.2), "infeasible.json")
+    lib = ModeLibrary.from_fixture()
+    plans = precompile_tasks(json.loads(m.read_text(encoding="utf-8")), lib)
+    assert not any(p.schedulable for p in plans), (
+        "exit-11 fixture degraded: it now has schedulable tasks, so this "
+        "test no longer exercises the empty-front branch"
+    )
     rc = _run(m)
-    if rc == 1:
-        pytest.xfail(
-            "known defect (2026-10-02): all-infeasible manifest dies at "
-            "nsga2.py:178 seed-CV assertion (exit 1) before reaching the "
-            "empty-front branch; EXIT_EMPTY_FRONT is unreachable via CLI"
-        )
     assert rc == EXIT_EMPTY_FRONT, (
-        f"expected 11 for an all-infeasible manifest, got {rc}; if the "
-        "defect changed shape, update this test's xfail reason"
+        f"expected 11 for an all-infeasible manifest, got {rc}"
     )
 
 

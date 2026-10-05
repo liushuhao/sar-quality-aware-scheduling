@@ -62,11 +62,26 @@ def main(argv=None) -> int:
 
     lib = ModeLibrary.from_fixture()
 
+    # R12 (ticket 25): an all-infeasible scenario must reach the
+    # empty-front branch, not die inside the seed encoder.  With every
+    # task unschedulable the greedy anchor serves nothing, so the seed
+    # row would carry cv=1.0 and the seed-CV assertion would turn the
+    # distinguishing exit 11 into a crash (exit 1).
+    sp = SchedulingProblem(manifest, lib)
+    if not any(p.schedulable for p in sp.plans):
+        print(
+            "D11 EXIT 11: no feasible individual can exist "
+            "(every task has an empty feasible set)",
+            file=sys.stderr,
+        )
+        return EXIT_EMPTY_FRONT
+
     # anchor seed (D12-1/2): encode the greedy anchor solution as population
     # row 0, with the fail-loud CV/f1 dual check inside run_nsga2
     anchor = anchor_on_manifest(manifest, lib)
-    sp = SchedulingProblem(manifest, lib)
-    seed_vec = encode_seed_individual(sp, anchor.starts)
+    seed_vec = (
+        encode_seed_individual(sp, anchor.starts) if anchor.starts else None
+    )
     result = run_nsga2(
         manifest, lib, seed=args.seed, pop_size=args.pop,
         generations=args.gen, seed_individual=seed_vec,

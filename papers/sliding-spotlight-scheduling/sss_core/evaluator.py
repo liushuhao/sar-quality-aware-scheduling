@@ -109,6 +109,26 @@ def decode_tau(tau: float, intervals) -> float:
     raise AssertionError("unreachable")  # pragma: no cover
 
 
+@dataclass(frozen=True)
+class TaskWindow:
+    """One transit window of a task (ticket 25, AD-3).
+
+    ``lo``/``hi`` are the window bounds in manifest time; ``t_ca_s`` is THIS
+    window's ``squint_at`` zero -- each enumerated transit has its own zero,
+    and reusing one zero across passes mis-derives dwell / envelope / AASR
+    (the defect AD-3 closes).  ``r0_m`` / ``incidence_deg`` are this pass's
+    geometry.  ``intervals`` holds the end-check-feasible subintervals
+    within ``[lo, hi]``, filled at precompile (never re-derived elsewhere).
+    """
+
+    lo: float
+    hi: float
+    t_ca_s: float
+    r0_m: float | None = None
+    incidence_deg: float | None = None
+    intervals: tuple[tuple[float, float], ...] = ()
+
+
 @dataclass
 class TaskPlan:
     """Per-task precompilation consumed by evaluation (fixed at setup).
@@ -116,9 +136,15 @@ class TaskPlan:
     Ticket 16 adds the per-task geometry block: ``r0_m`` / ``incidence_deg``
     are None for every pre-ticket-16 family (their manifests carry no
     geometry), which is what keeps the frozen result families bit-identical.
-    ``t_ca_s`` is the ZERO of ``squint_at`` -- NOT the zero of the shared
-    library's vector squint, which is a different quantity with a different
-    zero point (measured: the vector minimum sits 600 s away).
+
+    Ticket 25 (AD-3): the window structure is a LIST of :class:`TaskWindow`
+    (one per enumerated transit).  ``t_ca_at(t)`` returns the zero of the
+    window CONTAINING t -- closed-interval convention (``lo <= t <= hi``):
+    ``decode_tau`` at tau=1 lands exactly on ``hi`` (D04-1 closed feasibility),
+    so a half-open match would pick the wrong window at the boundary.
+    A manifest without a ``windows`` field is the synthetic single-window
+    family: one TaskWindow spans ``[t_start_s, t_end_s]`` and every lookup
+    returns the stored scalar, keeping those manifests byte-identical.
     """
 
     index: int
@@ -126,17 +152,56 @@ class TaskPlan:
     rho_req_m: float
     mode: Mode
     prf_hz: float
-    t_ca_s: float
     azimuth_size_m: float
     intervals: tuple | None  # None = unschedulable (empty feasible set)
     priority_f: float
+    windows: tuple[TaskWindow, ...] = ()
     r0_m: float | None = None
     incidence_deg: float | None = None
     vector_squint_min_t_s: float | None = None
 
+    def __post_init__(self):
+        # AD-3 invariant, asserted not assumed: window INTERIORS never
+        # overlap (pass spacing is hours; a single pass window is minutes).
+        # Touching endpoints are allowed (two in-band flanks of one pass can
+        # meet at the band edge -- a zero-measure boundary); ``window_at``
+        # resolves that case deterministically by first match.
+        ordered = sorted(self.windows, key=lambda w: w.lo)
+        for a, b in zip(ordered, ordered[1:]):
+            if a.hi > b.lo:
+                raise ValueError(
+                    f"task {self.index}: windows overlap "
+                    f"([{a.lo}, {a.hi}] vs [{b.lo}, {b.hi}])"
+                )
+
     @property
     def schedulable(self) -> bool:
         return self.intervals is not None
+
+    def window_at(self, t: float) -> TaskWindow:
+        """The window containing t (closed interval, first match)."""
+        for w in self.windows:
+            if w.lo <= t <= w.hi:
+                return w
+        raise ValueError(
+            f"t={t} outside every window of task {self.index} "
+            f"({[w.lo for w in self.windows]}..{[w.hi for w in self.windows]})"
+        )
+
+    def window_nearest(self, t: float) -> TaskWindow:
+        """Nearest window by distance (0 if inside).  ONLY for heuristic
+        estimates at times that are not yet committed to a window -- the
+        anchor's repair-candidate generator.  Every committed evaluation
+        path must use ``window_at`` (fail-loud), never this."""
+        return min(
+            self.windows,
+            key=lambda w: max(w.lo - t, t - w.hi, 0.0),
+        )
+
+    def t_ca_at(self, t: float) -> float:
+        """The squint zero of the window containing t (stored value,
+        never recomputed)."""
+        return self.window_at(t).t_ca_s
 
 
 def precompile_tasks(manifest: dict, lib: ModeLibrary) -> list[TaskPlan]:
@@ -147,6 +212,17 @@ def precompile_tasks(manifest: dict, lib: ModeLibrary) -> list[TaskPlan]:
     ``incidence_deg`` / ``vector_squint_min_t_s``).  Absent block -> the
     library constants, which is every pre-ticket-16 manifest, so those stay
     bit-identical.
+
+    Ticket 25 (AD-3): a task may carry a ``windows`` list (one entry per
+    enumerated transit: ``lo_s``/``hi_s``/``t_ca_s``/``r0_m``/
+    ``incidence_deg``).  Each window gets its OWN duration closure (its own
+    squint zero and its own slant range) and its own end-check; the flattened
+    feasible union is rebuilt in the manifest's window order (``decode_tau``
+    measure-walk unchanged).  A task without ``windows`` is the synthetic
+    single-window family: one TaskWindow spans ``[t_start_s, t_end_s]`` taken
+    DIRECTLY from the manifest (never re-derived from ``t_ca`` + half-width),
+    and the single-window semantics (empty feasible set -> ``intervals=None``,
+    i.e. unschedulable) are preserved bit-for-bit.
     """
     pads = MarginPads(
         float(manifest["preregistration"]["pads"]["inter_task_fraction"]),
@@ -155,8 +231,6 @@ def precompile_tasks(manifest: dict, lib: ModeLibrary) -> list[TaskPlan]:
     plans = []
     for i, t in enumerate(manifest["tasks"]):
         mode = Mode[t["mode"]]  # manifests store the enum NAME (STR/SLS/SPT)
-        t0, t1 = float(t["t_start_s"]), float(t["t_end_s"])
-        t_ca = float(t["t_ca_s"])
         # per-task geometry (ticket 16); absent on every pre-ticket-16 manifest
         r0_t = float(t["r0_m"]) if t.get("r0_m") is not None else None
         inc_t = (
@@ -168,19 +242,61 @@ def precompile_tasks(manifest: dict, lib: ModeLibrary) -> list[TaskPlan]:
             if t.get("vector_squint_min_t_s") is not None else None
         )
 
-        def duration(t, _mode=mode, _tca=t_ca, _r0=r0_t):
-            return pad_window_tail(
-                duration_scene_s(
-                    _mode, squint_at(t, _tca, lib.geo, r0_m=_r0), lib, r0_m=_r0
-                ),
-                pads,
-            )
+        if "windows" in t:
+            specs = [
+                (
+                    float(w["lo_s"]),
+                    float(w["hi_s"]),
+                    float(w["t_ca_s"]),
+                    float(w["r0_m"]) if w.get("r0_m") is not None else None,
+                    (
+                        float(w["incidence_deg"])
+                        if w.get("incidence_deg") is not None else None
+                    ),
+                )
+                for w in t["windows"]
+            ]
+        else:
+            # synthetic / pre-ticket-25 single window: fields straight from
+            # the manifest, so the frozen families see identical floats
+            specs = [(
+                float(t["t_start_s"]), float(t["t_end_s"]),
+                float(t["t_ca_s"]), r0_t, inc_t,
+            )]
 
-        try:
-            fw = feasible_subintervals(duration, t0, t1)
-            intervals = tuple(fw.intervals) if fw else None
-        except ValueError:
-            intervals = None
+        windows: list[TaskWindow] = []
+        any_feasible = False
+        for lo, hi, t_ca, w_r0, w_inc in specs:
+
+            def duration(t, _mode=mode, _tca=t_ca, _r0=w_r0):
+                return pad_window_tail(
+                    duration_scene_s(
+                        _mode, squint_at(t, _tca, lib.geo, r0_m=_r0), lib,
+                        r0_m=_r0,
+                    ),
+                    pads,
+                )
+
+            try:
+                fw = feasible_subintervals(duration, lo, hi)
+                ivs = tuple(fw.intervals) if fw else ()
+            except ValueError:
+                ivs = ()
+            # truthiness matches FeasibleWindows.__bool__ exactly: an
+            # all-degenerate feasible set is NOT schedulable (decode_tau
+            # cannot walk a zero-measure union) -- this is what keeps a
+            # single-window manifest's None-vs-() semantics unchanged
+            any_feasible = any_feasible or any(hi_iv > lo_iv for lo_iv, hi_iv in ivs)
+            windows.append(
+                TaskWindow(
+                    lo=lo, hi=hi, t_ca_s=t_ca, r0_m=w_r0, incidence_deg=w_inc,
+                    intervals=ivs,
+                )
+            )
+        intervals = (
+            tuple(iv for w in windows for iv in w.intervals)
+            if any_feasible else None
+        )
         plans.append(
             TaskPlan(
                 index=i,
@@ -188,10 +304,10 @@ def precompile_tasks(manifest: dict, lib: ModeLibrary) -> list[TaskPlan]:
                 rho_req_m=float(t["rho_req_m"]),
                 mode=mode,
                 prf_hz=float(t["prf_hz"]),
-                t_ca_s=t_ca,
                 azimuth_size_m=float(t["azimuth_size_m"]),
                 intervals=intervals,
                 priority_f=float(t["priority"]),
+                windows=tuple(windows),
                 r0_m=r0_t,
                 incidence_deg=inc_t,
                 vector_squint_min_t_s=vsq_t,
@@ -239,11 +355,12 @@ class SchedulingProblem:
 
     def _dwell(self, i: int, start: float) -> float:
         plan = self.plans[i]
+        w = plan.window_at(start)
         return duration_scene_s(
             plan.mode,
-            squint_at(start, plan.t_ca_s, self.lib.geo, r0_m=plan.r0_m),
+            squint_at(start, w.t_ca_s, self.lib.geo, r0_m=w.r0_m),
             self.lib,
-            r0_m=plan.r0_m,
+            r0_m=w.r0_m,
         )
 
     # ── evaluate ─────────────────────────────────────────────────────
@@ -268,15 +385,17 @@ class SchedulingProblem:
 
         for a, b in zip(order, order[1:]):
             pa, pb = self.plans[a], self.plans[b]
-            psi_a = squint_at(starts[a], pa.t_ca_s, self.lib.geo, r0_m=pa.r0_m)
-            psi_b = squint_at(starts[b], pb.t_ca_s, self.lib.geo, r0_m=pb.r0_m)
+            w_a = pa.window_at(starts[a])
+            w_b = pb.window_at(starts[b])
+            psi_a = squint_at(starts[a], w_a.t_ca_s, self.lib.geo, r0_m=w_a.r0_m)
+            psi_b = squint_at(starts[b], w_b.t_ca_s, self.lib.geo, r0_m=w_b.r0_m)
             req = c2_transfer_requirement_s(
                 self._dwell(a, starts[a]),
                 self.lib,
                 self.pads,
                 d_psi_rad=abs(psi_b - psi_a),
-                omega_start=boundary_rate(pa.mode, psi_a, self.lib, r0_m=pa.r0_m),
-                omega_end=boundary_rate(pb.mode, psi_b, self.lib, r0_m=pb.r0_m),
+                omega_start=boundary_rate(pa.mode, psi_a, self.lib, r0_m=w_a.r0_m),
+                omega_end=boundary_rate(pb.mode, psi_b, self.lib, r0_m=w_b.r0_m),
             )
             gap = starts[b] - starts[a]
             violations += max(0.0, req["requirement_s"] - gap - C2_TOL_S)
@@ -298,22 +417,19 @@ class SchedulingProblem:
                 violations += 1.0
 
         f1 = sum(self.plans[i].priority_f for i in order) / max(self.total_priority, 1e-12)
-        f_q = f_q_aggregate(
-            [
+        f_q_terms = []
+        for i in order:
+            w_i = self.plans[i].window_at(starts[i])
+            f_q_terms.append(
                 f_q_per_task(
                     self.plans[i].mode,
-                    squint_at(
-                        starts[i], self.plans[i].t_ca_s, self.lib.geo,
-                        r0_m=self.plans[i].r0_m,
-                    ),
-                    # per-task slant range (ticket 16); None -> library constant
-                    self.lib.geo.R0_m if self.plans[i].r0_m is None
-                    else self.plans[i].r0_m,
+                    squint_at(starts[i], w_i.t_ca_s, self.lib.geo, r0_m=w_i.r0_m),
+                    # per-window slant range (ticket 25); None -> library constant
+                    self.lib.geo.R0_m if w_i.r0_m is None else w_i.r0_m,
                     self.lib,
                 )
-                for i in order
-            ]
-        )
+            )
+        f_q = f_q_aggregate(f_q_terms)
         return {
             "f1_star": f1,
             "f_q": f_q,

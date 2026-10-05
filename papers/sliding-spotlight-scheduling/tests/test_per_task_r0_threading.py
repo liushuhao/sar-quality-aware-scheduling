@@ -144,14 +144,15 @@ def test_evaluator_c2_pair_threaded_end_to_end(lib):
     sp = SchedulingProblem(near, lib)
     pa, pb = sp.plans[0], sp.plans[1]
     start1 = 60.0
-    psi_a = squint_at(start1, pa.t_ca_s, lib.geo, r0_m=pa.r0_m)
+    # ticket 25: the squint zero is read per window at the start
+    psi_a = squint_at(start1, pa.window_at(start1).t_ca_s, lib.geo, r0_m=pa.r0_m)
     dwell1 = sp._dwell(0, start1)
 
     def req_at(start2, r0_omega):
         # the squint stays PER-TASK in both worlds (ticket-16 threading is
         # not the mutation target): only the boundary-rate omegas vary, so
         # the straddle is attributable to the call-site threading alone
-        psi_b = squint_at(start2, pb.t_ca_s, lib.geo, r0_m=pb.r0_m)
+        psi_b = squint_at(start2, pb.window_at(start2).t_ca_s, lib.geo, r0_m=pb.r0_m)
         return c2_transfer_requirement_s(
             dwell1, sp.lib, sp.pads,
             d_psi_rad=abs(psi_b - psi_a),
@@ -279,7 +280,11 @@ def test_promotion_spread_moves_with_task_r0(lib):
         for t in m["tasks"]:
             t["mode"] = "SPT"
             t["rho_req_m"] = 1.5
-    front = [{"starts": {"0": 75.0, "1": 475.0}}]
+    front = [{"starts": {"0": 75.0, "1": 89.0}}]
+    # ticket 25: starts are per-window read; 89.0 sits inside task 1's
+    # window [64, 90] near its edge, keeping the squint large enough to
+    # witness the aliasing-term change (the old 475.0 was outside every
+    # window -- a start no feasible front could ever carry)
     db_lib = promotion_spread_db(SchedulingProblem(manifest, lib), front)
     db_near = promotion_spread_db(SchedulingProblem(near_manifest, lib), front)
     assert db_lib["per_candidate_max_db"] != db_near["per_candidate_max_db"]

@@ -38,7 +38,6 @@ from __future__ import annotations
 import math
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta, timezone
-from typing import Iterable
 
 import numpy as np
 
@@ -370,52 +369,3 @@ def satellite_to_target_vector(
         sat_to_target_ecef, target_ecef, elevation_deg, off_nadir_deg,
         incidence_deg, look, squint_deg,
     )
-
-
-def incidence_in_band(
-    state: ECIState, target: GroundTarget, lo_deg: float, hi_deg: float
-) -> dict:
-    """Incidence-mask atom for the window cascade.
-
-    Returns the geometry at one state plus whether it falls inside the
-    incidence band.  The band VERDICT belongs to the caller (``sss_core``
-    predicates own window semantics); this only reports the measurement and
-    the plain comparison, so the fork never becomes a second decision path.
-    """
-    *_, incidence_deg, _look, squint_deg = satellite_to_target_vector(state, target)
-    return {
-        "incidence_deg": incidence_deg,
-        "vector_squint_deg": squint_deg,
-        "in_band": bool(lo_deg <= incidence_deg <= hi_deg),
-    }
-
-
-def closest_approach_states(
-    elements: KeplerianElement,
-    target: GroundTarget,
-    t_start: datetime,
-    t_end: datetime,
-    step: timedelta = timedelta(seconds=1),
-) -> list[tuple[datetime, float]]:
-    """States whose squint magnitude is locally minimal (per-pass t_ca).
-
-    Ticket 16 pins the pass-selection rule as "the single pass whose target
-    visible window is longest", and ``t_ca`` is the in-window zero of
-    ``squint_at``.  This returns the per-pass minimum of the VECTOR squint
-    magnitude, which is the point where the along-track offset vanishes.
-    """
-    out: list[tuple[datetime, float]] = []
-    for st in propagate_orbit(elements, t_start, t_end, step):
-        *_, _inc, _look, squint_deg = satellite_to_target_vector(st, target)
-        out.append((st.time, abs(squint_deg)))
-    return out
-
-
-def iter_states(
-    elements: KeplerianElement,
-    t_start: datetime,
-    t_end: datetime,
-    step: timedelta = timedelta(seconds=1),
-) -> Iterable[ECIState]:
-    """Convenience iterator over propagate_orbit."""
-    return iter(propagate_orbit(elements, t_start, t_end, step))

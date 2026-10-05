@@ -340,12 +340,14 @@ def promotion_replay(pilot: dict, manifest: dict, lib: ModeLibrary) -> dict:
         cand_max = None
         for i_str, start in rec["starts"].items():
             plan = sp_plans[int(i_str)]
-            psi = squint_at(start, plan.t_ca_s, lib.geo, r0_m=plan.r0_m)
+            # ticket 25: per-window zero and slant range at the start
+            w = plan.window_at(start)
+            psi = squint_at(start, w.t_ca_s, lib.geo, r0_m=w.r0_m)
             try:
                 db = aasr_direct(
                     plan.mode, psi, lib.geo.k, plan.prf_hz, lib,
                     spt_scene_wa_m=(plan.azimuth_size_m if plan.mode is Mode.SPT else None),
-                    r0_m=plan.r0_m,
+                    r0_m=w.r0_m,
                 )["aasr_db"]
             except ValueError:
                 # unenforced readout outside the physical sliding domain:
@@ -399,16 +401,31 @@ def scatter_precheck(manifest: dict, lib: ModeLibrary) -> dict:
     within, means = [], []
     for t in manifest["tasks"]:
         mode = Mode[t["mode"]]
-        t0, t1, tca = float(t["t_start_s"]), float(t["t_end_s"]), float(t["t_ca_s"])
-        r0_t = t.get("r0_m")
-        r_m = lib.geo.R0_m if r0_t is None else float(r0_t)
-        vals = [
-            f_q_per_task(mode, squint_at(tt, tca, lib.geo, r0_m=r0_t), r_m, lib)
-            for tt in (t0, 0.5 * (t0 + t1), t1)
-        ]
-        mu = sum(vals) / len(vals)
-        within.append(math.sqrt(sum((v - mu) ** 2 for v in vals) / len(vals)))
-        means.append(mu)
+        # ticket 25: per-window sampling -- each transit window uses its own
+        # zero and slant range.  Legacy manifests (no ``windows`` field) keep
+        # the original single-window triad read.
+        if "windows" in t:
+            win_specs = [
+                (
+                    float(w["lo_s"]), float(w["hi_s"]), float(w["t_ca_s"]),
+                    w.get("r0_m"),
+                )
+                for w in t["windows"]
+            ]
+        else:
+            win_specs = [(
+                float(t["t_start_s"]), float(t["t_end_s"]), float(t["t_ca_s"]),
+                t.get("r0_m"),
+            )]
+        for t0, t1, tca, r0_t in win_specs:
+            r_m = lib.geo.R0_m if r0_t is None else float(r0_t)
+            vals = [
+                f_q_per_task(mode, squint_at(tt, tca, lib.geo, r0_m=r0_t), r_m, lib)
+                for tt in (t0, 0.5 * (t0 + t1), t1)
+            ]
+            mu = sum(vals) / len(vals)
+            within.append(math.sqrt(sum((v - mu) ** 2 for v in vals) / len(vals)))
+            means.append(mu)
     mu_all = sum(means) / len(means)
     cross = math.sqrt(sum((m - mu_all) ** 2 for m in means) / len(means))
     ratio = (sum(within) / len(within)) / cross if cross > 0 else 0.0

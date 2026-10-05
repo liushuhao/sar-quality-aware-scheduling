@@ -46,9 +46,34 @@ from sss_core.aasr import aasr_direct  # noqa: E402
 from sss_core.geometry import squint_at  # noqa: E402
 from sss_core.modes import Mode, ModeLibrary  # noqa: E402
 
-FAMILIES = {"R1C": 100, "R2F": 200, "R3H": 300, "R4H": 400}
+# ticket 25: R4H (N=500) is out of the re-based density ladder 20/50/100
+# (single-transit capacity 24, AD-5) -- its entry and the R_FAMILY_REGISTRY
+# slot 4 were removed together with the ladder amendment
+FAMILIES = {"R1C": 100, "R2F": 200, "R3H": 300}
 N_STARTS = 11
 THRESHOLD_DB = 6.0
+
+
+def _task_windows(t: dict):
+    """Dual-schema window spec (ticket 25): per-window (t0, t1, t_ca, r0).
+
+    New manifests carry a ``windows`` list (one entry per enumerated
+    transit); legacy manifests keep the scalar triad, which is the
+    single-window special case.
+    """
+    if "windows" in t:
+        for w in t["windows"]:
+            r0 = w.get("r0_m")
+            yield (
+                float(w["lo_s"]), float(w["hi_s"]), float(w["t_ca_s"]),
+                float(r0) if r0 is not None else None,
+            )
+    else:
+        r0 = t.get("r0_m")
+        yield (
+            float(t["t_start_s"]), float(t["t_end_s"]), float(t["t_ca_s"]),
+            float(r0) if r0 is not None else None,
+        )
 
 
 def family_r(
@@ -59,28 +84,30 @@ def family_r(
     per_task_r0=True is the ticket-23 caliber; False reproduces the
     ticket-17 readout (library R0 inside aasr_direct -- the eighth split
     instance) and must land on the registered 4.0032 / 6.8213 / 6.8216 /
-    6.8213 values before the new numbers are admissible."""
+    6.8213 values before the new numbers are admissible.
+
+    Ticket 25: sampling is PER WINDOW (each transit has its own zero and
+    slant range; sampling the whole task span against one zero would
+    misread every non-primary pass)."""
     vals = []
     excluded = 0
     for t in manifest["tasks"]:
         mode = Mode[t["mode"]]
-        t0, t1 = float(t["t_start_s"]), float(t["t_end_s"])
-        t_ca = float(t["t_ca_s"])
-        r0 = t.get("r0_m")
-        r0 = (float(r0) if r0 is not None else lib.geo.R0_m) if per_task_r0 else None
         wa = float(t["azimuth_size_m"])
         prf = float(t["prf_hz"])
-        for i in range(N_STARTS):
-            tt = t0 + (t1 - t0) * i / (N_STARTS - 1)
-            psi = squint_at(tt, t_ca, lib.geo, r0_m=r0)
-            try:
-                vals.append(aasr_direct(
-                    mode, psi, lib.geo.k, prf, lib,
-                    spt_scene_wa_m=(wa if mode is Mode.SPT else None),
-                    r0_m=r0,
-                )["aasr_db"])
-            except ValueError:
-                excluded += 1
+        for t0, t1, t_ca, r0 in _task_windows(t):
+            r0 = (float(r0) if r0 is not None else lib.geo.R0_m) if per_task_r0 else None
+            for i in range(N_STARTS):
+                tt = t0 + (t1 - t0) * i / (N_STARTS - 1)
+                psi = squint_at(tt, t_ca, lib.geo, r0_m=r0)
+                try:
+                    vals.append(aasr_direct(
+                        mode, psi, lib.geo.k, prf, lib,
+                        spt_scene_wa_m=(wa if mode is Mode.SPT else None),
+                        r0_m=r0,
+                    )["aasr_db"])
+                except ValueError:
+                    excluded += 1
     if not vals:
         raise ValueError("no AASR sample reachable in the physical domain")
     return max(vals) - min(vals), len(vals), excluded

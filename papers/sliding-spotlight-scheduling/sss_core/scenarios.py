@@ -78,36 +78,57 @@ H_MIX_DOCUMENTED_RANGE = (0.35, 0.65)  # documentation value; the test asserts
 # the EXACT Bernoulli realization count for the seed (D08-9)
 
 
-# ── real-window family R<density><requirement> (ticket 16) ───────────────
+# ── real-window family R<density><requirement> (ticket 16, redesigned 25) ─
 #
-# The 300 s box retires here: each task's window is the three-leg cascade
-# (incidence mask n mode envelope n end-check) computed from real orbit
-# geometry, so its width is a physical quantity rather than a constant.
+# The 300 s box retires here: each task's windows come from the three-leg
+# cascade (incidence mask n mode envelope n end-check, ticket 25 AD-6 adds
+# the incidence leg to the intersection) over REAL enumerated transits.
 #
-# Cluster geometry is PREREGISTERED (ticket acceptance item 5): cluster
-# centres on a fixed lat/lon grid, cluster scale L, density N and demand tier
-# are all bound before any run, and the seed rule is the matrix convention
-# (variant_index*100 + seed_index).
-R_CLUSTER_CENTRES_DEG = (
-    (56.0, 22.0), (34.0, -118.0), (-12.0, -46.0), (48.0, 121.0),
-    (-33.0, 151.0), (20.0, 77.0), (62.0, -70.0), (5.0, 100.0),
-)
-R_CLUSTER_SCALE_KM = 20.0        # cluster radius; targets scatter inside it
-R_PASS_SPAN_S = 120.0            # per-side propagation span around the pass
+# Ticket 25 redesign (spec amendment v0.6, all numbers probe-measured on the
+# frozen design orbit, 2026-10-05):
+#   AD-2  transits are ENUMERATED from the ground track, not sampled at
+#         epoch + {0,600} s (which is 37.5 deg of true anomaly -- an
+#         arbitrary phase point; measured 0/8 clusters servable vs 6/8
+#         under enumeration).  Per target: coarse incidence scan over the
+#         registered span, in-band runs refined by bisection, runs clustered
+#         into passes by the gap-merge threshold (robust 150..1200 s,
+#         measured identical counts; NOT a physical lower bound).  The two
+#         in-band flanks of one pass merge into one pass because the
+#         sub-band nadir middle is far shorter than the threshold.
+#   AD-4  single dense domain: centre (20N, 0E), 1000 km side, 5x5 grid at
+#         250 km spacing (measured 25/25 nodes carry >=1 in-band transit;
+#         300 km grid lacks incidence heterogeneity, 2000 km exceeds the
+#         longest single-pass window).
+#   AD-5  density ladder re-based to 20/50/100 (single-transit STR capacity
+#         24 => ceil(N/24) passes; N>=150 needs more passes than the
+#         registered 3-day span provides).  R4H (N=500) is retired.
+#   AD-9  the schedule span IS the enumeration span: 3 days (>= 1 ground
+#         track repeat; the two-body propagator repeats its track every
+#         14.97 orbits ~= 23.93 h, measured).
+R_DOMAIN_CENTRE_DEG = (20.0, 0.0)
+R_DOMAIN_SIDE_KM = 1000.0
+R_GRID_N = 5
+R_GRID_SPACING_KM = 250.0
+R_SCATTER_HALF_CELL_KM = 125.0   # jitter within the node's own cell
+R_KM_PER_DEG_LAT = 111.32        # [教科书] meridian km per degree
+R_SPAN_DAYS = 3.0                # AD-9: registered schedule/enumeration span
+R_SPAN_S = R_SPAN_DAYS * 86400.0
+R_ENUM_STEP_S = 15.0             # coarse scan step (runs are >= ~85 s wide)
+R_GAP_MERGE_S = 300.0            # registered band parameter, NOT a physical bound
+R_GAP_MERGE_ROBUST_S = (150.0, 600.0, 1200.0)  # measured: same pass counts
+R_PASS_SPAN_S = 120.0            # per-side propagation span around t_ca
 R_PROP_STEP_S = 1.0              # geometry sampling step
-R_PASSES = 2                     # ticket: longest visible window over 2 passes
 R_INCIDENCE_BAND_DEG = (30.0, 60.0)
 # Fractional guard inside the mode envelope.  The sampling grid and the
 # end-check bracket can each land a hair outside; 1% is far above both
 # (the sampling step is ~0.4% of the envelope at n_scan=240) and far below
 # any physically meaningful narrowing.
 R_ENVELOPE_GUARD_FRACTION = 0.01
-R_DENSITY_BY_INDEX = {1: 20, 2: 100, 3: 300, 4: 500}
+R_DENSITY_BY_INDEX = {1: 20, 2: 50, 3: 100}
 R_FAMILY_REGISTRY = {
     1: ("R1C", 20, "C"),
-    2: ("R2F", 100, "F"),
-    3: ("R3H", 300, "H"),
-    4: ("R4H", 500, "H"),
+    2: ("R2F", 50, "F"),
+    3: ("R3H", 100, "H"),
 }
 
 
@@ -271,7 +292,159 @@ def generate_scenario(
 from .geometry import squint_at as _squint_at  # D10-7 single source
 
 
-# ── real-window family generator (ticket 16) ─────────────────────────────
+# ── real-window family generator (ticket 16; transit enumeration per 25) ─
+
+def _ecef_track(elements, epoch, times_s):
+    """Satellite ECEF position/velocity at the given offsets (s since epoch).
+
+    One ``kepler_to_eci`` call per time -- the frozen F-02 propagation path,
+    reused verbatim; only the per-target geometry (vector norms and dots) is
+    vectorized downstream.  The coarse scan grid is shared by EVERY target
+    in the scenario, so this cost is paid once per scenario, not per target.
+    Returns ``(positions, velocities)`` as (N, 3) arrays.
+    """
+    import numpy as np
+    from datetime import timedelta, timezone
+
+    from .realwindows import eci_to_ecef_rotation, kepler_to_eci
+
+    pos = np.empty((len(times_s), 3))
+    vel = np.empty((len(times_s), 3))
+    for k, t in enumerate(times_s):
+        st = kepler_to_eci(elements, epoch + timedelta(seconds=float(t)))
+        # same frame pinning as realwindows.satellite_to_target_vector (R21)
+        tt = (
+            st.time.replace(tzinfo=timezone.utc)
+            if st.time.tzinfo is None else st.time
+        )
+        rot = eci_to_ecef_rotation(tt.timestamp())
+        pos[k] = rot @ st.position
+        vel[k] = rot @ st.velocity
+    return pos, vel
+
+
+def _incidence_deg_array(sat_ecef, target):
+    """Vectorized incidence [deg] of one target against a precomputed track.
+
+    Same definition as ``realwindows._target_incidence_angle``: the angle
+    between the WGS-84 geodetic normal and the target->satellite unit
+    vector, acos, [0, 180].  A guard test pins the array readout to the
+    scalar path (<= 1e-9 deg)."""
+    import numpy as np
+
+    from .realwindows import geodetic_normal, lat_lon_to_ecef
+
+    tgt = lat_lon_to_ecef(target.lat, target.lon, target.altitude_m)
+    up = geodetic_normal(target.lat, target.lon)
+    los = sat_ecef - tgt[None, :]
+    norm = np.linalg.norm(los, axis=1)
+    cos_inc = np.einsum("ij,j->i", los / norm[:, None], up)
+    return np.degrees(np.arccos(np.clip(cos_inc, -1.0, 1.0)))
+
+
+def _vector_squint_deg_array(sat_ecef, sat_vel_ecef, target):
+    """Vectorized VECTOR-squint [deg] (the full along-track off-nadir angle).
+
+    Mirrors the ``squint_deg`` element of
+    ``realwindows.satellite_to_target_vector``; used ONLY to locate each
+    pass's closest-approach time, never as an envelope quantity."""
+    import numpy as np
+
+    from .realwindows import lat_lon_to_ecef
+
+    tgt = lat_lon_to_ecef(target.lat, target.lon, target.altitude_m)
+    los = tgt[None, :] - sat_ecef            # satellite -> target
+    norm = np.linalg.norm(los, axis=1)
+    track = sat_vel_ecef / np.linalg.norm(sat_vel_ecef, axis=1)[:, None]
+    along = np.abs(np.einsum("ij,ij->i", los / norm[:, None], track))
+    return np.degrees(np.arcsin(np.clip(along, 0.0, 1.0)))
+
+
+def _ground_track_passes(
+    elements, epoch, target, track_times, track_ecef, band, step_s, gap_merge_s,
+):
+    """Enumerate the target's in-band transit passes over the span (AD-2).
+
+    Returns a list of passes, each ``(seg_lo, seg_hi, runs)`` where ``runs``
+    are the refined in-band runs (absolute seconds since epoch) clustered
+    into ONE pass by ``gap_merge_s``.  A pass's two in-band flanks (the
+    incidence dips below the band at the near-nadir middle) merge because
+    that middle is far shorter than the threshold; two distinct passes are
+    hours apart, so the threshold cannot merge them -- both properties are
+    guard-tested, not assumed.  Edge refinement resolution: step_s / 32
+    (a 33-point local grid per edge).
+    """
+    import numpy as np
+
+    inc = _incidence_deg_array(track_ecef, target)
+    ok = (inc >= band[0]) & (inc <= band[1])
+
+    # maximal in-band runs on the grid
+    runs = []
+    start = None
+    for k in range(len(ok)):
+        if ok[k] and start is None:
+            start = k
+        elif not ok[k] and start is not None:
+            runs.append((start, k - 1))
+            start = None
+    if start is not None:
+        runs.append((start, len(ok) - 1))
+
+    def local_track(t_a, t_b):
+        loc = np.linspace(t_a, t_b, 33)
+        pos, _ = _ecef_track(elements, epoch, loc)
+        return loc, _incidence_deg_array(pos, target)
+
+    refined = []
+    for i0, i1 in runs:
+        lo, hi = float(track_times[i0]), float(track_times[i1])
+        if lo > 0.0:
+            loc, loc_inc = local_track(lo - step_s, lo)
+            inside = (loc_inc >= band[0]) & (loc_inc <= band[1])
+            if inside.any():
+                lo = float(loc[int(np.argmax(inside))])
+        if hi < float(track_times[-1]):
+            loc, loc_inc = local_track(hi, hi + step_s)
+            inside = (loc_inc >= band[0]) & (loc_inc <= band[1])
+            if inside.any():
+                hi = float(loc[len(inside) - 1 - int(np.argmax(inside[::-1]))])
+        if hi > lo:
+            refined.append((lo, hi))
+
+    passes = []
+    for lo, hi in refined:
+        if passes and lo - passes[-1][1] < gap_merge_s:
+            passes[-1][1] = hi
+            passes[-1][2].append((lo, hi))
+        else:
+            passes.append([lo, hi, [(lo, hi)]])
+    return [(lo, hi, tuple(rs)) for lo, hi, rs in passes]
+
+
+def _pass_t_ca(elements, epoch, target, seg_lo, seg_hi, track_times, track_vsq):
+    """Vector-squint minimum within a pass segment = the pass's t_ca.
+
+    Coarse argmin from the shared track (enum step), then two local
+    refinements (enum step / 2 grid, then a +-0.5 s grid at 0.05 s).  Makes
+    NO unimodality assumption at the coarse stage (dense sampling).  The
+    minimum may sit at a near-nadir point OUTSIDE the incidence band --
+    that is fine: t_ca is the closest-approach anchor of the planar squint
+    model, not an in-band point (the incidence leg of the cascade
+    constrains the windows, AD-6)."""
+    import numpy as np
+
+    i0 = int(np.searchsorted(track_times, seg_lo))
+    i1 = min(int(np.searchsorted(track_times, seg_hi)) + 1, len(track_times) - 1)
+    j = i0 + int(np.argmin(track_vsq[i0:i1 + 1]))
+    t0 = float(track_times[j])
+    for half, n in ((R_ENUM_STEP_S, 31), (0.5, 21)):
+        loc = np.linspace(t0 - half, t0 + half, n)
+        pos, vel = _ecef_track(elements, epoch, loc)
+        vsq = _vector_squint_deg_array(pos, vel, target)
+        t0 = float(loc[int(np.argmin(vsq))])
+    return t0
+
 
 def generate_real_scenario(
     family_code: str,
@@ -284,31 +457,26 @@ def generate_real_scenario(
 ) -> dict:
     """Generate one R<density><requirement> real-window scenario manifest.
 
-    Each task gets a window that is the three-leg cascade over real orbit
-    geometry: incidence mask (from the forked ``realwindows`` kernel) n mode
-    squint envelope n end-check.  Nothing here re-derives a leg's predicate;
-    the legs are computed by their owners and ``intersect_intervals`` only
-    intersects.
-
-    Two squint zero points are registered per task and they are NOT the same
-    point (measured: the vector squint minimum sits 600 s away from the
-    ``squint_at`` zero).  ``t_ca_s`` is the ``squint_at`` zero that drives the
-    dwell; ``vector_squint_min_t_s`` is the vector minimum that the incidence
-    mask is evaluated at.
+    Ticket 25: each task carries a LIST of transit windows (``windows``:
+    ``lo_s``/``hi_s``/``t_ca_s``/``r0_m``/``incidence_deg``/``width_s``,
+    one entry per surviving cascade window).  Each window's ``t_ca_s`` is
+    ITS OWN pass's squint zero -- reusing one zero across passes would
+    mis-derive dwell / envelope / AASR (AD-3).  A window is the four-leg
+    cascade ``incidence-band runs n squint envelope n end-check n AASR``
+    (AD-6 puts the incidence leg INTO the intersection; R18).
 
     Determinism: the only stochastic source is ``random.Random(seed)``,
-    consumed in a fixed per-target order, and the platform orbit is passed in
-    rather than drawn, so the same seed reproduces the manifest byte-identically.
+    consumed in a fixed per-target order (scatter -> demand -> size ->
+    priority), and the platform orbit is passed in rather than drawn, so
+    the same seed reproduces the manifest byte-identically.
     """
     import math as _math
-    from datetime import datetime, timedelta
+    from datetime import timedelta
 
     from .duration import MarginPads as _Pads
-    from .duration import duration_scene_s, mode_squint_envelope_rad, pad_window_tail
+    from .duration import duration_scene_s, mode_squint_envelope_rad
     from .realwindows import (
-        ECIState,
         GroundTarget,
-        KeplerianElement,
         kepler_to_eci,
         satellite_to_target_vector,
     )
@@ -333,32 +501,45 @@ def generate_real_scenario(
     elements, epoch = platform
     bands = load_rho_bands()
     pads = _Pads.standard()
-    step = timedelta(seconds=R_PROP_STEP_S)
-    span = timedelta(seconds=R_PASS_SPAN_S)
 
     rng = random.Random(seed)
     tasks = []
     removals = {"below_finest": 0, "footprint": 0, "no_window": 0, "aasr": 0}
-    # ticket 23 (R15): per-pass footprint bookkeeping -- the gate moved from
-    # a pre-loop library-R0 check into the pass loop, where the pass's own
-    # slant range is known.  Attribution (registered in ticket 23, template
-    # cascade order unchanged): footprint removal iff best is None AND at
-    # least one pass was footprint-evaluable AND every evaluable pass
-    # failed; passes without a computable slant range count neither pass
-    # nor fail.
-    fp_pass = fp_fail = fp_evaluable = 0
+    # footprint attribution (ticket 23 R15 rule, generalized to N passes):
+    # footprint removal iff at least one pass was footprint-evaluable AND
+    # every evaluable pass failed; aasr removal iff at least one cascade
+    # window REACHED the AASR gate but none survived it; no_window otherwise.
     h_draws = 0
     window_widths = []
+    windows_per_task = []
 
-    n_clusters = len(R_CLUSTER_CENTRES_DEG)
+    # shared coarse ECEF track: positions depend only on time, so the
+    # kepler_to_eci loop runs ONCE per scenario and every target's incidence
+    # is a vectorized read against it
+    import numpy as np
+
+    track_times = np.arange(0.0, R_SPAN_S + 0.5 * R_ENUM_STEP_S, R_ENUM_STEP_S)
+    track_pos, track_vel = _ecef_track(elements, epoch, track_times)
+
+    n_grid = R_GRID_N * R_GRID_N
     for idx in range(density_n):
-        # fixed draw order: cluster -> demand -> size -> priority
-        clat, clon = R_CLUSTER_CENTRES_DEG[idx % n_clusters]
-        # scatter inside the cluster (a few km, well inside R_CLUSTER_SCALE_KM)
-        scale = R_CLUSTER_SCALE_KM * 1000.0
-        lat = clat + rng.uniform(-1.0, 1.0) * (scale / 111_320.0)
-        lon = clon + rng.uniform(-1.0, 1.0) * (
-            scale / (111_320.0 * max(_math.cos(_math.radians(clat)), 1e-6))
+        # fixed draw order: grid node -> scatter -> demand -> size -> priority
+        node = idx % n_grid
+        gi, gj = divmod(node, R_GRID_N)
+        lon_scale = R_KM_PER_DEG_LAT * _math.cos(
+            _math.radians(R_DOMAIN_CENTRE_DEG[0])
+        )
+        node_lat = R_DOMAIN_CENTRE_DEG[0] + (gi - R_GRID_N // 2) * (
+            R_GRID_SPACING_KM / R_KM_PER_DEG_LAT
+        )
+        node_lon = R_DOMAIN_CENTRE_DEG[1] + (gj - R_GRID_N // 2) * (
+            R_GRID_SPACING_KM / lon_scale
+        )
+        lat = node_lat + rng.uniform(-1.0, 1.0) * (
+            R_SCATTER_HALF_CELL_KM / R_KM_PER_DEG_LAT
+        )
+        lon = node_lon + rng.uniform(-1.0, 1.0) * (
+            R_SCATTER_HALF_CELL_KM / lon_scale
         )
         if demand_tier == "H":
             use_coarse = rng.random() < 0.5
@@ -379,83 +560,48 @@ def generate_real_scenario(
 
         target = GroundTarget(target_id=f"R{idx}", lat=lat, lon=lon)
         mode = route_mode(rho_req, lib)
-        # ticket 23 (R15): the footprint gate is evaluated PER PASS with the
-        # pass's own slant range (see the r0_task block below) -- the
-        # pre-loop library-R0 check it replaces could misjudge the SPT bound
-        # by the R0 ratio (r0_task spans -22%/+72% of the library value
-        # across the incidence band).
 
-        # two passes (ticket: longest visible window over 2 orbit passes)
-        best = None
-        for pass_i in range(R_PASSES):
-            t0 = epoch + timedelta(seconds=pass_i * 600.0)
-            state = lambda dt, _s=t0: kepler_to_eci(elements, _s + timedelta(seconds=dt))
+        track_vsq = _vector_squint_deg_array(track_pos, track_vel, target)
+        passes = _ground_track_passes(
+            elements, epoch, target, track_times, track_pos,
+            R_INCIDENCE_BAND_DEG, R_ENUM_STEP_S, R_GAP_MERGE_S,
+        )
+        env_rad = mode_squint_envelope_rad(mode)
+        env_guard = env_rad * (1.0 - R_ENVELOPE_GUARD_FRACTION)
 
-            def incidence_ok(dt, _st=state, _tg=target):
-                try:
-                    *_, inc_deg, _look, _sq = satellite_to_target_vector(
-                        _st(dt), _tg
-                    )
-                except ValueError:
-                    return False
-                return R_INCIDENCE_BAND_DEG[0] <= inc_deg <= R_INCIDENCE_BAND_DEG[1]
-
-            inc_iv = mask_intervals((-R_PASS_SPAN_S, R_PASS_SPAN_S),
-                                    incidence_ok, n_scan=240)
-            if not inc_iv:
-                continue
-            # vector-squint minimum inside the incidence leg
-            cand = [
-                (abs(satellite_to_target_vector(state(0.5 * (lo + hi)), target)[6]), 0.5 * (lo + hi))
-                for lo, hi in inc_iv
-            ]
-            vmin_t, tca = min(cand)
-
-            # Ticket 16: the task's own slant range, from the incidence at the
-            # window centre.  The envelope and end-check legs MUST use it --
-            # with the library R0 they emitted windows whose edges reached
-            # 48.7 deg, past the 45 deg envelope, and the evaluator then
-            # re-derived them with the per-task R0 and found those tasks
-            # unschedulable (measured: 11 of 40 units failed at CV = 2.0, all
-            # SPT tasks).  Same split-caliber class as the anchor defect.
-            mid_guess = tca
+        fp_evaluable = fp_pass = 0
+        task_windows = []
+        reached_aasr = False
+        for seg_lo, seg_hi, inc_runs in passes:
+            t_ca = _pass_t_ca(
+                elements, epoch, target, seg_lo, seg_hi, track_times, track_vsq
+            )
             try:
-                _, _, r0_task = look_geometry(
-                    lib.geo.altitude_m,
-                    satellite_to_target_vector(state(mid_guess), target)[4],
-                )
+                inc_ca = satellite_to_target_vector(
+                    kepler_to_eci(elements, epoch + timedelta(seconds=t_ca)),
+                    target,
+                )[4]
+                _, _, r0_pass = look_geometry(lib.geo.altitude_m, inc_ca)
             except ValueError:
                 continue
-
-            # ticket 23 (R15): per-task footprint bound at THIS pass's own
-            # slant range.  First-match attribution: a pass that cannot
-            # produce a slant range is not footprint-evaluable (neither
-            # pass nor fail); the target is footprint-removed only when
-            # EVERY evaluable pass fails the bound.
+            # ticket 23 (R15) per-pass footprint bound at THIS pass's own
+            # closest-approach slant range
             fp_evaluable += 1
-            if not footprint_ok(mode, l_az_m, lib, r0_m=r0_task):
+            if not footprint_ok(mode, l_az_m, lib, r0_m=r0_pass):
                 fp_fail += 1
                 continue
             fp_pass += 1
 
-            env_rad = mode_squint_envelope_rad(mode)
-            # The mask insets by one grid step (windows.mask_intervals), but
-            # the END-CHECK leg then re-evaluates the dwell at those
-            # endpoints with its own finer bracket, which can land a hair
-            # outside the envelope: measured 45.016 deg against a 45.0 deg
-            # boundary.  An explicit guard margin, well above the sampling
-            # resolution, makes the emitted window strictly interior.
-            env_guard = env_rad * (1.0 - R_ENVELOPE_GUARD_FRACTION)
             env_iv = mask_intervals(
-                (tca - R_PASS_SPAN_S, tca + R_PASS_SPAN_S),
-                lambda dt, _t=tca, _r0=r0_task: abs(
+                (t_ca - R_PASS_SPAN_S, t_ca + R_PASS_SPAN_S),
+                lambda dt, _t=t_ca, _r0=r0_pass: abs(
                     squint_at(dt, _t, lib.geo, r0_m=_r0)
                 ) <= env_guard,
                 n_scan=240,
             )
             if not env_iv:
                 continue
-            dur = lambda x, _t=tca, _r0=r0_task: duration_scene_s(
+            dur = lambda x, _t=t_ca, _r0=r0_pass: duration_scene_s(
                 mode, squint_at(x, _t, lib.geo, r0_m=_r0), lib, r0_m=_r0
             )
             end_iv = []
@@ -466,111 +612,92 @@ def generate_real_scenario(
                 end_iv.extend(fw.intervals)
             if not end_iv:
                 continue
+            # AD-6 (R18): the incidence leg JOINS the intersection -- the
+            # emitted window is physically inside the 30-60 deg band
             window = intersect_intervals(
-                tuple(env_iv), tuple(end_iv)
+                tuple(inc_runs), tuple(env_iv), tuple(end_iv)
             )
             if not window:
                 continue
-            width = sum(hi - lo for lo, hi in window)
-            if best is None or width > best[0]:
-                best = (width, window, tca, vmin_t, pass_i, r0_task)
 
-        if best is None:
-            if fp_evaluable and fp_pass == 0:
-                # every evaluable pass failed the per-task footprint bound:
-                # first-match cascade attribution stays "footprint"
-                removals["footprint"] += 1
-            else:
-                removals["no_window"] += 1
-            continue
+            for lo, hi in window:
+                reached_aasr = True
+                aasr_vals: list[float] = []
+                for j in range(11):
+                    tt = lo + (hi - lo) * j / 10
+                    try:
+                        aasr_vals.append(_aasr(
+                            mode, squint_at(tt, t_ca, lib.geo, r0_m=r0_pass),
+                            lib.geo.k, PRF_PRODUCTION_HZ, lib,
+                            spt_scene_wa_m=(l_az_m if mode is Mode.SPT else None),
+                            r0_m=r0_pass,
+                        )["aasr_db"])
+                    except ValueError:
+                        # out of the physical sliding domain at this sample:
+                        # the window is not serviceable, so it cannot pass
+                        aasr_vals.append(float("-inf"))
+                if not aasr_vals or max(aasr_vals) > AASR_THRESHOLD_DB:
+                    continue
+                mid = 0.5 * (lo + hi)
+                inc_mid = satellite_to_target_vector(
+                    kepler_to_eci(elements, epoch + timedelta(seconds=mid)),
+                    target,
+                )[4]
+                width = hi - lo
+                task_windows.append({
+                    "lo_s": round(lo, 9),
+                    "hi_s": round(hi, 9),
+                    "t_ca_s": round(t_ca, 9),
+                    "r0_m": round(r0_pass, 6),
+                    "incidence_deg": round(inc_mid, 6),
+                    "width_s": round(width, 6),
+                })
 
-        width, window, t_ca, vmin_t, pass_i, best_r0 = best
-        w_lo = min(lo for lo, _ in window)
-        w_hi = max(hi for _, hi in window)
-        mid = 0.5 * (w_lo + w_hi)
-        # per-task geometry for the manifest (ticket piece 1/3).  r0_m is
-        # CARRIED from the leg computation, not recomputed: the envelope and
-        # end-check legs used the incidence at t_ca, so re-deriving R0 at the
-        # window midpoint would register one geometry and certify another.
-        geo_at = satellite_to_target_vector(
-            kepler_to_eci(elements, epoch + timedelta(seconds=pass_i * 600.0 + mid)),
-            target,
-        )
-        incidence_deg = geo_at[4]
-        r0_m = best_r0
-        # The AASR gate is a WINDOW property, not a point property: the worst
-        # case is at the window's high-squint end, and for SLS the squint can
-        # leave the physical sliding domain before the midpoint does.
-        # Measured: evaluating at the midpoint raised a_res <= 0 on R2F/R3H
-        # units even though every window endpoint was inside the envelope.
-        # So: sample the window, keep the worst (least negative) dB, and treat
-        # any out-of-domain sample as a REMOVAL with the aasr reason -- never
-        # as a crash.
-        aasr_vals: list[float] = []
-        for lo, hi in window:
-            n_pts = 11
-            for j in range(n_pts):
-                tt = lo + (hi - lo) * j / (n_pts - 1)
-                try:
-                    aasr_vals.append(_aasr(
-                        mode, squint_at(tt, t_ca, lib.geo, r0_m=r0_m),
-                        lib.geo.k, PRF_PRODUCTION_HZ, lib,
-                        spt_scene_wa_m=(l_az_m if mode is Mode.SPT else None),
-                        r0_m=r0_m,
-                    )["aasr_db"])
-                except ValueError:
-                    # out of the physical sliding domain at this sample: the
-                    # window is not serviceable, so it cannot pass the gate
-                    aasr_vals.append(float("-inf"))
-        if not aasr_vals:
+        if task_windows:
+            task_windows.sort(key=lambda w: w["lo_s"])
+            window_widths.extend(w["width_s"] for w in task_windows)
+            windows_per_task.append(len(task_windows))
+            tasks.append({
+                "t_start_s": task_windows[0]["lo_s"],
+                "t_end_s": max(w["hi_s"] for w in task_windows),
+                "azimuth_size_m": round(l_az_m, 6),
+                "priority": priority,
+                "rho_req_m": round(rho_req, 9),
+                "mode": mode.name,
+                "prf_hz": PRF_PRODUCTION_HZ,
+                "lat_deg": round(lat, 6),
+                "lon_deg": round(lon, 6),
+                "windows": task_windows,
+            })
+        elif fp_evaluable and fp_pass == 0:
+            removals["footprint"] += 1
+        elif reached_aasr:
             removals["aasr"] += 1
-            continue
-        aasr_db = max(aasr_vals)
-        if not (aasr_db <= AASR_THRESHOLD_DB):
-            removals["aasr"] += 1
-            continue
-
-        window_widths.append(width)
-        tasks.append({
-            "t_start_s": round(w_lo, 9),
-            "t_end_s": round(w_hi, 9),
-            "t_ca_s": round(t_ca, 9),
-            "azimuth_size_m": round(l_az_m, 6),
-            "priority": priority,
-            "rho_req_m": round(rho_req, 9),
-            "mode": mode.name,
-            "prf_hz": PRF_PRODUCTION_HZ,
-            # ── per-task real geometry (ticket 16, piece 1/3) ──
-            "r0_m": round(r0_m, 6),
-            "incidence_deg": round(incidence_deg, 6),
-            "vector_squint_min_t_s": round(vmin_t, 9),
-            "lat_deg": round(lat, 6),
-            "lon_deg": round(lon, 6),
-            "window_width_s": round(width, 6),
-        })
+        else:
+            removals["no_window"] += 1
 
     assert sum(removals.values()) + len(tasks) == density_n, "R-family ledger"
     manifest = {
-        "schema": "scenario-manifest/2.0-realwindow",
+        "schema": "scenario-manifest/2.1-realwindow",
         "scenario": {
             "family_code": family_code,
             "density_n_targets": density_n,
             "demand_tier": demand_tier,
-            "window_semantics": "real-orbit three-leg cascade",
+            "window_semantics": (
+                "real-orbit per-transit four-leg cascade (ticket 25)"
+            ),
             "platform_fixture": "experiments/platform_kim2021.json",
             # Ticket 16 acceptance item 8: the M-family (Paper-1 lineage) is
             # GLOBALLY DISPERSED inside a synthetic 300 s box; this family is
-            # REGIONALLY CLUSTERED with geometrically determined windows.  The
-            # same nominal N therefore yields a different overload ratio, and
-            # that difference is the density-axis material for the thesis.
-            # Recorded here rather than in prose so the comparison is
-            # greppable alongside the numbers it explains.
+            # a single dense domain with geometrically determined windows.
+            # The same nominal N therefore yields a different overload ratio,
+            # and that difference is the density-axis material for the thesis.
             "predecessor_comparison": {
                 "predecessor_family": "M<density><interval><demand>",
                 "predecessor_topology": "globally dispersed, 300 s synthetic box",
                 "this_topology": (
-                    "regionally clustered (8 fixed centres, 20 km scale), "
-                    "real-orbit windows"
+                    "single dense domain (5x5 grid, 250 km spacing, 1000 km "
+                    "side, centre 20N/0E), enumerated real-orbit transits"
                 ),
                 "overload_ratio_served_over_drawn": (
                     round(len(tasks) / density_n, 6) if density_n else 0.0
@@ -591,14 +718,24 @@ def generate_real_scenario(
                 "window_tail_fraction": pads.window_tail_fraction,
             },
             "prf_production_hz": PRF_PRODUCTION_HZ,
-            "cluster_centres_deg": [list(c) for c in R_CLUSTER_CENTRES_DEG],
-            "cluster_scale_km": R_CLUSTER_SCALE_KM,
-            "pass_span_s": R_PASS_SPAN_S,
-            "prop_step_s": R_PROP_STEP_S,
-            "passes": R_PASSES,
+            "priority_convention": "randint(1,10) (Paper-1 generate_all_scenarios.py:133)",
+            "domain_centre_deg": list(R_DOMAIN_CENTRE_DEG),
+            "domain_side_km": R_DOMAIN_SIDE_KM,
+            "grid_n": R_GRID_N,
+            "grid_spacing_km": R_GRID_SPACING_KM,
+            "scatter_half_cell_km": R_SCATTER_HALF_CELL_KM,
+            "grid_assignment_rule": "target i -> node i % 25 (row-major), jitter within own cell",
+            "span_days": R_SPAN_DAYS,
+            "enum_step_s": R_ENUM_STEP_S,
+            "gap_merge_s": R_GAP_MERGE_S,
+            "gap_merge_robustness_s": list(R_GAP_MERGE_ROBUST_S),
             "incidence_band_deg": list(R_INCIDENCE_BAND_DEG),
-            "pass_selection_rule": (
-                f"longest visible window over {R_PASSES} passes (D13)"
+            "pass_enumeration_rule": (
+                "per target: coarse incidence scan over the span at "
+                "enum_step_s, in-band runs refined by bisection, runs "
+                "clustered into passes at gap_merge_s; per pass t_ca = "
+                "vector-squint minimum of the segment; windows = "
+                "incidence runs n envelope n end-check n AASR (AD-2/AD-6)"
             ),
         },
         "generation_ledger": {
@@ -606,6 +743,8 @@ def generate_real_scenario(
             "removals": removals,
             "n_served": len(tasks),
             "h_coarse_draws": h_draws,
+            "n_windows_total": sum(windows_per_task),
+            "windows_per_task_max": max(windows_per_task) if windows_per_task else 0,
             "window_width_s_mean": (
                 round(sum(window_widths) / len(window_widths), 6)
                 if window_widths else 0.0
