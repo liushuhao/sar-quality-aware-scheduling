@@ -1,6 +1,8 @@
-# BLOCKED — paper2 四票施工
+# BLOCKED — paper2 票务
 
-**无。** 四张票（22 / 15 / 16 / 17）全部 completed，本文件为空清单。
+**无阻塞项。** 票 01–22 completed；票 23 全部验收项已勾（Status 字段滞后，见备注 7）；
+**票 24 实施中**（几何修复已落地，commits 8f13f89/3edcd5e/bd1aac9）；
+**票 25 待开工**（Blocked by 24，现已解除）。
 
 ## 备注（不是阻塞，是须随结果带走的约束）
 
@@ -9,4 +11,13 @@
 3. **`check_red_lines.py` 的禁令分类器对逗号/破折号/转折连接的洗白句仍放行**（第四轮审查指出）。当前语料零命中（rc=0），属已知边界而非活漏洞；未来语料若出现该句式需重修分类器。
 4. **`snapshot_rebuild` 门禁步已于票 23 收官首跑 PASS**（2026-10-04，对 v2-run syn 工件 bit-exact；对 v1 冻结件为 front 重构面属结构性 N/A，等价判据=anchor Δ=0）。原记录「本轮未跑」为票 17 时代状态。
 5. **v1 的「grid cell 上界 + 1 dB 裕度」保守 AASR 谓词本轮显式不接线**：生成期已改按窗内最坏判据（实测窗边采样低估约 4 dB，48/48 任务）。接线会引入域外钳位返回错物理的第二重口径风险，故按显式不作为记录，非遗漏。
-6. **票 23 收官约束（2026-10-04）**：全部真窗/合成数字以逐任务 r0_m 口径为准（`v2-run/` + `experiments/v2_results/` 再生成）；被替代的旧阶梯存档于 `v2-run-preT23/`。合成族经 R1C 负控 + M1NC 单元 byte-identical 双证不变。`snapshot_rebuild` 已首跑 PASS（见备注 4）。
+6. **票 23/24 状态字段滞后（2026-10-05）**：票 23 的 `**Status:**` 仍写 `ready-for-agent`
+   但 16 个验收 checkbox 全 `[x]` 且 PROGRESS 有完整施工日志；票 24 的 Status 已改为 in-progress。
+   **以 checkbox + PROGRESS 为准，Status 字段是滞后的快照**（本仓记忆
+   `feedback-tracking-status-lag` 记的同一模式）。
+7. **票 24 遗留（2026-10-05）**：共享库 `visibility.py:48` 同型潜伏**故意不修**
+   （只增不改原则，三篇论文生成器依赖其标量签名）；「460 任务检查」判据已从
+   「仰角>0」改为「入射角<90° 集合非空」，待票 25 场景重设计后实测。
+   **4 条真窗场景测试标 `R22_BLOCKED` 显式 skip**（修复后当前采样点 0/8 簇可服务，
+   实测四带均 0/20），票 25 重建 fixture 后解除。
+8. **票 23 收官约束（2026-10-04）**：全部真窗/合成数字以逐任务 r0_m 口径为准（`v2-run/` + `experiments/v2_results/` 再生成）；被替代的旧阶梯存档于 `v2-run-preT23/`。合成族经 R1C 负控 + M1NC 单元 byte-identical 双证不变。`snapshot_rebuild` 已首跑 PASS（见备注 4）。

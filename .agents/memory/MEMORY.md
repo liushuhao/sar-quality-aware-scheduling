@@ -73,3 +73,7 @@
 - [Paper2 P0 真窗地平线折叠](paper2-p0-realwindow-horizon-fold.md) — 20261004 真窗四族 460/460 目标物理不可见；天底角折返+asin丢钝角支；修复=向量夹角定义待拍板；共享库同型；台账R17；归因=非收敛问题；修复后指标单调不升
 - [Paper2 L1 产品目录口径缝](paper2-l1-product-catalog-limitation.md) — SPT点目标/SLS场景非对称约定已落盘 limitations-material.md；写作期必读；跨模式经济比较已撤回
 - [同类物理违反全仓审计 20261004](same-class-physics-violations-sweep-20261004.md) — F1-F7分类学×三路复核;新确认3项(R18三腿缺交/R19 Ch5缺自转+折返)+共享库潜伏群(R20 C1假PASS活边,Paper1安全)+时区依赖(R21);Ch5 gen守卫复核成立
+
+- [先算再下结论](feedback-compute-before-concluding.md) — 本会话 6 次翻车同形态：公式看着对就写下没跑计算；单位链/同名量/等价断言/探针跨度四维度 + 纠错留痕纪律
+- [等价断言须实测](feedback-equivalence-claim-needs-measurement.md) — 近似式≠恒等式；等价类判据必先实测否则正确实现也判红；报既存 bug 前先确认同名是否同量
+- [场景设计先测物理可行域](feedback-scenario-design-physics-not-arbitrary.md) — 周期性采样须证是真实事件；密度/区域先算可行域；多缺陷同症状修完仍零=另有缺陷；探针三骗
