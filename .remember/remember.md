@@ -2,17 +2,22 @@
 
 ## State
 
-- **Audit4 写作前全量体检完成（2026-10-05，四路 fresh agent + 主线程逐条实证）**：
-  数字层**零 P0**（ALIVE/DEAD/no_promotion/MDE/功效全部主线程或代理复算对上；四门禁 rc=0）。
-  报告 `.scratch/sliding-spotlight-scheduling/audit4-20261005/`（+ C3/C4 复现脚本）。
-  **2 条 P1（主线程实证复核）**：①**C3/C4 参考口径在真窗族分裂**（dwell 用 `w.r0_m`、
-  C3/C4 传 `plan.r0_m`=None→库常数；票 17 注册规则被破坏；实测 136,598 采样零判据翻转、
-  最坏归一 0.9771/0.9746、最大口径差 36.04%；修复=`evaluator.py:404-417` 改传
-  `w.r0_m`，M 族逐位不变）；②**run_verify `DOMAIN_N0` pin 失效**（钉 206+1+1，实测
-  221 collected=220P+1S、xfail 已退役 ⇒ 全量门禁必红；修复=pin 改 220/1/0 + 复跑回填）。
-  **登记层缺口 5 条**（prereg v2 无 v3 amendment / δ=6.0 未入 registry / caliber 无 v3 /
-  v3-run 工件 gitignored 无 tracked 落点 / RUN_LINEAGE 停 v1）+ **写作义务清单 22 条**。
-  行动包 A（代码/门禁修复 ~半日）+ B（登记包 ~半日+fresh 审）+ C（写作 checklist）。
+- **Audit4 全部发现已处置闭环（2026-10-05/06，/goal：claude 执行 + ZCode 监控/审查）**：
+  四票全闭环，**写作期不再有前置阻塞**——
+  - **票 28**（`220a796`）：C3/C4 真窗参考口径对齐（`w.r0_m`）+ 红绿测试 + 逐调用点变异
+    + **三档复跑 90/90 exit 0**、与 v3-run 双实现比对**结果字段零差异**；
+  - **票 29**（`f546573`+`458e486`）：`DOMAIN_N0` 刷新 + **run_verify 全量绿**
+    （12 PASS + 1 REPORT + 0 FAIL）+ 证据落 tracked `experiments/results/verify/`；
+  - **票 30**（`cc5849e`+`f6f229c`）：登记包——prereg v2 `amendment_20261005_v3_realwindow`
+    （append-only、13 个旧顶层键语义零改）+ caliber v3 + v2_results void 标记（生成器内嵌
+    发射防重生成抹除）+ RUN_LINEAGE L5/L6/N2 + 守卫 6→11 测试（连带 `DOMAIN_N0`→228）+
+    v3 工件晋升 **128 文件**（md5 对账）+ `verify_v3_verdicts.py` 33 checks（4 变异红证）
+    + **fresh 独立审 PASS**（43 项数字独立复算逐值相符）；
+  - **票 31**（`dc44012`）：formula-spec §8.10 勘误 + predicates Kim ×4 + `geodetic_normal`
+    docstring 实测真值修正 + **写作清单 43 项**（`.scratch/.../writing-checklist-20261005.md`）。
+  - **收口教训（自记一次违反确认轮）**：t30b 生成器补丁我未重跑门禁就并入 `cc5849e`，
+    引入 1 条 R2 命中（字符串跨行断裂），由下一票 worker 抓到、`f6f229c` 回修——
+    **任何 commit 前必须对"最后一次编辑"重跑门禁电池**（.py 文本进红线扫描面）。
 - **分析层两决策已裁（2026-10-05，用户终拍，逐项呈问）**：①**不加预算**（>160/240 不追；
   promotion 判决预算稳健，追预算只买前沿丰富度；前沿类主张按 NOT-PLATEAUED 带限定语写，
   触发=审稿人要求收敛证据）；②**R 族效应量注册 δ=6.0**（数值承继冻结的 6.0 dB 阈值，
@@ -50,17 +55,13 @@
 
 ## Next
 
-1. **包 A（代码/门禁修复，可即起）**：①C3/C4 口径修复（`evaluator.py:404-417` 改传
-   `w.r0_m` + 红绿测试 + R 族 30 单元定向复跑）；②`DOMAIN_N0` pin 修复（220/1/0）+
-   全量 run_verify 回填 L1b。
-2. **包 B（登记包，建议与 A 同批或随后）**：prereg v2 v3-amendment（含 δ=6.0）+
-   caliber v3 条目 + v3 工件晋升 tracked + RUN_LINEAGE 增补 + v2_results void 标记；
-   prereg 冻结面按 goal-card 须 fresh 审者独立审。
-3. **paper2 写作期开工**（审计义务清单 22 条随行；取数：真窗走 v3-run code head
-   ≥`036e297`，M 族走 v2_results；δ=6.0 按票 22 追加裁决口径 +「数值承继」措辞）。
-4. **开票 27**（T1）：R19 Ch5 两项物理违反 + t_start clamp + 种子确定性（Ch5 重构时，
+1. **paper2 写作期开工**（前置全清）：写作义务清单 43 项
+   `.scratch/sliding-spotlight-scheduling/writing-checklist-20261005.md` 随行；
+   取数红线：真窗走 `experiments/v3_results/`（L6），M 族走 `experiments/v2_results/`；
+   v2 真窗数字永久禁引；caliber 标签随行；δ=6.0 按 amendment 口径（「数值承继」「标定后注册」）。
+2. **开票 27**（T1）：R19 Ch5 两项物理违反 + t_start clamp + 种子确定性（Ch5 重构时，
    无急迫性）。
-5. R7/R16 台账 open 项照旧（工具链对账窗口 / 休眠触发器）。
+3. R7/R16 台账 open 项照旧（工具链对账窗口 / 休眠触发器）。
 
 ## Context
 
