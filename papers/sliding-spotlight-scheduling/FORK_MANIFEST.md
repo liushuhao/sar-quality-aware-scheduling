@@ -19,6 +19,7 @@
 | 指向 commit | `60ee1e8655dee96c1fc9aaa00c5d7982a7958069` |
 | 共享库测试基线 N₀ | 145（`PYTHONPATH=src python -m pytest src/tests/ --collect-only`，2026-09-27） |
 | 零字节断言 | `git diff paper2-m1-baseline..HEAD -- src/sar_sim` 为空 + `git status --porcelain src/sar_sim` 为空 |
+| 零字节断言最近实证 | 2026-10-05（票 24 落地后）：diff 空 + status 空，exit 0；连带 Paper1 生成器最小单元新旧对比——HEAD 内存生成 `S1-A_seed00` 与已提交产物结构相等、归一化哈希一致（`d40ff961b01e2bbf`，20/20 visible / 28 windows），Paper1 链路完好 |
 
 ## 分叉包命名记录
 
