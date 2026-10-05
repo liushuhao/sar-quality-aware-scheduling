@@ -66,11 +66,28 @@ EARTH_E2 = 1.0 - (EARTH_POLAR_RADIUS**2) / (EARTH_EQUATORIAL_RADIUS**2)
 
 
 def geodetic_normal(lat: float, lon: float) -> np.ndarray:
-    """Unit normal of the WGS-84 ellipsoid at (lat, lon).
+    """Unit normal used for the incidence angle -- an APPROXIMATION, not the
+    true WGS-84 ellipsoid normal.
 
-    Ticket 24: the incidence angle is measured against THIS, not against the
-    geocentric radius -- the two differ by up to ~0.19 deg at mid-latitudes,
-    which is the same order as the band edges the window cascade tests against.
+    Ticket 24: the incidence angle is measured against THIS approximation
+    rather than against the geocentric radius direction.  The two are NOT the
+    same direction: they agree exactly at the equator and at the poles and
+    differ by at most 0.1251 deg, the maximum sitting near lat +-60 (0.0144 deg
+    at 20, 0.0414 deg at 30, 0.0960 deg at 45 -- see the measurement below).
+    It is also NOT the true ellipsoid normal, which for geodetic latitude
+    (lat, lon) points along
+    [cos(lat)cos(lon), cos(lat)sin(lon), sin(lat)].
+
+    Measured deviation from that true normal (audit4 C5, reproduced here):
+    0 deg at the equator and poles, rising to a MAXIMUM 0.1249 deg (450 arcsec)
+    near 30 deg latitude, and ~0.109 deg (393 arcsec) at 20 deg -- the dense
+    domain's centre.  The previous docstring claimed "up to ~0.19 deg at
+    mid-latitudes"; that figure did not reproduce and the "WGS-84 ellipsoid"
+    wording overstated the caliber.
+
+    No criterion impact: the incidence band edges are tested with margin many
+    orders above this residual, and the r0 -> T_cos propagation is ~0.15%.
+    Callers must treat this as a documented approximation, not an exact normal.
     """
     lat_r, lon_r = np.radians(lat), np.radians(lon)
     sin_lat, cos_lat = np.sin(lat_r), np.cos(lat_r)

@@ -64,8 +64,8 @@ INTER_TASK_PAD_FRACTION_KIM = 0.25
 # 11.9 deg, +2.1025% at the 26.9 deg boundary) but crosses zero at
 # |psi| ~ 2.77 deg.  The trough is interior and non-binding; the binding
 # region -- where the pad actually applies -- is conservative throughout.
-# `window_tail_pad_covers_oracle_gap` asserts both halves of that claim, so a
-# future sign reversal in the binding region turns the guard red.
+# `test_window_tail_pad_frozen_from_measurement` asserts both halves of that
+# claim, so a future sign reversal in the binding region turns the guard red.
 # The spec's initial 5% stays as the out-of-envelope alarm threshold
 # (PAD_ALARM_THRESHOLD, section 4.3).  FROZEN VALUE -- do not tune.
 WINDOW_TAIL_PAD_FROZEN = 0.01  # 1.0%
