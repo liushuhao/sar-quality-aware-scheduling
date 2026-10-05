@@ -85,10 +85,9 @@ VOID_RESULTS_TABLE = {
     **_VOID_COMMON,
     "scope_in_this_file":
         "The R-family rows (R1C/R2F/R3H/R4H) are void. They are superseded by "
-        "the v3 artifacts and their verdicts (R1C structural DEAD; R2F/R3H "
-        "descriptive ALIVE; the base-budget front collapse judged "
-        "SEARCH-ARTIFACT and its narrative withdrawn as a falsified artifact) "
-        "are registered in analysis_prereg_v2.json "
+        "the v3 artifacts and their verdicts (R1C structural DEAD; R2F/R3H descriptive ALIVE; "
+        "the base-budget front collapse judged SEARCH-ARTIFACT and its narrative withdrawn as a falsified "
+        "artifact) are registered in analysis_prereg_v2.json "
         "amendment_20261005_v3_realwindow. This file also carries no M-family "
         "rows.",
 }
