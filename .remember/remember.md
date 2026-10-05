@@ -2,12 +2,22 @@
 
 ## State
 
+- **Audit4 写作前全量体检完成（2026-10-05，四路 fresh agent + 主线程逐条实证）**：
+  数字层**零 P0**（ALIVE/DEAD/no_promotion/MDE/功效全部主线程或代理复算对上；四门禁 rc=0）。
+  报告 `.scratch/sliding-spotlight-scheduling/audit4-20261005/`（+ C3/C4 复现脚本）。
+  **2 条 P1（主线程实证复核）**：①**C3/C4 参考口径在真窗族分裂**（dwell 用 `w.r0_m`、
+  C3/C4 传 `plan.r0_m`=None→库常数；票 17 注册规则被破坏；实测 136,598 采样零判据翻转、
+  最坏归一 0.9771/0.9746、最大口径差 36.04%；修复=`evaluator.py:404-417` 改传
+  `w.r0_m`，M 族逐位不变）；②**run_verify `DOMAIN_N0` pin 失效**（钉 206+1+1，实测
+  221 collected=220P+1S、xfail 已退役 ⇒ 全量门禁必红；修复=pin 改 220/1/0 + 复跑回填）。
+  **登记层缺口 5 条**（prereg v2 无 v3 amendment / δ=6.0 未入 registry / caliber 无 v3 /
+  v3-run 工件 gitignored 无 tracked 落点 / RUN_LINEAGE 停 v1）+ **写作义务清单 22 条**。
+  行动包 A（代码/门禁修复 ~半日）+ B（登记包 ~半日+fresh 审）+ C（写作 checklist）。
 - **分析层两决策已裁（2026-10-05，用户终拍，逐项呈问）**：①**不加预算**（>160/240 不追；
   promotion 判决预算稳健，追预算只买前沿丰富度；前沿类主张按 NOT-PLATEAUED 带限定语写，
-  触发=审稿人要求收敛证据）；②**R 族效应量注册 δ=6.0**（promotion 阈值同源；R2F 层 92%
-  功效可声称，R3H 层 29% 如实披露、报「未达显著」；ALIVE 判词照常描述性引用）。
-  登记在票 22「追加裁决」节 + 功效曲线 `_power_curve_rq_effect_size.py`（MDE 复算对上）。
-  **分析层无未决决策，写作期可开工**。
+  触发=审稿人要求收敛证据）；②**R 族效应量注册 δ=6.0**（数值承继冻结的 6.0 dB 阈值，
+  非量纲等价；R2F 层 92% 功效可声称，R3H 层 29% 如实披露、报「未达显著」；ALIVE 判词
+  照常描述性引用）。登记在票 22「追加裁决」节 + 功效曲线（MDE 复算对上）。
 - **票 25（T0）已实施并验收（2026-10-05，commit `0692a44`）**：真窗场景全面重设计——
   过境按地轨枚举（AD-2）、`TaskWindow` 每窗口一个 t_ca 的 schema（AD-3）、密集域
   20°N/0° 5×5 网格 250 km 间距（AD-4）、阶梯重定 20/50/100 + `span_days=3`（AD-5/9）、
@@ -40,11 +50,17 @@
 
 ## Next
 
-1. **paper2 写作期开工**（分析层无未决决策；取数：真窗走 v3-run code head ≥`036e297`，
-   M 族走 v2_results；R 族效应量 δ=6.0 按票 22 追加裁决口径引用）。
-2. **开票 27**（T1）：R19 Ch5 两项物理违反 + t_start clamp + 种子确定性（Ch5 重构时，
+1. **包 A（代码/门禁修复，可即起）**：①C3/C4 口径修复（`evaluator.py:404-417` 改传
+   `w.r0_m` + 红绿测试 + R 族 30 单元定向复跑）；②`DOMAIN_N0` pin 修复（220/1/0）+
+   全量 run_verify 回填 L1b。
+2. **包 B（登记包，建议与 A 同批或随后）**：prereg v2 v3-amendment（含 δ=6.0）+
+   caliber v3 条目 + v3 工件晋升 tracked + RUN_LINEAGE 增补 + v2_results void 标记；
+   prereg 冻结面按 goal-card 须 fresh 审者独立审。
+3. **paper2 写作期开工**（审计义务清单 22 条随行；取数：真窗走 v3-run code head
+   ≥`036e297`，M 族走 v2_results；δ=6.0 按票 22 追加裁决口径 +「数值承继」措辞）。
+4. **开票 27**（T1）：R19 Ch5 两项物理违反 + t_start clamp + 种子确定性（Ch5 重构时，
    无急迫性）。
-3. R7/R16 台账 open 项照旧（工具链对账窗口 / 休眠触发器）。
+5. R7/R16 台账 open 项照旧（工具链对账窗口 / 休眠触发器）。
 
 ## Context
 
