@@ -34,19 +34,28 @@
 
 ## Next
 
-1. **真窗矩阵 v3 重跑**（数据重做起点）：`run_matrix.py --generator realwindow
-   --platform <platform.json> --variants 1,2,3` + 显式 `--scenarios-dir/--matrix-dir`
-   （禁写冻结目录）；R1C ≈2 s/manifest、R3H 预计 ~1-2 min/manifest，跑前按 rule 11
-   先跑 1 个单元对账。新数据出 `v3_results` 后才可引真窗数字。
+1. **分析层开工前置（v3 数据已就位）**：①收敛标定——R3H 前沿塌缩 7/10（pop40×gen60
+   对 2N=200 欠预算，audit3 台账债 #86-93 现行犯），promotion/前沿丰富度判决前必做；
+   ②统计功效设计（R2F/R3H 各 10 种子是否够）；③R1C 作为 DEAD 对照进论文叙事
+   （WANT-1 兑现）。
 2. **开票 26**（T1，无前置）：R20 共享库 C1 假 PASS 活边（verification/constraints.py:182）
    + so_f1 回退改 assert；共享库「只增不改」红线在该票的用户裁决面内处理。
 3. **票 27**（T1）：R19 Ch5 两项物理违反 + t_start clamp + 种子确定性（Ch5 重构时）。
-4. **重议"三族加预算"**：仍待 v3 真窗数据后再议（P0 前的旧议题）。
+4. **重议"三族加预算"**：待收敛标定给出各族预算-前沿曲线后再议（P0 前旧议题）。
 
 ## Context
 
 - **红线**：`v2_results` 真窗数字继续禁引（旧世界伪影；v2 M 族合成数字仍有效）。
-  BLOCKED.md 备注 2「真窗三族禁 alive/dead 声明」保持到 v3 数据落地。
+  BLOCKED.md 备注 2「真窗三族禁 alive/dead 声明」保持到 v3 数据落地。**真窗矩阵 v3 已落地（2026-10-05 晚，两次发射）**：首射 18/30 exit-1 暴露
+  encode_seed_individual 多窗测度缝（anchor 起点恰在区间左缘，tau*total 丢 1 ulp 后
+  游走翻入前一过境），修于 `036e297`（nextafter 跨缝 + 实崩案例红绿测试 + 全量
+  220P+1S 回归）；二射 **30/30 exit 0**（5.5 min；claude CLI 执行+看护、ZCode
+  诊断/修复/审查，分工按用户指令）。**v3 判决**：R1C 全 10 种子 anchor f1*=1.0、
+  front 28-40（轻载域）；R2F/R3H anchor 0.938-0.9925；R_fam：R2F **9.75-12.13 ALIVE**
+  / R3H **11.99 ALIVE** / R1C 4.00 DEAD（= WANT-1 单圈对照成立）；R3H 7/10 前沿塌缩
+  ⇒ promotion 判决仍 NOT-YET-TESTED；30/30 no_promotion 禁读作结构死（欠收敛读数）。
+  产物 `.scratch/.../v3-run/`（scenarios 30 + matrix 31 + progress + 简报）。
+  BLOCKED.md 备注 2 已解除 v2 隔离（commit `1d4f637`）。
 - **生成器设计要点**（写论文/审稿会用）：每趟 t_ca = 段内向量 squint 最小点（可能
   在带外近天底处——那是平面 squint 模型的锚，不是带内点）；一趟的两条带内翼合并为
   一个 pass（sub-band 中段 ≪ gap-merge 阈值）；AASR 腿逐窗执行（每窗独立过四腿，
