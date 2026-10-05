@@ -34,7 +34,7 @@ t_rate share ~±0.04 s; the rerun diff settles it empirically).
 **Blocked by:** None — can start immediately (user adjudication 2026-10-03:
 R14/R15 修 + 根因排查指令；预算拍板维持待办)。
 
-**Status:** ready-for-agent
+**Status:** completed（2026-10-04 闭环，commits `dd3aa92`/`d4921e9`；台账 R14/R15 带证据关闭——此状态行 2026-10-05 补记，此前漏更）
 
 **Tier:** T1（单点逻辑 + 全链透传 + 守卫测试；非 schema/seam/新建文件；触碰生产
 求解与 promotion 判定语义故保 T1 全仪式：TDD 红绿 + 变异红证 + implement 前

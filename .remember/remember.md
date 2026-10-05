@@ -2,40 +2,58 @@
 
 ## State
 
-- **记忆存储已合并为单源（2026-10-05，commit `cfa5ebd`）**：`<repo>/.agents/memory/` 确认为
-  **没人读的孤儿副本**并删除（73 文件 / 2018 行）。判据：ZCode 自己的规则 `AGENTS.md:56` 写的是
-  Claude 目录；Claude 侧有连续维护时间序列而 `.agents` 侧除当日双写外长期无写入；
-  77 份 vs 151 份、**81 份仅 Claude 侧有**、12 份同名差异**全是 `.agents` 侧更旧或被截短**。
-  备份 `~/.remember/agents-memory-backup-20261005.tar.gz`。
-  **删前捞回两份唯一内容**：`paper2-p0-realwindow-horizon-fold.md` 的「ZCode 侧独立复核」段
-  （带具体数字 9347 km / 134.9° / −44.94°）+ `same-class-physics-violations-sweep-20261004.md`
-  （F1–F7 分类学，删后从 tar 捞回）。
-  **规则层四处已同步**：`CLAUDE.md` + `~/.zcode/AGENTS.md`（逐字节一致）+ `rules/dev-workflow.md:174`
-  + `commands/shutdown.md:13`。**跨项目 core-memories 保持双写**（无证据哪份失效）。
-  沉淀：`feedback-two-tool-rule-self-contradiction`。
-- **票 24（T0）已实施并验收**（commits `8f13f89` + `3edcd5e` + `bd1aac9`）：真窗入射角改**目标侧向量夹角**（WGS-84 椭球法线 · acos · [0,180]），旧 asin 正弦定理路径删除；**R21 时区同 commit 修**。红测先写后实现，**变异回滚 asin ⇒ 5/5 变红**。
-  - **关键实测**：(45N,0E) 真值全程 [94.7°,168.6°]（永不可见），旧码 **1200/1200** 采样点全报带内假值——这就是 460/460 假阳性机理。
-  - **双面回归**：本域 **207 passed / 5 skipped / 1 xfailed, exit 0**（skip 净增恰 +4）；共享库 **145 passed = 基线 N₀**，且 `git diff paper2-m1-baseline..HEAD -- src/sar_sim` 增删行 **0** ⇒ **Paper1 链路完好**。
-- **共享库按「只增不改」处理**（用户两次拍板后的终态）：其 `_off_nadir_to_incidence` 是 `(off_nadir, altitude)` **标量签名**，被**三篇论文**的场景生成器调用（`single-sat-quality/experiments/generate_all_scenarios.py:28,344-345`、`single-sat-quality/scripts/generate_s5_scenarios.py:26,146-147`、`constellation-scheduling/experiments/ch4_generate_scenarios.py:49-50,321,430,484,497`），向量夹角定义无法保留该签名。**goal-card「共享库 `src/` 零修改」红线恢复原状、从未真正解除。**
-- **fork 身份守卫改双验**：共享库七元组仍逐位一致（证明 Paper1 未动）+ fork 新定义对**独立构造**断言。`FORK_MANIFEST.md` **四处**（`:50`/`:53`/`:61` + `test_fork_identity_nesz.py:163`）同 commit 修订。
-- **第二独立缺陷 R22 已确证**：生成器取 `epoch + {0,600}s` 当「两趟过境」，600 s = **37.5°** 真近点角（周期 5755 s），是任意相位点非过境点。**修复后当前采样点下 0/8 簇可服务**（实测四带均 0/20）⇒ 4 条真窗测试标 `R22_BLOCKED` 显式 skip。
-- **场景设计已定案**（用户四项拍板 + 三轮 gate-review 纠错）：单域 **20°N/0°**、1000 km 边长 5×5 网格、**日程跨度 3 天**、密度阶梯 **20/50/100**、**每窗口一个 `t_ca`**（`squint_at(t,t_ca)` 假设单次最近接近点在多圈下已不成立）。实测节拍 **2.0 趟/24h**（24h/72h × merge{300s,600s} 四组合全给 2.00）；N=100 需 5 趟、3 天 6 趟、**余量仅 1 趟（薄）**，分支预案：实测趟数 <5 则 N=100 出局退 20/50。
-- 工作树净（`git status --porcelain` count=0）。
+- **票 25（T0）已实施并验收（2026-10-05，commit `0692a44`）**：真窗场景全面重设计——
+  过境按地轨枚举（AD-2）、`TaskWindow` 每窗口一个 t_ca 的 schema（AD-3）、密集域
+  20°N/0° 5×5 网格 250 km 间距（AD-4）、阶梯重定 20/50/100 + `span_days=3`（AD-5/9）、
+  入射腿进级联交集（AD-6/R18）、删三个死 API、run_pilot exit-11 可达（R12）。
+  - **关键实测**：R1C 新域 **20/20 全链四腿 served**（158 窗、逐任务 3-12 窗、
+    域心 2.00 趟/24h 复现预注册值）；gap-merge {150,300,600,1200}s 趟数不变（守卫测试钉死）。
+  - **MUST-3 守卫**：50 冻结 pilot 前沿 f1/f_q 全部 ≤1e-9 复现（M 族单窗路径字节不变）；
+    共享库 145 passed（= 基线 N₀）；`git diff paper2-m1-baseline..HEAD -- src/sar_sim` 零 diff。
+  - **双面回归**：共享库 145P exit 0；paper2 域 **219P + 1S exit 0**（4 条 R22_BLOCKED
+    测试复活转绿，xfail 退役，净增 7 测试）。四门禁 rc=0（red_lines / claim_traces /
+    prereg_v2 28 checks / ticket22 43 checks）。
+  - **gate-review acceptance**：fresh subagent 独立核验 **PASS（5/5 criteria）**，
+    自跑抽验红证与 MUST-3 守卫；唯一部分兑现项（台账翻行）已随后关闭。
+  - **三条变异红证判别力实测确认**：offset 规则 0 served / 删入射腿出带外窗 /
+    标量 t_ca 零判别暴露。
+- **票 24 收尾三项完成（commit `03bdad5`）**：R17 台账回写核对、共享库零字节断言
+  实跑留档（写入 FORK_MANIFEST 基线表）、Paper1 生成器最小单元新旧对比一致
+  （S1-A_seed00 归一化哈希 `d40ff961b01e2bbf`）。
+- **R13/R23 关闭（commit `e1a9826`）**：SAT_MARGIN_KIM==1.25、尾隙 0.01、PRF 四值
+  三处独立取值锚补齐（T2 插入，37 tests passed）。
+- **台账收口**：R12/R13/R17/R17b/R18/R21/R22/R23 关闭带证据；**open=4**
+  （R7 工具链 / R16 休眠触发器 / R19 Ch5 / R20 共享库），全部带关闭条件且 <2 天，
+  `residual-ledger.py list` rc=0。
+- **两处偏差已登记进模板 amendment（`amendment_20261005_ticket25`）**：
+  ①票面「扫描跨度 14.75 圈」含 J2 节点漂移，仿真传播器为二体（无 J2）⇒ 在仿真中
+  地轨重复 = 14.97 圈 ≈ 23.93 h；扫描跨度 3 天 > 任一周期，结论不受影响。
+  ②MUST-5 登记为可证伪口径「每节点 ≥1 带内过境」（25/25 实测）——字面「最好入射
+  ∈[30,60]」在域心因近天底过境不成立（21.7°），近天底过境只是不产生带内窗，无害。
+- 工作树净（票 23/24/25 状态行与台账簿记提交后）。
 
 ## Next
 
-1. **开票 25**（T0，Blocked by 24——现已解除）：过境枚举 + 每窗 `t_ca` schema + 密集域 + 密度阶梯 + R18 三腿交集。票面已含四轮 gate-review 的全部修正与实测数字，可直接开工。
-2. **票 24 剩余三项**（不阻塞 25，可并行）：台账 R17 回写收尾 / 共享库零字节断言已跑待留档 / Paper1 生成器最小单元实跑新旧对比。
-3. **重议"三族加预算"**——已被 P0 降级作废，待真窗数据重做后再议。
+1. **真窗矩阵 v3 重跑**（数据重做起点）：`run_matrix.py --generator realwindow
+   --platform <platform.json> --variants 1,2,3` + 显式 `--scenarios-dir/--matrix-dir`
+   （禁写冻结目录）；R1C ≈2 s/manifest、R3H 预计 ~1-2 min/manifest，跑前按 rule 11
+   先跑 1 个单元对账。新数据出 `v3_results` 后才可引真窗数字。
+2. **开票 26**（T1，无前置）：R20 共享库 C1 假 PASS 活边（verification/constraints.py:182）
+   + so_f1 回退改 assert；共享库「只增不改」红线在该票的用户裁决面内处理。
+3. **票 27**（T1）：R19 Ch5 两项物理违反 + t_start clamp + 种子确定性（Ch5 重构时）。
+4. **重议"三族加预算"**：仍待 v3 真窗数据后再议（P0 前的旧议题）。
 
 ## Context
 
-- **红线**：修复后禁引任何 `v2_results` 真窗数字；BLOCKED.md 备注 2「真窗三族禁 alive/dead 声明」在重跑前保持；备注 1 预算耗尽约束因阶梯缩档而不触发。
-- **R17 仍 open 的部分**：①共享库 `visibility.py:48` 同型潜伏（按只增不改原则**故意不修**，非遗漏）；②「460 任务仰角等价」判据经实测**证伪无判别力**（elevation 路径未被修复触及），已改口径为「入射角<90° 任务集合非空」，待票 25 后实测。
-- **残留台账**：R7/R12/R13/R16/R17/R22/R23 open（均 <7 天，rc=0）。R12→并入票 25；R13→T2 单点可随时插；R23=举一反三新发现的两处**弱**判别力自指（非 R13 的完整算式自指）。
-- **本会话教训**：6 次同形态翻车（单位/机理倒推/漏算/近似式当恒等式/二次口径/假缺陷），
-  已沉淀 `feedback-compute-before-concluding` + `feedback-equivalence-claim-needs-measurement`；
-  记忆合并一轮的三条失误（误判悬空归属 FAIL 2→5、`MEMORY.md` 索引 replace 粘连当天两次、
-  删前只比行数漏掉唯一副本）沉淀在 `feedback-two-tool-rule-self-contradiction`。
-  **记忆一律写 Claude 侧单源**（`.agents/memory/` 已删，见 State 第一条），跨项目教训仍双写 core-memories。
-- 收工六步已走完；now.md 事件流已更新并 8s 复验（8904 bytes 稳定，未被 NDC 截断）。
+- **红线**：`v2_results` 真窗数字继续禁引（旧世界伪影；v2 M 族合成数字仍有效）。
+  BLOCKED.md 备注 2「真窗三族禁 alive/dead 声明」保持到 v3 数据落地。
+- **生成器设计要点**（写论文/审稿会用）：每趟 t_ca = 段内向量 squint 最小点（可能
+  在带外近天底处——那是平面 squint 模型的锚，不是带内点）；一趟的两条带内翼合并为
+  一个 pass（sub-band 中段 ≪ gap-merge 阈值）；AASR 腿逐窗执行（每窗独立过四腿，
+  比旧"只测最宽窗"更严）；决策变量仍 2N，过境选择隐式在 tau 里（测度归一化 ⇒
+  采样偏向宽窗，已登记）。
+- **本会话教训**：stash 二分定位到 `_precompile_frozen` 把 t_ca 错冻成 0（D11-8 冻结
+  的是 dwell 不是 psi 几何）——"冻结"语义要逐字段问；向量化共享轨道（kepler 循环
+  一次/场景）把 R1C 从分钟级压到 2 s，是「冻结路径复用 + 几何向量化」的干净分层。
+- **收工六步**：归零复盘（本页 State/Next/Context + now.md 事件流）、记忆沉淀
+  （无新增跨项目教训；票 25 偏差已进 amendment）、neat-freak 待跑 closeout-sweep。
