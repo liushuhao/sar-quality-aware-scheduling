@@ -7,7 +7,14 @@ gate-review acceptance PASS；真窗测试 R22_BLOCKED 已全部复活转绿）�
 ## 备注（不是阻塞，是须随结果带走的约束）
 
 1. **预算额度已耗尽**：>160/240 的升级在票 20 已消费（320/480 实跑过）。R2F/R3H/R4H 的 P1 判决停在 NOT-YET-TESTED，若要出判决，**加预算属新决策，须用户拍板**，不得默认执行。（票 23 注：真窗三档已按同预算逐任务口径重跑 120/120 exit0——升级决策与旧数字无关，R2F 顶档 promo max 由 3.57 升至 5.22 dB，仍 <6.0 未触发）
-2. **真窗族三族 promotion 结构维为 ALIVE**（R_fam 6.82 ≥ 6.0，与九个合成族全 <6.0 相反）。按冻结的 ALIVE × UNCONVERGED 格，**这三族禁止任何 alive/dead 声明**；合成族的「结构性非触发」结论**不可外推**到真几何。**（2026-10-05 注：该 R_fam 数字出自 v2 旧世界（假过境采样伪影下重算），真窗数字整体待 v3 重跑后再引——v2_results 真窗栏继续禁引。）**
+2. **真窗族 promotion 结构维（v3 实测，2026-10-05 解除 v2 隔离）**：v3 真窗矩阵 30/30 exit 0
+   （`.scratch/sliding-spotlight-scheduling/v3-run/`，code head `036e297`）——R2F R_fam
+   **9.75–12.13 dB ALIVE**、R3H **11.99 dB ALIVE**、R1C 4.00 dB DEAD（= WANT-1 单圈对照成立）。
+   **冻结四格措辞不变**：R3H 7/10 单元前沿塌缩（pop40×gen60 对 2N=200 欠预算）⇒
+   ALIVE × UNCONVERGED ⇒ promotion 判决仍 NO CLAIM/NOT-YET-TESTED；全部 30 单元
+   promotion=no_promotion（max spread 3.97 < 6.0），**禁读作「结构死」**——那是欠收敛的读数。
+   分析层前置债不变：收敛标定 + 统计功效（audit3 台账 #86-93）。
+   v2_results 真窗数字作废由 v3 取代；v2 合成（M 族）数字仍有效。
 3. **`check_red_lines.py` 的禁令分类器对逗号/破折号/转折连接的洗白句仍放行**（第四轮审查指出）。当前语料零命中（rc=0），属已知边界而非活漏洞；未来语料若出现该句式需重修分类器。
 4. **`snapshot_rebuild` 门禁步已于票 23 收官首跑 PASS**（2026-10-04，对 v2-run syn 工件 bit-exact；对 v1 冻结件为 front 重构面属结构性 N/A，等价判据=anchor Δ=0）。原记录「本轮未跑」为票 17 时代状态。
 5. **v1 的「grid cell 上界 + 1 dB 裕度」保守 AASR 谓词本轮显式不接线**：生成期已改按窗内最坏判据（实测窗边采样低估约 4 dB，48/48 任务）。接线会引入域外钳位返回错物理的第二重口径风险，故按显式不作为记录，非遗漏。
