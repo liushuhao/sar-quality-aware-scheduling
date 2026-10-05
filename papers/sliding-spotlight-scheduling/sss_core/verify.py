@@ -63,12 +63,29 @@ def _step(name: str, status: str, detail) -> dict:
     return {"step": name, "status": status, "detail": detail}
 
 
+FORK_SOURCE_FILES = (
+    "src/sar_sim/metrics/nesz.py",
+    "src/sar_sim/generator/orbit.py",
+    "src/sar_sim/generator/visibility.py",
+    "src/sar_sim/generator/target.py",
+)
+
+
 def m1_double_check() -> dict:
-    """M1 zero-byte guarantee: tag diff AND worktree, both empty; git
+    """Fork-source integrity: the FORK_MANIFEST F-01/F-02 SOURCE files are
+    byte-identical to the M1 tag AND the shared-lib worktree is clean; git
     return codes are checked explicitly (a missing tag must FAIL loudly,
-    not silently produce an empty diff, D12-5)."""
+    not silently produce an empty diff, D12-5).
+
+    Ticket 26 (2026-10-05, user-adjudicated exception to the shared-lib
+    read-only red line) narrowed this check from the whole ``src/sar_sim``
+    tree to the fork-copied SOURCE files: ``constraints.py`` and
+    ``so_f1.py`` legitimately evolve, while the four files the fork's
+    identity is built from must not.  The behavioural fork guards
+    (seven-tuple bit-identity, fork-scope AST, self-containment) remain
+    authoritative and live in the fork-identity test modules."""
     for argv in (
-        ["git", "diff", f"{M1_TAG}..HEAD", "--", "src/sar_sim"],
+        ["git", "diff", f"{M1_TAG}..HEAD", "--", *FORK_SOURCE_FILES],
         ["git", "status", "--porcelain", "src/sar_sim"],
     ):
         proc = subprocess.run(argv, cwd=REPO_ROOT, capture_output=True, text=True)
@@ -79,7 +96,7 @@ def m1_double_check() -> dict:
             return _step("m1_double_check", "FAIL",
                          f"non-empty: {argv}: {proc.stdout[:400]}")
     return _step("m1_double_check", "PASS",
-                 f"tag {M1_TAG}..HEAD diff empty AND src/sar_sim worktree clean")
+                 f"fork source files identical to {M1_TAG} AND src/sar_sim worktree clean")
 
 
 def claim_provenance() -> dict:
