@@ -210,4 +210,96 @@
     "scripts/verify_claim_traces.py": "11/11 claims provenance-verified, rc=0",
     "scope_caveat": "check_red_lines.py DOES cover the forbidden list above: the five red lines are scripted and run against the paper and the registered artifacts (the planning scratch is out of scope by default because it is where the bans themselves are discussed; --include-scratch audits that). What is NOT covered is a check that the prose of this file is internally consistent -- that is what verify_prereg_v2.py is for."
   }
+,
+  "amendment_20261005_v3_realwindow": {
+    "status": "ACTIVE -- append-only amendment under meta.amendment_discipline. Every v2 field above is retained verbatim; nothing above was mutated in place, and the superseded criteria below are declared, not deleted.",
+    "timestamp": "2026-10-05 (registered) -- appended to the freeze 2026-10-06 by ticket 30 (audit4 B1/B2)",
+    "git_head_at_append": "458e486",
+    "reason": "audit4 B1: this freeze carried no v3 amendment at all, so the real-window preregistration chain was broken -- its R-family gradient, strata and capacity criteria are anchored to the R17 broken-geometry design (density ladder 20/100/300/500, overload bands 0.85/0.50/0.40/0.25), which does not describe the v3 world (ladder 20/50/100, R4H retired, transit enumeration redesigned). This block registers the v3 world and the readings taken from it.",
+    "consumes": {
+      "ticket_25": "real-window transit enumeration, per-window t_ca/r0 schema (AD-3), dense domain, ladder re-basing (AD-5), incidence leg joining the intersection (AD-6), R22 ledger fix",
+      "ticket_26": "C1 out-of-window guard, so_f1 fail-loud; guard closure carried into the promoted artifacts",
+      "ticket_28": "C3/C4 reference caliber now follows the per-window r0 (audit4 A1); all v3 results below are post-fix",
+      "ticket_29": "the domain-suite pin refreshed to the measured suite (audit4 A2), so the gate that polices these artifacts is itself reproducible",
+      "experiments/realwindow_scenario_template.json": "the schema amendment amendment_20261005_ticket25 is the operative scenario registration; this block does not restate it, it points at it"
+    },
+    "v3_scenario_world": {
+      "transit_enumeration": "windows come from enumerating real ground-track transits, not from an arbitrary phase point. Ledger R22: the v1 pass rule (epoch + {0,600} s) is not a transit; measured 0/8 clusters servable under the ticket-24 incidence fix versus 6/8 under true enumeration. Enumeration parameters (scan_step_s 15, gap_merge_s 300 with {150,600,1200} invariance, 33-point edge refinement) are registered in realwindow_scenario_template.json amendment_20261005_ticket25.enumeration",
+      "per_window_schema_AD3": "schema scenario-manifest/2.1-realwindow. The scalar task-level triad (t_ca_s / r0_m / incidence_deg / window_width_s) is REMOVED and re-emitted per window as lo_s / hi_s / t_ca_s / r0_m / incidence_deg / width_s. A multi-window manifest keeping one scalar t_ca would silently mis-feed every consumer; consumers go through TaskPlan.t_ca_at(t) / window_at(t)",
+      "dense_domain": "20N / 0E, 1000 km square, 5x5 grid at 250 km spacing, target i -> node i % 25 with per-cell jitter. Must-5 falsifiable caliber: 'every node carries >=1 in-band transit' measured 25/25 within span_days=3; the literal min-over-span reading fails at the centre node (21.7 deg, near-nadir passes exist there but yield no in-band window), which is why the operative criterion is the per-node one",
+      "density_ladder": "20 / 50 / 100 (R1C / R2F / R3H). R4H (N=500) is RETIRED by AD-5: single-transit STR capacity 24 => ceil(N/24) passes, and N>=150 exceeds the registered span. The v1 registry slot 4 and the recompute_r_fam.py FAMILIES entry were removed together",
+      "span_days": 3.0,
+      "incidence_leg_AD6": "the incidence leg JOINS the cascade intersection rather than gating it, so every emitted window is four-leg clean (incidence, mode squint envelope, end-check, AASR)",
+      "code_head": ">= 036e297 (nextafter fix on the multi-window measure seam) and >= 220a796 (ticket 28 C3/C4 per-window reference). The promoted artifacts record 220a796 in each tier's _progress.json.code_head; the unit pilot JSONs carry no git_head field, so the head is read from progress",
+      "in_sim_orbit_caveat": "two-body propagator, no J2 nodal drift: the simulated ground track repeats 14.97 orbits ~= 23.93 h. The 14.75 figure quoted in the spec included J2 and applies to the physical orbit, not the simulated one. Any statement about the repeat period is bound to this caliber",
+      "artifacts": "experiments/v3_results/ (promoted by ticket 30 (d); 30 scenarios + 3 budget tiers x 30 pilots + the convergence-calibration preregistration). Per-file md5 source/copy reconciliation is in experiments/v3_results/MANIFEST.md"
+    },
+    "supersedes": {
+      "what": "the v2 R-family registration criteria ABOVE: matrix_scope.family / budget_ladder level 3, metrics.served_over_drawn (the incidence band 0.85/0.50/0.40/0.25 overload band ladder), and the calibration anchors quoted in predictions P1-P4",
+      "declaration": "SUPERSEDED for the real-window family as of this amendment. The v2 text above is RETAINED VERBATIM as the record of what was registered before the v3 world existed; it is not deleted and not edited",
+      "why": "the v2 anchors describe the R17 broken-geometry world (ladder 20/100/300/500 with R4H present, overload bands measured under the arbitrary-phase-point pass rule). Reading a v3 number against a v2 threshold would be a cross-caliber comparison, which the caliber registry forbids",
+      "what_is_not_superseded": "the frozen numeric THRESHOLDS themselves stand: promotion 6.0 dB, plateau 1.0/2.0 dB, alpha 0.05, the primary estimand dq_all, the stratum rule, the budget ladder SHAPE (three paired levels, same seeds at every level). Only the family-specific anchors move"
+    },
+    "strata_disposition": {
+      "rule_source": "stratum_rule_determinacy above -- evaluated ONCE per family at the registered base seed and the base budget, not per seed and not averaged over the ladder",
+      "R1C": "STRUCTURAL DEAD. R_fam = 3.9998 dB (base seed 100), max over the 10 seeds 3.9998 dB, per-seed minimum 3.9968 dB -- all below 6.0 dB, so the verdict does not depend on which seed is read -- and it is budget- and solver-independent by construction. R1C is the single-orbit control: its greedy anchor saturates coverage at f1* = 1.0 exactly in all 30 units, so its front is a pure quality trade-off surface and it is the reference against which the other two families are read",
+      "R2F": "DESCRIPTIVELY ALIVE. R_fam = 9.7524 dB at the registered base seed 200, max over the 10 seeds 12.1261 dB, per-seed minimum 8.2652 dB -- three different aggregates, none of which is the others. The verdict is a STRUCTURAL statement on the model-level bound, not a claim about the budget-converged readout (see convergence_verdicts)",
+      "R3H": "DESCRIPTIVELY ALIVE. R_fam = 11.9886 dB, and here base == max (the base seed 300 is also the most permissive of the ten), per-seed minimum 9.3293 dB",
+      "why_descriptive": "'ALIVE' here means the scenario ADMITS a spread above the 6.0 dB threshold on a model-level structural bound. It does not mean promotion fires, it does not mean the readout has converged, and it does not license any physical claim. The frozen four-cell wording (tests.promotion_convergence.two_dimensional_verdict) still governs"
+    },
+    "convergence_verdicts": {
+      "calibration_prereg": "experiments/v3_results/CALIBRATION_PREREG.md, frozen 2026-10-05 BEFORE the two extra budget tiers were run; its judgement rule is quoted verbatim there and is not restated here",
+      "R2F": "SEARCH-ARTIFACT, a falsified reading. At the base budget the apparent front collapse (median front 19.5, one unit at a single point) does not survive the budget ladder: at 160/240 the median front is 84.5 and distinct-fq median 64.5 (4.4x the base median). The base-budget reading was a search artifact, and any narrative built on it is VOID",
+      "R3H": "SEARCH-ARTIFACT, and this is the decisive one: the collapse narrative is already falsified. At the base budget 6 of 10 units have a single-point front and the median front is 1; at 160/240 the median front is 140 and distinct-fq median 99 (99x the base median). The observed front collapse was a budget artifact of running pop40 x gen60 against 2N=200 decision variables, NOT a property of the scenario. The physical-collapse narrative is withdrawn and must never be asserted in either direction",
+      "NOT_PLATEAUED": "both families are still rising monotonically at the top budget (R3H distinct-fq 26 -> 99 between 80/120 and 160/240), so per the preregistered clause the plateau rule is NOT satisfied. 'The converged true front' remains unknown and ANY front-richness bound claim is forbidden in BOTH directions at this budget",
+      "promotion_final": "no_promotion over all 90 units (3 families x 3 budgets x 10 seeds), maximum spread 3.9722 dB (3.97 at two decimals) against the frozen 6.0 dB threshold. The no-promotion verdict is therefore ROBUST TO BUDGET across a 16x budget range and may be cited as a structural reading with its budget evidence attached. This supersedes the 'terminal verdict pending' state recorded at N2 in RUN_LINEAGE.md",
+      "budget_not_escalated": "the budget allowance above 160/240 is NOT raised. Decided by the user on 2026-10-05: chasing budget buys frontier richness, not a promotion verdict (the promotion verdict is already budget-robust, and the M family is equally promotion-dead at 160/240). Trigger to revisit: a reviewer explicitly asks for convergence evidence. Per the frozen forbidden list, no front-collapse or phase-transition statement is licensed in any branch",
+      "tier_usage": "the base (40/60) readings are retained as an under-converged baseline ONLY. Any frontier-richness or quality reading must be taken from the 160/240 artifacts and must carry the NOT-PLATEAUED caveat"
+    },
+    "capacity_status": {
+      "status": "NOT RECOMPUTED under v3",
+      "detail": "capacity_artifacts.serial_bound_derivation above registers the SYNTHETIC M-family serial bounds and states that v2 recomputes them on the R families and registers the recomputed values in an amendment BEFORE the run. That recomputation has NOT happened for v3. No v3 capacity number exists",
+      "consequence": "the rule in capacity_artifacts.rule still binds: until the v3 recomputation lands, NO capacity NUMBER may appear in the paper. The prediction P4_capacity is NOT-YET-TESTED, not refuted. The closure narrative (deviation pattern vs the overload axis) is deferred with it",
+      "close_condition": "recompute the serial bound and the closure pattern on the v3 real-window manifests, then register the values in a further amendment. Not scheduled"
+    },
+    "r_family_effect_size": {
+      "value": 6.0,
+      "units": "f_q units (m^-2, the delivered-quality aggregate) for the R family",
+      "dimension_note": "the numeral 6.0 INHERITS the frozen 6.0 dB promotion threshold as a magnitude; it is NOT dimensionally equivalent to it (dB vs m^-2). The transfer is a numerical inheritance, registered as such, and must be written that way",
+      "registered_on": "2026-10-05 (user adjudication, final)",
+      "why_registered": "audit4 B2: the value lived only in a handoff note and an issue file, and was registered AFTER the target was fixed. Registering it here, with its timestamp and its non-equivalence stated, is the honest form -- the writing must say 'registered after calibration, value inherited from the frozen threshold', not 'pre-registered'",
+      "power_design": {
+        "estimand": "dq_all (tests.primary_comparison.estimand) at the 160/240 tier, n = 10 seeds per family",
+        "alpha": 0.05,
+        "sided": "one-sided (greater)",
+        "df": 9,
+        "t_crit_95_df9": 1.8331,
+        "t_crit_80_df9": 0.8834,
+        "mde_formula": "(t_0.95 + t_0.80) * sd / sqrt(n)",
+        "measured_sd": {"R2F": 5.67, "R3H": 16.14},
+        "measured_sd_note": "sd is measured on dq_all, not on distinct_fq. Measured distinct-fq sd at the same tier is 11.45 / 22.97 and does NOT reproduce the registered MDE figures -- the two quantities are not interchangeable and only the dq_all reading matches the calibration record",
+        "mde80": {"R2F": 4.87, "R3H": 13.87},
+        "power_at_delta": {"R2F": 0.92, "R3H": 0.29},
+        "seeds_for_80pct_power_at_delta": {"R2F": 7, "R3H": 54},
+        "seed_anchor_note": "R3H at 54 seeds is a COST ANCHOR, not a plan: the budget decision of 2026-10-05 means it is not executed. The consequence for the writing is mandatory and asymmetric -- R2F may claim 92% power at the registered delta; R3H must disclose 29% and report its result as NOT reaching significance at this n"
+      },
+      "what_it_does_not_constrain": "ALIVE and DEAD are structural verdicts on R_fam and are NOT bound by this registered value. The delta governs the power of the quality-headroom test only. A family can be structurally ALIVE and still fail to reject at n=10",
+      "reproduction": "experiments/v3_results/_power_curve_rq_effect_size.py (the calibration-time curve); the machine anchor is scripts/verify_v3_verdicts.py, which recomputes sd, MDE and power from the promoted artifacts and pins delta, MDE and power"
+    },
+    "machine_anchor": {
+      "script": "scripts/verify_v3_verdicts.py",
+      "rc": 0,
+      "covers": "R_fam base/max/per-seed-min per family, the promotion 90-unit no_promotion verdict and its maximum spread, the R3H front and distinct-fq medians at the base and top budgets, the R1C anchor saturation and its base-budget front range, and delta / sd / MDE / power / seed count",
+      "why": "audit4 B8: claim_trace.json carries no experimental numbers, so every ALIVE/DEAD/no_promotion/MDE reading was recomputable but had no drift gate. Expectations are hardcoded in the script and never read out of the artifacts under test"
+    },
+    "writing_obligations_that_travel_with_this_amendment": [
+      "NOT-PLATEAUED caveat on any frontier-richness statement (160/240 has not plateaued; both directions are forbidden)",
+      "R3H power disclosure: 29% at n=10, 54 seeds would be needed for 80%, not executed",
+      "the v2 real-window numbers are permanently uncitable; the real-window readings come from experiments/v3_results only",
+      "the caliber tag travels: R-family f_q is NOT normalised (value range roughly 31-111 because the per-window R0 geometry expands it) and must never be mixed with the M family's [0,1]",
+      "'structurally dead' is a MODEL-level statement (P8WH-class knife-edge disclosure) and is never stated as physics",
+      "the 23.93 h repeat period is the two-body simulated value, not the J2 physical orbit's 14.75 orbits",
+      "zero-violation statements are relative-to-evaluator"
+    ]
+  }
 }

@@ -173,11 +173,17 @@ def shared_lib_tests() -> dict:
     return _step("shared_lib_tests", "PASS" if ok else "FAIL", detail)
 
 
-DOMAIN_N0 = 223          # --collect-only 2026-10-06: 224 collected - 1 skip
+DOMAIN_N0 = 228          # --collect-only 2026-10-06: 229 collected - 1 skip
 DOMAIN_N0_SKIPPED = 1    # baseline conditional skip -- silent removal reads red
 # 2026-10-06: 0, was 1.  The R12 exit-11 marker was retired into a real pass by
 # ticket 25, and tickets 24/25/26/28 added tests; pin now equals the measured
 # suite (223 passed + 1 skipped, no xfail anywhere in the fork).
+# 2026-10-06 later the same day: 223 -> 228.  Ticket 30 (e) extended
+# test_run_lineage_completeness.py from 6 tests to 11 (the v2_results /
+# v3_results registration checks plus a phantom-sibling-directory check), and a
+# guard that is mandated by the ticket cannot be added without moving this pin.
+# Measured by stashing the guard file and re-running --collect-only: HEAD
+# collects 224, the extended guard collects 229.
 DOMAIN_N0_XFAILED = 0
 
 

@@ -49,6 +49,75 @@ PLATEAU_UNIT_DB = 2.0
 P1_THRESHOLD = 3
 PROMOTION_DB = 6.0
 
+# ---- void_realwindow markers (ticket 30 (f), registered by hand 2026-10-06) --
+#
+# This generator rewrites all three v2_results files wholesale, so a marker
+# that lives only in the files on disk is erased by the next run.  The marker
+# dicts are therefore pinned here, verbatim, and merged in before each
+# json.dumps.  ``scope_in_this_file`` is the only per-file field; the other
+# eight are identical across the three and live in _VOID_COMMON.
+_VOID_COMMON = {
+    "status": "VOID FOR CITATION -- the real-window numbers in this file are "
+              "permanently unciteable",
+    "reason": "Ledger R17 / ticket 25: these real-window numbers were produced "
+              "under the broken-geometry scenario world -- windows came from an "
+              "arbitrary phase point rather than from enumerating real transits, "
+              "and t_ca/r0 were task scalars rather than per-window quantities. "
+              "Ticket 25 measured 0 of 8 clusters servable under that rule, so "
+              "the scenario these numbers describe no longer exists. They are "
+              "also superseded by the ticket-28 per-window C3/C4 reference "
+              "caliber, whose worst-case difference on the same geometry is "
+              "36.04%.",
+    "superseded_by": "papers/sliding-spotlight-scheduling/experiments/v3_results",
+    "caliber_of_replacement": "v3",
+    "registered_by": "ticket 30 (f), 2026-10-06 -- audit4 B6",
+    "reading_rule": "the numbers in this file are RETAINED as the historical "
+                    "record and stay machine-readable, exactly like the "
+                    "superseded criteria in analysis_prereg_v2.json. What is "
+                    "forbidden is citing the real-window numbers, not their "
+                    "existence. Do not read a retained number as a current one.",
+    "m_family_status": "STILL VALID",
+    "note": "machine anchor for the replacement readings: "
+            "scripts/verify_v3_verdicts.py (rc=0)",
+}
+
+VOID_RESULTS_TABLE = {
+    **_VOID_COMMON,
+    "scope_in_this_file":
+        "The R-family rows (R1C/R2F/R3H/R4H) are void. They are superseded by "
+        "the v3 artifacts and their verdicts (R1C structural DEAD; R2F/R3H "
+        "descriptive ALIVE; the base-budget front collapse judged "
+        "SEARCH-ARTIFACT and its narrative withdrawn as a falsified artifact) "
+        "are registered in analysis_prereg_v2.json "
+        "amendment_20261005_v3_realwindow. This file also carries no M-family "
+        "rows.",
+}
+
+VOID_CONVERGENCE_REPORT = {
+    **_VOID_COMMON,
+    "scope_in_this_file":
+        "The R-family verdicts are void: the UNCONVERGED / CONVERGED readings "
+        "and the P1 statements attached to them describe the superseded world. "
+        "The v3 convergence judgement is the preregistered SEARCH-ARTIFACT / "
+        "PHYSICAL / NOT-PLATEAUED rule in "
+        "experiments/v3_results/CALIBRATION_PREREG.md, and it returned "
+        "SEARCH-ARTIFACT for both R2F and R3H with NOT-PLATEAUED at the top "
+        "budget.",
+}
+
+VOID_CONFOUND_CONTROL = {
+    **_VOID_COMMON,
+    "scope_in_this_file":
+        "SCOPE INVERTED relative to its siblings: this file contains ONLY "
+        "synthetic M-family measurements (M1NC/M2WF/M2WH/M3NC/M4WH), which are "
+        "unaffected by ticket 25 and were re-measured post-fix at bit-exact "
+        "anchor_delta 0. The file therefore stays VALID. It carries the void "
+        "only as an inherited note: the real-window comparison it was built to "
+        "attribute is superseded, so any argument that CONSUMES this control to "
+        "qualify a real-window number inherits the void, while the control's "
+        "own numbers do not.",
+}
+
 
 def load_level(name: str) -> dict[str, list[dict]]:
     out: dict[str, list[dict]] = collections.defaultdict(list)
@@ -317,6 +386,9 @@ def main() -> int:
             control["families"][fam] = row
 
     OUT.mkdir(parents=True, exist_ok=True)
+    control["void_realwindow"] = VOID_CONFOUND_CONTROL
+    conv["void_realwindow"] = VOID_CONVERGENCE_REPORT
+    report["void_realwindow"] = VOID_RESULTS_TABLE
     (OUT / "confound_control.json").write_text(
         json.dumps(control, indent=2, sort_keys=True, ensure_ascii=False) + chr(10),
         encoding="utf-8",

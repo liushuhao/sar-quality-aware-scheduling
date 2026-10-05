@@ -1,4 +1,15 @@
 {
+  "void_realwindow": {
+    "status": "VOID FOR CITATION -- the real-window numbers in this file are permanently unciteable",
+    "reason": "Ledger R17 / ticket 25: these real-window numbers were produced under the broken-geometry scenario world -- windows came from an arbitrary phase point rather than from enumerating real transits, and t_ca/r0 were task scalars rather than per-window quantities. Ticket 25 measured 0 of 8 clusters servable under that rule, so the scenario these numbers describe no longer exists. They are also superseded by the ticket-28 per-window C3/C4 reference caliber, whose worst-case difference on the same geometry is 36.04%.",
+    "superseded_by": "papers/sliding-spotlight-scheduling/experiments/v3_results",
+    "caliber_of_replacement": "v3",
+    "registered_by": "ticket 30 (f), 2026-10-06 -- audit4 B6",
+    "scope_in_this_file": "The R-family rows (R1C/R2F/R3H/R4H) are void. They are superseded by the v3 artifacts and their verdicts (R1C structural DEAD; R2F/R3H descriptive ALIVE; the base-budget front collapse judged SEARCH-ARTIFACT and its narrative withdrawn as a falsified artifact) are registered in analysis_prereg_v2.json amendment_20261005_v3_realwindow. This file also carries no M-family rows.",
+    "reading_rule": "the numbers in this file are RETAINED as the historical record and stay machine-readable, exactly like the superseded criteria in analysis_prereg_v2.json. What is forbidden is citing the real-window numbers, not their existence. Do not read a retained number as a current one.",
+    "m_family_status": "STILL VALID",
+    "note": "machine anchor for the replacement readings: scripts/verify_v3_verdicts.py (rc=0)"
+  },
   "budget_ladder": [
     [
       40,
