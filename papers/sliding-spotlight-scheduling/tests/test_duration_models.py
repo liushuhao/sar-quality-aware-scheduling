@@ -290,7 +290,7 @@ def test_margin_pads_layering():
     std = MarginPads.standard()
     anchor = MarginPads.degenerate_anchor()
     assert std.inter_task_fraction == INTER_TASK_PAD_FRACTION_KIM == 0.25
-    assert std.window_tail_fraction == WINDOW_TAIL_PAD_FROZEN
+    assert std.window_tail_fraction == WINDOW_TAIL_PAD_FROZEN == 0.01
     assert anchor.inter_task_fraction == 0.0 and anchor.window_tail_fraction == 0.0
     # tail pad application inflates dwell; anchor pad is a no-op
     assert pad_window_tail(10.0, std) == pytest.approx(10.1)
@@ -439,6 +439,9 @@ def test_sat_margin_constant(lib):
     """Kim's 1.25 margin is applied OUTSIDE the raw SAT (p.7/p.11)."""
     geo = lib.geo
     raw = kim_checker_scene_sls(0.0, 0.5, geo)
+    # independent value anchor: the constant itself must be Kim's 1.25,
+    # not merely whatever duration.py multiplies by (R13 self-reference)
+    assert SAT_MARGIN_KIM == 1.25
     assert raw["sat_margined_s"] == raw["sat_raw_s"] * SAT_MARGIN_KIM
 
 

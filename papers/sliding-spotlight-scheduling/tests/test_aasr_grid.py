@@ -281,6 +281,9 @@ def test_threshold_preregistration():
 def test_prf_keys_match_fixture_write_back():
     """Ticket-06 manifest write-back: the fixture prf_hz null is resolved
     and its value list equals the grid key set."""
+    # independent value anchor: the ladder is the four registered PRFs,
+    # not merely whatever aasr.py currently exports (R23 weak self-reference)
+    assert PRF_KEYS_HZ == (1150.0, 2300.0, 3044.0, 3630.0)
     fx = load_platform_fixture()
     entry = fx["modes"]["prf_hz"]
     assert entry["value"] is not None
