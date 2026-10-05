@@ -8,7 +8,7 @@ must answer ("口径重议上报", never self-adjusted).  Gate exit: 0 = no FAIL
 
 Steps (D12-5):
   m1_double_check      tag-diff + worktree emptiness of src/sar_sim
-  shared_lib_tests     PYTHONPATH=src pytest src/tests: passed == 145 == N0
+  shared_lib_tests     PYTHONPATH=src pytest src/tests: passed == 154 == N0
                        AND failed == 0 AND exit 0 (three conditions)
   grid_halving         AASRGrid.halving_stability, sampling program
                        preregistered (Random(20260927), uniform in axes
@@ -50,7 +50,7 @@ from .modes import Mode, ModeLibrary
 FORK_DOMAIN = Path(__file__).resolve().parent.parent
 REPO_ROOT = FORK_DOMAIN.parent.parent
 M1_TAG = "paper2-m1-baseline"
-SHARED_LIB_N0 = 145
+SHARED_LIB_N0 = 154          # 145 -> 154 on 2026-10-05 (ticket 26 added 9)
 
 PROMOTION_THRESHOLD_DB = 6.0  # mirrored from experiments/promotion_prereg.json
 A6_SCATTER_RATIO_THRESHOLD = 0.1  # spec D10 preregistration
@@ -133,7 +133,7 @@ def claim_provenance() -> dict:
 
 
 def shared_lib_tests() -> dict:
-    """Full shared-library suite: collected == 145 == N0, failed == 0,
+    """Full shared-library suite: collected == 154 == N0, failed == 0,
     exit 0 -- three conditions, all required."""
     import os
 

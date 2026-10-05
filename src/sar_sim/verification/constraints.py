@@ -140,6 +140,12 @@ def verify_c1_incidence_squint(
       (b) squint-angle limit  |ψ_sq,i| ≤ ψ_sq^max  (checked only when
           ``instance`` with ``geom_cache`` and ``t_actual`` are available;
           otherwise C1 squint is assumed enforced at window-generation time).
+      (c) window containment  t_actual[i] ∈ [t_earliest, t_latest − duration]
+          (1e-9 tolerance).  Checked whenever ``instance`` and ``t_actual``
+          are both available: an out-of-window moment yields both a folded
+          phi that converts into the incidence band and a clamped
+          geom_cache read that looks legal, so neither (a) nor (b) can see
+          it.  Per task; does not add to ``total_checks``.
 
     Note: the resolution sub-constraint has been merged into θ^min per the
     latest paper revision (resolution determines the lower incidence bound).
@@ -183,6 +189,31 @@ def verify_c1_incidence_squint(
         theta_min = theta_min_global
         theta_max = theta_max_global
         total_checks += 1
+
+        # (0) Observation moment inside the registered window.
+        # Both readings below this point can be in-band for a moment that is
+        # outside the window: a below-horizon phi folds into the incidence
+        # band, and geom_cache.lookup clamps an out-of-window t_actual to the
+        # nearest in-window sample.  Neither is recoverable downstream — the
+        # folded and near-side angles are indistinguishable on (phi, h) — so
+        # the moment itself has to be checked here, in the verify layer.
+        if instance is not None and t_actual is not None:
+            t_obs = float(t_actual[i])
+            t_last_start = task.t_latest - task.duration
+            if t_obs < task.t_earliest - 1e-9 or t_obs > t_last_start + 1e-9:
+                violations.append(ViolationDetail(
+                    constraint="C1",
+                    task_ids=[i],
+                    expected=(f"t_actual in [{task.t_earliest:.6f}, "
+                              f"{t_last_start:.6f}]"),
+                    actual=f"t_actual = {t_obs:.6f}",
+                    magnitude=max(task.t_earliest - t_obs, t_obs - t_last_start),
+                    description=f"Task {i} ({task.target_id}): observation moment "
+                                f"t={t_obs:.3f}s outside the registered window "
+                                f"[{task.t_earliest:.3f}, {t_last_start:.3f}]s "
+                                f"(duration={task.duration:.1f}s); the geometry "
+                                f"read for this task is not the observation's",
+                ))
 
         # (a) Below incidence lower bound
         if theta < theta_min:

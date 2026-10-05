@@ -412,16 +412,10 @@ def b2_profit_solver(
             f2_posthoc /= n
             f3_posthoc /= n
     elif sel:
-        # Fallback: compute from elevation
-        n = 0
-        for obs in schedule:
-            elev = obs.window.elevation
-            phi = np.radians(90.0 - elev)
-            theta = off_nadir_to_incidence(phi, instance.altitude_m)
-            f2_posthoc += math.sin(theta)  # cosψ=1 assumed (no squint info)
-            n += 1
-        if n > 0:
-            f2_posthoc /= n
+        raise RuntimeError(
+            "geom_cache missing: silent elevation-based f2 fallback removed "
+            "(ticket 26/R20); wire precompute_geometry()"
+        )
 
     meta = {
         "solver": "b2_profit",
@@ -561,15 +555,10 @@ def ga_hotstart_solver(
             f2_posthoc /= n_sel
             f3_posthoc /= n_sel
     elif sel:
-        n_sel = 0
-        for obs in schedule:
-            elev = obs.window.elevation
-            phi = np.radians(90.0 - elev)
-            theta = off_nadir_to_incidence(phi, instance.altitude_m)
-            f2_posthoc += math.sin(theta)
-            n_sel += 1
-        if n_sel > 0:
-            f2_posthoc /= n_sel
+        raise RuntimeError(
+            "geom_cache missing: silent elevation-based f2 fallback removed "
+            "(ticket 26/R20); wire precompute_geometry()"
+        )
 
     meta = {
         "solver": "ga_hotstart",
