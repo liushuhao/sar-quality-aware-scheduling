@@ -7,13 +7,17 @@ gate-review acceptance PASS；真窗测试 R22_BLOCKED 已全部复活转绿）�
 ## 备注（不是阻塞，是须随结果带走的约束）
 
 1. **预算额度已耗尽**：>160/240 的升级在票 20 已消费（320/480 实跑过）。R2F/R3H/R4H 的 P1 判决停在 NOT-YET-TESTED，若要出判决，**加预算属新决策，须用户拍板**，不得默认执行。（票 23 注：真窗三档已按同预算逐任务口径重跑 120/120 exit0——升级决策与旧数字无关，R2F 顶档 promo max 由 3.57 升至 5.22 dB，仍 <6.0 未触发）
-2. **真窗族 promotion 结构维（v3 实测，2026-10-05 解除 v2 隔离）**：v3 真窗矩阵 30/30 exit 0
-   （`.scratch/sliding-spotlight-scheduling/v3-run/`，code head `036e297`）——R2F R_fam
-   **9.75–12.13 dB ALIVE**、R3H **11.99 dB ALIVE**、R1C 4.00 dB DEAD（= WANT-1 单圈对照成立）。
-   **冻结四格措辞不变**：R3H 7/10 单元前沿塌缩（pop40×gen60 对 2N=200 欠预算）⇒
-   ALIVE × UNCONVERGED ⇒ promotion 判决仍 NO CLAIM/NOT-YET-TESTED；全部 30 单元
-   promotion=no_promotion（max spread 3.97 < 6.0），**禁读作「结构死」**——那是欠收敛的读数。
-   分析层前置债不变：收敛标定 + 统计功效（audit3 台账 #86-93）。
+2. **真窗族 promotion 结构维（v3 实测 + 收敛标定，2026-10-05）**：v3 真窗矩阵 30/30 exit 0
+   （`.scratch/sliding-spotlight-scheduling/v3-run/`）——R2F R_fam **9.75–12.13 dB ALIVE**、
+   R3H **11.99 dB ALIVE**、R1C 4.00 dB DEAD（= WANT-1 单圈对照成立）。
+   **收敛标定（60/60 exit 0，CALIBRATION_PREREG.md 判词）**：R2F/R3H 基预算前沿塌缩均为
+   **SEARCH-ARTIFACT**（R3H front==1 6→0、distinct-fq ×99）——但 160/240 仍上升未平台
+   ⇒ 前沿丰富度类主张两向仍禁（NOT-PLATEAUED 条款）；**promotion=no_promotion 对 16×
+   预算稳健**（90/90 单元 spread ≤3.97 < 6.0）——这是可引用的结构性读数，第三目标
+   不再有「欠收敛假象」辩护。功效：R 族 f_q 非归一化（值域 31–111，跨族禁混），
+   MDE80=4.87/13.87，是否够取决于分析层注册效应量（票 22 范畴）。
+   「三族加预算」重议**待用户拍板**：R3H 平台化需 >160/240（追预算买到的是丰富度，
+   promotion 已预算稳健、追不动）。
    v2_results 真窗数字作废由 v3 取代；v2 合成（M 族）数字仍有效。
 3. **`check_red_lines.py` 的禁令分类器对逗号/破折号/转折连接的洗白句仍放行**（第四轮审查指出）。当前语料零命中（rc=0），属已知边界而非活漏洞；未来语料若出现该句式需重修分类器。
 4. **`snapshot_rebuild` 门禁步已于票 23 收官首跑 PASS**（2026-10-04，对 v2-run syn 工件 bit-exact；对 v1 冻结件为 front 重构面属结构性 N/A，等价判据=anchor Δ=0）。原记录「本轮未跑」为票 17 时代状态。
