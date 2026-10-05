@@ -55,5 +55,11 @@
 - **本会话教训**：stash 二分定位到 `_precompile_frozen` 把 t_ca 错冻成 0（D11-8 冻结
   的是 dwell 不是 psi 几何）——"冻结"语义要逐字段问；向量化共享轨道（kepler 循环
   一次/场景）把 R1C 从分钟级压到 2 s，是「冻结路径复用 + 几何向量化」的干净分层。
+- **跨工具审补充（17:55，commit `b76be2d`）**：用户点名的 Claude Code CLI 对抗审
+  判 FAIL 并抓出同模型 fresh 验收全漏的 3 缺陷（fp_fail 未初始化 / 三处注册文本写
+  bisection 而实现为 33 点网格 / probe2+3 未迁 per-window），已全部补救并过确认轮
+  （test_scenarios 25/25、probe2/3 exit 0、四门禁 rc=0）。票 25 验收终态 = 双轨通过。
+  教训已双写 core-memories；**规则化建议待你批准**：rule 10/16 补一行「T0/one-way
+  验收加异源模型对抗审（自包含简报 + claude -p 只读工具面）」。
 - **收工六步**：归零复盘（本页 State/Next/Context + now.md 事件流）、记忆沉淀
   （无新增跨项目教训；票 25 偏差已进 amendment）、neat-freak 待跑 closeout-sweep。
