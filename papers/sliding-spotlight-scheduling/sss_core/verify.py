@@ -173,9 +173,12 @@ def shared_lib_tests() -> dict:
     return _step("shared_lib_tests", "PASS" if ok else "FAIL", detail)
 
 
-DOMAIN_N0 = 206          # --collect-only 2026-10-04: 206 passed (ticket 23 added 8)
+DOMAIN_N0 = 223          # --collect-only 2026-10-06: 224 collected - 1 skip
 DOMAIN_N0_SKIPPED = 1    # baseline conditional skip -- silent removal reads red
-DOMAIN_N0_XFAILED = 1    # baseline xfail (R12 exit-11 marker) -- ditto
+# 2026-10-06: 0, was 1.  The R12 exit-11 marker was retired into a real pass by
+# ticket 25, and tickets 24/25/26/28 added tests; pin now equals the measured
+# suite (223 passed + 1 skipped, no xfail anywhere in the fork).
+DOMAIN_N0_XFAILED = 0
 
 
 def domain_tests() -> dict:
