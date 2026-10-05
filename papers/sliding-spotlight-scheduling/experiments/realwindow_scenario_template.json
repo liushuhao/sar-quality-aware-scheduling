@@ -101,7 +101,7 @@
       "gap_merge_s": 300.0,
       "gap_merge_robustness_s": [150.0, 600.0, 1200.0],
       "gap_merge_status": "registered band parameter (pass counts invariant across the range, probe-measured); NOT a physical lower bound",
-      "edge_refinement": "bisection, 24 iterations (sub-millisecond)",
+      "edge_refinement": "33-point local grid per edge (resolution scan_step_s/32 ~= 0.47 s)",
       "t_ca_rule": "vector-squint minimum of the pass segment = closest approach; may sit at a near-nadir point OUTSIDE the band (that is the planar model's anchor, not an in-band point)",
       "window_cascade": "incidence runs n envelope n end-check n AASR, per window (AD-6: the incidence leg JOINS the intersection; every emitted window is four-leg clean)",
       "in_sim_ground_track_repeat": "14.97 orbits ~= 23.93 h (two-body propagator: no J2 nodal drift; the v1 '14.75 orbits' figure included J2 and applies to the physical orbit, not the simulated one)"

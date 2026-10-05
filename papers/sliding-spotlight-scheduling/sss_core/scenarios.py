@@ -90,7 +90,8 @@ H_MIX_DOCUMENTED_RANGE = (0.35, 0.65)  # documentation value; the test asserts
 #         epoch + {0,600} s (which is 37.5 deg of true anomaly -- an
 #         arbitrary phase point; measured 0/8 clusters servable vs 6/8
 #         under enumeration).  Per target: coarse incidence scan over the
-#         registered span, in-band runs refined by bisection, runs clustered
+#         registered span, in-band runs refined by a 33-point local grid
+#         per edge (resolution enum_step_s/32 ~= 0.47 s), runs clustered
 #         into passes by the gap-merge threshold (robust 150..1200 s,
 #         measured identical counts; NOT a physical lower bound).  The two
 #         in-band flanks of one pass merge into one pass because the
@@ -732,7 +733,8 @@ def generate_real_scenario(
             "incidence_band_deg": list(R_INCIDENCE_BAND_DEG),
             "pass_enumeration_rule": (
                 "per target: coarse incidence scan over the span at "
-                "enum_step_s, in-band runs refined by bisection, runs "
+                "enum_step_s, in-band runs refined by a 33-point local "
+                "grid per edge (resolution enum_step_s/32), runs "
                 "clustered into passes at gap_merge_s; per pass t_ca = "
                 "vector-squint minimum of the segment; windows = "
                 "incidence runs n envelope n end-check n AASR (AD-2/AD-6)"

@@ -610,6 +610,10 @@ def test_realwindow_template_amendment_matches_code_constants():
     assert am["span_days"] == S.R_SPAN_DAYS
     assert am["enumeration"]["scan_step_s"] == S.R_ENUM_STEP_S
     assert am["enumeration"]["gap_merge_s"] == S.R_GAP_MERGE_S
+    # cross-tool review F2: the registered refinement method must match the
+    # implementation (33-point local grid), not a stale draft's "bisection"
+    assert "33-point" in am["enumeration"]["edge_refinement"]
+    assert "bisection" not in am["enumeration"]["edge_refinement"]
     assert "R4H" in am["family_registry"]["retired"]
 
 
