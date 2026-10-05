@@ -1,0 +1,15 @@
+﻿[PASS  ] m1_double_check
+[PASS  ] shared_lib_tests
+[PASS  ] domain_tests
+[PASS  ] v2_artifacts
+[PASS  ] caliber_registry
+[PASS  ] claim_provenance
+[PASS  ] grid_halving
+[PASS  ] predicate_source
+[PASS  ] promotion_replay
+[PASS  ] aasr_headroom
+[REPORT] scatter_precheck
+[PASS  ] anchor_crosscheck
+[PASS  ] snapshot_rebuild
+[ACTION ] A6 scatter precheck triggered the preregistered 口径重议 escalation -- analysis layer must respond (record, not a gate failure)
+verify report: .scratch\sliding-spotlight-scheduling\reports\report_pilot_20261006.json (PASS=12 REPORT=1 FAIL=0)

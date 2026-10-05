@@ -1,0 +1,147 @@
+{
+  "action_required": true,
+  "manifest": "papers\\sliding-spotlight-scheduling\\experiments\\results\\scenarios\\M1NC_seed100.json",
+  "n_fail": 0,
+  "n_pass": 12,
+  "n_report": 1,
+  "pilot": ".scratch\\sliding-spotlight-scheduling\\v2-run\\syn_p40g60\\pilot_M1NC_seed100.json",
+  "schema": "verify-report/1.0",
+  "steps": [
+    {
+      "detail": "fork source files identical to paper2-m1-baseline AND src/sar_sim worktree clean",
+      "status": "PASS",
+      "step": "m1_double_check"
+    },
+    {
+      "detail": {
+        "exit": 0,
+        "expected_n0": 154,
+        "failed": 0,
+        "passed": 154,
+        "tail": "154 passed, 1 warning in 164.20s (0:02:44)"
+      },
+      "status": "PASS",
+      "step": "shared_lib_tests"
+    },
+    {
+      "detail": {
+        "exit": 0,
+        "expected_n0": 223,
+        "failed": 0,
+        "passed": 223,
+        "skipped": 1,
+        "tail": "223 passed, 1 skipped, 1 warning in 1177.08s (0:19:37)",
+        "xfailed": 0
+      },
+      "status": "PASS",
+      "step": "domain_tests"
+    },
+    {
+      "detail": {
+        "convergence_report": true,
+        "families": [
+          "R1C",
+          "R2F",
+          "R3H",
+          "R4H"
+        ],
+        "results_table": true,
+        "verdicts": {
+          "R1C": "CONVERGED",
+          "R2F": "UNCONVERGED",
+          "R3H": "UNCONVERGED",
+          "R4H": "UNCONVERGED"
+        }
+      },
+      "status": "PASS",
+      "step": "v2_artifacts"
+    },
+    {
+      "detail": {
+        "calibers": [
+          "v1",
+          "v2"
+        ],
+        "cross_comparable": false
+      },
+      "status": "PASS",
+      "step": "caliber_registry"
+    },
+    {
+      "detail": {
+        "exit": 0,
+        "restore_required": false,
+        "summary": "no open defects registered"
+      },
+      "status": "PASS",
+      "step": "claim_provenance"
+    },
+    {
+      "detail": {
+        "flip_rate": 0.0,
+        "flips": 0,
+        "n_samples": 20,
+        "within_preregistered_bound": true
+      },
+      "status": "PASS",
+      "step": "grid_halving"
+    },
+    {
+      "detail": {
+        "c2_module": "sss_core.predicates"
+      },
+      "status": "PASS",
+      "step": "predicate_source"
+    },
+    {
+      "detail": {
+        "derived_decision": "no_promotion",
+        "recomputed_spread_db": 0.0015175829323119672,
+        "recorded_decision": "no_promotion",
+        "threshold_db": 6.0
+      },
+      "status": "PASS",
+      "step": "promotion_replay"
+    },
+    {
+      "detail": {
+        "note": "threshold-capped scatter would kill the promotion",
+        "synthetic_max_db": 10.30810515438943,
+        "threshold_db": -13.0
+      },
+      "status": "PASS",
+      "step": "aasr_headroom"
+    },
+    {
+      "detail": {
+        "action_required": true,
+        "escalation": "口径重议上报 (preregistered A6 action; do NOT self-adjust)",
+        "per_mode_mean_f_q": {
+          "STR": 0.8107335880231725
+        },
+        "ratio": 0.0,
+        "structural_note": "consistent with D05-4 f_Q time invariance and the A6 steel-man ruling -- a known outcome, not a new finding",
+        "threshold": 0.1
+      },
+      "status": "REPORT",
+      "step": "scatter_precheck"
+    },
+    {
+      "detail": {
+        "anchor_f1_star": 0.8931297709923665,
+        "anchor_served": 17,
+        "front_max_f1_star": 0.8931297709923665
+      },
+      "status": "PASS",
+      "step": "anchor_crosscheck"
+    },
+    {
+      "detail": {
+        "anchor_seeded": true,
+        "front_size": 40
+      },
+      "status": "PASS",
+      "step": "snapshot_rebuild"
+    }
+  ]
+}
