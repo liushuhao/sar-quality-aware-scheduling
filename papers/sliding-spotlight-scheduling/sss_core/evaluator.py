@@ -403,16 +403,21 @@ class SchedulingProblem:
                 violations += 1.0
         for i in order:
             plan = self.plans[i]
-            # ticket 17: pass the SAME per-task geometry the dwell was
-            # measured with, so the C3/C4 reference is on the same caliber
+            # ticket 28: same caliber as the dwell (per-window r0) -- the dwell
+            # is measured at the geometry of the window the start falls in
+            # (``_dwell`` -> ``w.r0_m``), so the C3/C4 reference must be
+            # evaluated there too (predicates._t_env_max, ticket 17).  On the
+            # schema-2.1 real-window family the task-level block is absent, so
+            # quoting ``plan.r0_m`` silently fell back to the library constant.
+            w = plan.window_at(starts[i])
             if not c3_ok(
                 plan.mode, self._dwell(i, starts[i]), self.lib,
-                r0_m=plan.r0_m,
+                r0_m=w.r0_m,
             ):
                 violations += 1.0
             if not c4_ok(
                 plan.mode, self._dwell(i, starts[i]), plan.rho_req_m,
-                plan.prf_hz, self.lib, r0_m=plan.r0_m,
+                plan.prf_hz, self.lib, r0_m=w.r0_m,
             ):
                 violations += 1.0
 
