@@ -1,9 +1,11 @@
 # BLOCKED — paper2 票务
 
-**无阻塞项。** 票 01–31 completed（票 28–31 于 2026-10-06 落地：`220a796`/`f546573`+`458e486`/
-`cc5849e`+`f6f229c`/`dc44012`——Audit4 全量处置闭环；终验 run_verify 12 PASS + 1 REPORT + 0 FAIL）。
+**无阻塞项。** 票 01–32 completed（票 28–31 于 2026-10-06 落地：`220a796`/`f546573`+`458e486`/
+`cc5849e`+`f6f229c`/`dc44012`——Audit4 全量处置闭环；终验 run_verify 12 PASS + 1 REPORT + 0 FAIL；
+票 32 于同日落地 `2f9d73f`+`bfb5863`+`8b393a5`——**换模升级二轮重审** 16 项处置，
+含 3 条「照抄即写错」直接错误的封堵；确认轮 11/11 PASS）。
 下一票：27（R19 Ch5），无前置阻塞。**paper2 写作期可开工**（义务清单
-`.scratch/sliding-spotlight-scheduling/writing-checklist-20261005.md`）。
+`.scratch/sliding-spotlight-scheduling/writing-checklist-20261005.md`，**51 项**）。
 
 ## 备注（不是阻塞，是须随结果带走的约束）
 
