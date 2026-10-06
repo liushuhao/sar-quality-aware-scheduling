@@ -570,7 +570,7 @@ def generate_real_scenario(
         env_rad = mode_squint_envelope_rad(mode)
         env_guard = env_rad * (1.0 - R_ENVELOPE_GUARD_FRACTION)
 
-        fp_evaluable = fp_pass = 0
+        fp_evaluable = fp_pass = fp_fail = 0
         task_windows = []
         reached_aasr = False
         for seg_lo, seg_hi, inc_runs in passes:
@@ -635,8 +635,14 @@ def generate_real_scenario(
                         )["aasr_db"])
                     except ValueError:
                         # out of the physical sliding domain at this sample:
-                        # the window is not serviceable, so it cannot pass
-                        aasr_vals.append(float("-inf"))
+                        # the window is not serviceable, so it can NEVER pass
+                        # the threshold -- +inf, not -inf.  -inf would make an
+                        # unserviceable sample the BEST one in the max() below,
+                        # i.e. exactly the direction reversal this ticket fixes.
+                        # Same convention as nsga2.py:195 and
+                        # recompute_r_fam.py:109 (out-of-domain -> excluded /
+                        # infinitely bad).
+                        aasr_vals.append(float("+inf"))
                 if not aasr_vals or max(aasr_vals) > AASR_THRESHOLD_DB:
                     continue
                 mid = 0.5 * (lo + hi)
