@@ -1,21 +1,17 @@
 # Handoff
 
 ## State
-
-- **paper2 写作前终检（本会话）全绿，写作期可开工**。纯验证会话零改动、零 commit，HEAD = `a08d26f`，树净 0。
-- 五门禁 rc=0 实跑复验（红线 0 违规/193 文件 + 14 CLEARED、claim traces 11/11、v3 verdicts 0/33、prereg 0/28、票22 0/43）。
-- **全量 run_verify 电池补跑 exit 0：PASS=12 REPORT=1 FAIL=0**，13 步与晨间基线（05:11 closeout）逐步逐位一致——票 32/33 之后的代码改动（AST 等价）经实测闭环。
-- 轻检全过：写作清单 51 项在位、L6=真窗唯一源 + L5 三件 v2 带 `void_realwindow` 标记、D15 五红线在位、台账 open=4 与上轮一致无新增。
-- 本会话唯一故障=进程身份误判（凭启动时间+CPU 推断，CommandLine 实证纠正），已沉淀进 `feedback-external-process-kill-resume`。
+- paper2 写作期**未开**——卡在 A-CROSS 未决（SLS 天线扫描律：恒定角速率 vs 对准旋转中心，决定 (b) 重跑是否为幻影修复；代码 duration.py=(乙律)/aasr.py=(甲律) 混用确凿）。
+- 本会话已提交：ff2c627 票35 死分支双修 / fdb4238 票36 登记更正(族级 f_q 范围+stratum) / 9ed593d 票37 红线全量覆盖+数字回源工具 / 1da97a0 台账。HEAD=1da97a0，树净 0。全量测试 369P/0F。
+- (b) 重跑决策**挂起**：原据「驻留∝1/a_res」+「28%」两处未验证转述，已被换模审者推翻（a_res 是 AASR 谱因子）。
 
 ## Next
-
-1. **paper2 写作期开工**。取数：真窗走 `experiments/v3_results/`（L6）、M 族走 `experiments/results/`；v2 真窗数字永久禁引；逐条落 `writing-checklist-20261005.md` 51 项；写完必跑 `scripts/check_red_lines.py`（rc 须 0）。
-2. **台账 open=4**（均当轮有裁决非滞留）：R7 技能半（工具链专项会话）/ R19 Ch5（票 27 blocked）/ R26 红线 8 条禁语待 .tex 落盘补模式 / R27 剩 17 处 C 类锚点（引用时按需修）。
-3. 无阻塞。
+1. **A-CROSS**：票 39（`.scratch/sliding-spotlight-scheduling/issues/39-*`）交高端档跑——票面已备 GF-3/Kim/Prats/Mittermayer 原文引证 + 两分支 + 硬约束「不只信这两篇、须三角核」。定案前不动代码/不重跑/不开写。
+2. **.scratch 被 gitignore**（台账 R29）：票 34-39/判词文件未跟踪，票 38「钉 hash」落不了地。用户裁决 ①改 .gitignore 放行 或 ②接受无版本历史。
+3. 写作期开工（待 A-CROSS）：走 `.scratch/.../writing-workflow.md` v2 + 票 38 落地后的 v3。
 
 ## Context
-
-- 全量 run_verify 用 canonical pilot `.scratch/.../v2-run/syn_p40g60/pilot_M1NC_seed100.json`（docstring 有警示：tracked 票 12 件 pilot 在 HEAD 必红 rc=20）；REPORT=scatter_precheck 是预注册 A6 记录项，非失败。
-- 门禁 hook：改 .py 源码前须建票 + `**Tier:**` + `.gates/current-ticket` 标记。
-- 收尾 sweep FAIL 0/NOTE 0（基线零新增）；now.md 56172B 双验完整。
+- 探针票 34 已跑：322 SLS 任务，「28% f>2」是**全窗口径**，有效可行窗子集远小（p50 f≈1.004）——别再用全窗数。
+- 换模多路审结论：a_res 仅存在于 aasr.py（已核）；26.7567°=arccos(√k) 是给定 k 的推导值非物理墙。
+- 台账 open=4（R7 技能半/R19 Ch5票27/R27 锚点漂移/R29 .scratch）；FE 拦 .py 改需建票+Tier+`.gates/current-ticket`。
+- 教训已沉淀：transposed findings 前先验前提（feedback-relay-without-verify）、变异测试禁 git checkout、subagent 403/429 重派带 model。
