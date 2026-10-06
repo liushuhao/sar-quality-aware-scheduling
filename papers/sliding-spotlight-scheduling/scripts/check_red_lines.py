@@ -51,7 +51,7 @@ CLAUSE_END = (";", "；", ".", "。")
 DASH_MARKERS = (" -- ", " – ", " — ", "—")
 CONTRAST_RX = re.compile(
     r"(?<![-\w])(?:yet|but|however|although|though|whereas|nevertheless|"
-    r"nonetheless)(?![\w-])|然而|不过|但是|却",
+    r"nonetheless)(?![\w-])|然而|不过|但是|却|(?<!不)但",
     re.IGNORECASE,
 )
 
