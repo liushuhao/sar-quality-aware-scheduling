@@ -58,6 +58,15 @@ convergence_calibration），判据在见数前冻结于此。
   与 M 族 [0,1] 不可比，跨族禁混）；MDE 判读需分析层先注册 R 族效应量（票 22 范畴），
   10 种子是否够取决于该注册值。**数据附赠**：质量轴动态范围真实存在
   （R3H 前沿 max f_q=111 vs anchor 31）——真几何下 f2 轴活的，P2 质量余量叙事有料。
+  【勘误注记（T36 / review-fable A1，2026-10-06，正文与判词零改动）】上一行的「值域 31–111」
+  是**单个任务单元**的数字被误升为族级：31–111 实为 `matrix_p160g240/pilot_R3H_seed300.json`
+  一件的 f_q 跨度（cv 过滤后 [31.300473, 111.540632]）。**逐族实测族域**（全部 90 个晋升单元 =
+  3 预算档 × 3 族 × 10 种子，cv ≤ 1e-9 过滤后的 pooled min/max）：**R1C [1.35, 2.04] /
+  R2F [55.05, 135.22] / R3H [29.75, 123.70]**——三族分处不同 f_q 数量级，跨族取单一并域
+  正是本段禁的混算。原句按 append-only 保留，**operative 登记处 =
+  `analysis_prereg_v2.json#amendment_20261006_registration_corrections.corrections.A1_family_level_f_q_range`**
+  （`caliber_registry.json#v3.f_q_unit_note` 已同步改指）。本注记只改登记精度，
+  **判词表、MDE、功效、预算结论一律零改动**（`verify_v3_verdicts.py` 33 checks rc=0 不受影响）。
 - [x] **后果映射落点**：①v3 矩阵的 (40,60) 读数仅作欠收敛基线留存；分析层若需前沿
   丰富度/质量判据，用 160/240 工件（本目录 matrix_p160g240/）并接受未平台条款；
   ②promotion=no_promotion 即终局读数（预算稳健）加第三目标不再有预算论据；

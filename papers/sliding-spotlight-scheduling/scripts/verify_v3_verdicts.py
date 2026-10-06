@@ -17,8 +17,17 @@ per-window reference fix):
     production PRF, sampling PER WINDOW (each enumerated transit has its own
     zero and slant range), out-of-domain samples excluded;
   * every consumed f_q is the raw R-family quantity (NOT normalised -- the
-    R family expands per-window R0 so f_q ranges 31-111 against the M family's
-    [0,1]); cross-family and cross-caliber mixing is forbidden;
+    R family expands per-window R0, so f_q sits in a family-specific decade
+    rather than the M family's [0,1]); cross-family and cross-caliber mixing
+    is forbidden.  Per-family POOLED RANGES over all 90 promoted cells
+    (cv <= 1e-9 filtered): R1C [1.35, 2.04] / R2F [55.05, 135.22] /
+    R3H [29.75, 123.70].  CORRECTION 2026-10-06 (ticket 36, review-fable
+    A1): this docstring previously read "f_q ranges 31-111", which is the
+    span of the SINGLE unit pilot_R3H_seed300 ([31.300473, 111.540632])
+    promoted to family level in error; the not-normalised substance is
+    unchanged.  Registration:
+    analysis_prereg_v2.json#amendment_20261006_registration_corrections
+    .corrections.A1_family_level_f_q_range.
   * the front is filtered at cv <= 1e-9 before every richness count, the same
     caliber CALIBRATION_PREREG used, because front_size == pop_size is
     duplicate-target survival under ULP-level non-domination, not richness.
