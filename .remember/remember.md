@@ -14,5 +14,5 @@
 - 探针票 34：「28% f>2」是**全窗口径**，有效可行窗子集远小（p50 f≈1.004）——别再用全窗数。
 - a_res 仅存在于 aasr.py（已核）；26.7567°=arccos(√k) 是给定 k 的推导值非物理墙。
 - 三条新纪律（票 38）：语义集冻结闸 / 前提先于量化 / 多审者冲突强制多源仲裁——治「物理诊断反复翻转」。
-- 教训沉淀：feedback-relay-without-verify、feedback-physics-semantics-freeze-gate、变异测试禁 git checkout、subagent 403/429 重派带 model。
+- 三条新纪律已**升全局规则** `~/.claude/rules/paper-writing.md`（2026-10-07，两轮独立审零 🔴；语义集冻结/口径随数字携带/前提先于量化）；票 38 引用之。教训沉淀：feedback-relay-without-verify、feedback-physics-semantics-freeze-gate、变异测试禁 git checkout、subagent 403/429 重派带 model。
 - FE 拦 .py 改需建票+Tier+`.gates/current-ticket`；`.scratch` gitignore（规划工件走 blob hash 锚）。
