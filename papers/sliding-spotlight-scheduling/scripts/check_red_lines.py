@@ -43,6 +43,27 @@ PHASE_PATTERNS = [
     r"相变", r"临界指数", r"渗流",
 ]
 
+# Clause boundaries that separate a prohibition marker from a forbidden
+# phrase, turning co-occurrence into laundering (round-4 / R16 review):
+# sentence terminators, a spaced dash, and contrastive conjunctions.  A bare
+# "and" is NOT a boundary -- "'X' and 'Y' are forbidden" governs both phrases.
+CLAUSE_END = (";", "；", ".", "。")
+DASH_MARKERS = (" -- ", " – ", " — ", "—")
+CONTRAST_RX = re.compile(
+    r"(?<![-\w])(?:yet|but|however|although|though|whereas|nevertheless|"
+    r"nonetheless)(?![\w-])|然而|不过|但是|却",
+    re.IGNORECASE,
+)
+
+
+def _has_clause_boundary(segment: str) -> bool:
+    """True when a boundary separates a marker from the hit it would shield."""
+    return (
+        any(t in segment for t in CLAUSE_END)
+        or any(d in segment for d in DASH_MARKERS)
+        or CONTRAST_RX.search(segment) is not None
+    )
+
 # A hit only counts as a violation when it is NOT inside a prohibition.
 PROHIBITION_MARKERS = (
     "forbidden", "must never", "never be stated", "not licensed",
@@ -92,10 +113,11 @@ def _is_prohibition(text: str, pos: int) -> bool:
         "The regime is forbidden to be called a phase transition; yet the
          front collapse is real."
 
-    So a marker shields a hit only when no SENTENCE terminator separates
-    them.  A semicolon does not count: the same prohibition routinely reads
-    "'X' and 'Y' are forbidden declarations in every branch" with both
-    phrases governed by one trailing marker.
+    So a marker shields a hit only when no clause boundary separates them: a
+    sentence terminator, a spaced dash, or a contrastive conjunction.  A bare
+    "and" does NOT separate -- the prohibition routinely reads "'X' and 'Y'
+    are forbidden declarations in every branch" with both phrases governed by
+    one trailing marker, and that must still clear.
     """
     nl = chr(10)
     line_start = text.rfind(nl, 0, pos) + 1
@@ -112,18 +134,17 @@ def _is_prohibition(text: str, pos: int) -> bool:
                 best = i
         return best
 
-    # A CLAUSE terminator also separates: the demonstrated laundering is
+    # A clause boundary also separates: the demonstrated laundering is
     # "forbidden to be called a phase transition; yet the front collapse is
-    # real" -- a semicolon ends the governed clause.  The legitimate AFTER
-    # shape ("'X' and 'Y' are forbidden declarations") is a single clause
-    # with no internal terminator, so a clause-level test keeps it while
-    # catching the laundering.
-    CLAUSE_END = (";", "；", ".", "。")
+    # real" -- a semicolon (or ", yet", or " -- ") ends the governed clause.
+    # The legitimate AFTER shape ("'X' and 'Y' are forbidden declarations") is
+    # a single clause with no internal boundary, so a clause-level test keeps
+    # it while catching the laundering.
     pre = _nearest(before)
-    if pre != -1 and not any(t in before[pre:] for t in CLAUSE_END):
+    if pre != -1 and not _has_clause_boundary(before[pre:]):
         return True
     post = _nearest(after)
-    if post != -1 and not any(t in after[:post] for t in CLAUSE_END):
+    if post != -1 and not _has_clause_boundary(after[:post]):
         return True
     return False
 
