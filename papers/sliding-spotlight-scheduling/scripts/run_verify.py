@@ -5,8 +5,13 @@ Usage (repo root):
     PYTHONHASHSEED=0 PYTHONPATH=src:papers/sliding-spotlight-scheduling \
         "/d/Program Files/Python/python" \
         papers/sliding-spotlight-scheduling/scripts/run_verify.py \
-        --pilot papers/sliding-spotlight-scheduling/experiments/results/pilot/pilot_M1NC_seed100.json \
+        --pilot .scratch/sliding-spotlight-scheduling/v2-run/syn_p40g60/pilot_M1NC_seed100.json \
         --manifest papers/sliding-spotlight-scheduling/experiments/results/scenarios/M1NC_seed100.json
+
+Note (2026-10-06): the canonical pilot is the syn_p40g60 one (the inputs the
+tracked report_pilot.json evidence was produced with).  The historical
+experiments/results/pilot/pilot_M1NC_seed100.json (ticket-12 era) no longer
+bit-rebuilds under HEAD and fails snapshot_rebuild -- do not pass it here.
 
 Exit codes: 0 = no FAIL (REPORT/A6 escalations are records, not failures);
 20 = at least one FAIL.

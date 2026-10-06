@@ -117,7 +117,7 @@ def q_rad(
     """Dimensionless radiometric factor (D05-6): g_T * (R_ref/R)^3.
 
     ``g_t_enabled=False`` is the spec-D6 exit channel: q_rad degrades to
-    the pure range term while f_Q stays mode-dependent through rho_a,ach.
+    the pure range term while f_Q stays mode-dependent through rho_az.
     """
     factor = (lib.geo.R0_m / r_m) ** 3
     if g_t_enabled:
@@ -134,7 +134,8 @@ def f_q_per_task(
     lib: ModeLibrary,
     g_t_enabled: bool = True,
 ) -> float:
-    """f_Q,i = (rho_rg * rho_a,ach)^-1 * q_rad  [m^-2]  (spec D6)."""
+    """f_Q,i = (rho_rg * rho_az)^-1 * q_rad  [m^-2]  (D05-4 zero-squint;
+    NOT rho_a,ach -- full form formula-spec §8.9-7)."""
     rho_rg = ground_range_resolution_m(lib)
     rho_a = lib.rho_az(mode)
     return (rho_rg * rho_a) ** -1 * q_rad(mode, psi_bar_rad, r_m, lib, g_t_enabled)

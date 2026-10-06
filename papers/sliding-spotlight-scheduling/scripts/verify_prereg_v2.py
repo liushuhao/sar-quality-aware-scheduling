@@ -47,7 +47,7 @@ def check(name, got, expect, tol=0.0):
     else:
         ok = got == expect
     if not ok:
-        _fails.append(f"{name}: got {got!r}, freeze registers {expect!r}")
+        _fails.append(f"{name}: got {got!r}, expected {expect!r}")
     print(f"{'PASS' if ok else 'FAIL'}   {name:44} got={got!r} want={expect!r}")
 
 
@@ -164,9 +164,18 @@ def main() -> int:
     # the serial bound is a registered artifact, not a prose promise
     sb = freeze["capacity_artifacts"]["serial_bound_derivation"][
         "measured_v1_synthetic_families"]
-    check("serial_bound_families_registered", len(sb), 5)
-    for fam, val in sb.items():
-        check(f"serial_bound_{fam}", round(val, 4), val, tol=1e-9)
+    # Expectations hardcoded, never read out of the freeze under test (same
+    # doctrine as verify_v3_verdicts).  The previous round(val,4) vs val
+    # compared the freeze to itself and could not see value drift
+    # (round-2 pre-writing review, 2026-10-06).
+    serial_bound_expected = {
+        "M1NC": 0.3435, "M2WF": 0.0372, "M2WH": 0.0303,
+        "M3NC": 0.0186, "M4WH": 0.0142,
+    }
+    check("serial_bound_families_registered", len(sb),
+          len(serial_bound_expected))
+    for fam, expected in serial_bound_expected.items():
+        check(f"serial_bound_{fam}", sb.get(fam), expected, tol=1e-9)
 
     print(f"\n=== RESULT: {len(_fails)} failure(s) over {_n} checks ===")
     for f in _fails:

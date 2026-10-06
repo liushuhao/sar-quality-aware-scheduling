@@ -136,13 +136,15 @@ def scan_texts(paths, patterns, label, violations, cleared):
         except (OSError, UnicodeDecodeError):
             continue
         for m in rx.finditer(text):
+            line = text[:m.start()].count("\n") + 1
             if _is_prohibition(text, m.start()):
-                cleared.append((label, p, m, "inside a prohibition"))
+                cleared.append((label, p, line, m.group(0),
+                                "inside a prohibition"))
                 continue
             if _is_reporting_falsification(text, m.start()):
-                cleared.append((label, p, m, "reports it as falsified"))
+                cleared.append((label, p, line, m.group(0),
+                                "reports it as falsified"))
                 continue
-            line = text[:m.start()].count("\n") + 1
             violations.append(
                 f"{label}: {p.relative_to(REPO).as_posix()}:{line} "
                 f"-> {m.group(0)!r}"
@@ -168,6 +170,7 @@ def main(argv=None) -> int:
     roots = [Path(a) for a in args.path] if args.path else default_roots
     files: list[Path] = []
     for root in roots:
+        root = Path(root).resolve()
         if root.is_file():
             files.append(root)
         elif root.is_dir():
@@ -240,6 +243,13 @@ def main(argv=None) -> int:
     else:
         violations.append("R5: analysis_prereg_v2.json missing")
 
+    if cleared:
+        print(f"\n=== cleared: {len(cleared)} hit(s) suppressed by "
+              "prohibition/falsification context (audit trail) ===")
+        for label, p, line, token, reason in cleared:
+            print(f"CLEARED    {label}: "
+                  f"{p.relative_to(REPO).as_posix()}:{line} "
+                  f"-> {token!r} ({reason})")
     print(f"\n=== RESULT: {len(violations)} violation(s) over "
           f"{len(files)} file(s) scanned ===")
     for v in violations:

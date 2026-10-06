@@ -241,7 +241,8 @@ def aasr_direct(
         for m in range(-N_ALIASES, N_ALIASES + 1):
             if m == 0:
                 continue  # standard C&W convention: Song prints sum over m in
-                # Z, but including m=0 would force AASR >= 1 (registered)
+                # Z, but including m=0 would force AASR >= 1 (registered at
+                # formula-spec §8.13-2)
             num += float(np.sum(_pattern(ar + m * prf_hz, vs, geo.D_m) ** 2)) * (
                 b_d / N_INTEGRATION_POINTS
             )
