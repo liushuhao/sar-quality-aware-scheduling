@@ -2,18 +2,20 @@
 
 ## State
 
-- **paper2 写作前二轮（换模升级）重审 + 收尾补修全部闭环**。写作期前置条件具备，工作树净。
-- 两轮处置共 **7 commits**：`2f9d73f` formula-spec §8.13（v1.6）+ 6 处原地更正；`bfb5863` 票 32 六处代码侧；`7961126`+`8b393a5`+`ff591a4` 台账；`f050fa1` BLOCKED；`9f42532` handoff；`e228dfb`+`416c582` 票 33（R16 洗白句边界 + R27 4 锚）。票 32/33 确认轮均 PASS。
-- **全绿**：五门禁 rc=0（0/193 + 14 CLEARED、11/11、33、28、43）；全量 run_verify **12P+1R+0F**；靶向 pytest 36 passed。写作义务清单 **46→51 项**。
+- **paper2 写作前终检（本会话）全绿，写作期可开工**。纯验证会话零改动、零 commit，HEAD = `a08d26f`，树净 0。
+- 五门禁 rc=0 实跑复验（红线 0 违规/193 文件 + 14 CLEARED、claim traces 11/11、v3 verdicts 0/33、prereg 0/28、票22 0/43）。
+- **全量 run_verify 电池补跑 exit 0：PASS=12 REPORT=1 FAIL=0**，13 步与晨间基线（05:11 closeout）逐步逐位一致——票 32/33 之后的代码改动（AST 等价）经实测闭环。
+- 轻检全过：写作清单 51 项在位、L6=真窗唯一源 + L5 三件 v2 带 `void_realwindow` 标记、D15 五红线在位、台账 open=4 与上轮一致无新增。
+- 本会话唯一故障=进程身份误判（凭启动时间+CPU 推断，CommandLine 实证纠正），已沉淀进 `feedback-external-process-kill-resume`。
 
 ## Next
 
-1. **paper2 写作期开工**（前置全清）。取数：真窗走 `experiments/v3_results/`（L6）、M 族走 `experiments/results/`；v2 真窗数字永久禁引；写完必跑 `scripts/check_red_lines.py`（rc 须 0）。清单 `.scratch/sliding-spotlight-scheduling/writing-checklist-20261005.md`。
-2. **台账 open=4**：R7 技能半 / R19 Ch5（票 27 blocked）/ R26 红线覆盖 1-of-9（待 .tex 落盘后补）/ R27 剩 17 处 C 类锚点漂移。
+1. **paper2 写作期开工**。取数：真窗走 `experiments/v3_results/`（L6）、M 族走 `experiments/results/`；v2 真窗数字永久禁引；逐条落 `writing-checklist-20261005.md` 51 项；写完必跑 `scripts/check_red_lines.py`（rc 须 0）。
+2. **台账 open=4**（均当轮有裁决非滞留）：R7 技能半（工具链专项会话）/ R19 Ch5（票 27 blocked）/ R26 红线 8 条禁语待 .tex 落盘补模式 / R27 剩 17 处 C 类锚点（引用时按需修）。
 3. 无阻塞。
 
 ## Context
 
-- **full run_verify 用 canonical pilot** `.scratch/.../v2-run/syn_p40g60/pilot_M1NC_seed100.json`；tracked `experiments/results/pilot/` 票 12 件在 HEAD 不可复现（`snapshot_rebuild` 必红 rc=20），已写进 `run_verify.py` docstring 警示。
-- **门禁 hook 生效**：改 .py 源码前须建票 + 写 `**Tier:**` + `.gates/current-ticket` 标记（票目录一更新标记即判过期，须重写）。
-- Windows 路径坑：`check_red_lines.py` 的 `--path` 已 resolve（曾因 `relative_to(REPO)` 大小写归一化抛 ValueError 而 rc=1 假绿）。MEMORY.md 已 GC 35275→16760B。
+- 全量 run_verify 用 canonical pilot `.scratch/.../v2-run/syn_p40g60/pilot_M1NC_seed100.json`（docstring 有警示：tracked 票 12 件 pilot 在 HEAD 必红 rc=20）；REPORT=scatter_precheck 是预注册 A6 记录项，非失败。
+- 门禁 hook：改 .py 源码前须建票 + `**Tier:**` + `.gates/current-ticket` 标记。
+- 收尾 sweep FAIL 0/NOTE 0（基线零新增）；now.md 56172B 双验完整。
