@@ -435,6 +435,65 @@ $\beta_{req}=\lambda/2\rho_a$（Kim Eq.(5)）、SAT=SAL/V 框架、SPT 斜视 $\
 三项均为**写作期义务**（见 `.scratch/sliding-spotlight-scheduling/writing-checklist-20261005.md`
 公式写作指引 F-1/F-2/F-3），无一项要求回改实现。
 
+### 8.11 勘误登记（v1.5，2026-10-06 写作前全面审计；零公式/零代码改动）
+
+本节**零公式改动、零代码改动**——登记写作前全面审计（主线程实跑五道门禁 + 域套件 228P/1S exit 0
++ 两路独立 fresh 审查）挖出的**两处登记精度缺口**。被指正处原文按 append-only 保留，判定以本条为准。
+
+1. **SLS 斜视包络 26.9° 是物理边界的保守上界，精确根为 26.7567°（独立审查 P2）**。
+   §8.9-2（`:385`）称 SLS ±26.9° 「不是选择而是 $a_{\mathrm{res}}=1-K_c/K_a\le0$ 在库 $k=0.797317$
+   处的物理滑聚边界」，§8.9-8（`:394`）称该处「$a_{\mathrm{res}}=0$ 的物理边界，非外推」。
+   **实测**：$a_{\mathrm{res}}=1-k/\cos^2\bar\psi$ 的根精确为 $\bar\psi=\arccos\sqrt{k}=$
+   **26.7567°**；在登记值 26.9° 处 $\cos^2\bar\psi=0.795303$、$a_{\mathrm{res}}=-0.002533$（已在域外）。
+   ⇒ 26.9° **不是**边界本身，而是**比精确根宽 0.1433° 的保守上界**。
+   - **代码不动**：硬编码 `sss_core/duration.py:88`（`SLS_MAX_SQUINT_DEG=26.9`）与
+     `sss_core/aasr.py:368`（网格域检查）同取宽值 ⇒ band $(26.7567°,\,26.9°]$ 内
+     **驻留闭式与网格域检查放行，而 `aasr_direct` 抛 `a_res <= 0`**（D06-3 守卫）。
+     band 内读数属**未认证外推**，非错误值；且该 band 宽 0.14°，无任何真实几何落入。
+   - **数据影响实测为零**：v3 真窗族**全部 1673 个 SLS 任务窗入射角 ∈ [30.032°, 59.967°]**
+     （`experiments/v3_results/scenarios/*.json` 逐窗扫描），与 band **零交集**。
+   - **⇒ 写作处置**：论文**禁**称 26.9° 为「$a_{\mathrm{res}}=0$ 的精确物理边界」；
+     应写「物理滑聚边界 $\arccos\sqrt{k}=26.76°$，实现取 **26.9° 保守上界**」。
+     §8.9-8 首段的 45° 段外推标注**不变**。
+   - **修复触发条件**：任一场景入射角落入 $(26.7567°,\,26.9°]$（当前 1673/1673 窗外）时，
+     须把常量改为 $\arccos\sqrt{k}$ 或显式登记为近似，并复跑受影响真窗单元。
+   - **配套登记**：`experiments/platform_kim2021.json#modes.mode_squint_envelope_deg.derivation.SLS`
+     同一措辞（「the physical sliding-spotlight boundary, not a choice」）同受本条纠正；
+     该字段**值不改**（26.9 仍是被代码消费的注册上界）。
+
+2. **§4.2「点目标 vs 场景级口径」的 $T^{\mathrm{scene}}_{\mathrm{SLS}}$ 式为 stale 侧（独立审查 P2）**。
+   §4.2（`:175`）记 $T^{\mathrm{scene}}_{\mathrm{SLS}}=T_{\mathrm{SLS}}+W_a/(AV_s)$（广角），
+   即 $W_a$ 项在 $\sec^2$ **之外**；实现 `sss_core/duration.py:201-206`
+   `duration_scene_planar_oracle` 的 SLS 支为 $(R_0\theta_a+W_a)/(AV_s)\cdot\sec^2\psi$
+   ——**$W_a$ 在 $\sec^2$ 之内**。实测 $12°$ 处代码式与生产 Eq.(22) 值差 **+0.4185%**，
+   §4.2 记法差 **−1.74%**；§8.9-1 已登记 **+0.4185% @12°** 为实测正典
+   ⇒ **§4.2 是 stale 侧**。
+   ⇒ 引用场景级 $T^{\mathrm{scene}}$ 时**以代码 oracle 形式（$W_a$ 在 $\sec^2$ 内）+ §8.9-1 的
+   +0.4185% 为准**，**禁引 §4.2 字面式**。该 oracle 已由 §8.9-1 降级为**测试比对件**、不进生产
+   路径 ⇒ **零数据影响**。§4.2 原文 append-only 保留。
+
+### 8.12 登记包精度缺口（2026-10-06 写作前审计数据层；登记层，非数据层）
+
+1. **`RUN_LINEAGE.md` N2 行的「全密度、全预算下 max 3.891 dB」只引了 L2 单值**。
+   主线程逐档重算三档最大 spread：`L1` `results/matrix` = **1.0137 dB**、
+   `L2` `results/probe_density` = **3.8906 dB**、
+   **`L3` `results/probe_convergence` = 5.0009 dB**（`pilot_P7WH_seed701_p160_g240.json`）。
+   ⇒ 「3.891」是 L2 单值，**L3 未被引用**；而「全预算」是 L3 的轴（1×/4×/16×/64× 阶梯）。
+   **结论不变**：$5.0009 < 6.0$ 仍成立、no_promotion 终局口径**不动**。属精度非阈值错误。
+2. **caliber 门禁未强制 v3 条目**（`sss_core/verify.py:336` `caliber_registry_present()`）：
+   只断言 `{"v1","v2"} ⊆ set(calibers)` + 互不可比，**不含 v3** ⇒ 删掉 v3 条目该门禁仍 PASS。
+   v3 条目**当前在盘且正确**，不构成数据风险；风险在写作义务 A4「caliber 标签随行」的
+   **机器强制缺位**（registry 自身 `#rule` 是约定式声明，弱于其检查）。
+3. **v2 caliber 条目无 `code_head`**：`caliber_registry.json` v2 条目只记 `produced_after`
+   （ticket 16/17），无 `code_head`（对照 v1 有 `20ff465/d0d32f2`、v3 有 `220a796`）；
+   `RUN_LINEAGE.md` L5 行证据列只列工件路径、无产出 commit。
+   ⇒ 唯一仍有效的 v2 件（`v2_results/confound_control.json`，M 族）**无产出 commit 记录**。
+   **不改数据的修法**：引用该件时注明「v2 caliber，产出 commit 未登记（M 族受控参照）」。
+
+**冻结声明**：本节**零公式、零代码、零数据、零阈值改动**，全部为登记精度与写作措辞义务。
+前三项均为**写作期义务**（增补进 `writing-checklist-20261005.md` 的 F-8/F-9 与 D-6），
+无一项要求回改实现或重跑矩阵。
+
 ---
 
 ## 9. 票 01 验收 8 项对照

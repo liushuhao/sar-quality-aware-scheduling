@@ -102,7 +102,7 @@
       "frozen_by": "ticket 15 (2026-10-03), formula-spec section 3.1 line 91 + spec D12",
       "derivation": {
         "STR_SPT": "45 deg design envelope (spec D12-3); no literature source, a registered design choice",
-        "SLS": "26.9 deg is where a_res = 1 - K_c/K_a <= 0 for the library k = 0.797317 (D06-3 guard, aasr.py); it is the physical sliding-spotlight boundary, not a choice"
+        "SLS": "26.9 deg is a CONSERVATIVE UPPER BOUND on the physical sliding-spotlight boundary for the library k = 0.797317 (D06-3 guard, aasr.py), not a chosen design value: the exact root of a_res = 1 - K_c/K_a = 1 - k/cos^2(psi) = 0 is arccos(sqrt(k)) = 26.7567 deg, so 26.9 deg sits 0.1433 deg above it and a_res = -0.002533 there (already outside the domain). Kept at 26.9 because the domain guards (duration.py:88, aasr.py:368) take the same wide value; measured impact is nil -- all 1673 SLS task windows in the v3 real-window family have incidence in [30.032, 59.967] deg, zero overlap with the (26.7567, 26.9] band. See formula-spec.md section 8.11-1 (2026-10-06 pre-writing audit). The VALUE is unchanged; only the wording was wrong."
       },
       "scope_note": "Per-mode PHYSICS domain for dwell closures, the AASR grid axis and the domain guards. Distinct from `squint_angle_range_deg` above (Kim's mission range)."
     },
