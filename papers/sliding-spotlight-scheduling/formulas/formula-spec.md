@@ -1,6 +1,6 @@
 # 公式规格（冻结版）— 滑聚/聚束变时长 SAR 调度：驻留时长 + 逐模式分辨率 + AASR/RASR
 
-- 版本: v1.3（2026-10-03，票 15 物理层落地：勘误登记 §8.9——驻留生产闭式切 Eq.(22)/(24) 链（§4.2 平面式降为测试 oracle）、逐模式斜视包络落 fixture（STR/SPT ±45° 设计界，SLS ±26.9° 为 $a_{\mathrm{res}}\le0$ 物理边界，非选择）、$T_{\mathrm{env,max}}$ 6.7178→10.5830 s（1.5754×，argmax SLS→SPT）、窗尾垫维持 1.00%（生产残差恒 0，纯保守余量）、$B_D$ 纠正为注册式（原实现的 cos² 口径 45° 处欠保守 29.3%）、$f_Q$ 维持零斜视口径、验收项 13 内部恒等链 $f_Q=(g_T/\rho_a)\cdot(1/\rho_{\mathrm{rg}})$；**公式本体与数值零改动**，仅落地裁决与两条被推翻的执行者初稿记录）；v1.2（2026-10-02，票 21 blocking gate 产出：勘误登记 §8.8——Song 符号源文献矛盾裁定、§2 源 2 引文回抄更正、25% 裕度计数 2→4、g_T 空指针改声明、`numerical_check.py` 死指针（3 处）改指存活 pytest 守卫 + 独立复算撤回一条错误论证（§5 桥接句不成立，Song 未给 $\mathrm{sign}(K_a)$）、撤回一条自查误判；公式本体与数值结论零改动，出处全部登记 `experiments/claim_trace.json` 由 `verify_claim_traces.py` 机检）；v1.1（2026-09-30，票 18 blocking gate 产出：新增 §3.1 逐模式 $\rho_a(m,\bar\psi)$ 封闭式 + dated 取代 §3 斜视注记（方向 cos→sec）+ Eq.(12)/(13) 约定钉死（Kim p.9 原文留痕）+ B_D 第三消费方登记 + §4.2/§4.3 生产层反转标记；勘误登记 §8.7；v1.0.1 = 2026-09-27 票 01 产出 + 两路 fresh 审查勘误轮，登记见 §8.6；v1.0 = 票 01 SLS/时长公式族 blocking gate 产出）
+- 版本: v1.6（2026-10-06，写作前二轮升级重审：勘误登记 §8.13——§4.2 优化器口径句作废、AASR $m\neq0$ 排除注册、$K_c$/$K_a$ 桥接落位、§8.11-2 −1.74%→−1.780% 更正、§8.10/§8.12 收尾清单编号错标与锚点行漂移原地更正；并补记本头部漏挂的 v1.4/v1.5；零公式/零代码改动）；v1.5（2026-10-06，写作前全面审计：勘误登记 §8.11——SLS 26.9° 保守上界、§4.2 场景级记法 stale 侧）；v1.4（2026-10-06，票 31 写作前文档卫生：勘误登记 §8.10——$W_a$ 释义、§6 死指针、g_T 待核标记终态）；v1.3（2026-10-03，票 15 物理层落地：勘误登记 §8.9——驻留生产闭式切 Eq.(22)/(24) 链（§4.2 平面式降为测试 oracle）、逐模式斜视包络落 fixture（STR/SPT ±45° 设计界，SLS ±26.9° 为 $a_{\mathrm{res}}\le0$ 物理边界，非选择）、$T_{\mathrm{env,max}}$ 6.7178→10.5830 s（1.5754×，argmax SLS→SPT）、窗尾垫维持 1.00%（生产残差恒 0，纯保守余量）、$B_D$ 纠正为注册式（原实现的 cos² 口径 45° 处欠保守 29.3%）、$f_Q$ 维持零斜视口径、验收项 13 内部恒等链 $f_Q=(g_T/\rho_a)\cdot(1/\rho_{\mathrm{rg}})$；**公式本体与数值零改动**，仅落地裁决与两条被推翻的执行者初稿记录）；v1.2（2026-10-02，票 21 blocking gate 产出：勘误登记 §8.8——Song 符号源文献矛盾裁定、§2 源 2 引文回抄更正、25% 裕度计数 2→4、g_T 空指针改声明、`numerical_check.py` 死指针（3 处）改指存活 pytest 守卫 + 独立复算撤回一条错误论证（§5 桥接句不成立，Song 未给 $\mathrm{sign}(K_a)$）、撤回一条自查误判；公式本体与数值结论零改动，出处全部登记 `experiments/claim_trace.json` 由 `verify_claim_traces.py` 机检）；v1.1（2026-09-30，票 18 blocking gate 产出：新增 §3.1 逐模式 $\rho_a(m,\bar\psi)$ 封闭式 + dated 取代 §3 斜视注记（方向 cos→sec）+ Eq.(12)/(13) 约定钉死（Kim p.9 原文留痕）+ B_D 第三消费方登记 + §4.2/§4.3 生产层反转标记；勘误登记 §8.7；v1.0.1 = 2026-09-27 票 01 产出 + 两路 fresh 审查勘误轮，登记见 §8.6；v1.0 = 票 01 SLS/时长公式族 blocking gate 产出）
 - 状态: **FROZEN**——后续实现票（映射表、时长模块、AASR 硬约束、质量指标、窗域预编译）以本文件为**唯一公式来源**；修改须经新 blocking gate。
 - 上游: `.scratch/sliding-spotlight-scheduling/issues/01-sls-formula-blocking-gate.md`（8 项验收 §9 对照）
 - 裁决对象: `archive/next-paper-formalization/blueprint-draft.md` §2.2(c)/附 A/附 B（蓝图是二手源，本规格全部公式从 PDF 原文符号级复原，未照抄蓝图）
@@ -221,7 +221,7 @@ $$\mathrm{RASR}=\frac{\sum_{m\neq0}\dfrac{G_r^2\big(\theta_r(r+m\cdot c/\mathrm{
 
 ## 6. 档序断言数值用例表（票 03 落地为测试；手工+文献双算）
 
-核算方式（票 21 修订，原引用脚本 `numerical_check.py` 经实测全仓 0 命中、且标注「temp 归档」已不可解析；**该恒等式的存活守卫是 pytest 而非脚本**：`tests/test_duration_models.py::test_identity_theta_a_over_A_equals_lambda_over_2rho`（`assert |θ_a/A − λ/(2ρ)| ≤ 1e-12·λ`，配方内自洽恒等），实现见 `sss_core/duration.py:63,158`。见 §8.8）：核心数字已誊入本规格 §6 表与 §7 fixture 表，读者可依表中全精度操作数复算（例：§2 源 3 的 $\theta_a/A=\lambda/(2\rho)$ 恒等式，全精度差 $3.5\times10^{-18}$）。平台参数全部取 Kim Table 2（PDF p.19-20），几何按 Kim Eq.(2)-(3)。**可机检**：全部引文出处登记于 `experiments/claim_trace.json`，由 `scripts/verify_claim_traces.py` 逐条核验（页码 + 逐字引文）。
+核算方式（票 21 修订，原引用脚本 `numerical_check.py` 经实测全仓 0 命中、且标注「temp 归档」已不可解析；**该恒等式的存活守卫是 pytest 而非脚本**：`tests/test_duration_models.py::test_identity_theta_a_over_A_equals_lambda_over_2rho`（`assert |θ_a/A − λ/(2ρ)| ≤ 1e-12·λ`，配方内自洽恒等），实现落位 = `sss_core/geometry.py:116-117`（$D=\lambda/\theta_a$、$A=2\rho/D$ 两行即恒等式来源；原引 `duration.py:63,158` 系行漂移，2026-10-06 §8.13-6 更正）。见 §8.8）：核心数字已誊入本规格 §6 表与 §7 fixture 表，读者可依表中全精度操作数复算（例：§2 源 3 的 $\theta_a/A=\lambda/(2\rho)$ 恒等式，全精度差 $3.5\times10^{-18}$）。平台参数全部取 Kim Table 2（PDF p.19-20），几何按 Kim Eq.(2)-(3)。**可机检**：全部引文出处登记于 `experiments/claim_trace.json`，由 `scripts/verify_claim_traces.py` 逐条核验（页码 + 逐字引文）。
 
 **参考几何**：$h=570$ km、$i=45°$、$\lambda=0.031$ m、$\theta_a=0.36°$、$\theta_{inc}=45°$、场景 5×5 km、$\bar\psi\in\{0°,12°\}$ ⇒ $\theta_{look}=40.4692°$、$R_0=775.43$ km [Kim 式推得，SANITY 层]；$V_s\in\{7578.05$（惯性）$,\ 7221.69$（ECEF@40°N 升段）$\}$ m/s [Kim 未公布，双口径登记，SANITY 层]；$D=\lambda/\theta_a=4.9338$ m、$A=2\rho_{\mathrm{kim}}/D=0.202683$（即 $k=0.797317$）、$r_0=197.12$ km [SANITY 层]。
 
@@ -369,7 +369,7 @@ $\beta_{req}=\lambda/2\rho_a$（Kim Eq.(5)）、SAT=SAL/V 框架、SPT 斜视 $\
 2. **§2 源 2 引文系回抄渲染版（非原文）**：原记正文明确 "$0<A<1$ in Sliding Spotlight" 并置于引号内，实测该串在 Song 全文 **0 命中**；原文为 `kθ is positive and 0 < A < 1`（不等式有空格、符号归 $k_\theta$）。已替换为两段逐字原文（`A=0`/`A=1` 释义句一并补全）。数学结论未变。
 3. **「25% 裕度」计数 2→4**：Kim 全文实为 **4 处**（p.7 / p.11 执行层定义、p.19 参数、p.25 结果回述；抽取件 `:334/:512/:923/:1196`），原记「p.7 / p.11 两处」漏 p.19/p.25。`experiments/platform_kim2021.json` 记 3 处漏 p.19，且其自身 `:159`（已引 p.25）与 `:180`（仅列 p.7/p.11/p.25）**互相矛盾**。§4.1 与 §7 表格两处同步改；模式无关性双例证据保留 p.7/p.11。
 4. **g_T 核对源空指针 → 显式声明无外部文献源**：原钉「Song 2025 §2-§3 + Cumming & Wong」，实测 Song 全文 `nesz`/`noise equivalent` **命中 0**（该文为稀疏成像模式设计，不含辐射度量方程）；Cumming & Wong 未入库、无可解析页码。改为显式登记「**无外部文献源，纯自推导 + 内部恒等核验**」，核验方式与 §3.1/§4.3 同型，并要求在 limitation 披露「g_T 未获外部文献交叉验证」。**影响**：票 15 验收项 13 的 f_Q 独立复算不再依赖外部锚，改依内部恒等链。
-5. **`numerical_check.py` 死指针（3 处）**：`:64`、`:224` 引用该脚本（`:224` 自标「temp 归档」），实测**全仓 0 命中**（`src/tools/check_numerical.py` 属 Ch3 无关工具）。**⚠️ 本条初版误称「无等价脚本」——独立复算纠正**：该恒等式的存活守卫是 **pytest 而非脚本**——`tests/test_duration_models.py::test_identity_theta_a_over_A_equals_lambda_over_2rho`（`assert |θ_a/A − λ/(2ρ)| ≤ 1e-12·λ`，docstring 明写「Formula-spec §6 table 5」），实现见 `sss_core/duration.py:63,158`。故正确处置是**改指该测试**而非仅删除指针；现已改指，并把全精度操作数与实测残差（$\theta_a/A$ 与 $\lambda/(2\rho)$ 差 $3.5\times10^{-18}$）就地写进正文，使读者无须跑测试亦可复算。⚠️ 附带更正：早前 §6 表列 $0.006283/0.202683=0.031000$ 并注 `equal: True`，但按该**四舍五入显示值**直算差 $8.5\times10^{-7}$（恒等式本身成立，系操作数截断造成的显示误导）——已注明以全精度值为准。
+5. **`numerical_check.py` 死指针（3 处）**：`:64`、`:224` 引用该脚本（`:224` 自标「temp 归档」），实测**全仓 0 命中**（`src/tools/check_numerical.py` 属 Ch3 无关工具）。**⚠️ 本条初版误称「无等价脚本」——独立复算纠正**：该恒等式的存活守卫是 **pytest 而非脚本**——`tests/test_duration_models.py::test_identity_theta_a_over_A_equals_lambda_over_2rho`（`assert |θ_a/A − λ/(2ρ)| ≤ 1e-12·λ`，docstring 明写「Formula-spec §6 table 5」），实现落位 = `sss_core/geometry.py:116-117`（原引 `duration.py:63,158` 系行漂移，2026-10-06 §8.13-6 更正）。故正确处置是**改指该测试**而非仅删除指针；现已改指，并把全精度操作数与实测残差（$\theta_a/A$ 与 $\lambda/(2\rho)$ 差 $3.5\times10^{-18}$）就地写进正文，使读者无须跑测试亦可复算。⚠️ 附带更正：早前 §6 表列 $0.006283/0.202683=0.031000$ 并注 `equal: True`，但按该**四舍五入显示值**直算差 $8.5\times10^{-7}$（恒等式本身成立，系操作数截断造成的显示误导）——已注明以全精度值为准。
 6. **🟢 撤回一条自查发现（Kim p.9 桥接句标签，原判有误）**：本轮初查曾据 `.txt` 抽取件（`Since  ( ) = sin  + and`，符号被丢）判定 §3.1「pymupdf 逐字抽取」标签失实。**经 pymupdf（fitz 1.27.2.3）直抽 PDF p.9 复核：该句结构完整、字形呈 mojibake**（`ටోඬమା౞మ(௧ି௧బ)మ= sin ቀ𝜓௦బ+ … ఏౌశቁ and … = sin ቀ𝜓௦భ− ఏౌశቁ, Equation (12) can be expressed simply as Equation (13).`），与规格渲染式同构 ⇒ **规格标签正确，不改**。教训：`.txt` 抽取件不能裁决一条声明来自**另一种抽取器**的引文。
 
 **机检口径**：本轮 11 条 claim 中，销账 5 条（§8.8-1~5 覆盖 F1×3 / F2×4 / F3 / F5 的重复归并），`claim_trace.json` 对应 `status` 转 `verified`/`closed` 后 `verify_claim_traces.py --strict` 应 rc=0。**回归面**：两个互不相交测试面（`src/tests/` 共享库 145 + 本域 `papers/sliding-spotlight-scheduling/tests/`），计数以 `--co` 实测为准，勿写死。
@@ -433,7 +433,7 @@ $\beta_{req}=\lambda/2\rho_a$（Kim Eq.(5)）、SAT=SAL/V 框架、SPT 斜视 $\
 
 **冻结声明**：本节同为 append-only 勘误，§1–§7 公式本体与数值**零改动**。
 三项均为**写作期义务**（见 `.scratch/sliding-spotlight-scheduling/writing-checklist-20261005.md`
-公式写作指引 F-1/F-2/F-3），无一项要求回改实现。
+公式写作指引 F-1/F-6/F-7），无一项要求回改实现。（2026-10-06 §8.13-5 更正：原误作 F-1/F-2/F-3——§8.10 三项的清单落点实为 F-1/F-6/F-7；F-2 源是 spec-amendment §8.1①、F-3 源是 audit4 C7，非本节。）
 
 ### 8.11 勘误登记（v1.5，2026-10-06 写作前全面审计；零公式/零代码改动）
 
@@ -466,11 +466,12 @@ $\beta_{req}=\lambda/2\rho_a$（Kim Eq.(5)）、SAT=SAL/V 框架、SPT 斜视 $\
    即 $W_a$ 项在 $\sec^2$ **之外**；实现 `sss_core/duration.py:201-206`
    `duration_scene_planar_oracle` 的 SLS 支为 $(R_0\theta_a+W_a)/(AV_s)\cdot\sec^2\psi$
    ——**$W_a$ 在 $\sec^2$ 之内**。实测 $12°$ 处代码式与生产 Eq.(22) 值差 **+0.4185%**，
-   §4.2 记法差 **−1.74%**；§8.9-1 已登记 **+0.4185% @12°** 为实测正典
+   §4.2 记法差 **−1.780%**（2026-10-06 §8.13-4 更正：原记 −1.74% 不可复现；两路独立复算 @12° Kim 参考几何 = §4.2 式 6.5707 s vs 生产 Eq.(22) 6.6898 s ⇒ −1.780%）；§8.9-1 已登记 **+0.4185% @12°** 为实测正典
    ⇒ **§4.2 是 stale 侧**。
    ⇒ 引用场景级 $T^{\mathrm{scene}}$ 时**以代码 oracle 形式（$W_a$ 在 $\sec^2$ 内）+ §8.9-1 的
    +0.4185% 为准**，**禁引 §4.2 字面式**。该 oracle 已由 §8.9-1 降级为**测试比对件**、不进生产
    路径 ⇒ **零数据影响**。§4.2 原文 append-only 保留。
+   本节两项均已增补进 `writing-checklist-20261005.md`：第 1 项 → **F-8**、第 2 项 → **F-9**。
 
 ### 8.12 登记包精度缺口（2026-10-06 写作前审计数据层；登记层，非数据层）
 
@@ -491,8 +492,21 @@ $\beta_{req}=\lambda/2\rho_a$（Kim Eq.(5)）、SAT=SAL/V 框架、SPT 斜视 $\
    **不改数据的修法**：引用该件时注明「v2 caliber，产出 commit 未登记（M 族受控参照）」。
 
 **冻结声明**：本节**零公式、零代码、零数据、零阈值改动**，全部为登记精度与写作措辞义务。
-前三项均为**写作期义务**（增补进 `writing-checklist-20261005.md` 的 F-8/F-9 与 D-6），
-无一项要求回改实现或重跑矩阵。
+本节第 3 项为**写作期义务**（增补进 `writing-checklist-20261005.md` 的 **D-6**；第 1 项已在 `RUN_LINEAGE.md` N2 行源头更正、第 2 项是 A4「caliber 标签随行」的机器强制缺位登记，均无需清单新行），
+无一项要求回改实现或重跑矩阵。（2026-10-06 §8.13-5 更正：本句原作「前三项均为写作期义务（增补进 F-8/F-9 与 D-6）」——F-8/F-9 是 §8.11 两项的落点，非本节。）
+
+### 8.13 勘误登记（v1.6，2026-10-06 写作前二轮升级重审（换模后 4 路 fresh 无锚定审查 + 主线程逐条复算）；零公式/零代码/零数据改动）
+
+本节零公式、零代码改动。数据/门禁主判决全绿（五道门禁 rc=0、全量 run_verify 12P+1R+0F、双实现比对 90 单元零差异、域套件 228P+1S），以下全部为登记层与写作措辞精度。
+
+1. **§4.2「优化器用点目标口径（优化器驻留）」句作废**。实现侧（票 03 D03 起）：`sss_core/evaluator.py:273`/`:359`、`sss_core/anchor.py:121` 全部消费 `duration_scene_s`（场景级）；`sss_core/duration.py:20-23` 明确 **rejected** §4.2 括注推荐的「point-target + scene delta into the margin pad」变体（$W_a/(AV_s)\approx3.26$ s ≈ 103% 点目标驻留，塞不进 5% 裕度垫）。§4.2 原句 append-only 保留，**判定以本条为准**：论文**禁**写「优化器驻留用点目标口径」，实况 = 优化器消费场景级 `duration_scene_s`。写作清单 B9 的来源行本轮随改指本条。
+2. **§5 AASR 四式 $\sum_{m\in\mathbb{Z}}$ 是 Song 字面，实现排除 $m=0$**。`sss_core/aasr.py:241-245` `if m == 0: continue`（C&W 惯例：含 $m=0$ 则分子含分母自身 ⇒ AASR≥1）。代码注释原自称 "(registered)" 而注册处缺失——实测 grep 全仓 0 命中，**注册处即本条**（2026-10-06 二轮补登，注释随本轮改指）。论文定义 AASR 用 $\sum_{m\neq0}$；照 §5 字面进论文即错。
+3. **$K_a$/$K_c$ 桥接与正 $K_a$ 式落位**。§5 Eq.(5) 的 $K_c\approx(2v_s/\lambda)k_\theta$ 未展开 $k_\theta$；正 $K_a$ 式缺席本规格（§8.4 只登记了蓝图 $k_a(1-k)$ 形式的作废）。实现在 `sss_core/aasr.py:224-225`（$K_a=2v^2\cos^3\bar\psi/(\lambda r_0)$、$K_c=(2v/\lambda)(k\,v/r_0)\cos\bar\psi$ ⇒ $a_{\mathrm{res}}=1-K_c/K_a=1-k/\cos^2\bar\psi$），裁决在票 06 D06-3。论文如呈现 $a_{\mathrm{res}}$ 推导链，出处 = 本条 + `aasr.py`，非 §5 单独可推。
+4. **§8.11-2 的 −1.74% 不可复现 → 已原地更正为 −1.780%**。两路独立复算 @12°（Kim 参考几何、$V_s$=惯性）= §4.2 式 6.5707 s vs 生产 Eq.(22) 6.6898 s ⇒ −1.780%。量级与结论（stale 记法偏小约 1.8%）不变。
+5. **§8.10/§8.12 收尾的清单编号错标（已原地更正）**。§8.10 收尾原指 F-1/F-2/F-3 → 实为 F-1/F-6/F-7；§8.12 收尾原称「前三项…F-8/F-9 与 D-6」→ 本节落点仅 D-6（F-8/F-9 属 §8.11，已在 §8.11 尾补指向）。checklist 侧 F 行自身标注本轮核对无误。
+6. **锚点行漂移（已原地更正）**。§6 首段与 §8.8-5 原引「实现见 `sss_core/duration.py:63,158`」——两行现分别为窗尾垫注释与 kim_checker 实参；恒等式实际落位 = `sss_core/geometry.py:116-117`。同轮另修 spec-amendment 侧 `route_mode` 锚（`modes.py:50-53` → `aasr.py:168`）。
+
+**冻结声明**：本节零公式、零代码、零数据、零阈值改动；全部为登记精度与写作措辞义务。配套清单义务见 `writing-checklist-20261005.md` F-12（$m\neq0$）/F-13（$K_a$ 桥接）与 E 段新增禁语行。
 
 ---
 
