@@ -25,12 +25,22 @@ pre-implementation gate review):
   (|K_a t_0|max = (2 Vs/lambda) * (Wa/2)/R0): the scene-centre value is
   ~8 dB optimistic and would leak infeasible edge targets through the
   hard constraint (anti-conservative, D7 violation).
-* D06-3  K_c = (2 Vs/lambda) * k_theta * cos(psi)  =>  K_c/K_a = k/cos^2(psi)
-  (the exact rate keeps a_res > 0 up to psi ~ 18.4 deg at k = 0.9; the
-  Song cos^3 / small-angle readings go negative only beyond psi ~ 15.1
-  deg -- audit 2026-09-30 re-registration: the old "goes negative at
-  the k=0.9/psi=12 deg corner" quote was not reproducible (+0.038/+0.10
-  measured there)); a_res > 0 is a domain guard.
+* D06-3  (re-registered ticket 40, 2026-10-07, A-CROSS verdict
+  a-cross-verdict-20261007.md): the SLS beam points at the FIXED virtual
+  rotation centre, so the Doppler-centroid rate is the rotation-centre
+  form K_c = 2 Vs^2 cos^3(psi)/(lambda * r0/k) (track-to-centre range
+  r0_rot = r0/k) while K_a stays at the scene-centre range -- the cos^3
+  factors cancel at beam-centre crossing, so K_c/K_a = k at EVERY squint
+  and a_res = 1 - k = A is a CONSTANT.  The pre-ticket-40 linearised
+  constant-rate form (K_c = (2 Vs/lambda) * k_theta * cos(psi) =>
+  K_c/K_a = k/cos^2(psi), boundary a_res = 0 at acos(sqrt(k)) =
+  26.7567 deg) was the small-angle linearisation of the same geometry,
+  not an independent law (GF-3 :96 self-declares the linearisation;
+  Guo 2011 Eq.(4); Ren 2025 rejects the linear assumption at high
+  squint).  a_res > 0 now guards only the family corner k >= 1.
+  History (2026-09-30 audit registration, superseded): the old form kept
+  a_res > 0 up to psi ~ 18.4 deg at k = 0.9; Song cos^3/small-angle
+  readings went negative only beyond psi ~ 15.1 deg.
 * D06-4  PRF keys (Kim publishes none; sourced per ticket-06 mandate):
   1150 / 2300 Hz  Song 2025 Table 1 (in-house fulltext, txt:376-383);
   3044 Hz  TerraSAR-X concurrent-imaging effective PRF (Kraus et al.,
@@ -200,9 +210,10 @@ def aasr_direct(
 
     ``r0_m`` (ticket 23): per-task slant range.  It enters ONLY the SPT
     aliasing term kat0 ∝ wa/r0 -- the SLS/STR branches are exactly
-    r0-invariant at a given squint (K_c/K_a = k/cos^2 psi cancels), so
-    threading r0 there changes nothing by construction.  None falls back
-    to the library R0, which is the calibration/synthetic caliber."""
+    r0-invariant at a given squint (K_c/K_a = k cancels, ticket 40
+    (yi) semantics), so threading r0 there changes nothing by
+    construction.  None falls back to the library R0, which is the
+    calibration/synthetic caliber."""
     geo = lib.geo
     vs, lam = geo.vs_mps, geo.wavelength_m
     r0 = geo.R0_m if r0_m is None else float(r0_m)
@@ -221,13 +232,21 @@ def aasr_direct(
     else:
         b_d = lib.bandwidth_d_hz(mode, psi_bar_rad)  # D06-1, ticket-15 re-registration
         if mode is Mode.SLS:
+            # Ticket 40 / A-CROSS (yi) semantics: the beam points at the
+            # fixed virtual rotation centre, so K_c is the rotation-centre
+            # rate 2 Vs^2 cos^3(psi)/(lambda * r0/k)  (track-to-centre
+            # range r0_rot = r0/k) while K_a stays at the scene-centre
+            # range.  The cos^3 factors cancel at beam-centre crossing,
+            # so K_c/K_a = k at every squint and a_res = 1 - k = A is a
+            # constant -- the acos(sqrt(k)) boundary of the linearised
+            # constant-rate law (pre-ticket-40 code) does not exist here.
             k_a = 2.0 * vs * vs * cos_psi**3 / (lam * r0)
-            k_c = (2.0 * vs / lam) * (k * vs / r0) * cos_psi
+            k_c = k * k_a
             a_res = 1.0 - k_c / k_a
             if a_res <= 0.0:
                 raise ValueError(
-                    f"a_res = 1 - Kc/Ka = {a_res} <= 0 outside the physical "
-                    "sliding domain (D06-3 guard)"
+                    f"a_res = 1 - Kc/Ka = 1 - k = {a_res} <= 0 outside the "
+                    "sliding family (k >= 1; D06-3 re-registered ticket 40)"
                 )
         elif mode is Mode.STR:
             a_res = 1.0
@@ -335,8 +354,10 @@ class AASRGrid:
             b_d = vs * cp / rho_ach  # (nc, 1)
             fr = (b_d * 0.5)[:, :, None] * f[None, None, :]  # (nc, 1, n_f) over +-B_D/2
             if mode is Mode.SLS:
+                # ticket 40 (yi) semantics -- see aasr_direct: the cos^3
+                # factors cancel, K_c/K_a = k per cell, a_res = 1 - k
                 k_a = 2.0 * vs * vs * cp**3 / (lam * r0)
-                k_c = (2.0 * vs / lam) * (k_arr[None, :] * vs / r0) * cp
+                k_c = k_arr[None, :] * k_a  # (nc, n_k)
                 a_res = 1.0 - k_c / k_a  # (nc, n_k)
             else:
                 a_res = np.ones((cp.shape[0], len(k_arr)))
@@ -361,10 +382,12 @@ class AASRGrid:
         if not (self.axes.rho_req[0] - 1e-9 <= rho_req_m <= self.axes.rho_req[-1] + 1e-9):
             raise ValueError(f"rho_req {rho_req_m} m outside grid domain")
         # Ticket 15 (punch 7): the guard is MODE-AWARE, not a blanket +-45.
-        # SLS leaves its physical sliding domain at ~26.9 deg (a_res <= 0,
-        # D06-3); admitting 45 deg queries there would let `_locate` clamp a
-        # 45 deg sample into the last in-envelope cell and return 26.9-deg
-        # physics as a 45-deg answer -- a silent wrong value, not a raise.
+        # SLS is registered to +-26.9 deg (ticket 40: a registered
+        # conservative cap, NOT the retired acos(sqrt(k)) physics boundary
+        # of the pre-ticket-40 linearised law); admitting 45 deg queries
+        # there would let `_locate` clamp a 45 deg sample into the last
+        # in-envelope cell and return 26.9-deg physics as a 45-deg answer
+        # -- a silent wrong value, not a raise.
         mode = route_mode(rho_req_m, self.lib)
         env_deg = SLS_MAX_SQUINT_DEG if mode is Mode.SLS else SQUINT_ENVELOPE_DEG
         if not (-env_deg - 1e-9 <= math.degrees(psi_bar_rad) <= env_deg + 1e-9):

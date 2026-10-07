@@ -103,15 +103,17 @@ def test_spt_edge_worst_binding(lib):
 
 
 def test_a_res_domain_guard(lib):
-    """D06-3: a_res = 1 - k/cos^2(psi) > 0 guard raises outside the
-    physical sliding domain (exact-rate corner safety)."""
-    # exact-rate form: Kc/Ka = k/cos^2(psi) < 1 keeps a_res > 0 up to the
-    # axis cap k = 0.9 AND slightly beyond (0.95); the guard fires at
-    # k > cos^2(12 deg) ~ 0.9568
+    """D06-3 (re-registered ticket 40): a_res = 1 - k = A > 0 for every
+    squint and every k < 1 -- there is NO squint boundary any more.  The
+    guard fires only at the family corner k >= 1 (spotlight limit)."""
+    # any psi inside the envelope, k arbitrarily close to 1: finite
     out = aasr_direct(Mode.SLS, math.radians(12.0), 0.95, 2300.0, lib)
     assert math.isfinite(out["aasr_db"])
+    out = aasr_direct(Mode.SLS, math.radians(26.0), 0.95, 2300.0, lib)
+    assert math.isfinite(out["aasr_db"])
+    # k = 1 leaves the sliding family -> raise
     with pytest.raises(ValueError, match="a_res"):
-        aasr_direct(Mode.SLS, math.radians(12.0), 0.97, 2300.0, lib)
+        aasr_direct(Mode.SLS, math.radians(12.0), 1.0, 2300.0, lib)
 
 
 # ── grid domain + US6 properties (D06-7) ─────────────────────────────────

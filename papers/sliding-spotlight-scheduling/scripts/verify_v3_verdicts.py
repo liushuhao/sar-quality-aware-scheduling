@@ -62,12 +62,17 @@ TIERS = ("matrix", "matrix_p80g120", "matrix_p160g240")
 BASE, MID, TOP = TIERS
 
 # --- registered expectations (ticket 30 item g; audit4 B8) ----------------
-R_FAM_BASE = {"R1C": 3.9998, "R2F": 9.7524, "R3H": 11.9886}      # +-0.02 dB
-R_FAM_MAX = {"R1C": 3.9998, "R2F": 12.1261, "R3H": 11.9886}      # +-0.02 dB
-# R2F per-seed MIN is 8.2652 dB and must NOT be mistaken for the base-seed or
-# the max reading; the three aggregates are different numbers and this gate
-# pins all of them so a future run cannot quietly swap them.
-R_FAM_PER_SEED_MIN = {"R1C": 3.9968, "R2F": 8.2652, "R3H": 9.3293}
+# R2F/R3H re-measured 2026-10-07 under the ticket-40 (yi) rotation-centre
+# AASR semantics (formula-spec v1.7 §8.14): the recomputation caliber
+# changed (old linearised-law values in [] below), the frozen v3 artifacts
+# and every verdict are UNCHANGED -- R1C has zero SLS tasks so its numbers
+# did not move at all; R2F/R3H shrink ~1.0 dB and stay ALIVE (>= 6.0).
+R_FAM_BASE = {"R1C": 3.9998, "R2F": 8.7407, "R3H": 10.91}        # +-0.02 dB [old: 9.7524 / 11.9886]
+R_FAM_MAX = {"R1C": 3.9998, "R2F": 11.1074, "R3H": 11.0532}      # +-0.02 dB [old: 12.1261 / 11.9886]
+# R2F per-seed MIN must NOT be mistaken for the base-seed or the max
+# reading; the three aggregates are different numbers and this gate pins
+# all of them so a future run cannot quietly swap them.
+R_FAM_PER_SEED_MIN = {"R1C": 3.9968, "R2F": 7.2022, "R3H": 8.3746}  # [old: 8.2652 / 9.3293]
 BASE_SEEDS = {"R1C": 100, "R2F": 200, "R3H": 300}
 PROMOTION_SPREAD_MAX_DB = 3.98        # <= 3.98; measured 3.9722
 R3H_FRONT_MED = {"matrix": 1.0, "matrix_p160g240": 140.0}       # +-0.5

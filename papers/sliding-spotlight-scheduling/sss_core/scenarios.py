@@ -634,9 +634,11 @@ def generate_real_scenario(
                             r0_m=r0_pass,
                         )["aasr_db"])
                     except ValueError:
-                        # out of the physical sliding domain at this sample:
-                        # the window is not serviceable, so it can NEVER pass
-                        # the threshold -- +inf, not -inf.  -inf would make an
+                        # ticket 40: unreachable for k < 1 (no squint
+                        # boundary any more); kept as defensive plumbing --
+                        # out of domain at this sample: the window is not
+                        # serviceable, so it can NEVER pass the threshold --
+                        # +inf, not -inf.  -inf would make an
                         # unserviceable sample the BEST one in the max() below,
                         # i.e. exactly the direction reversal this ticket fixes.
                         # Same convention as nsga2.py:195 and

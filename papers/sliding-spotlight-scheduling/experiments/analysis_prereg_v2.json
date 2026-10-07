@@ -386,5 +386,14 @@
     },
     "consistency_of_the_blocks_above": "the writing_obligations list of amendment_20261005_v3_realwindow, and the f_q_unit_note of caliber_registry.json, both still carry the numeral 31-111. Under meta.amendment_discipline they are RETAINED (an earlier block is never edited); the operative value is corrections.A1_family_level_f_q_range.measured_replacement above. caliber_registry.json#v3.f_q_unit_note was additionally annotated in place with a pointer to this block, because that file is a live lookup table rather than a freeze.",
     "machine_anchor_note": "no new drift gate is added by this block, and none is needed: nothing here is a number that an artifact can drift from. The f_q figures are a measurement OF the promoted artifacts, and the stratum decision is an adjudication, not a measurement. scripts/verify_v3_verdicts.py remains the machine anchor for the v3 verdicts (33 checks, rc=0, unchanged)."
+  },
+
+  "amendment_20261007_ticket40_aasr_sls_semantics": {
+    "_doc": "ticket 40 / A-CROSS verdict a-cross-verdict-20261007.md: SLS spectral factor re-registered to (yi) rotation-centre semantics (a_res = 1-k = A, squint-independent). Supersedes two statements in amendment_20261006_registration_corrections. Appended textually 2026-10-07 so the frozen prefix keeps its original bytes (append-only discipline).",
+    "supersedes_1": "A3 model_measurement: the cited endpoint '-28.23 dB at psi=26 deg' is the pre-ticket-40 linearised-law reading. Post-ticket-40 readings at the production PRF 3630 Hz: -21.35 (0 deg), -21.46 (6), -21.81 (12), -22.36 (18), -23.32 (26 deg).",
+    "supersedes_2": "A3 mechanism: 'B_D narrowing dominates the a_res degradation' -- under (yi) semantics a_res does not degrade with squint at all; B_D narrowing (B_D = vs*cos(psi)/rho_a) is the ONLY driver of the (still improving) trend. The A3 writing_obligation (never copy the Song degradation direction; state model-internal direction + mechanism) is UNCHANGED and now cites a single mechanism.",
+    "a6_note_update": "A6 branch_convention_NOTE cites the old boundary 'a_res <= 0 at squint >= arccos(sqrt(k)) = 26.7567 deg': under (yi) semantics that boundary does not exist for k<1 and the sentinel branch is unreachable by construction (defensive retention, direction pinned by source test).",
+    "frozen_artifacts": "admission flips 0/3346 R-family window endpoints (recomputed both calibers), 0/2 analytic M-family admission inputs, promotion decisions unchanged (frozen pilots spread in [0,3.97] dB < 6.0 and the new caliber only shrinks spread). No v3 artifact, threshold, or verdict moves.",
+    "formulas_registration": "formulas/formula-spec.md v1.7 section 8.14 (gate: A-CROSS three adversarial tracks + user approval 2026-10-07)."
   }
 }

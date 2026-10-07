@@ -1,24 +1,24 @@
 {
   "action_required": true,
-  "manifest": "experiments\\results\\scenarios\\M1NC_seed100.json",
+  "manifest": "papers\\sliding-spotlight-scheduling\\experiments\\results\\scenarios\\M1NC_seed100.json",
   "n_fail": 0,
   "n_pass": 12,
   "n_report": 1,
-  "pilot": "..\\..\\.scratch\\sliding-spotlight-scheduling\\v2-run\\syn_p40g60\\pilot_M1NC_seed100.json",
+  "pilot": ".scratch\\sliding-spotlight-scheduling\\v2-run\\syn_p40g60\\pilot_M1NC_seed100.json",
   "schema": "verify-report/1.0",
   "steps": [
     {
-      "detail": "tag paper2-m1-baseline..HEAD diff empty AND src/sar_sim worktree clean",
+      "detail": "fork source files identical to paper2-m1-baseline AND src/sar_sim worktree clean",
       "status": "PASS",
       "step": "m1_double_check"
     },
     {
       "detail": {
         "exit": 0,
-        "expected_n0": 145,
+        "expected_n0": 154,
         "failed": 0,
-        "passed": 145,
-        "tail": "145 passed, 1 warning in 232.20s (0:03:52)"
+        "passed": 154,
+        "tail": "154 passed, 1 warning in 164.42s (0:02:44)"
       },
       "status": "PASS",
       "step": "shared_lib_tests"
@@ -26,12 +26,12 @@
     {
       "detail": {
         "exit": 0,
-        "expected_n0": 206,
+        "expected_n0": 374,
         "failed": 0,
-        "passed": 206,
+        "passed": 374,
         "skipped": 1,
-        "tail": "206 passed, 1 skipped, 1 xfailed, 1 warning in 1222.31s (0:20:22)",
-        "xfailed": 1
+        "tail": "374 passed, 1 skipped, 1 warning in 1282.16s (0:21:22)",
+        "xfailed": 0
       },
       "status": "PASS",
       "step": "domain_tests"
@@ -60,7 +60,8 @@
       "detail": {
         "calibers": [
           "v1",
-          "v2"
+          "v2",
+          "v3"
         ],
         "cross_comparable": false
       },

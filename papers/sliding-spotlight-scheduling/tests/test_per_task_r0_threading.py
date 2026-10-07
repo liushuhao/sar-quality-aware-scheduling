@@ -74,8 +74,8 @@ def test_footprint_ok_r0_threading(lib):
 
 def test_aasr_direct_r0_threading(lib):
     """r0 enters AASR only through the SPT aliasing term (kat0 ∝ wa/r0);
-    SLS/STR are exactly r0-invariant at a given squint (K_c/K_a = k/cos²psi
-    cancels -- gate-review Y3)."""
+    SLS/STR are exactly r0-invariant at a given squint (K_c/K_a = k
+    cancels -- gate-review Y3; ticket 40 (yi) semantics)."""
     prf = 1150.0
     # threading sanity: explicit r0 == library R0 gives identical readings
     base = aasr_direct(Mode.SPT, PSI, lib.geo.k, prf, lib, spt_scene_wa_m=3000.0)

@@ -190,8 +190,10 @@ def promotion_spread_db(sp: SchedulingProblem, front_records: list[dict]) -> dic
                     r0_m=w.r0_m,
                 )["aasr_db"]
             except ValueError:
-                # unenforced readout outside the physical sliding domain:
-                # infinitely bad AASR, not a crash (D12-3 semantics)
+                # unenforced readout outside the sliding family: infinitely
+                # bad AASR, not a crash (D12-3 semantics).  Ticket 40:
+                # unreachable for k < 1 (no squint boundary any more);
+                # defensive retention.
                 db = float("inf")
             cand_max = db if cand_max is None else max(cand_max, db)
         if cand_max is not None:

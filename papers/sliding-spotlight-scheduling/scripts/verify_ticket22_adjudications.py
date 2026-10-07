@@ -61,7 +61,10 @@ TICKET_A4_PLATEAU_MEDIAN_DB = 1.0
 TICKET_A4_PLATEAU_UNIT_DB = 2.0
 TICKET_A4_LOOSE_MEDIAN_DB = 10.0
 TICKET_A4_LOOSE_UNIT_DB = 20.0
-TICKET_A4_PLATFORM_RANGE_DB = 71.03
+TICKET_A4_PLATFORM_RANGE_DB = 35.84  # re-measured 2026-10-07 ticket-40 (yi)
+                                     # AASR semantics (formula-spec v1.7 §8.14);
+                                     # old linearised-law value 71.03 was inflated
+                                     # by the fake a_res collapse past 26.76 deg
 TICKET_A4_M2WH_MEDIAN_DELTA = 1.892048
 TICKET_A4_M2WH_UNIT_DELTA = 3.128066
 TICKET_A4_FAMILY_R = {
@@ -320,8 +323,12 @@ def main() -> int:
         except ValueError:
             pass
     if sls3044:
+        # re-registered 2026-10-07 ticket 40: spread 6.99 dB under the (yi)
+        # rotation-centre semantics (old 48.20 was the linearised-law artefact
+        # of a_res collapsing through zero at 26.76 deg); the ticket's
+        # substantive A4 claim (platform can express >= 6 dB) still PASSES
         check("a4_platform_worst_slice_sls_3044",
-              round(max(sls3044) - min(sls3044), 2), 48.20, tol=0.02)
+              round(max(sls3044) - min(sls3044), 2), 6.99, tol=0.02)
 
     print("\n=== A4 / budget dependence: the plateau criterion is live ===")
     ladder: dict[int, dict] = {}

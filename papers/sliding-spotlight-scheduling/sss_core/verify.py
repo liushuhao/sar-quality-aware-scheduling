@@ -173,7 +173,9 @@ def shared_lib_tests() -> dict:
     return _step("shared_lib_tests", "PASS" if ok else "FAIL", detail)
 
 
-DOMAIN_N0 = 228          # --collect-only 2026-10-06: 229 collected - 1 skip
+DOMAIN_N0 = 374          # measured 2026-10-07 ticket 40: 374 passed + 1 skip
+                        # (tickets 35-37 grew the suite 229->370 without a
+                        # re-pin; ticket 29 precedent f546573 applied again)
 DOMAIN_N0_SKIPPED = 1    # baseline conditional skip -- silent removal reads red
 # 2026-10-06: 0, was 1.  The R12 exit-11 marker was retired into a real pass by
 # ticket 25, and tickets 24/25/26/28 added tests; pin now equals the measured
@@ -376,10 +378,11 @@ def promotion_replay(pilot: dict, manifest: dict, lib: ModeLibrary) -> dict:
                     r0_m=w.r0_m,
                 )["aasr_db"]
             except ValueError:
-                # unenforced readout outside the physical sliding domain:
-                # infinitely bad AASR, not a crash (D12-3 semantics) --
-                # mirrors nsga2.py promotion_spread_db verbatim; without
-                # this catch the finite-exclusion branch below is dead code
+                # unenforced readout outside the sliding family: infinitely
+                # bad AASR, not a crash (D12-3 semantics) -- mirrors
+                # nsga2.py promotion_spread_db verbatim; without this catch
+                # the finite-exclusion branch below is dead code.  Ticket
+                # 40: unreachable for k < 1; defensive retention.
                 db = float("inf")
             cand_max = db if cand_max is None else max(cand_max, db)
         if cand_max is not None:

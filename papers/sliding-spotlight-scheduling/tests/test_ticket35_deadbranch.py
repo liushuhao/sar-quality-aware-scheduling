@@ -24,16 +24,16 @@ the assertion's shape), so reverting either fix turns the test RED:
   lowers the bound to ~1570 m, which the SAME band crosses -- the
   fixture reproduces the accident's whole condition set (SPT routing +
   per-pass r0 threading + oversize scene), not a synthetic stub.
-* fix 2 fixture: ``aasr_direct`` raises for SLS only when
-  ``a_res = 1 - Kc/Ka = 1 - k/cos^2(psi) <= 0``, i.e.
-  ``|psi| >= acos(sqrt(k))``.  On the frozen library k = 1 - A gives that
-  boundary 26.757 deg, which sits OUTSIDE the envelope guard
-  (26.9 deg envelope * (1 - 0.01) = 26.631 deg) -- the cascade filters it
-  out first, so the branch is DEAD on the frozen library.  Lowering A to
-  0.10 pulls the boundary to 18.435 deg, INSIDE the guard, so real
-  enumerated windows reach the raise.  Both the raise and the physical
-  meaning are asserted: the fixed code emits ZERO windows containing an
-  out-of-domain sample, while the reverted code emits many.
+* fix 2 fixture (REWRITTEN ticket 40): pre-ticket-40, ``aasr_direct``
+  raised for SLS when ``a_res = 1 - k/cos^2(psi) <= 0``
+  (``|psi| >= acos(sqrt(k))``), and lowering A to 0.10 pulled that
+  boundary (18.435 deg) inside the 26.631 deg envelope guard so real
+  enumerated windows reached the raise.  Ticket 40's (yi) semantics make
+  ``a_res = 1 - k`` at every squint -- the boundary does not exist for
+  k < 1, so the except branch is unreachable by construction (kept as
+  defensive plumbing; direction pinned at source level below).  The
+  rewritten test keeps the lowered-A enumeration alive: finite AASR
+  everywhere, ledger closes.
 """
 import dataclasses
 import math
@@ -46,7 +46,7 @@ import pytest
 FORK_DOMAIN = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(FORK_DOMAIN))
 
-from sss_core.duration import mode_squint_envelope_rad  # noqa: E402
+from sss_core.aasr import aasr_direct  # noqa: E402
 from sss_core.modes import Mode, ModeLibrary  # noqa: E402
 from sss_core.realwindows import KeplerianElement  # noqa: E402
 from sss_core.windows import footprint_ok  # noqa: E402
@@ -162,16 +162,6 @@ def test_fp_fail_counter_is_reachable_without_any_monkeypatch():
 
 # ── fix 2: AASR out-of-domain sentinel direction ─────────────────────────
 
-def _window_max_abs_squint_deg(window, geo):
-    """The 11 samples the generator actually evaluates, read back through
-    the same squint model -- no peeking at generator internals."""
-    return max(
-        abs(math.degrees(S.squint_at(
-            window["lo_s"] + (window["hi_s"] - window["lo_s"]) * j / 10,
-            window["t_ca_s"], geo, r0_m=window["r0_m"],
-        )))
-        for j in range(11)
-    )
 
 
 def test_aasr_out_of_domain_sample_is_plus_inf_not_minus_inf():
@@ -182,50 +172,32 @@ def test_aasr_out_of_domain_sample_is_plus_inf_not_minus_inf():
     UNSERVICEABLE window look like the best-reading one and lets it
     through.  +inf means "infinitely bad" -- the window can never pass.
 
-    The fixture reproduces the whole trigger condition: the SLS
-    ``a_res <= 0`` raise boundary (acos(sqrt(k))) is pulled INSIDE the
-    envelope guard by lowering A, so enumerated windows really do reach
-    the raise.  The discriminator is the emitted manifest: with the fix,
-    NO emitted window may contain an out-of-domain sample.
+    REWRITTEN ticket 40 (yi) semantics: a_res = 1 - k > 0 for every psi
+    and every k < 1, so the acos(sqrt(k)) raise boundary the original
+    fixture pulled inside the envelope guard NO LONGER EXISTS -- the
+    except branch is unreachable for k < 1 by construction (kept as
+    defensive plumbing; its direction is pinned at source level by
+    test_out_of_domain_sentinel_is_infinite_not_minus_infinite below).
+    What stays testable here: the library that used to push enumerated
+    windows past the old boundary enumerates the SAME kind of windows
+    with finite AASR everywhere, and the ledger still closes.
     """
     lib0 = ModeLibrary.from_fixture()
-
-    # precondition A: on the frozen library the raise boundary sits OUTSIDE
-    # the envelope guard, so the cascade filters it first -- the branch is
-    # dead on the frozen domain and no frozen number can move
-    guard = math.degrees(mode_squint_envelope_rad(Mode.SLS)) * (
-        1.0 - S.R_ENVELOPE_GUARD_FRACTION
-    )
-    frozen_boundary = math.degrees(math.acos(math.sqrt(lib0.geo.k)))
-    assert frozen_boundary > guard, (
-        f"frozen a_res boundary {frozen_boundary:.3f} deg is no longer "
-        f"outside the {guard:.3f} deg envelope guard"
-    )
-
-    # precondition B: the fixture pulls the boundary inside the guard
     lib = _lib_with(lib0, A=0.10)
-    boundary = math.degrees(math.acos(math.sqrt(lib.geo.k)))
-    assert boundary < guard, f"boundary {boundary:.3f} deg >= guard {guard:.3f}"
 
-    # the raise is genuinely reached (the branch is not vacuous)
-    from sss_core.aasr import aasr_direct
-    with pytest.raises(ValueError, match="a_res"):
-        aasr_direct(Mode.SLS, math.radians(boundary + 0.5), lib.geo.k,
-                    S.PRF_PRODUCTION_HZ, lib)
+    # the old boundary site is now an ordinary finite reading
+    old_boundary = math.degrees(math.acos(math.sqrt(lib.geo.k)))  # 18.435 deg
+    out = aasr_direct(
+        Mode.SLS, math.radians(min(old_boundary + 5.0, 26.0)), lib.geo.k,
+        S.PRF_PRODUCTION_HZ, lib,
+    )
+    assert math.isfinite(out["aasr_db"])
 
     m = S.generate_real_scenario(
         "R2F", 50, "F", 200, 2, lib=lib, platform=_platform(570_000.0)
     )
     windows = [w for t in m["tasks"] for w in t["windows"]]
     assert windows, "fixture produced no windows -- the test lost its subject"
-    out_of_domain = [
-        w for w in windows if _window_max_abs_squint_deg(w, lib.geo) > boundary
-    ]
-    assert not out_of_domain, (
-        f"{len(out_of_domain)}/{len(windows)} emitted windows carry an "
-        "out-of-domain AASR sample -- an unserviceable window was emitted, "
-        "which is exactly the -inf direction reversal"
-    )
     led = m["generation_ledger"]
     assert sum(led["removals"].values()) + led["n_served"] == led["n_drawn"], led
 
