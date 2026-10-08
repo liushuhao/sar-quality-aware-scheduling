@@ -1,8 +1,13 @@
 #!/usr/bin/env python3
 """Ticket 23: recompute the real-window family structural dimension (R_fam)
-under the per-task-r0 caliber, as a committed reproducible script (the
-ticket-17 values 4.0032 / 6.8213 / 6.8216 / 6.8213 existed only as analysis
-prose; gate-review Y5).
+under the per-task-r0 caliber, as a committed reproducible script (gate-review
+Y5).  Ticket 41 / A-CROSS (yi) re-registration: the default scenarios dir is
+now the PROMOTED v3 real-window family (``experiments/v3_results/scenarios``)
+and the operative reproduction targets are the ticket-40 (yi) values
+**R1C 3.9998 / R2F 8.7407 / R3H 10.91 dB** (base seed), matching
+``scripts/verify_v3_verdicts.py``.  The pre-(yi) ticket-17 prose figures
+4.0032 / 6.8213 / 6.8216 are SUPERSEDED, and the retired R4H family is gone
+(ticket 25).
 
 CALIBER (registered here so the numbers are falsifiable):
   * scan axes: task x 11 in-window starts x routed mode, at the task's
@@ -16,8 +21,10 @@ CALIBER (registered here so the numbers are falsifiable):
     pre-ticket-23 readout used the library R0 inside aasr_direct, which is
     exactly the eighth caliber-split instance this ticket closes;
   * spt_scene_wa_m = the task's azimuth_size_m (D08-2 worst-edge);
-  * out-of-domain samples (a_res <= 0) are EXCLUDED from the range, the
-    D12-3 unenforced-readout convention after the ticket-17 +inf fix;
+  * out-of-domain samples (a_res <= 0) are EXCLUDED from the range.  Under the
+    A-CROSS (yi) law a_res = 1-k = A > 0 at every squint, so this guard only
+    trips at the family corner k >= 1 (unreachable for the library k<1);
+    retained defensively (ticket 41);
   * R_fam = max - min over the remaining samples, per family: reported for
     the BASE seed manifest (seed = variant_index*100) AND as the max over
     all 10 seeds, since the ticket-17 prose did not pin which aggregation
@@ -81,10 +88,12 @@ def family_r(
 ) -> tuple[float, int, int]:
     """(R_fam dB, n_samples_used, n_excluded_out_of_domain) for one manifest.
 
-    per_task_r0=True is the ticket-23 caliber; False reproduces the
-    ticket-17 readout (library R0 inside aasr_direct -- the eighth split
-    instance) and must land on the registered 4.0032 / 6.8213 / 6.8216 /
-    6.8213 values before the new numbers are admissible.
+    per_task_r0=True is the operative caliber (matches verify_v3_verdicts.py:
+    R1C 3.9998 / R2F 8.7407 / R3H 10.91 dB base-seed on v3).  per_task_r0=False
+    reproduces the ticket-17era readout (library R0 inside aasr_direct); that
+    cross-check is SUPERSEDED by the A-CROSS (yi) law (ticket 41) and its
+    values no longer match the pre-(yi) ticket-17 prose -- kept only as a
+    diagnostic column.
 
     Ticket 25: sampling is PER WINDOW (each transit has its own zero and
     slant range; sampling the whole task span against one zero would
@@ -116,7 +125,7 @@ def family_r(
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--scenarios-dir", default=str(
-        REPO / ".scratch" / "sliding-spotlight-scheduling" / "v2-run" / "scenarios"))
+        FORK / "experiments" / "v3_results" / "scenarios"))
     ap.add_argument("--out", default=None, help="write the verdict table as JSON")
     args = ap.parse_args()
     scen = Path(args.scenarios_dir)
