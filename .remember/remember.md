@@ -5,6 +5,7 @@
 - 票 42 文献入库：A-CROSS 一轮 4 篇 + GF-3/Kim/Song + Li 2018 + Li 2025 = 9 篇进 `literature/{raw,fulltext,structured}` + `literature_corpus.csv`（333 行）；Ren 2025 PDF 补取成功；Li 2025 仅 metadata_only（venue 未证）。
 - 域套件 374P/1S exit 0、共享库 154P exit 0、五门禁 rc=0。冻结件 `platform_kim2021.json` 字节未动；prereg 冻结前缀字节保真。
 - 台账 open=5（R7/R19/R27/R30/R31；R31 部分处置，R30 = recompute_r_fam 旧律锚延后）。
+- **残留清理（票 43，2026-10-09，commit f44819f+68a159e）**：`recompute_r_fam.py` 默认改指 v3、复现现行判词（R30 闭）；R27（C 类锚=先修快照，加日期化说明）、R31（Li 2018 全文 + Li 2025 venue 定位 EICARS 2025）、R7（上游 behind=0）全闭。**仅 R19（Ch5 物理违反）维持 gated=票 27**（Ch5 未发表、修复改其结果；**不阻塞票 38**）。台账 open=1（R19）。
 
 ## Next
 1. **票 38**：workflow v3 落地，吃 (乙)——不插重跑段、取数留 v3。
