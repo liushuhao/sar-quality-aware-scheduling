@@ -16,7 +16,7 @@
       ],
       "meaning": "dwell closure = planar sec^2 (formula-spec 4.2)",
       "produced_before": "ticket 15, commits 20ff465 / d0d32f2",
-      "reason": "the Eq.(22) closure deviates from the planar form by up to 5.30% at 45 deg and 2.10% at the SLS 26.9 deg boundary"
+      "reason": "the Eq.(22) closure deviates from the planar form by up to 5.30% at 45 deg and 2.10% at the SLS 26.9 deg registered cap (not a physics boundary -- A-CROSS (yi) verdict, formula-spec 8.14/8.16)"
     },
 
     "v3": {

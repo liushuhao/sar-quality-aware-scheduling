@@ -395,5 +395,17 @@
     "a6_note_update": "A6 branch_convention_NOTE cites the old boundary 'a_res <= 0 at squint >= arccos(sqrt(k)) = 26.7567 deg': under (yi) semantics that boundary does not exist for k<1 and the sentinel branch is unreachable by construction (defensive retention, direction pinned by source test).",
     "frozen_artifacts": "admission flips 0/3346 R-family window endpoints (recomputed both calibers), 0/2 analytic M-family admission inputs, promotion decisions unchanged (frozen pilots spread in [0,3.97] dB < 6.0 and the new caliber only shrinks spread). No v3 artifact, threshold, or verdict moves.",
     "formulas_registration": "formulas/formula-spec.md v1.7 section 8.14 (gate: A-CROSS three adversarial tracks + user approval 2026-10-07)."
+  },
+
+  "amendment_20261008_ticket41_registration_backfill": {
+    "_doc": "ticket 41 / 2026-10-08 registration-surface backfill: names-supersede the two pre-ticket-40 statements that the ticket-40 amendment (amendment_20261007_ticket40_aasr_sls_semantics) left un-flagged -- the A9 'boundary unchanged' no_data_change line and the strata_disposition R_fam readings. Appended textually so the frozen prefix keeps its original bytes (append-only discipline). No experiment, threshold, or verdict changes.",
+    "supersedes_3": "amendment_20261006_registration_corrections.corrections.A9_k_a_k_c_r0_substitution.no_data_change ('the ratio is unchanged, so a_res, every AASR reading, and the 26.7567 deg boundary are all unchanged'): under the ticket-40 (yi) semantics the 26.7567 deg boundary does not exist for k<1, and R-family AASR READINGS do move (R_fam shrinks ~1 dB; the psi=0 reading is law-invariant). Only the ratio a_res stays constant (now identically A). The boundary clause is void; the reading clause is superseded by amendment_20261007_ticket40_aasr_sls_semantics.",
+    "supersedes_4": "amendment_20261005_v3_realwindow.strata_disposition.R2F / .R3H R_fam numerals: the registered 9.7524 dB (R2F) and 11.9886 dB (R3H) are the pre-ticket-40 (jia) readings. Under the ticket-40 (yi) caliber the same frozen artifacts re-derive to R_fam R2F 8.7407 dB / R3H 10.91 dB (max 11.1074 / 11.0532; per-seed min 7.2022 / 8.3746). The ALIVE/DEAD verdicts are UNCHANGED (R1C STRUCTURAL DEAD 3.9998 dB -- zero SLS tasks, unmoved; R2F/R3H stay ALIVE >= 6.0). The machine anchor scripts/verify_v3_verdicts.py was re-registered to the new values by ticket 40 (old values retained there in [old: ...] comments).",
+    "operative_values": {
+      "R_fam_base_db": {"R1C": 3.9998, "R2F": 8.7407, "R3H": 10.91},
+      "note": "cite these under the ticket-40 (yi) caliber; RUN_LINEAGE.md L6/N2 and this prereg's strata_disposition numerals are the pre-ticket-40 record, superseded for citation."
+    },
+    "frozen_artifacts": "No v3 artifact, threshold, or verdict moves. Admission flips remain 0/3346 (R-family) + 0/2 (M-family analytic); promotion 90/90 no_promotion (max spread 3.9722 dB < 6.0).",
+    "registration": "formulas/formula-spec.md v1.8 section 8.16; ADR 0001."
   }
 }

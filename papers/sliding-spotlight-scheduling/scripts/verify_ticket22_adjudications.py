@@ -158,7 +158,7 @@ def reachable_range_db(manifest: dict, lib: ModeLibrary, n_pts: int = 21) -> flo
                         spt_scene_wa_m=(wa if mode is Mode.SPT else None),
                     )["aasr_db"])
                 except ValueError:
-                    pass  # SLS outside the physical sliding domain (a_res <= 0)
+                    pass  # SLS sample outside the domain (defensive; unreachable for k<1 under A-CROSS (yi))
     if not vals:
         raise ValueError("no AASR sample reachable")
     return max(vals) - min(vals)

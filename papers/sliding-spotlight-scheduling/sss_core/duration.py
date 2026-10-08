@@ -80,11 +80,13 @@ SAT_MARGIN_KIM = 1.25       # Kim applies 1.25x on top of the raw SAT
 # `mode_squint_envelope_deg`.  They are deliberately NOT written back over
 # `squint_angle_range_deg`, whose provenance is Kim Table 2.
 SQUINT_ENVELOPE_DEG = 45.0
-# SLS physical sliding boundary: a_res = 1 - K_c/K_a <= 0 trips at
-# |psi| ~ 26.9 deg for the library k (aasr.py D06-3 guard).  The Eq.(22)
-# closure stays computable past it (12.207 s at 45 deg) but the mode is out
-# of its AASR-enforced envelope there, so the dwell closure refuses rather
-# than returning a value no constraint can certify.
+# SLS registered squint cap (26.9 deg): a REGISTERED CONSERVATIVE design value
+# (antenna steering margin + frozen-data continuity), NOT an a_res<=0 physics
+# boundary -- under the A-CROSS (yi) rotation-centre semantics a_res = 1 - K_c/K_a
+# = A is a positive constant at every squint (ticket 40; formula-spec 8.14/8.16;
+# ADR 0001).  The Eq.(22) closure stays computable past the cap (12.207 s at
+# 45 deg) but the mode is outside its registered envelope there, so the dwell
+# closure refuses rather than returning a value no registered constraint can certify.
 SLS_MAX_SQUINT_DEG = 26.9
 # Binding region of the window-tail pad: below this the planar-oracle gap
 # crosses zero (interior trough), above it the gap is conservative.

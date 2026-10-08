@@ -19,9 +19,10 @@ which is the exact defect the project recorded as
 feedback-verify-hardcoded-numbers.
 
 The fixtures carry the trap pairs the ticket names: 0.499 dB belongs to the
-synthetic P8WH family and NOT to R1C; 26.9 deg is a conservative bound above
-the recomputed 26.7567 deg root; 14.97 orbits is the ground-track repeat of the
-two-body simulator and NOT the 14.75 J2 figure.
+synthetic P8WH family and NOT to R1C; 26.9 deg is the REGISTERED conservative
+squint-envelope cap (A-CROSS (yi): no arccos(sqrt(k)) boundary exists); 14.97
+orbits is the ground-track repeat of the two-body simulator and NOT the 14.75
+J2 figure.
 
 Usage (repo root):
     PYTHONHASHSEED=0 PYTHONPATH=src \
@@ -57,20 +58,20 @@ all 90 units, with a maximum spread of 3.9722 dB against the 6.0 dB threshold.
 Per-family quality readings, each in its own caliber: R1C min 1.49 and max
 2.04; R2F min 55.47 and max 135.22; R3H min 29.75 and max 123.70.
 
-The physical sliding-spotlight boundary is arccos(sqrt(k)) = 26.7567 deg; the
-implementation uses the conservative upper bound 26.9 deg. The simulated
-ground track repeats every 14.97 orbits.
+The SLS squint envelope is the registered conservative cap 26.9 deg (a design
+value, not a physical boundary). The simulated ground track repeats every
+14.97 orbits.
 
 At delta = 6.0 the R2F power is 0.92 (7 seeds for 80% power); the R3H power
 is 0.29 (54 seeds for 80% power), so R3H does not reach significance at n = 10.
 """
 
 # The same draft with TWO numbers wrong.  The first is the promotion spread,
-# the second re-attaches the conservative BOUND to the EXACT ROOT -- the F-8
-# trap, where a manuscript that calls 26.9 the physical boundary is off by
-# 0.1433 deg and must be caught.
+# the second mis-states the registered SLS squint-envelope cap -- the value the
+# manuscript must reproduce from the fixture (A-CROSS (yi): a registered
+# conservative cap, NOT an arccos(sqrt(k)) physical boundary).
 WRONG = GOOD.replace("3.9722 dB", "4.5000 dB").replace(
-    "arccos(sqrt(k)) = 26.7567 deg", "arccos(sqrt(k)) = 26.9000 deg")
+    "conservative cap 26.9 deg", "conservative cap 27.5 deg")
 
 # A draft with prose but no number the ledger can check.
 NO_NUMBERS = """# Introduction
@@ -138,8 +139,8 @@ def test_wrong_numbers_exit_one_and_name_both_values(wrong):
     assert r.returncode == 1, r.stdout
     assert "4.5000" in r.stdout, "the manuscript number must be quoted"
     assert "3.9722" in r.stdout, "the recomputed number must be quoted"
-    assert "26.9000" in r.stdout and "26.7567" in r.stdout, (
-        "the F-8 root trap must be reported with both values")
+    assert "27.5" in r.stdout and "26.9" in r.stdout, (
+        "the SLS envelope-cap mismatch must be reported with both values")
 
 
 def test_no_numbers_exits_two_not_zero(empty):
@@ -218,13 +219,13 @@ def test_tolerances_are_registered_not_implicit():
 # --------------------------------------------------------------------------
 # The trap pairs the ticket names explicitly
 # --------------------------------------------------------------------------
-def test_sls_bound_is_strictly_above_the_recomputed_exact_root():
-    """F-8: 26.9 deg is a CONSERVATIVE BOUND; the exact root is 26.7567 deg."""
+def test_sls_envelope_is_the_registered_cap_and_the_boundary_is_retired():
+    """A-CROSS (yi): 26.9 deg is a registered conservative cap; the retired
+    arccos(sqrt(k)) 'exact root' must no longer be an expectation."""
     exp = vnp.recompute()
-    root = exp["SLS_exact_root_deg"][0]
+    assert "SLS_exact_root_deg" not in exp, (
+        "the retired arccos(sqrt(k)) boundary must not be recomputed")
     bound = exp["SLS_registered_bound_deg"][0]
-    assert root < bound, "the bound must sit above the exact root"
-    assert abs(root - 26.7567) < 1e-3, root
     assert abs(bound - 26.9) < 1e-9, bound
 
 

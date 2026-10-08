@@ -20,8 +20,10 @@ artifact that produced it and against the caliber it was produced under.
 Paired trap numbers (the ticket names these explicitly):
   * 0.499 dB knife-edge is the SYNTHETIC P8WH family's margin-to-threshold,
     NOT R1C's;
-  * 26.9 deg is a conservative UPPER BOUND on the physical sliding-spotlight
-    boundary; the exact root arccos(sqrt(k)) is recomputed and must sit below;
+  * 26.9 deg is the REGISTERED CONSERVATIVE squint-envelope cap for SLS; under
+    the A-CROSS (yi) rotation-centre semantics a_res = 1-k = A > 0 at every
+    squint, so there is NO arccos(sqrt(k)) "physical boundary" (formula-spec
+    8.14/8.16, ADR 0001);
   * 14.97 orbits is the two-body SIMULATED repeat period; 14.75 includes J2 and
     describes the physical orbit, not this simulator;
   * the three f_q family ranges are caliber-specific and must not be mixed.
@@ -199,7 +201,12 @@ def recompute() -> dict:
         exp["n_windows"][code] = (g["n_windows_total"],
                                   "generation_ledger.n_windows_total")
 
-    # --- the exact SLS root vs the registered conservative bound (F-8) ----
+    # --- the SLS squint envelope (A-CROSS (yi): registered cap, no boundary) --
+    # ticket-40 (yi) rotation-centre semantics: a_res = 1 - K_c/K_a = A is a
+    # positive constant at EVERY squint, so the arccos(sqrt(k)) = 26.7567 deg
+    # "physical boundary" does not exist (formula-spec 8.14/8.16, ADR 0001).
+    # The registered envelope value is a CONSERVATIVE DESIGN CAP; a manuscript
+    # that states an SLS squint-envelope figure must match it.
     plat = _load(FORK / "experiments" / "platform_kim2021.json")
     modes = plat["modes"]            # measured: the ladder lives under `modes`
     k = modes["sliding_factor_k_ladder"]["value"]
@@ -207,8 +214,6 @@ def recompute() -> dict:
     exp["sliding_factor_k"] = (k, "platform_kim2021.sliding_factor_k_ladder.value")
     exp["SLS_registered_bound_deg"] = (env["SLS"],
                                        "mode_squint_envelope_deg.SLS")
-    exp["SLS_exact_root_deg"] = (round(math.degrees(math.acos(math.sqrt(k))), 4),
-                                "arccos(sqrt(k)), recomputed from k")
     exp["SLS_str_spt_envelope_deg"] = (env["STR"],
                                        "mode_squint_envelope_deg.STR")
 
@@ -456,28 +461,20 @@ def check_paper(text: str, label: str, exp: dict) -> "tuple[list, list, int]":
                     near(want, TOL["f_q"], f"{fam} f_q {which} @{TOP}", prov,
                          m.group(1))
 
-    # ---- the SLS angle boundary (F-8 trap) --------------------------------
-    if "SLS_exact_root_deg" in exp:
-        root, prov = exp["SLS_exact_root_deg"]
-        bound = exp["SLS_registered_bound_deg"][0]
+    # ---- the SLS squint envelope (registered conservative cap; A-CROSS (yi)) --
+    # The arccos(sqrt(k)) "physical boundary" is RETIRED (formula-spec 8.14/8.16):
+    # under (yi) a_res = 1-k = A > 0 at every squint.  The registered envelope
+    # value is a conservative design cap; a manuscript SLS-envelope figure must
+    # match it.  (The retired boundary/root wording is a writing-checklist F-8
+    # obligation, not a numeric check here.)
+    if "SLS_registered_bound_deg" in exp:
+        bound, prov = exp["SLS_registered_bound_deg"]
         for sent in _sentences(body):
-            m = re.search(r"(?:arccos|exact\s+root|精确根)"
-                          r"[^;]{0,40}?(\d+(?:\.\d+)?)", sent, re.I)
+            m = re.search(r"(?:envelope|conservative\s+cap|保守值|包络)"
+                          r"[^;]{0,60}?(\d+(?:\.\d+)?)\s*(?:deg|°)", sent, re.I)
             if m:
-                near(root, TOL["deg"], "exact SLS root arccos(sqrt(k))", prov,
+                near(bound, TOL["deg"], "SLS registered squint cap", prov,
                      m.group(1))
-        # The bound-vs-root ordering is an INTERNAL consistency check on the
-        # registration, not a manuscript number: it is deliberately NOT counted
-        # toward ``seen``.  Counting it made a manuscript with no checkable
-        # numbers at all report "1 number checked, 0 mismatches" and exit 0 --
-        # exactly the silent-zero green the ticket forbids
-        # (feedback-figure-silent-zero).
-        if not (root < bound):
-            fails.append(f"{label}: the registered bound {bound} deg is not above "
-                         f"the recomputed exact root {root} deg -- F-8 inverted")
-        else:
-            passes.append(f"{label}: registered bound {bound} deg > recomputed "
-                          f"exact root {root} deg  [platform_kim2021]")
 
     # ---- the two-body ground-track repeat (B6 trap) -----------------------
     if "orbit_repeat_turns_simulated" in exp:

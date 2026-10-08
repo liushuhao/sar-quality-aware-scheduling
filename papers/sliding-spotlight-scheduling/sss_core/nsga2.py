@@ -198,7 +198,8 @@ def promotion_spread_db(sp: SchedulingProblem, front_records: list[dict]) -> dic
             cand_max = db if cand_max is None else max(cand_max, db)
         if cand_max is not None:
             vals.append(cand_max)
-    # A candidate whose AASR left the physical sliding domain is +inf (see
+    # A candidate whose AASR sample left the domain is +inf (defensive;
+    # unreachable for k<1 under A-CROSS (yi) -- see
     # above).  Letting that flow into the spread would make inf >= 6.0 read as
     # "promote" -- the OPPOSITE of the intent, since an infinitely bad
     # unenforced AASR is not a reason to add a third objective.  Those
