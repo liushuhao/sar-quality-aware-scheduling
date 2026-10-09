@@ -1,16 +1,16 @@
 # Handoff
 
 ## State
-- **票 41/42/43 全闭环**（HEAD=29571d6，树净）。41：A-CROSS (乙) 定案的**登记面回填**——代码主链已切 (乙) 但 9 处登记/写作文档仍教旧律 (甲)，全修（formula-spec §8.16、spec.md D12、spec-amendment §8.9、清单 v2 F-13/E-338、prereg A9/strata R_fam、RUN_LINEAGE、caliber、三注释、verify_paper_numbers+测试）；42：SAR 域 9 篇文献并入 `literature/{raw,fulltext,structured}`+corpus.csv(333)；43：残留清理（R30/R27/R31/R7 关闭）。
-- 关键值：域套件 374P/1S、共享库 154P、五门禁 rc=0。**R_fam 取数用新律 8.74/10.91**（非旧 9.75/11.99）；26.9°=注册保守值（非物理边界）。
-- 台账 open=**1**（仅 R19=Ch5，gated=票27/Ch5 重构，**不阻塞票38**）。
+- **票 38 全链闭**（2026-10-09/10）：审定 goal 交执行 Agent 跑完 → workflow v3 落地（无人值守转入口径入头部=Y11）→ 主线程暗卷验收 **PASS**（哈希四算对锚、票面 18/18 勾零越权、独立审回执复算属实、幻影枚举零真幻影）。v3 独立审双证绿（goal 内验收 5 CLEAN + 主线程复核），Y11 转入条件已满足。HEAD eecb226 树净零 commit（Y8），.gates 净。
+- 台账 open=2：R19（gated=票 27/Ch5 重构，不阻塞写作期）、R33（无人值守写作驱动器缺失，close when=spike 票划界）。R32（ticket4* 日志）已清删。
+- goal/ 五件在 `.scratch/sliding-spotlight-scheduling/goal/`（PROGRESS 含三 blob 终态/BLOCKED=无/review-brief-v3/v2+v3 留档）。
 
 ## Next
-1. **票 38**：workflow v3 落地，吃 (乙)——不插重跑段、取数留 v3。
-2. **写作期开工**：`writing-workflow.md` v3 + `writing-checklist-v2-20261006.md`（59 条；F-13/E-338 已按 (乙) 重写、取数用 R_fam 8.74/10.91）。
+1. **写 W0-W7 goal 书**：①先吃 R33——spike 划界哪些相可无值守/哪些硬停（W1 结构、W5 收敛、W7 投稿 one-way door）；②**预授权 v3 W1 两道【用户批】闸**（大纲/钉哈希，不授权则无人值守跑到 W1 必卡停）；③消费 goal/ 五件 + 暗卷判词（`.remember/tmp/goal_dark_slots.md`）；④按 Y11 产「异步可决项摘要」随交付。
+2. 发射后按 v3 头部口径自动转 W0/W1；取数纪律不变（真窗 v3_results、R_fam 8.74/10.91、26.9°=注册保守值）。
 
 ## Context
-- 转述口径：a_res 因子恒定 ≠ AASR 读数恒定（仍随 B_D∝cosψ 变 ~2 dB）。
-- 审计教训（票 41/43 根因）：**语义变更除代码外须扫全登记面**（spec/清单/formula-spec 旧节/prereg 子键/血缘表/所有机器锚/**默认输入路径**）——见记忆 `paper2-semantics-change-propagation-surface`。
-- 独立脚本消费面已核：`recompute_r_fam.py` 默认已改指 v3（R30 闭）。
-- 删除候选（未删）：`.scratch/sliding-spotlight-scheduling/ticket4*-*.log`（会话日志）。
+- 决策点#4 口径已落 `review-fable-20261006.md` L54（无人值守自动转入），勿照旧「待用户过目」行动；「异步可决项摘要」=政策/不可逆/成本/盲点四类，各带推荐+保守默认，不可逆项默认保守支不代拍板。
+- ARS 3.23.0 默认内联执行（角色标签非 subagent）；独立性靠 rule-10 fresh+异源另叠（`academic-paper-reviewer/SKILL.md:223` 面板自认非独立误差过程）→ v3 已立「独立审层」节（Y10）。
+- 无人值守能成立靠 prereg+59 项义务表锁死声明、数字可机核，非 agent 强度；教训记忆：`paper2-unattended-writing-20261009`、`feedback-external-goal-self-authorized-gate-skip`、`paper2-goal-pipeline-async-transition`（写 goal 书先核用户在场模式）。
+- t38 权威任务书=`.remember/tmp/goal_book_t38.md`（留作范式）；执行者两处正确判断：v2「842 件」无源已删（三池实测 336/192/191）、W4 直接引票 37 `--must-include`。
