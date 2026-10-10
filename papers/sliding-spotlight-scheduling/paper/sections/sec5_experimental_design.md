@@ -1,0 +1,37 @@
+# 5. Experimental Design and Setup
+
+This section describes the scenario world, the family and caliber system, and the preregistered test design.
+
+## 5.1 Scenario construction
+
+The scenario world is built from *real ground-track transit enumeration*, not from an arbitrary orbit phase point: visibility windows come from enumerating true ground-track passes over the scenario span, with a 15 s scan step, gap merging at 300 s (registered invariant across 150/600/1200 s), and 33-point edge refinement. The registry's own ledger records why: under the earlier phase-point pass rule only 0 of 8 clusters were serviceable after the incidence fix, against 6 of 8 under true enumeration.
+
+Orbit propagation is two-body only --- no $J_2$ or atmospheric terms --- so the registered repeat figure is the *simulated* ground-track repeat of 14.97 orbits $\approx$ 23.93 h (one sidereal day over the two-body period); the figure that includes $J_2$ nodal drift describes the physical orbit and is deliberately not the one this simulator produces. The surface normal used in incidence computations is an *approximate* normal: its maximum deviation from the true ellipsoidal normal is 0.125° (at $\approx$30° latitude; 0.109° at the dense-domain centre), with no effect on band-boundary judgements at the registered margins. The dense domain is a 1000 km square centred at 20°N/0°E, a 5×5 node grid at 250 km spacing with per-cell target jitter, a 3-day span in coordinated universal time (UTC). The serviceability criterion is per-node: every node carries at least one in-band transit within the span, measured 25/25; the literal best-incidence reading of the dense-domain constraint fails at the centre node (near-nadir passes exist there but yield no in-band window), which is why the operative criterion is the per-node one. The evidence lives in the generation-time guards and the manifest ledger.
+
+The AASR admission criterion is evaluated per family, and the two families differ by design --- a discrepancy we disclose rather than harmonise post hoc. Synthetic M-family windows are admitted by a window-edge single-point readout (the AASR at the window edge squint only), whereas the real-window R families sample the AASR at 11 evenly spaced in-window instants ($\mathrm{lo}+(\mathrm{hi}-\mathrm{lo})\,j/10$, $j=0,\dots,10$) and admit the window only if the worst of the 11 samples meets the threshold; a sample outside the physical sliding domain contributes an exclusion, so it can never mask an unserviceable window. The window-edge single-point rule *underestimates* the in-window worst case by about 4 dB, so the two admission rules are stated per family wherever admission is discussed; the R-family rule is the discrete in-window worst-case caliber that all feasibility statements in this paper inherit (Section 3.3). This sampling is *discrete*, *not continuous* evaluation: a window admitted under it is feasible with respect to the 11-point rule, and the evaluator performs no AASR recheck of its own.
+
+## 5.2 Families and calibers
+
+Three real-window families form the experiment matrix: R1C (20 tasks drawn, 20 served, 158 windows) is the single-orbit control; R2F (50 drawn, 46 served, 342 windows) and R3H (100 drawn, 99 served, 753 windows) are the dense-cluster treatments. Task counts follow the registered density ladder $N=20/50/100$; R4H ($N$=500) was retired at registration because the single-transit STR pass-count scaling exceeds the registered span at $N\ge 150$ (the retirement rationale is registered; no capacity number is asserted anywhere in this paper, since the serial bound has not been recomputed under the v3 scenario world).
+
+The primary stratum for the quality-headroom test is the R2F+R3H pooled stratum; R1C is a single-orbit control read descriptively only. Two facts motivate the split, and both are registered: first, the R1C quality axis operates on a different scale than the pooled families (the per-family domains below are separated by up to two orders of magnitude); second, the power design was computed for R2F/R3H only. The per-family observed f_q domains over all 90 promotion units (3 budget tiers × 3 families × 10 seeds, constraint-violation-filtered (CV $\le 10^{-9}$), pooled) are:
+
+| family (caliber: real-window v3, non-normalised $f_q$, $m^{-2}$) | observed f_q domain |
+|---|---|
+| R1C (real-window, v3 caliber, non-normalised) | 1.35 -- 2.04 |
+| R2F (real-window, v3 caliber, non-normalised) | 55.05 -- 135.22 |
+| R3H (real-window, v3 caliber, non-normalised) | 29.75 -- 123.70 |
+
+The R-family f_q is *not normalised*: the per-window slant-range geometry expands the units scene-dependently, so the three domains are incomparable across families and must never be pooled into a single span. The synthetic M families remain available as a controlled reference; their one still-valid artifact carries the annotation "v2 caliber, output commit unregistered (M-family controlled reference)" wherever cited, and no M-family number is mixed with R-family numbers in this paper.
+
+## 5.3 Hypotheses, power, and preregistration
+
+The quality-headroom test is a one-sided paired test at $\alpha=0.05$ with $n=10$ seeds per family, on the registered estimand (the quality headroom of the front over its anchor at the top budget). The effect size is $\delta=6.0$ in R-family $f_q$ units ($m^{-2}$): the numeral inherits the magnitude of the frozen 6.0 dB promotion threshold as a *numerical inheritance* and is dimensionally *not* equivalent to it (dB vs $m^{-2}$); it was registered *after calibration*, and the registration records exactly that --- the honest description is "registered after calibration, value inherited from the frozen threshold", never "pre-registered".
+
+The power design is registered with its asymmetry disclosed. Recomputed from the promoted artifacts at the top budget, the standard deviation of the estimand is 5.67 (R2F) and 16.14 (R3H), giving minimum detectable effects at 80% power of 4.87 and 13.87 respectively. At the registered $\delta$, the R2F power is 0.92, and the R3H power is 0.29; reaching 80% power at $\delta$ would require R2F to run 7 seeds (already met) and R3H to run 54 seeds --- a *cost anchor*, not a plan: the budget decision registered before the run declines to escalate, and the consequence for reporting is mandatory and asymmetric. R2F may claim 0.92 power at the registered δ; R3H must disclose the 0.29 figure and report its result as not reaching significance at this $n$. Fig. 7 shows the registered power curve with the operating point marked.
+
+![fig-7 Power curves at the registered design](figures/fig7_power_curve.pdf){#fig:7}
+
+**Caption (fig-7).** Power at $n=10$ seeds per family versus effect size δ (non-normalised R-family $f_q$ units, $m^{-2}$, real-window v3 caliber). Solid: R2F (sd 5.67); dashed: R3H (sd 16.14). Dotted horizontal line: the 80% convention. The marked square is the registered operating point δ=6.0: R2F power 0.92, R3H power 0.29 --- the asymmetry is a registered disclosure, not a post-hoc finding. Recomputed from the 160/240 promotion artifacts; the curve reproduces the calibration-time registration route.
+
+Convergence calibration is preregistered before the budget ladder was run: the judgment rule (single-point fronts falling away under budget, distinct-front medians rising, monotone non-saturation at the top budget) was frozen before the two additional budget tiers were executed, and its verdicts are reported with the results (Section 6).
