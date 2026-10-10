@@ -1,0 +1,57 @@
+% fig-2: encoding-evaluation loop of the scheduler (schematic TikZ).
+% Spec pointers: figure-plan-review C (must-show list + machine predicates),
+% sss_core/evaluator.py:367-444 (the real loop this diagram mirrors).
+% Predicates honoured here: the evaluator box contains NO AASR mention (the
+% evaluator performs no AASR recheck -- admission lives on the generation side);
+% the decode arrow is labelled as a measure projection (tau is a fraction of the
+% feasible measure, not wall-clock time); the C2 pad is labelled (1+0.25) on the
+% dwell; the anchor-seed arrow into the initial population is present; the sort
+% node sits between decode and the C2/conflict chain.
+\begin{tikzpicture}[x=1mm,y=1mm,>=stealth,
+  box/.style={draw,rounded corners=1.5,align=center,font=\footnotesize,
+              inner sep=3,minimum height=9},
+  lab/.style={font=\scriptsize,align=center}]
+  % ------------------------------------------------ generation side
+  \node[box,fill=blue!6] (gen) at (0,14)
+    {scenario generation\\ \cite{kim2021optimal} platform, true ground-track windows};
+  \node[box,fill=blue!6] (adm) at (34,14)
+    {AASR admission\\ 11 evenly spaced in-window samples,\\ worst of the 11 vs threshold};
+  \draw[->] (gen) -- (adm);
+  \node[lab,fill=blue!6,below=0.5 of adm] {generation-side caliber: a served task is\\
+    feasible w.r.t.\ the generator's admission};
+  % ------------------------------------------------ genome
+  \node[box] (chrom) at (0,-2)
+    {chromosome $x=(s,\tau)\in\{0,1\}^{N}\times[0,1]^{N}$\\
+     $s$: selection bits; $\tau$: start fractions\\
+     no mode gene (product order fixes $m_i$)};
+  % anchor seed
+  \node[box,fill=orange!12] (seed) at (-34,-2)
+    {greedy anchor seed\\(bounded re-timing repair)};
+  \draw[->] (seed) -- (chrom) node[midway,above,lab]{seed $\to$ initial population};
+  % ------------------------------------------------ decode
+  \node[box] (dec) at (34,-2) {decode: $\tau\to$ start time\\
+    \emph{measure projection} onto the union\\ of feasible window intervals (nonlinear)};
+  \draw[->] (chrom) -- (dec);
+  % ------------------------------------------------ sort + evaluate
+  \node[box] (sort) at (34,-14) {sort tasks by start time\\ (index order $\neq$ time order)};
+  \node[box] (c2) at (62,-14) {C2 chain: for consecutive pair\\
+    $(1+0.25)\,T_{\mathrm{dwell}}+t_{\mathrm{man}}+t_{\mathrm{settle}}\le$ gap\\
+    pad multiplies the dwell, never the maneuver};
+  \node[box,dashed] (c34) at (62,-2) {C3/C4: budgets normalised\\
+    against the library envelope\\ --- slack by construction ---};
+  \node[box] (conf) at (62,-24) {conflict check: imaging intervals\\ (bare dwell) pairwise disjoint};
+  \node[box,fill=green!6] (eval) at (0,-14) {evaluator\\ objectives $(-f_1,-f_q)$\\
+    violation count from the chains at left};
+  \draw[->] (dec) -- (sort);
+  \draw[->] (sort) -- (c2);
+  \draw[->] (c2) -- (conf);
+  \draw[->,dashed] (c34) -- (c2);
+  \draw[->] (adm) |- (eval)
+    node[pos=0.75,right,lab]{admitted windows only; the evaluator performs no AASR recheck};
+  \draw[->] (conf) -| (eval);
+  \draw[->] (c2) -| (eval);
+  % objectives note
+  \node[lab,anchor=west] at (-16,-22)
+    {$f_1=\sum_{i\in S}p_i/\sum_i p_i$ (served priority fraction)\quad
+     $f_q=\frac{1}{|S|}\sum_{i\in S}f_{q,i}$ (mean per-task quality, non-normalised)};
+\end{tikzpicture}
