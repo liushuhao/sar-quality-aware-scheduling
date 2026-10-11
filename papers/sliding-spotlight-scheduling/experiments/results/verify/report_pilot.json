@@ -18,7 +18,7 @@
         "expected_n0": 154,
         "failed": 0,
         "passed": 154,
-        "tail": "154 passed, 1 warning in 164.42s (0:02:44)"
+        "tail": "154 passed, 1 warning in 189.46s (0:03:09)"
       },
       "status": "PASS",
       "step": "shared_lib_tests"
@@ -30,7 +30,7 @@
         "failed": 0,
         "passed": 374,
         "skipped": 1,
-        "tail": "374 passed, 1 skipped, 1 warning in 1282.16s (0:21:22)",
+        "tail": "374 passed, 1 skipped, 1 warning in 1880.34s (0:31:20)",
         "xfailed": 0
       },
       "status": "PASS",

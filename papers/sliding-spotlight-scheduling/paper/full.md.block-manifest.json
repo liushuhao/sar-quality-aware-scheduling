@@ -1,0 +1,646 @@
+{
+  "manifest_format_version": "1.0",
+  "base_draft_hash": "b716a1f0eadc",
+  "blocks": [
+    {
+      "block_id": "B0001",
+      "old_hash": "d16a701b5580",
+      "first_line_excerpt": "# Abstract (placeholder)"
+    },
+    {
+      "block_id": "B0002",
+      "old_hash": "f4ed26d03b14",
+      "first_line_excerpt": "*[Placeholder per the drafting order: the abstract proper is produced in the ab…"
+    },
+    {
+      "block_id": "B0003",
+      "old_hash": "be7b5baf775e",
+      "first_line_excerpt": "# 1. Introduction"
+    },
+    {
+      "block_id": "B0004",
+      "old_hash": "acb4342c0c65",
+      "first_line_excerpt": "## 1.1 Motivation"
+    },
+    {
+      "block_id": "B0005",
+      "old_hash": "15a885a0ebee",
+      "first_line_excerpt": "Agile Earth-observation satellites steered by a single antenna can operate thei…"
+    },
+    {
+      "block_id": "B0006",
+      "old_hash": "80e172565675",
+      "first_line_excerpt": "This paper studies that coupling on a single satellite in a regime of single-pa…"
+    },
+    {
+      "block_id": "B0007",
+      "old_hash": "f6f46771153f",
+      "first_line_excerpt": "Two risks motivate the methodology as much as the physics does. First, a claim …"
+    },
+    {
+      "block_id": "B0008",
+      "old_hash": "309d2bd023cd",
+      "first_line_excerpt": "## 1.2 Contributions"
+    },
+    {
+      "block_id": "B0009",
+      "old_hash": "6c8a5485aad8",
+      "first_line_excerpt": "Following the registered narrative frame --- registered here meaning fixed in t…"
+    },
+    {
+      "block_id": "B0010",
+      "old_hash": "718f9df1d82b",
+      "first_line_excerpt": "1. **An enabling physics-to-scheduler platform** (the platform leg). A three-mo…"
+    },
+    {
+      "block_id": "B0011",
+      "old_hash": "4a53affd92b7",
+      "first_line_excerpt": "Throughout, the trade-off the study claims is the resolution-versus-dwell-time …"
+    },
+    {
+      "block_id": "B0012",
+      "old_hash": "6f39d6940ba7",
+      "first_line_excerpt": "To our knowledge, treating the steering-coupling loop as a first-class constrai…"
+    },
+    {
+      "block_id": "B0013",
+      "old_hash": "0dd802515f59",
+      "first_line_excerpt": "## 1.3 Paper organisation"
+    },
+    {
+      "block_id": "B0014",
+      "old_hash": "47d85c48a920",
+      "first_line_excerpt": "Section 2 positions the work along sliding-spotlight imaging, agile-satellite s…"
+    },
+    {
+      "block_id": "B0015",
+      "old_hash": "c33ed7db6b29",
+      "first_line_excerpt": "# 2. Related Work"
+    },
+    {
+      "block_id": "B0016",
+      "old_hash": "435ee8de55be",
+      "first_line_excerpt": "This section positions the paper along three lines: sliding-spotlight SAR imagi…"
+    },
+    {
+      "block_id": "B0017",
+      "old_hash": "04fff57fced5",
+      "first_line_excerpt": "## 2.1 Sliding-spotlight and spotlight SAR imaging"
+    },
+    {
+      "block_id": "B0018",
+      "old_hash": "43a33cd5432e",
+      "first_line_excerpt": "The sliding-spotlight family is standardly formulated as steering about a fixed…"
+    },
+    {
+      "block_id": "B0019",
+      "old_hash": "58f020f7bc87",
+      "first_line_excerpt": "Two quantitative anchors from the imaging line matter to this study, and both a…"
+    },
+    {
+      "block_id": "B0020",
+      "old_hash": "a56ce7a88385",
+      "first_line_excerpt": "The dwell time itself is treated in the imaging literature as a deterministic f…"
+    },
+    {
+      "block_id": "B0021",
+      "old_hash": "2fdf262d2544",
+      "first_line_excerpt": "## 2.2 Agile Earth-observation satellite scheduling"
+    },
+    {
+      "block_id": "B0022",
+      "old_hash": "cb7fd6f06b9b",
+      "first_line_excerpt": "The agile-scheduling literature is broad and mature: hybrid genetic-simulated-a…"
+    },
+    {
+      "block_id": "B0023",
+      "old_hash": "6699bad442bf",
+      "first_line_excerpt": "For an agile SAR platform in sliding-spotlight operation that assumption is fal…"
+    },
+    {
+      "block_id": "B0024",
+      "old_hash": "8fbd4db9ab1a",
+      "first_line_excerpt": "## 2.3 Quality-aware scheduling"
+    },
+    {
+      "block_id": "B0025",
+      "old_hash": "e4aede9ee907",
+      "first_line_excerpt": "Putting image quality inside the planning loop, rather than after it, has far l…"
+    },
+    {
+      "block_id": "B0026",
+      "old_hash": "325bebce459f",
+      "first_line_excerpt": "## 2.4 Positioning"
+    },
+    {
+      "block_id": "B0027",
+      "old_hash": "a6655e517488",
+      "first_line_excerpt": "The three lines meet at a gap that this paper occupies by construction: treatin…"
+    },
+    {
+      "block_id": "B0028",
+      "old_hash": "422c0c5441db",
+      "first_line_excerpt": "# 3. Problem Formulation and Scheduling Model"
+    },
+    {
+      "block_id": "B0029",
+      "old_hash": "ead22fae014b",
+      "first_line_excerpt": "This section formalises the observation geometry, the three-mode imaging librar…"
+    },
+    {
+      "block_id": "B0030",
+      "old_hash": "0eb3b35cd632",
+      "first_line_excerpt": "## 3.1 Observation geometry and imaging modes"
+    },
+    {
+      "block_id": "B0031",
+      "old_hash": "77939670ba07",
+      "first_line_excerpt": "We adopt the X-band reference platform of Kim et al. \\cite{kim2021optimal}: alt…"
+    },
+    {
+      "block_id": "B0032",
+      "old_hash": "cee763c523fb",
+      "first_line_excerpt": "The three imaging modes --- stripmap (STR), sliding spotlight (SLS), and spotli…"
+    },
+    {
+      "block_id": "B0033",
+      "old_hash": "63dafc18b2ed",
+      "first_line_excerpt": "The sliding factor: under the rotation-centre semantics adopted here, $A=r_0/(R…"
+    },
+    {
+      "block_id": "B0034",
+      "old_hash": "fc43ced48d78",
+      "first_line_excerpt": "Under the rotation-centre semantics the spectral compression factor is a consta…"
+    },
+    {
+      "block_id": "B0035",
+      "old_hash": "e5d49f5fb824",
+      "first_line_excerpt": "The registered squint domains are separate registered fields, listed apart from…"
+    },
+    {
+      "block_id": "B0036",
+      "old_hash": "2d639e2079af",
+      "first_line_excerpt": "![fig-1 SLS rotation-centre geometry and the three-mode continuum](figures/fig1…"
+    },
+    {
+      "block_id": "B0037",
+      "old_hash": "3326758a153a",
+      "first_line_excerpt": "**Caption (fig-1).** Three modes as a single-parameter continuum over the virtu…"
+    },
+    {
+      "block_id": "B0038",
+      "old_hash": "ce7f86256782",
+      "first_line_excerpt": "## 3.2 Dwell duration and visibility windows"
+    },
+    {
+      "block_id": "B0039",
+      "old_hash": "1e8c623509d4",
+      "first_line_excerpt": "The dwell of a task is the saturation-avoidance time (SAT) at scene level: the …"
+    },
+    {
+      "block_id": "B0040",
+      "old_hash": "219665e98c36",
+      "first_line_excerpt": "The zero-squint anchors close an identity: $\\theta_a/A=\\lambda/(2\\rho_{a})$ hol…"
+    },
+    {
+      "block_id": "B0041",
+      "old_hash": "371faae811a5",
+      "first_line_excerpt": "Each task carries one or more visibility windows produced by ground-track pass …"
+    },
+    {
+      "block_id": "B0042",
+      "old_hash": "46b79223301e",
+      "first_line_excerpt": "One scheduling-level geometric quantity needs a definition here because it ente…"
+    },
+    {
+      "block_id": "B0043",
+      "old_hash": "57671bc4669c",
+      "first_line_excerpt": "## 3.3 Image quality model"
+    },
+    {
+      "block_id": "B0044",
+      "old_hash": "7e326d590f8d",
+      "first_line_excerpt": "The per-task quality index is an inverse-pixel-area form with a range-normalise…"
+    },
+    {
+      "block_id": "B0045",
+      "old_hash": "6f8c1e1c5ca4",
+      "first_line_excerpt": "Three caliber statements are frozen with this definition. First, $\\rho_{\\mathrm…"
+    },
+    {
+      "block_id": "B0046",
+      "old_hash": "6be8561c4171",
+      "first_line_excerpt": "The azimuth ambiguity-to-signal ratio (AASR) is defined with the ambiguity sum …"
+    },
+    {
+      "block_id": "B0047",
+      "old_hash": "a12fbf330f25",
+      "first_line_excerpt": "Admission uses a *discrete* worst-case readout, *not continuous* evaluation: th…"
+    },
+    {
+      "block_id": "B0048",
+      "old_hash": "9567b9a17dcb",
+      "first_line_excerpt": "## 3.4 Constraints and objectives"
+    },
+    {
+      "block_id": "B0049",
+      "old_hash": "af86cf5bf3fa",
+      "first_line_excerpt": "The decision vector of a scenario with $N$ tasks is $x=(s,\\tau)\\in\\{0,1\\}^{N}\\t…"
+    },
+    {
+      "block_id": "B0050",
+      "old_hash": "879c8a46b3f5",
+      "first_line_excerpt": "Four constraint families apply."
+    },
+    {
+      "block_id": "B0051",
+      "old_hash": "a461c5c5fcb2",
+      "first_line_excerpt": "- **C1 (geometry, generation side).** A selected start must fall inside a visib…"
+    },
+    {
+      "block_id": "B0052",
+      "old_hash": "3cfd3d16263f",
+      "first_line_excerpt": "Two structural facts about C3/C4 are disclosed as design semantics rather than …"
+    },
+    {
+      "block_id": "B0053",
+      "old_hash": "cf2545d305d4",
+      "first_line_excerpt": "The bi-objective problem maximises the served priority fraction $f_1=\\sum_{i\\in…"
+    },
+    {
+      "block_id": "B0054",
+      "old_hash": "358a9c1ccd3c",
+      "first_line_excerpt": "# 4. Solving Approach"
+    },
+    {
+      "block_id": "B0055",
+      "old_hash": "b097228ed877",
+      "first_line_excerpt": "## 4.1 Encoding and evaluation"
+    },
+    {
+      "block_id": "B0056",
+      "old_hash": "cf95e1060986",
+      "first_line_excerpt": "The solver is a dual-objective evolutionary search over the chromosome of Secti…"
+    },
+    {
+      "block_id": "B0057",
+      "old_hash": "b45820cc33ed",
+      "first_line_excerpt": "![fig-2 The encoding-evaluation loop](figures/fig2_scheduling_loop.tex){#fig:2}"
+    },
+    {
+      "block_id": "B0058",
+      "old_hash": "331039e806ea",
+      "first_line_excerpt": "**Caption (fig-2).** The scheduler's encoding-evaluation loop. Generation side …"
+    },
+    {
+      "block_id": "B0059",
+      "old_hash": "fd7a53488c25",
+      "first_line_excerpt": "## 4.2 Anchor-seeded initialization"
+    },
+    {
+      "block_id": "B0060",
+      "old_hash": "49107af03fdf",
+      "first_line_excerpt": "The initial population contains the greedy anchor: a bounded single-pass re-tim…"
+    },
+    {
+      "block_id": "B0061",
+      "old_hash": "b7bc5d940b12",
+      "first_line_excerpt": "## 4.3 Search operators and selection"
+    },
+    {
+      "block_id": "B0062",
+      "old_hash": "24d22e0ccd2e",
+      "first_line_excerpt": "Variation uses standard binary crossover on the selection bits and simulated bi…"
+    },
+    {
+      "block_id": "B0063",
+      "old_hash": "d29d74d822f1",
+      "first_line_excerpt": "## 4.4 The measure normalisation of $\\tau$ and its implicit bias"
+    },
+    {
+      "block_id": "B0064",
+      "old_hash": "0699e6fd6ec7",
+      "first_line_excerpt": "One parameterisation choice is disclosed as intentional. A start fraction $\\tau…"
+    },
+    {
+      "block_id": "B0065",
+      "old_hash": "39b604b0225c",
+      "first_line_excerpt": "# 5. Experimental Design and Setup"
+    },
+    {
+      "block_id": "B0066",
+      "old_hash": "f9c423b35b66",
+      "first_line_excerpt": "This section describes the scenario world, the family and caliber system, and t…"
+    },
+    {
+      "block_id": "B0067",
+      "old_hash": "49e35f42c460",
+      "first_line_excerpt": "## 5.1 Scenario construction"
+    },
+    {
+      "block_id": "B0068",
+      "old_hash": "dd16f7d4759e",
+      "first_line_excerpt": "The scenario world is built from *real ground-track transit enumeration*, not f…"
+    },
+    {
+      "block_id": "B0069",
+      "old_hash": "3786260ae330",
+      "first_line_excerpt": "Orbit propagation is two-body only --- no $J_2$ or atmospheric terms --- so the…"
+    },
+    {
+      "block_id": "B0070",
+      "old_hash": "0ca2c2c11f42",
+      "first_line_excerpt": "The AASR admission criterion is evaluated per family, and the two families diff…"
+    },
+    {
+      "block_id": "B0071",
+      "old_hash": "8abdc792e2c0",
+      "first_line_excerpt": "## 5.2 Families and calibers"
+    },
+    {
+      "block_id": "B0072",
+      "old_hash": "f80f7b62b893",
+      "first_line_excerpt": "Three real-window families form the experiment matrix: R1C (20 tasks drawn, 20 …"
+    },
+    {
+      "block_id": "B0073",
+      "old_hash": "6dd6157eab50",
+      "first_line_excerpt": "The primary stratum for the quality-headroom test is the R2F+R3H pooled stratum…"
+    },
+    {
+      "block_id": "B0074",
+      "old_hash": "83afa3e61b48",
+      "first_line_excerpt": "| family (caliber: real-window v3, non-normalised $f_q$, $m^{-2}$) | observed f…"
+    },
+    {
+      "block_id": "B0128",
+      "old_hash": "43ec4b78b1fa",
+      "first_line_excerpt": "Note: the pooled extremes include the under-converged 40/60 baseline tier (see …"
+    },
+    {
+      "block_id": "B0075",
+      "old_hash": "cb5a3951d278",
+      "first_line_excerpt": "The R-family f_q is *not normalised*: the per-window slant-range geometry expan…"
+    },
+    {
+      "block_id": "B0076",
+      "old_hash": "bd791b7f6c3e",
+      "first_line_excerpt": "## 5.3 Hypotheses, power, and preregistration"
+    },
+    {
+      "block_id": "B0077",
+      "old_hash": "be7d0b334f52",
+      "first_line_excerpt": "The quality-headroom test is a one-sample, one-sided $t$-test at $\\alpha=0.05$ …"
+    },
+    {
+      "block_id": "B0078",
+      "old_hash": "210e2a8304a4",
+      "first_line_excerpt": "The power design is registered with its asymmetry disclosed; the figures below …"
+    },
+    {
+      "block_id": "B0079",
+      "old_hash": "011e10eb98be",
+      "first_line_excerpt": "![fig-7 Power curves at the registered design](figures/fig7_power_curve.pdf){#f…"
+    },
+    {
+      "block_id": "B0080",
+      "old_hash": "80639dab4351",
+      "first_line_excerpt": "**Caption (fig-7).** Power at $n=10$ seeds per family versus effect size δ (non…"
+    },
+    {
+      "block_id": "B0081",
+      "old_hash": "7c021ba2e913",
+      "first_line_excerpt": "Convergence calibration is preregistered before the budget ladder was run: the …"
+    },
+    {
+      "block_id": "B0082",
+      "old_hash": "b0415ce738d9",
+      "first_line_excerpt": "# 6. Results and Analysis"
+    },
+    {
+      "block_id": "B0083",
+      "old_hash": "1d4855779e4e",
+      "first_line_excerpt": "All readings in this section are taken from the highest tier of the promoted ar…"
+    },
+    {
+      "block_id": "B0084",
+      "old_hash": "66c8a1cdd3cb",
+      "first_line_excerpt": "## 6.1 Primary stratum results"
+    },
+    {
+      "block_id": "B0085",
+      "old_hash": "e1890d95710e",
+      "first_line_excerpt": "The primary stratum for the quality-headroom test is the R2F+R3H pooled stratum…"
+    },
+    {
+      "block_id": "B0086",
+      "old_hash": "a3a1d3e64fcf",
+      "first_line_excerpt": "The asymmetry is reported as registered. At the top budget the R2F power is 0.9…"
+    },
+    {
+      "block_id": "B0087",
+      "old_hash": "7cf2a527f580",
+      "first_line_excerpt": "## 6.2 Promotion, two axes"
+    },
+    {
+      "block_id": "B0088",
+      "old_hash": "818facf6f9d1",
+      "first_line_excerpt": "The promotion verdict is stated on two separated axes, and the separation is th…"
+    },
+    {
+      "block_id": "B0089",
+      "old_hash": "884e428aed6b",
+      "first_line_excerpt": "**Structural axis (model-level).** The real-window structural spread $R_{fam}$ …"
+    },
+    {
+      "block_id": "B0090",
+      "old_hash": "5a81d7679c0c",
+      "first_line_excerpt": "**Reading axis.** Over all 90 units (3 families × 3 budget tiers × 10 seeds) th…"
+    },
+    {
+      "block_id": "B0091",
+      "old_hash": "862a0af7db3a",
+      "first_line_excerpt": "## 6.3 Convergence verdicts and budget tiers"
+    },
+    {
+      "block_id": "B0092",
+      "old_hash": "129430634dcb",
+      "first_line_excerpt": "Convergence was calibrated under a preregistered rule frozen before the two add…"
+    },
+    {
+      "block_id": "B0093",
+      "old_hash": "1b5a1dae3a6d",
+      "first_line_excerpt": "For R3H the base-budget picture --- 6 of 10 seeds ending at a single-point fron…"
+    },
+    {
+      "block_id": "B0094",
+      "old_hash": "e4bbb1015e73",
+      "first_line_excerpt": "Neither family has satisfied the plateau rule: between the middle and the highe…"
+    },
+    {
+      "block_id": "B0095",
+      "old_hash": "23d2c0a53f64",
+      "first_line_excerpt": "![fig-4 Budget-ladder convergence](figures/fig4_budget_ladder.pdf){#fig:4}"
+    },
+    {
+      "block_id": "B0096",
+      "old_hash": "106228ee83f5",
+      "first_line_excerpt": "**Caption (fig-4).** Median front size (left) and median distinct-fq count (rig…"
+    },
+    {
+      "block_id": "B0097",
+      "old_hash": "71f7f166e97f",
+      "first_line_excerpt": "## 6.4 Per-mode quality decomposition"
+    },
+    {
+      "block_id": "B0098",
+      "old_hash": "e3978e5f26a1",
+      "first_line_excerpt": "The second objective is fully explained by the mode library. At the zero-squint…"
+    },
+    {
+      "block_id": "B0099",
+      "old_hash": "771767343f06",
+      "first_line_excerpt": "![fig-3 Per-mode f_q versus squint](figures/fig3_quality_vs_squint.pdf){#fig:3}"
+    },
+    {
+      "block_id": "B0100",
+      "old_hash": "ff20e621d3f2",
+      "first_line_excerpt": "**Caption (fig-3).** Per-task f_q versus beam-centre squint for the three libra…"
+    },
+    {
+      "block_id": "B0101",
+      "old_hash": "4f3127fea682",
+      "first_line_excerpt": "Mode composition differs sharply by family: every R1C task routes to STR (20/20…"
+    },
+    {
+      "block_id": "B0102",
+      "old_hash": "50345943f10c",
+      "first_line_excerpt": "![fig-6 Per-mode f_Q decomposition](figures/fig6_per_mode_decomposition.pdf){#f…"
+    },
+    {
+      "block_id": "B0103",
+      "old_hash": "228db0946c68",
+      "first_line_excerpt": "**Caption (fig-6).** Per-family decomposition of the second objective into mode…"
+    },
+    {
+      "block_id": "B0104",
+      "old_hash": "08e0d26452cb",
+      "first_line_excerpt": "A required disclosure on double weighting (D05-5). The quality aggregate is wei…"
+    },
+    {
+      "block_id": "B0105",
+      "old_hash": "a7c7cb52e696",
+      "first_line_excerpt": "## 6.5 Coverage parity"
+    },
+    {
+      "block_id": "B0106",
+      "old_hash": "9f9d7ebf4ff6",
+      "first_line_excerpt": "The coverage axis is a constructive parity outcome, not a hypothesis test. The …"
+    },
+    {
+      "block_id": "B0107",
+      "old_hash": "4a258febe23e",
+      "first_line_excerpt": "![fig-5 Promotion two-axis verdict](figures/fig5_promotion_two_axis.pdf){#fig:5}"
+    },
+    {
+      "block_id": "B0108",
+      "old_hash": "05a971a99691",
+      "first_line_excerpt": "**Caption (fig-5).** The promotion verdict on its two separated axes. (a) Struc…"
+    },
+    {
+      "block_id": "B0109",
+      "old_hash": "79a6fddd673a",
+      "first_line_excerpt": "# 7. Discussion and Limitations"
+    },
+    {
+      "block_id": "B0110",
+      "old_hash": "fcced744969a",
+      "first_line_excerpt": "## 7.1 Scope and negative claims"
+    },
+    {
+      "block_id": "B0111",
+      "old_hash": "0de9500fdb7d",
+      "first_line_excerpt": "Three scope statements are registered before anything is claimed. First, the ca…"
+    },
+    {
+      "block_id": "B0112",
+      "old_hash": "2079cf11107b",
+      "first_line_excerpt": "## 7.2 Azimuth ambiguity versus the literature: a direction contrast"
+    },
+    {
+      "block_id": "B0113",
+      "old_hash": "a3786ecaf011",
+      "first_line_excerpt": "The registered correction behind this section is blunt: in this model the ambig…"
+    },
+    {
+      "block_id": "B0114",
+      "old_hash": "ed9a9e763cfc",
+      "first_line_excerpt": "The mechanism is the Doppler bandwidth. In this model the spectral compression …"
+    },
+    {
+      "block_id": "B0115",
+      "old_hash": "f88ef627c7dd",
+      "first_line_excerpt": "## 7.3 Model caveats"
+    },
+    {
+      "block_id": "B0116",
+      "old_hash": "62915a010055",
+      "first_line_excerpt": "**f_ac absolute position is omitted.** The ambiguity folding is integrated abou…"
+    },
+    {
+      "block_id": "B0117",
+      "old_hash": "7f3f984ed9df",
+      "first_line_excerpt": "**The C2 maneuver angle is a two-sided lower bound.** The inter-task requiremen…"
+    },
+    {
+      "block_id": "B0118",
+      "old_hash": "d8ff26f978cf",
+      "first_line_excerpt": "**g_T has no external cross-validation.** The transmit-path gain term is self-d…"
+    },
+    {
+      "block_id": "B0119",
+      "old_hash": "fc65cbb18f66",
+      "first_line_excerpt": "**The range-resolution anchor is a design constant.** $\\rho_{\\mathrm{rg}}$ is h…"
+    },
+    {
+      "block_id": "B0120",
+      "old_hash": "e031cf38ad29",
+      "first_line_excerpt": "**Per-mode calibers are not economically comparable.** The spotlight admission …"
+    },
+    {
+      "block_id": "B0121",
+      "old_hash": "cfa3db3ba44a",
+      "first_line_excerpt": "## 7.4 Design semantics and pre-answers"
+    },
+    {
+      "block_id": "B0122",
+      "old_hash": "696cd006d739",
+      "first_line_excerpt": "**Why not jointly optimize mode and time?** Because the mode is a product-order…"
+    },
+    {
+      "block_id": "B0123",
+      "old_hash": "1492818fc858",
+      "first_line_excerpt": "**The verification criterion is budget-bounded.** The convergence calibration o…"
+    },
+    {
+      "block_id": "B0124",
+      "old_hash": "6cf54d2c8afa",
+      "first_line_excerpt": "# 8. Conclusion"
+    },
+    {
+      "block_id": "B0125",
+      "old_hash": "91c19273fad7",
+      "first_line_excerpt": "This paper made the imaging physics of a three-mode agile SAR platform --- mode…"
+    },
+    {
+      "block_id": "B0126",
+      "old_hash": "f60ba8928d71",
+      "first_line_excerpt": "The registered verdicts are deliberately modest. The structural axis says the r…"
+    },
+    {
+      "block_id": "B0127",
+      "old_hash": "b83532b8a884",
+      "first_line_excerpt": "Future work follows the registered deferrals: recomputing the serial bound unde…"
+    }
+  ]
+}
