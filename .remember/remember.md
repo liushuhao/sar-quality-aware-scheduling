@@ -7,10 +7,10 @@
 
 ## Next
 1. **投稿=用户本人在 Editorial Manager 操作**（清单 `papers/sliding-spotlight-scheduling/paper/SUBMISSION_CHECKLIST.md`）。三项只能人填：推荐/回避审稿人、是否投特刊、Data availability 措辞。传源文件须含 `figures/` 两个 `.tex`（`\input` 引入，缺了编辑部编译不过）。另 2 条 bib 缺页码（caleiras2026a/wang2024research）本地无来源，拒编，留编辑部补。
-2. **review2 两本 goal 书待发射**（已过 4 轮审书闸，判「可发射」）。现算哈希 r1=`ec885c15` / r2=`77bac3be`，与归档件 `cmp`=0。用户倾向先审后投：GLM 5.3 满血会话粘 R1（`.remember/tmp/goal_book_review2_r1.md`）→ 跑完明卷+暗卷验收 → R2 → 投稿包重冻结 → 再投。
+2. **review2 两本 goal 书待发射**（已过 4 轮审书闸，判「可发射」）。现算哈希（2026-10-12 收工亲测，活件 vs 归档件 `cmp`=0）r1=`287aa046…` / r2=`55c9571a…`；书内 spec blob 钉值 `50be1fa4…` 与盘上 spec 一致——执行者任务 0 自检链完好。用户倾向先审后投：GLM 5.3 满血会话粘 R1（`.remember/tmp/goal_book_review2_r1.md`）→ 跑完明卷+暗卷验收 → R2 → 投稿包重冻结 → 再投。
 
 ## Context
-- **remember.md 上轮记的哈希 `287aa046…/55c9571a…` 已就地勘误**——那是审书闸在书被重写（22:56/23:03）前验的旧值，非当前态；`review-verdict-round1.md:179/196` 的旧值是历史快照，不改。读到哈希对锚句先现算。
+- **哈希勘误勘误（2026-10-12 收工对账）**：并行收尾会话（29c91fa）曾把两书哈希记为 `ec885c15/77bac3be` 并判 `287aa046…/55c9571a…` 是「重写前旧值」——该判定不成立：其现算时点落在审书闸 Round3/4 重写窗口内，且 `ec885c15/77bac3be` 在本书全部历史态中不存在；本轮收工再亲测活件=归档件（cmp 逐位 0）、书内 spec blob `50be1fa4…` 与盘上 spec 一致，**`287aa046…/55c9571a…` 为终态**。读到哈希对锚句先现算（此规保留）。
 - rtk 一天咬三次均给「可信但错」结论：`grep -h 多文件` 吐 usage、`grep -c` 假 0（换行所致）、`git check-ignore -v` 输出被吃。**否定性结论（零命中/不在/未跟踪）必须双法复核**，单文件名给 bash grep 或 python 读文件才可靠。
 - 运行期纪律不变：勿改 `~/.claude/settings.json`（hermes 热重载带死子进程前科）；勿并行会话写 `paper/**` 或 remember.md。
 - 论文口径禁动：26.9°=注册保守值非物理边界、真窗只取 v3_results、R_fam 8.74/10.91、负 promotion 结果如实上报（90 单元无一提升，spread 3.9722 vs 冻结 6.0）。
