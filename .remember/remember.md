@@ -14,7 +14,10 @@
 - **W2-W7 暗卷验收 PASS（2026-10-11，主线程 15 探针亲跑全绿）**：判词=`.remember/tmp/goal_dark_slots_w2w7.md`。要点：红线×2+数字 40+39 亲跑零偏、台账 59 行+钉死抽样锚点逐行解析实、暗桩全零（26.7567/arccos/v2_results/31-111）、26.9 四处全带保守值语义、孤儿键零（23 键双侧对 bib 307）、撞车判读全文亲核成立（最邻接 3 篇排除理由成立）、seat2 补跑成功（19.9KB）、独立层 3/7 缺陷修复抽验落稿（−25.40/−18%+41%/比值方向标签）、t=24.78+p/MDE₈₀ 入稿且计算证据归档 gates、编译亲跑 rc=0×2 零错 38 页 PDF、fig-2 谓词 TikZ 源头遵守。裁决 2 项：A1 report_pilot.json=非越权（run_verify 自身输出路径，书级盲点→台账 R34）；A2 执行者 G4.2 抽样行号口径与数据行序差一位（两边均固定规则、内容真实、双覆盖，记口径瑕疵）。
 
 ## Next
-1. **W2-W7 已跑完+暗卷验收 PASS（判词=`.remember/tmp/goal_dark_slots_w2w7.md`），现处 W7 硬停点：投稿动作由用户执行。** 投稿包=`papers/sliding-spotlight-scheduling/paper/{main.tex(+refs.bib+figures/), credit.md, declaration.md, cover_letter.md, highlights.md}`；全闸证据=`goal-w2w7/{PROGRESS.md, gates/, panel/, review-authority/}`。用户事项：①**定稿标题+作者 affiliation+corresponding author e-mail**（W7 最终独立复核判 FREEZE-BLOCKED 的两条用户供给项：main.tex 标题仍带 working title 标记、作者块无 affiliation/邮箱——数据只有用户能供，包内一致性已修（commit b524b73）+Funding 节已补）②过目异步可决项 W5-W7 段（尤其 P2 面板仲裁与 B3 盲点）③下投稿指令（AST 主投/ASR 备投）。
+1. **review2 审查修改期待发射（2026-10-11 深夜定稿）**：两本 goal 书已过 4 轮独立审书闸（终判「可发射」零 FAIL；回执=`.scratch/sliding-spotlight-scheduling/goal-review2/review-verdict-round1.md` 202 行）。R1=修图波（七图排版，数据零漂移），R2=内容波（理论复审/数据回归/五席面板/文风修复+终闸重冻结）。**用户动作：GLM 5.3 满血会话粘贴 R1（`.remember/tmp/goal_book_review2_r1.md`）发射→跑完主线程明卷+暗卷验收→粘贴 R2→验收→投稿包重冻结→投稿指令（AST 主投，仍属用户）。** 书真源=归档件 `goal-review2/archived/`（活件哈希 287aa046…/55c9571a… 已对齐）；暗卷=`.remember/tmp/goal_dark_slots_review2.md`（主线程自留）。
+2. **W7 硬停点已被用户推进（2026-10-11 22:45）**：标题/affiliation/email 已供给并提交（`40bee0e` 五件+refs.bib、`68caa4a` main.pdf+SUBMISSION_CHECKLIST.md）——W2-W7 验收判词=`.remember/tmp/goal_dark_slots_w2w7.md`（历史）。同批入库含主线程一处 cover_letter 合规修正（"search artifact" 标记并同行，修 W6 预存守门红灯；教训记忆 `project-paper2-writingbans-gate-gap`）。**建议 R1/R2 跑完再投**（两书改同一包，先审后投避免返工）；若决定先投，两书作废即可，零沉没。
+3. 运行期纪律（用户侧）：勿改 `~/.claude/settings.json`（hermes 热重载带死子进程前科）；勿开并行会话写本仓 `paper/**` 或 remember.md（本书无 pid 并发护栏，靠操作约定）。
+4. 取数纪律不变（真窗 v3_results、R_fam 8.74/10.91、26.9°=注册保守值）；勿再裁章序/节序（State 三裁决③）。
 2. 运行期纪律（用户侧）：勿改 `~/.claude/settings.json`（hermes 热重载带死子进程前科）；勿开并行会话写本仓 `paper/**` 或 remember.md（本书无 pid 并发护栏，靠操作约定）。
 3. 取数纪律不变（真窗 v3_results、R_fam 8.74/10.91、26.9°=注册保守值）；勿再裁章序/节序（State 三裁决③）。
 
