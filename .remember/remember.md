@@ -10,8 +10,10 @@
 - **goal-w0w1 验收 PASS（2026-10-10，主线程暗卷 11 探针亲跑全绿）**：判词=`.remember/tmp/goal_dark_slots_w0w1.md` 验收结果节。要点：两 blob 基线三方同、大纲 8 节引言先行+锚点抽验 3/3、义务表 59 行分布亲核（A9/B18/D6/E12/F14）+travel/禁语落点全空、越闸留痕在 PROGRESS、C3 回执复算符、C5 双 hash `61d8690e…` 亲算一致、暗桩零命中（v2_results 三处均为禁引条款）、越权扫净（residuals.md 执行者零触碰）。非阻塞备注 4 条：BLOCKED.md 未建文件应钉 convention（下本书）、C3 以回执注入 fresh 代位判可接受、执行者 commit「accepted」用词越位由判词补位、主动披露 3 处诚信加分。
 - **第二波已发射（2026-10-10，用户「按推荐执行」=P1 批准+C1 批准发射+B1 确认保留零改动）**：发射前主线程依赖实证全过（六脚本/谓词旗标/编译链/v3_results 三档矩阵/blob 三方对锚）+ fresh 反方审 pre-mortem 无致命缺陷（发现 4 处任务级修补点，见下）。修补批次 4 行落手册（①已定口径+解释器钉死 `/d/Program Files/Python/python` ②B9 证据锚勘误→`.scratch/sliding-spotlight-scheduling/limitations-material.md`（map 冻结不改）③W3 示意图两行规格指针→`goal-w0w1/figure-plan-review.md` C 节谓词 ④G4.2 抽样钉死台账行号 1/13/25/37/49）——不触三节骨架，未触发重审。书 blob `61d8690e…`→`2e49e93d…`（135 行），归档件 cmp=0，figure-plan-review 补放行记录，R33 已关（residuals 台账）。执行者=后台 Agent，唯一任务源=`.remember/tmp/goal_book_w0-w7-draft.md`，工作目录 `goal-w2w7/` 自建；已知假绿面披露：G2.1 bibtex 干跑对零引用空壳恒绿（转换器真缺陷晚至 W5.5 暴露，有界）、G2.3 overlap 语义自判（主线程验收时复核撞车记录）。
 
+- **W2-W7 执行完毕（2026-10-11，无人值守续跑至硬停）**：W2 双池（refs.bib 307 条、撞车零命中）→ W3 七章+§4/§8 补起草 → W4 全文闸 → W5 全链闭合：预闸六脚本 rc=0×6（run_verify PASS=12 REPORT=1 FAIL=0）→ 五席盲审面板（claude -p 本地代理 step 族，Major Revision）→ ARS patch 契约三轮全落（R1 31op commit d97fefb / R2 5op 0d096dd / R3 11op 3f9331f）+ re-review CONVERGED → 独立审层（opus=deepseek 族）READY-AFTER-MINOR-FIXES→ALL-FIXES-VERIFIED（证据链 `goal-w2w7/review-authority/revision-evidence-bundle.json` 三轮验证通过）→ W5.5 手写 main.tex（编译链 rc=0×4 零 error，commit bf60d76）→ W6 摘要（数字全⊆闸集）+声明三件+cover letter+highlights（commit 7303114，孤儿键 0、policy 页当日核验在案）→ W7 终闸机械套件全绿（红线 md+tex rc=0、台账 59、数字 79 checked 0 mismatch、编译 rc=0、独立层 FREEZE 复核见 panel/w7_final_check_report.md）。**停在投稿动作前，等用户投稿指令。**
+
 ## Next
-1. **第二波运行中（W2→W7）**：预期停点=W2 撞车命中（条件停等）/W5 Major 两轮上限/独立审层载体不可得/W7 硬停（投稿动作前）。执行者断点续跑=读 `goal-w2w7/PROGRESS.md`；执行者回传后主线程暗卷复核（验收 8 条贴实际输出，不信自述全绿）；W2 撞车记录主线程亲核。
+1. **W2-W7 已跑完，现处 W7 硬停点：投稿动作由用户执行。** 投稿包=`papers/sliding-spotlight-scheduling/paper/{main.tex(+refs.bib+figures/), credit.md, declaration.md, cover_letter.md, highlights.md}`；全闸证据=`goal-w2w7/{PROGRESS.md, gates/, panel/, review-authority/}`。用户事项：①定稿标题（现为 working title）+作者 affiliation ②过目异步可决项 W5-W7 段（尤其 P2 面板仲裁与 B3 盲点）③下投稿指令（AST 主投/ASR 备投）。主线程暗卷复核待用户回场后进行（验收 8 条贴实际输出）。
 2. 运行期纪律（用户侧）：勿改 `~/.claude/settings.json`（hermes 热重载带死子进程前科）；勿开并行会话写本仓 `paper/**` 或 remember.md（本书无 pid 并发护栏，靠操作约定）。
 3. 取数纪律不变（真窗 v3_results、R_fam 8.74/10.91、26.9°=注册保守值）；勿再裁章序/节序（State 三裁决③）。
 
@@ -22,6 +24,11 @@
 - **成本类 C1（第二波发射与否，成本点火）**：W2-W7 书草稿已过两轮审（blob `61d8690e…`）。**推荐**=过目后批准发射（成本主项=W3 七章起草+两轮评审面板+独立审层异源 CLI 调用，长跑）；**保守默认**=不发射，书稿与归档件留档零沉没成本，随时可发。
 - **成本类 C2（C4 判定）**：**零施工票**——核验层全部用现存命令（六脚本+check_acronyms+grep 循环）；书内既定施工仅 bib 转换器+scipilot 图脚本两项任务级交付物（v3 W2/图节既定，非核验缺口）。**推荐**=按零施工票直走写作波；**保守默认**=若欲将两项既定施工先拆票施工，书②C4 注已留边界、改书即可。
 - **盲点类 B1（审者观察 4，两轮均判不计 FAIL）**：书内独立审层「载体不可得→停等用户」系 v3 未明文的保守增补（v3 独立审层节止于「改判或换异源 CLI」）。**推荐**=确认保留（停等=失败有去向，不代拍板）；**保守默认**=删该增补、严格按 v3 字面走 BLOCKED。
+- **政策类 P2（W5-W7 面板仲裁与三轮 patch；git 可回滚）**：面板 24+6+11 项 roadmap 的编辑仲裁全录 `goal-w2w7/panel/editorial-decision.md`——要点：①保留 B14 三腿结构不重排（Y7 保义务胜 DA/EIC 重排建议）②主检验池化结果补报+P2 正分支点名（prereg robustness_gate 强制）③novelty 句限定而非删除（E1 白名单句形保持）④f_Q 方向 min→max 修正（nsga2.py 实证）⑤49/50→90/90 v3 实测替换（清单 A6 行内 49/50 系 v1 描述性引述，义务实质不变）。**推荐**=过目 editorial-decision.md + 三轮 roadmap 后认可；**保守默认**=不认可任一项→git revert 对应 commit（d97fefb/0d096dd/3f9331f）后重跑受触闸。
+- **不可逆类 I2（W5-W7）**：无——投稿 one-way door 已硬停，全部产物本机+git 本地，零 push。保守默认=不适用。
+- **成本类 C3（投稿动作，成本点火）**：投稿包已冻结备妥。**推荐**=用户定稿标题/affiliation 后投 AST（主投）；**保守默认**=不投，包留本机零成本。
+- **盲点类 B3（W3 章闸 grep 门禁的盲区，独立层实证）**：两条未溯源数字（−13% 带宽、STR −25.40 错挂 45°）穿透了 G3.2 数字回源+红线闸（值对但溯源/标签方向错）——靠独立异源层兜住。**推荐**=Ch5/未来章起草前加「数字溯源字段级抽查」（每章抽 3 数字倒查注册出处）；**保守默认**=维持现状（本篇已由独立层两轮覆盖，风险仅及未来章）。
+- **盲点类 B4（标题未定稿）**：main.tex 标题仍为 W0 working title。**推荐**=投稿前用户定稿标题；**保守默认**=无（此项无代拍板空间，列 Next 用户事项①）。
 - **盲点类 B2（W2 工具依赖）**：撞车检测依赖 paper-search 工具可用（不可用→书内 BLOCKED 路径，非静默跳过）。**推荐**=发射前顺手验一次 paper-search 可用；**保守默认**=不验，按书内 BLOCKED 兜底。
 
 ## Context
