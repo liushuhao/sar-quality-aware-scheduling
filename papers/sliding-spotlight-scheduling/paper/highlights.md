@@ -1,7 +1,7 @@
 Highlights
 ==========
 
-Paper: Sliding-Spotlight SAR Satellite Scheduling with Variable Dwell Duration
+Paper: Sliding-Spotlight SAR Satellite Scheduling with Variable Dwell Duration (working title)
 Target: Acta Astronautica (Elsevier; 3-5 bullets, <=85 characters each)
 
 - Dwell, maneuver, and image quality become endogenous scheduling quantities.
