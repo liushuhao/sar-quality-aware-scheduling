@@ -3,9 +3,9 @@ Cover Letter
 
 Dear Editor-in-Chief,
 
-We are pleased to submit our manuscript, "Sliding-Spotlight SAR Satellite
-Scheduling with Variable Dwell Duration," for consideration in Acta
-Astronautica.
+We are pleased to submit our manuscript, "Agile Sliding-Spotlight SAR Satellite
+Scheduling with Mode-Determined Dwell Duration and an Image-Quality Objective,"
+for consideration in Acta Astronautica.
 
 Satellite schedulers conventionally treat a task's imaging duration as a
 fixed constant known before planning. For a sliding-spotlight SAR platform
@@ -20,8 +20,8 @@ Three features distinguish the submission:
 
 1. A preregistered, budget-laddered evaluation: the convergence-calibration
    rule was frozen before the higher budget tiers ran, and it retires one of
-   our own earlier readings (a base-budget front collapse) as a search
-   artifact — in both directions.
+   our own earlier readings (a base-budget front collapse) as a search artifact
+   — in both directions.
 2. Deliberately bounded claims: the per-pass capacity law is stated with its
    registered caliber but no number, because the serial bound has not been
    recomputed in the present scenario world; every frontier reading carries

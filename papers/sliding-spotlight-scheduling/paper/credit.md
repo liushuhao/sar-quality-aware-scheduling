@@ -1,7 +1,7 @@
 CRediT authorship contribution statement
 ========================================
 
-Paper: Sliding-Spotlight SAR Satellite Scheduling with Variable Dwell Duration
+Paper: Agile Sliding-Spotlight SAR Satellite Scheduling with Mode-Determined Dwell Duration and an Image-Quality Objective
 Journal: Acta Astronautica (Elsevier; submission target)
 Author: LIU Shuhao
 
