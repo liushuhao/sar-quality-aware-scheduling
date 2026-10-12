@@ -10,9 +10,9 @@
   % Panel A: stripmap -- rotation centre at infinity, parallel rays
   % ------------------------------------------------------------------
   \begin{scope}[shift={(0,0)}]
-    \node[anchor=north,font=\small\bfseries] at (17,-1) {(a) Stripmap ($k\to 0$)};
+    \node[anchor=north,font=\small\bfseries,align=center] at (17,-1) {(a) Stripmap\\($k\to 0$)};
     % ground track
-    \draw[thick,->] (0,0) -- (34,0) node[right,font=\footnotesize]{$v_s$};
+    \draw[thick,->] (0,0) -- (24,0) node[above,font=\footnotesize]{$v_s$};
     % satellite
     \fill (10,26) circle (1.2) node[above,font=\footnotesize]{SAT};
     % parallel beams (rotation centre at infinity)
@@ -23,18 +23,18 @@
     \draw (5,-6) rectangle (15,2);
     \node[font=\footnotesize] at (10,-2) {scene};
     \node[font=\footnotesize,align=center] at (17,14) {rotation centre\\at infinity\\($r_0\to\infty$)};
-    \node[font=\footnotesize,align=center] at (10,-10) {uniform antenna axis\\$\rho_{a,\mathrm{STR}}=D/2$};
+    \node[font=\footnotesize,align=center,anchor=north] at (10,-10) {uniform\\antenna axis\\$\rho_{a,\mathrm{STR}}=D/2$};
   \end{scope}
   % ------------------------------------------------------------------
   % Panel B: sliding spotlight -- rotation centre beyond the scene
   % ------------------------------------------------------------------
-  \begin{scope}[shift={(52,0)}]
-    \node[anchor=north,font=\small\bfseries] at (17,-1) {(b) Sliding spotlight ($0<k<1$)};
-    \draw[thick,->] (0,0) -- (34,0) node[right,font=\footnotesize]{$v_s$};
+  \begin{scope}[shift={(34,0)}]
+    \node[anchor=north,font=\small\bfseries,align=center] at (17,-1) {(b) Sliding spotlight\\($0<k<1$)};
+    \draw[thick,->] (0,0) -- (34,0) node[above,font=\footnotesize]{$v_s$};
     \fill (10,26) circle (1.2) node[above,font=\footnotesize]{SAT};
     % rotation centre below the surface, beyond scene centre (k = 0.7973)
     \fill[red!70!black] (20,-16) circle (1.2);
-    \node[font=\footnotesize,red!70!black,anchor=west] at (21,-16) {rotation centre};
+    \node[font=\footnotesize,red!70!black,anchor=south west,align=center] at (21,-16) {};
     % beams through the rotation centre
     \draw[->] (10,26) -- (17.2,3);
     \draw[->] (10,26) -- (19,0);
@@ -43,33 +43,36 @@
     \draw (14,-6) rectangle (24,2);
     \node[font=\footnotesize] at (19,-2) {scene};
     % r0: rotation centre -> scene centre
-    \draw[dashed,|<->|] (19,-7.5) -- (20,-15) node[midway,right,font=\footnotesize]{$r_0\approx 197~\mathrm{km}$};
+    \draw[dashed,|<->|] (19,-7.5) -- (20,-15) node[near end,left,font=\footnotesize]{$r_0\approx 197~\mathrm{km}$};
     % R0: aperture-centre slant range (zero-squint reference)
     \draw[dashed,|<->|] (11.5,14) -- (15.2,-4) node[midway,left,font=\footnotesize]{$R_0\approx 775.4~\mathrm{km}$};
-    \node[font=\footnotesize,align=center] at (17,-22) {$r_0/R_0=0.254207$;\; $\rho_{a,\mathrm{SLS}}=A\,D/2$\\ SLS cap $26.9^{\circ}$ = registered\\ conservative value (design choice)};
-  \end{scope}
+    \node[font=\footnotesize,align=center] at (17,-24) {$r_0/R_0=0.254207$;\; $\rho_{a,\mathrm{SLS}}=A\,D/2$\\ SLS cap $26.9^{\circ}$ = registered\\ conservative value (design choice)};
   % ------------------------------------------------------------------
   % Panel C: spotlight -- rotation centre at the target
   % ------------------------------------------------------------------
-  \begin{scope}[shift={(104,0)}]
-    \node[anchor=north,font=\small\bfseries] at (17,-1) {(c) Spotlight ($k\to 1$)};
-    \draw[thick,->] (0,0) -- (34,0) node[right,font=\footnotesize]{$v_s$};
+  \begin{scope}[shift={(34,0)}]
+    \node[anchor=north,font=\small\bfseries,align=center] at (17,-1) {(c) Spotlight\\($k\to 1$)};
+    \draw[thick,->] (0,0) -- (34,0) node[above,font=\footnotesize]{$v_s$};
     \fill (10,26) circle (1.2) node[above,font=\footnotesize]{SAT};
     \fill[red!70!black] (19,-2) circle (1.2);
-    \node[font=\footnotesize,red!70!black,anchor=west,align=left] at (20,-2) {rotation centre\\$=$ scene centre};
     \draw[->] (10,26) -- (17.5,0);
     \draw[->] (10,26) -- (19,-1);
     \draw[->] (10,26) -- (20.5,-2);
+    \node[font=\footnotesize] at (20,-2) {};
     \draw (14,-6) rectangle (24,2);
     \node[font=\footnotesize] at (19,-2.5) {};
-    \node[font=\footnotesize,align=center] at (17,-12) {beam steered to one point\\$\rho_{a,\mathrm{SPT}}=\lambda/(2\beta_{\mathrm{span}})$};
+    \node[font=\footnotesize,align=left,anchor=north west,text=red!70!black] at (17,-12)
+      {rotation centre\\$=$ scene centre\\\color{black}beam steered to one point\\$\rho_{a,\mathrm{SPT}}=\lambda/(2\beta_{\mathrm{span}})$};
+  \end{scope}
   \end{scope}
   % ------------------------------------------------------------------
   % Envelope legend: the three squint domains, listed as separate fields
   % ------------------------------------------------------------------
   \node[anchor=north west,font=\footnotesize,align=left] at (0,-32)
-    {Design squint envelopes (separate registered fields): STR/SPT $\pm 45^{\circ}$ (design domain;\; $45^{\circ}$ dwell readings are extrapolated);
-     SLS $\pm 26.9^{\circ}$ (registered conservative value, design choice);\\
-     Kim $\pm 12^{\circ}$ = literature task envelope \cite{kim2021optimal}. Under the rotation-centre semantics
-     $a_{\mathrm{res}}\equiv A>0$ at every squint: high-squint reachability is limited by the registered envelope, not by mode physics.};
+    {Design squint envelopes (separate registered fields): STR/SPT $\pm 45^{\circ}$\\
+     (design domain;\; $45^{\circ}$ dwell readings are extrapolated); SLS $\pm 26.9^{\circ}$\\
+     (registered conservative value, design choice); Kim $\pm 12^{\circ}$ = literature task\\
+     envelope \cite{kim2021optimal}. Under the rotation-centre semantics $a_{\mathrm{res}}\equiv A>0$ at\\
+     every squint: high-squint reachability is limited by the registered envelope, not by\\
+     mode physics.};
 \end{tikzpicture}
