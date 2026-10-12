@@ -42,7 +42,8 @@ def main() -> int:
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
     plt.rcParams.update({
-        "font.family": "serif", "mathtext.fontset": "cm",
+        "font.family": "serif", "font.serif": ["cmr10"],
+        "mathtext.fontset": "cm", "axes.unicode_minus": False,
         "font.size": 9.5, "axes.labelsize": 9.5, "axes.titlesize": 9.5,
         "xtick.labelsize": 8.5, "ytick.labelsize": 8.5, "legend.fontsize": 8.5,
         "axes.linewidth": 0.8, "lines.linewidth": 1.4,
@@ -80,12 +81,13 @@ def main() -> int:
         bottom = [b + v for b, v in zip(bottom, vals)]
     for i, f in enumerate(fams):
         ax.text(i, bottom[i] + 1.2, f"$\\bar f_Q$={bottom[i]:.1f}", ha="center", fontsize=8.5)
-    ax.set_ylabel("share $\\times$ mode constant ($\\mathrm{m}^{-2}$, non-normalised)")
+    ax.set_ylabel("share $\\times$ mode constant\n($\\mathrm{m}^{-2}$, non-normalised)")
     ax.set_ylim(0, 60)
     ax.legend(frameon=False, loc="upper left")
     ax.text(0.30, 0.97,
-            "mode share from the promoted scenario manifests;\n"
-            "constants are model-level zero-squint values (D05-4)",
+            "mode share from the promoted\n"
+            "scenario manifests; constants are\n"
+            "model-level zero-squint values (D05-4)",
             transform=ax.transAxes, fontsize=8, va="top", color="0.35")
     OUT.parent.mkdir(parents=True, exist_ok=True)
     fig.savefig(OUT, bbox_inches="tight")

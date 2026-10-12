@@ -49,7 +49,8 @@ def main() -> int:
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
     plt.rcParams.update({
-        "font.family": "serif", "mathtext.fontset": "cm",
+        "font.family": "serif", "font.serif": ["cmr10"],
+        "mathtext.fontset": "cm", "axes.unicode_minus": False,
         "font.size": 9.5, "axes.labelsize": 9.5, "axes.titlesize": 9.5,
         "xtick.labelsize": 8.5, "ytick.labelsize": 8.5, "legend.fontsize": 8.5,
         "axes.linewidth": 0.8, "lines.linewidth": 1.4,
@@ -90,15 +91,17 @@ def main() -> int:
     pw_r2f = power(delta_registered, sd["R2F"])
     ax.plot([delta_registered], [pw_r3h], marker="s", color=colors["R3H"], markersize=6)
     ax.annotate(f"registered $\\delta$={delta_registered:.1f}\nR3H power={pw_r3h:.2f}",
-                xy=(delta_registered, pw_r3h), xytext=(delta_registered + 4.6, 0.10),
+                xy=(delta_registered, pw_r3h), xytext=(delta_registered + 3.0, 0.08),
                 fontsize=8, arrowprops=dict(arrowstyle="->", lw=0.7))
     ax.annotate(f"R2F power={pw_r2f:.2f}",
-                xy=(delta_registered, pw_r2f), xytext=(delta_registered + 3.2, 0.62),
+                xy=(delta_registered, pw_r2f), xytext=(delta_registered + 4.8, 0.45),
                 fontsize=8, arrowprops=dict(arrowstyle="->", lw=0.7))
-    ax.set_xlabel("effect size $\\delta$ ($\\mathrm{m}^{-2}$, R-family $f_q$ units, non-normalised)")
+    ax.set_xlabel("effect size $\\delta$ ($\\mathrm{m}^{-2}$, R-family $f_q$ units,\nnon-normalised)")
     ax.set_ylabel("power at $n=10$ seeds per family")
     ax.set_ylim(0.0, 1.0)
     ax.set_xlim(left=0.0)
+    from matplotlib.ticker import MaxNLocator
+    ax.xaxis.set_major_locator(MaxNLocator(5))
     ax.legend(frameon=False, loc="lower right")
     OUT.parent.mkdir(parents=True, exist_ok=True)
     fig.savefig(OUT, bbox_inches="tight")

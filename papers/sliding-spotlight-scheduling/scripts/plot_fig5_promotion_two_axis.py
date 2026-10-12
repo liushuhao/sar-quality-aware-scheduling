@@ -48,7 +48,8 @@ def main() -> int:
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
     plt.rcParams.update({
-        "font.family": "serif", "mathtext.fontset": "cm",
+        "font.family": "serif", "font.serif": ["cmr10"],
+        "mathtext.fontset": "cm", "axes.unicode_minus": False,
         "font.size": 9.5, "axes.labelsize": 9.5, "axes.titlesize": 9.5,
         "xtick.labelsize": 8.5, "ytick.labelsize": 8.5, "legend.fontsize": 8.5,
         "axes.linewidth": 0.8, "lines.linewidth": 1.4,
@@ -88,16 +89,24 @@ def main() -> int:
     bar_colors = ["#CC79A7" if rfam[c] < THRESHOLD_DB else "#0072B2" for c in codes]
     axa.bar(codes, [rfam[c] for c in codes], color=bar_colors, width=0.55)
     axa.axhline(THRESHOLD_DB, color="black", linewidth=0.9, linestyle=":")
-    axa.text(2.4, THRESHOLD_DB + 0.25, f"threshold {THRESHOLD_DB:.1f} dB", fontsize=8,
-             ha="right")
+    axa.text(-0.42, THRESHOLD_DB + 0.25, f"threshold\n{THRESHOLD_DB:.1f} dB", fontsize=8,
+             ha="left", va="bottom")
     for i, c in enumerate(codes):
         verdict = "STRUCTURAL DEAD" if rfam[c] < THRESHOLD_DB else "descriptively ALIVE"
         axa.text(i, rfam[c] + 0.3, f"{rfam[c]:.2f}", ha="center", fontsize=8)
-        axa.text(i, 0.3, verdict, ha="center", fontsize=8, rotation=90,
-                 color="white" if bar_colors[i] != "#CC79A7" else "black")
+        if rfam[c] < THRESHOLD_DB:
+            # short bar: a rotated label would overrun it -- park the verdict
+            # in the free upper-left corner, coloured like its bar
+            axa.text(-0.44, 11.55, verdict, ha="left", va="top", fontsize=8,
+                     color="#CC79A7")
+        else:
+            axa.text(i, 0.3, verdict, ha="center", fontsize=8, rotation=90,
+                     color="white")
     axa.set_ylabel("model-level $R_{fam}$ (dB)")
     axa.set_title("(a) structural axis (model-level)", fontsize=9)
     axa.set_ylim(0, 12.5)
+    from matplotlib.ticker import MaxNLocator
+    axa.yaxis.set_major_locator(MaxNLocator(5))
 
     tier_of = {t: i for i, t in enumerate(("matrix", "matrix_p80g120", "matrix_p160g240"))}
     jit = {"R1C": -0.22, "R2F": 0.0, "R3H": 0.22}
@@ -106,9 +115,9 @@ def main() -> int:
         axb.scatter(tier_of[t] + jit[f], s, s=14, color=fam_colors[f], alpha=0.75,
                     linewidths=0)
     axb.axhline(THRESHOLD_DB, color="black", linewidth=0.9, linestyle=":")
-    axb.text(2.4, THRESHOLD_DB + 0.12, "threshold 6.0 dB", fontsize=8, ha="right")
+    axb.text(2.28, THRESHOLD_DB + 0.12, "threshold 6.0 dB", fontsize=8, ha="right")
     axb.set_xticks(range(3), ["40/60", "80/120", "160/240"])
-    axb.set_ylabel("promotion spread (dB), raw units")
+    axb.set_ylabel("promotion spread (dB),\nraw units")
     axb.set_title("(b) reading axis: 90/90 no_promotion", fontsize=9)
     axb.set_ylim(0, 7)
     handles = [plt.Line2D([], [], marker="o", ls="", color=fam_colors[f], label=f)

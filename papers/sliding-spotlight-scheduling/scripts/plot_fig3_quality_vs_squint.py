@@ -42,7 +42,8 @@ def main() -> int:
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
     plt.rcParams.update({
-        "font.family": "serif", "mathtext.fontset": "cm",
+        "font.family": "serif", "font.serif": ["cmr10"],
+        "mathtext.fontset": "cm", "axes.unicode_minus": False,
         "font.size": 9.5, "axes.labelsize": 9.5, "axes.titlesize": 9.5,
         "xtick.labelsize": 8.5, "ytick.labelsize": 8.5, "legend.fontsize": 8.5,
         "axes.linewidth": 0.8, "lines.linewidth": 1.4,

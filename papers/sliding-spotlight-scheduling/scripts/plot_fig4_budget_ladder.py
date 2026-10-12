@@ -40,7 +40,8 @@ def main() -> int:
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
     plt.rcParams.update({
-        "font.family": "serif", "mathtext.fontset": "cm",
+        "font.family": "serif", "font.serif": ["cmr10"],
+        "mathtext.fontset": "cm", "axes.unicode_minus": False,
         "font.size": 9.5, "axes.labelsize": 9.5, "axes.titlesize": 9.5,
         "xtick.labelsize": 8.5, "ytick.labelsize": 8.5, "legend.fontsize": 8.5,
         "axes.linewidth": 0.8, "lines.linewidth": 1.4,
@@ -62,7 +63,7 @@ def main() -> int:
                 len({round(r["f_q"], 6) for r in front_of(a)}) for a in arts))
         axes[0].plot(x, med_front, styles[fam], color=colors[fam], marker="o",
                      markersize=4, linewidth=1.4, label=fam)
-        axes[1].plot(x, med_distinct, styles[fam], color=colors[fam], marker="s",
+        axes[1].plot(x, med_distinct, styles[fam], color=colors[fam], marker="o",
                      markersize=4, linewidth=1.4, label=fam)
         print(f"# {fam} median front: " +
               ", ".join(f"{t}={v:.1f}" for t, v in zip(TIER_LABELS, med_front)))
@@ -74,11 +75,12 @@ def main() -> int:
     from matplotlib.ticker import MaxNLocator
     axes[0].yaxis.set_major_locator(MaxNLocator(5))
     axes[1].yaxis.set_major_locator(MaxNLocator(5))
-    axes[0].set_ylabel("median front size (CV-filtered)")
+    axes[0].set_ylabel("median front size\n(CV-filtered)")
     axes[1].set_ylabel("median distinct-$f_q$ count")
     for ax in axes:
-        ax.set_xlabel("population / generations budget tier")
+        ax.set_xlabel("population / generations\nbudget tier")
         ax.set_xlim(-0.2, len(TIERS) - 0.8)
+        ax.set_ylim(bottom=0)
     axes[0].legend(frameon=False, loc="upper left")
     OUT.parent.mkdir(parents=True, exist_ok=True)
     fig.savefig(OUT, bbox_inches="tight")
