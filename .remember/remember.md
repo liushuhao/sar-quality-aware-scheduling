@@ -1,15 +1,16 @@
 # Handoff
 
 ## State
-- review2 R1 波（修图）配额中断半程态：任务0九步全过+七图诊断+fig1 修复(`7d67b6f`)+fig3-7 一轮样式(`0247efd`)+main.pdf 重建(`8734200`)已提交；二轮 cmr10 五脚本+图 PDF **在途未提交**（我亲验 stdout vs 基线全等、.err=benign 字体警告）。fig2 BLOCKED 已裁（`r1/adjudication_fig2.md`：坐标 token 豁免 ≤5 上限全量入表，aasr/1.25 语义零容忍）。
-- 执行者死于周配额 1310（12:27），重置 2026-10-17 00:57；续跑锚=`r1/PROGRESS.md`（含我 12:5x 主线程注记）。
-- 事故已沉淀：宿主内置 analyze_image/Read-PNG 上传 ufileos CDN（违 spec §0.8），稿件裁片外泄不可撤回——台账 R37+项目记忆，R2 起图像判读只走 PIL/本地 CLI。
-- 台账 open=4 全带关闭条件：R19（票27/Ch5 触发）、R35（清偿=R2 任务5+6）、R36（本半程态）、R37（CDN 泄面核验）。
+- **review2 R1 波（修图）已完成并收口**。图修复全落地并提交：`f5ce52e`（fig2 重建：折行网格 + \resizebox）、`2ecc2ef`（fig2 行距压缩 + 残重叠清零）、`e4b2f88`（fig3-7 round-2 rcParams 统一定稿）。
+- 验收全绿：七图视觉清单 PASS（PyMuPDF 机验 0 文字重叠 + 主模型读图全过）；五脚本 stdout vs 基线全 IDENTICAL（数据零漂移）；编译 rc=0 / 0 error / 38 页；census C2 diff 空、C1 语义 guard 全冻结（AASR/1+0.25/11/1 计数不变，坐标 delta 全量入 `r1/census_exception_table.md`）；暗卷五快脚本全 rc=0（红线 0 / 回源 0/39 / prereg 28 / v3 33 / claim 11）。
+- red_proof 有效（做坏 fig3 注记压图例→机验抓 3 clear FAIL；还原 IDENTICAL→回 0）。
+- 残留：porcelain 仅 `M .remember/now.md`（插件）+ `?? .githooks/`（并行会话，勿碰）；run_verify 全量（528 测试）本轮未跑（R1 完成条件不含）。
 
 ## Next
-1. 配额重置后续跑 R1：SendMessage `agent_5940f1e9-367a-4e94-bf64-a27f8d2f1a38`（或新执行者读 PROGRESS.md），顺序=复核二轮五脚本→fig2 重建→任务4 视觉验收（red_proof 时序终验）→书验收1-6→我跑暗卷 R1-1..R1-8。
-2. R1 过后发射 R2（书 `55c9571a` 未动、spec blob `50be1fa4` 三处同值仍有效）；R2 面板/独立审按 R37 教训禁云图像路径。
+1. **发射 R2 波（内容波）**：书 `goal_book_review2_r2.md`（`55c9571a` 未动）、spec blob `50be1fa4` 仍有效。面板/独立审按 R37 教训禁云图像路径（本轮主模型读图系用户显式授权 C，R2 不默认沿用）。
+2. R2 完成后终闸。
 
 ## Context
-- Agent 派发两层故障都会复发：off-peak-ticket-expired=瞬时重试即过；1310=数日不可恢复，先看配额窗口再排无人值守波。
 - 运行纪律不变：勿改 `~/.claude/settings.json`；论文口径禁动（26.9°/真窗 v3/R_fam 8.74/10.91）；`?? .githooks/` 勿碰。
+- 图 文件→PDF 页映射：figN 文件名=outline 编号 ≠ PDF Figure 编号（按 main.tex \begin{figure} 源序）。真映射：fig1→p10/F1、fig2→p16/F2、fig7→p21/F3、fig4→p25/F4、fig3→p26/F5、fig6→p27/F6、fig5→p28/F7。
+- 关键教训：PyMuPDF 文字重叠机验阈值过严（1.2mm）会漏真重叠——本轮 0.8mm 轴阈才抓出 fig2 右列 c2×c34/c2×conf 的 1.4mm 压字；TikZ 节点继承过大行距（~15pt）致盒过高，`\baselineskip=3.4mm` 压缩是排版可控关键。

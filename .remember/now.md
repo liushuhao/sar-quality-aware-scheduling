@@ -578,3 +578,55 @@ Audited `n_fig3q.png` (Figure 5 post-style-fix) against 6 style items: 5 PASS, 1
 Audited `n_fig6.png` (Figure 6 post-style-fix, stacked bar chart R1C/R2F/R3H by mode) against 6 style items — viewed image, grepped fig6 refs, read `plot_fig6_per_mode_decomposition.py`; final verdict not surfaced in extract.
 ## 13:05 | shutdown（ZCode 主线程，review2 R1 波中断收工）
 review2 R1 波发射与中断全程：发射前核验全过（书=归档件 287aa046/55c9571a、spec blob 50be1fa4 三处同值、冻结 8 哈希 8/8、树态仅 .githooks）；执行者三连中断——首派 off-peak-ticket-expired（瞬时，重试过）、21 分钟截断（PROGRESS 落盘兜底，盘面完整）、续跑 6.6 分钟被周配额 1310 杀死（重置 2026-10-17 00:57）。已落盘=任务0九步全过/七图诊断/fig1 修复 7d67b6f/fig3-7 一轮样式 0247efd/main.pdf 重建 8734200；二轮 cmr10 脚本+PDF 在途未提交，主线程亲验五脚本 stdout vs figdata_base 全等、.err=benign 字体警告。fig2 census 预算 BLOCKED 已由主线程裁决（adjudication_fig2.md：坐标类豁免上限全量入表，语义 token aasr/1.25 零容忍）。最重故障=图像外泄面：执行者内置 analyze_image 与主线程 Read-PNG 均上传 ufileos CDN（违 spec §0.8），稿件裁片不可撤回，R37 入账+项目记忆沉淀（R2 起只走 PIL/本地 CLI）。台账：R34 关（R2 书白名单满足条件）/R35 收窄（清偿=R2 任务5+6）/R36 配额半程态/R37 CDN 泄面，open=4 全带条件。PROGRESS 主线程注记、core-memories 双写、handoff 替换、续跑锚齐。
+## 00:11 | main
+fig6 (n_fig6.png) post-style-fix visual audit in progress: tight zoom crops + pixel analysis confirmed annotation crosses the axes right frame; y-label tip glyph ("…non-normalised)") still under max-zoom check and plot_fig6_per_mode_decomposition.py rcParams being read — 6-item PASS/FAIL verdict not yet issued.
+## 00:20 | main
+续跑任务书1 R1 波次：重跑5脚本 stdout 与 baseline 一致、LaTeX 编译绿（0错/38页），已读 fig2 诊断/源码/谓词并渲染图页、核查 PyMuPDF 与 vision CLI 工具，fig2 实测核验进行中，尚未改动图源。
+## 00:27 | main
+PyMuPDF probe confirmed fig2 (p16) had 112 text overlaps + 47mm overflow with 7.97pt fonts passing; set T1 gate marker, rewrote fig2_scheduling_loop.tex with wrapped boxes, isolated standalone at 116.5×83.2mm (fits 122mm col), fixed missing positioning pkg — vertical-compression bug still under investigation, no source change landed yet.
+## 00:44 | main
+Rewrote fig2_scheduling_loop.tex with tight 4-col grid + resizebox to reach 0 text overlaps at 94mm height, but the float still lands p35 (39pp total); size-independent float-move investigation ongoing, no fix landed yet.
+## 00:54 | main
+Fixed fig2_scheduling_loop.tex: height threshold found (≤78mm) so flatter grid moved float from p35 to p16 (38pp, 0 overlaps, semantics frozen); font still 77.4% of caption so switched resizebox to \textwidth, fix in progress.
+## 01:00 | main
+Completed fig2_scheduling_loop.tex fix (seed-label text width narrowed, conf→eval arrow rerouted; 0 overlaps, font 82.8%, 38pp at p16), committed as f5ce52e; now checking visual-acceptance toolchain via local vision CLI (claude -p test in progress).
+## 06:40 | main
+七图机检全 0 真重叠（fig2 f5ce52e 复验：118.7mm、82.8%、38pp/p16，census 例外表 33 行），用户裁定下标豁免 80% 线但要求重审图片，正用本地 CLI 读图复审中（fig3-7 round-2 脚本未提交）。
+## 06:42 | main
+七图复审受阻：CLI 路由模型 deepseek-flash 看不了图，正换模型重试。
+## 06:45 | main
+确认 CLI `--model sonnet` 可看图，但 render_r2 为修复前旧图，已重渲当前 PDF 并后台跑 7 页读图复核（进行中）。
+## 06:51 | main
+Inspecting vision outputs for page-16 figure review — found `a_*`/`e_*` answer files empty, checking CLI debug/scan logs to diagnose (incomplete).
+## 06:52 | main
+Red_proof passed (induced fig3 legend overlap caught by probe on p26, restored byte-identical; 验收 2/6+6 passed, C3 unchanged, porcelain attributable), but vision CLI hung 15min on fig1 — stopped, retrying sync (incomplete).
+## 06:54 | main
+Located page-16 6-item figure rubric (vision/checklist_body.txt) and sanctioned claude -p vision CLI path (vision_review.sh) after ruling out banned Read-PNG; page-16 figure review not yet run (incomplete).
+## 06:56 | main
+Started page-21 figure 6-item review via local PIL/numpy (wrote .scratch/_tmp_img/coarse.py, no cloud upload per manuscript-crop leak rule); incomplete, no verdict yet.
+## 07:00 | main
+写 visual_acceptance.md，PyMuPDF 几何重审 7 图（均 0 压字、宽/字号达标，反向测试证实检查器有效，发现图文件名与 PDF "Figure N" 编号错位），书机器验收过（零漂移、38 页编译）；CLI 读图超时后用户选 C 允许主模型读图（接受外泄风险），fig2 读出机验漏的 ~0.8mm 压字（1.2mm 阈值过严），修间距+调阈值后挪 conf 无效、正 dump 位置定位肇事框，修复未完成。
+## 07:03 | main
+Refused host Read of page-25.png per spec §0.8/R37 CDN ban, pivoted to local PyMuPDF probes (probe_pdf.py/probe_geom.py) for the 6-item fig4 visual query after vision CLI returned empty; verdict not yet produced.
+## 07:05 | main
+Rewrote fig2_scheduling_loop.tex clearing right-col c2/c34/conf overlaps + hyphenation, committed 2ecc2ef, now rendering+cropping remaining 6 figs for vision re-review (step C).
+## 07:08 | main
+Reviewed page-26.png figure via local vision CLI + PyMuPDF geometry probes after prior r3 vision outputs proved empty (quota-killed); re-ran following file-lock, analyzing layout metrics — in progress, no final 6-item verdict yet.
+## 07:10 | main
+完成 R1 修图波收口：7 图视觉复审全干净（经外网上传查看，R2 不再默认走此路），提交 e4b2f88 图3-7 样式定稿（连同 f5ce52e/2ecc2ef 图2 重建），五道快闸全绿、remember.md handoff 已更新；R2 内容波待用户点头开跑。
+## 07:15 | main
+review2 R1 修图波续跑并整波收口（用户令「续跑任务书1」→「先收工」）。此段为结构化事件流，供下次 grep 恢复：
+
+[06:xx] GATE  R1 任务0复核末项 | PASS | 五脚本 stdout vs figdata_base 全 IDENTICAL；编译 rc=0/0 error/38页
+[06:4x] DISCOVERY fig2 诊断（ac_fig2 视觉模型）判「文字全面压叠+169mm 溢出」需自验 | 机验 PyMuPDF 证实 112 span 交叠、ink 216mm | → 重建
+[06:5x] DECISION fig2 重建方案 → 4 列网格 + text width=31mm 强制折行 + \resizebox{\textwidth} | 理由=窄盒消横叠；\resizebox 收版心 | spec §4 TikZ 修改纬度
+[06:5x] DISCOVERY TikZ 节点继承 \baselineskip ~15pt → 盒高图高 ~90mm → float 移至 p35、全页 39 | 加 execute at begin node={\baselineskip=3.4mm} 压缩 | → 38页/p16
+[07:0x] COMMIT f5ce52e fig2 重建（169→117mm，压字清零，语义 token 冻结）
+[07:0x] COMMIT 2ecc2ef fig2 行距压缩 + 右列残重叠（c2×c34/c2×conf ~1.4mm，1.2mm 阈值漏掉的）
+[07:0x] DISCOVERY 机验 probe 阈 1.2mm 过严漏真重叠 → 降 0.8mm(oy)+2.5mm(ox) 抓出；先用 red_proof 反证判别力
+[07:0x] GATE  red_proof | PASS | 做坏 fig3 注记压图例→机验抓 3 clear FAIL(占比1.0)；还原 diff IDENTICAL→回 0
+[07:0x] GATE  任务4 视觉验收 | PASS | 七图机验 0 真重叠 + 主模型读 render_r5 7 图裁片全过（用户授权 C）
+[07:0x] COMMIT e4b2f88 fig3-7 round-2 rcParams 定稿（数据 stdout 零漂移）
+[07:0x] GATE  书验收 1-6 + 暗卷 | PASS | 数据零漂移/编译绿/census 语义冻结/porcelain 净/快照仅1允许行；五快闸全 rc=0
+[07:1x] TICKET R36 → closed（R1 整波完成）；R19/R35/R37 维持 open（触发点未到；R37 泄面再扩一次=授权读图）
+[07:1x] HANDOFF R1 完成终态 → Next=发射 R2 内容波（另一本书，需用户点）
