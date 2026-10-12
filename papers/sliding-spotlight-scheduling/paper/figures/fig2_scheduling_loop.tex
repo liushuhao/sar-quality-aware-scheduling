@@ -10,8 +10,10 @@
 \resizebox{\textwidth}{!}{%
 \begin{tikzpicture}[x=1mm,y=1mm,>=stealth,
   box/.style={draw,rounded corners=1.5,align=center,font=\footnotesize,
-              inner sep=2,outer sep=0pt,minimum height=8,text width=31mm},
-  lab/.style={font=\footnotesize,align=center,outer sep=0pt,text width=44mm}]
+              inner sep=2,outer sep=0pt,minimum height=8,text width=31mm,
+              execute at begin node={\baselineskip=3.4mm\hyphenpenalty=10000\exhyphenpenalty=10000\relax}},
+  lab/.style={font=\footnotesize,align=center,outer sep=0pt,text width=44mm,
+              execute at begin node={\baselineskip=3.4mm\hyphenpenalty=10000\exhyphenpenalty=10000\relax}}]
   % ------------------------------------------------ generation side
   \node[box,fill=blue!6] (gen) at (0,24)
     {scenario generation\\ \cite{kim2021optimal} platform, true ground-track windows};
