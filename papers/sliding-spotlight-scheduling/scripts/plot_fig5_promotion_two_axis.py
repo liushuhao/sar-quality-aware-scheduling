@@ -47,6 +47,14 @@ def main() -> int:
 
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
+    plt.rcParams.update({
+        "font.family": "serif", "mathtext.fontset": "cm",
+        "font.size": 9.5, "axes.labelsize": 9.5, "axes.titlesize": 9.5,
+        "xtick.labelsize": 8.5, "ytick.labelsize": 8.5, "legend.fontsize": 8.5,
+        "axes.linewidth": 0.8, "lines.linewidth": 1.4,
+        "pdf.fonttype": 42, "ps.fonttype": 42,
+        "figure.constrained_layout.use": True,
+    })
 
     lib = ModeLibrary.from_fixture()
     scen = V3 / "scenarios"
@@ -75,20 +83,20 @@ def main() -> int:
     print(f"# reading axis: {len(spreads)} units, decisions={sorted(decisions)}, "
           f"max spread={max(spreads):.4f} dB")
 
-    fig, (axa, axb) = plt.subplots(1, 2, figsize=(6.6, 3.0))
+    fig, (axa, axb) = plt.subplots(1, 2, figsize=(4.8, 2.3))
     codes = ["R1C", "R2F", "R3H"]
     bar_colors = ["#CC79A7" if rfam[c] < THRESHOLD_DB else "#0072B2" for c in codes]
     axa.bar(codes, [rfam[c] for c in codes], color=bar_colors, width=0.55)
     axa.axhline(THRESHOLD_DB, color="black", linewidth=0.9, linestyle=":")
-    axa.text(2.4, THRESHOLD_DB + 0.25, f"threshold {THRESHOLD_DB:.1f} dB", fontsize=7,
+    axa.text(2.4, THRESHOLD_DB + 0.25, f"threshold {THRESHOLD_DB:.1f} dB", fontsize=8,
              ha="right")
     for i, c in enumerate(codes):
         verdict = "STRUCTURAL DEAD" if rfam[c] < THRESHOLD_DB else "descriptively ALIVE"
-        axa.text(i, rfam[c] + 0.3, f"{rfam[c]:.2f}", ha="center", fontsize=7)
-        axa.text(i, 0.3, verdict, ha="center", fontsize=6, rotation=90,
+        axa.text(i, rfam[c] + 0.3, f"{rfam[c]:.2f}", ha="center", fontsize=8)
+        axa.text(i, 0.3, verdict, ha="center", fontsize=8, rotation=90,
                  color="white" if bar_colors[i] != "#CC79A7" else "black")
     axa.set_ylabel("model-level $R_{fam}$ (dB)")
-    axa.set_title("(a) structural axis (model-level)", fontsize=8)
+    axa.set_title("(a) structural axis (model-level)", fontsize=9)
     axa.set_ylim(0, 12.5)
 
     tier_of = {t: i for i, t in enumerate(("matrix", "matrix_p80g120", "matrix_p160g240"))}
@@ -98,18 +106,17 @@ def main() -> int:
         axb.scatter(tier_of[t] + jit[f], s, s=14, color=fam_colors[f], alpha=0.75,
                     linewidths=0)
     axb.axhline(THRESHOLD_DB, color="black", linewidth=0.9, linestyle=":")
-    axb.text(2.4, THRESHOLD_DB + 0.12, "threshold 6.0 dB", fontsize=7, ha="right")
+    axb.text(2.4, THRESHOLD_DB + 0.12, "threshold 6.0 dB", fontsize=8, ha="right")
     axb.set_xticks(range(3), ["40/60", "80/120", "160/240"])
     axb.set_ylabel("promotion spread (dB), raw units")
-    axb.set_title("(b) reading axis: 90/90 no_promotion", fontsize=8)
+    axb.set_title("(b) reading axis: 90/90 no_promotion", fontsize=9)
     axb.set_ylim(0, 7)
     handles = [plt.Line2D([], [], marker="o", ls="", color=fam_colors[f], label=f)
                for f in ("R1C", "R2F", "R3H")]
-    axb.legend(handles=handles, frameon=False, fontsize=6.5, loc="upper left")
+    axb.legend(handles=handles, frameon=False, loc="upper left")
 
-    fig.tight_layout()
     OUT.parent.mkdir(parents=True, exist_ok=True)
-    fig.savefig(OUT)
+    fig.savefig(OUT, bbox_inches="tight")
     print(f"# written {OUT}")
     return 0
 

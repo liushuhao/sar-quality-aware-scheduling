@@ -39,8 +39,16 @@ def main() -> int:
 
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
+    plt.rcParams.update({
+        "font.family": "serif", "mathtext.fontset": "cm",
+        "font.size": 9.5, "axes.labelsize": 9.5, "axes.titlesize": 9.5,
+        "xtick.labelsize": 8.5, "ytick.labelsize": 8.5, "legend.fontsize": 8.5,
+        "axes.linewidth": 0.8, "lines.linewidth": 1.4,
+        "pdf.fonttype": 42, "ps.fonttype": 42,
+        "figure.constrained_layout.use": True,
+    })
 
-    fig, axes = plt.subplots(1, 2, figsize=(6.4, 3.0), sharex=True)
+    fig, axes = plt.subplots(1, 2, figsize=(4.8, 2.2), sharex=True)
     colors = {"R2F": "#0072B2", "R3H": "#D55E00"}
     styles = {"R2F": "-", "R3H": "--"}
     x = range(len(TIERS))
@@ -63,15 +71,17 @@ def main() -> int:
 
     axes[0].set_xticks(list(x), TIER_LABELS)
     axes[1].set_xticks(list(x), TIER_LABELS)
+    from matplotlib.ticker import MaxNLocator
+    axes[0].yaxis.set_major_locator(MaxNLocator(5))
+    axes[1].yaxis.set_major_locator(MaxNLocator(5))
     axes[0].set_ylabel("median front size (CV-filtered)")
     axes[1].set_ylabel("median distinct-$f_q$ count")
     for ax in axes:
         ax.set_xlabel("population / generations budget tier")
         ax.set_xlim(-0.2, len(TIERS) - 0.8)
-    axes[0].legend(frameon=False, fontsize=8)
-    fig.tight_layout()
+    axes[0].legend(frameon=False, loc="upper left")
     OUT.parent.mkdir(parents=True, exist_ok=True)
-    fig.savefig(OUT)
+    fig.savefig(OUT, bbox_inches="tight")
     print(f"# written {OUT}")
     return 0
 

@@ -41,13 +41,21 @@ def main() -> int:
 
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
+    plt.rcParams.update({
+        "font.family": "serif", "mathtext.fontset": "cm",
+        "font.size": 9.5, "axes.labelsize": 9.5, "axes.titlesize": 9.5,
+        "xtick.labelsize": 8.5, "ytick.labelsize": 8.5, "legend.fontsize": 8.5,
+        "axes.linewidth": 0.8, "lines.linewidth": 1.4,
+        "pdf.fonttype": 42, "ps.fonttype": 42,
+        "figure.constrained_layout.use": True,
+    })
 
     lib = ModeLibrary.from_fixture()
     squints = [i * 1.0 for i in range(0, 46)]          # 0..45 deg
     colors = {"STR": "#0072B2", "SLS": "#D55E00", "SPT": "#009E73"}
     styles = {"STR": "-", "SLS": "--", "SPT": "-."}
 
-    fig, ax = plt.subplots(figsize=(4.6, 3.2))
+    fig, ax = plt.subplots(figsize=(3.85, 2.65))
     consts = {}
     for mode in (Mode.STR, Mode.SLS, Mode.SPT):
         ys = []
@@ -59,7 +67,7 @@ def main() -> int:
             ys.append(f_q_per_task(mode, psi, lib.geo.R0_m, lib))
         consts[mode.name] = ys[0]
         ax.plot(squints, ys, styles[mode.name], color=colors[mode.name],
-                linewidth=1.5, label=mode.name)
+                linewidth=1.4, label=mode.name)
         print(f"# {mode.name}: f_q(0 deg) = {ys[0]:.4f}  f_q(45 deg) = {ys[-1]:.4f}  "
               f"drift = {100.0 * (ys[-1] - ys[0]) / ys[0]:+.3f}%")
 
@@ -71,12 +79,12 @@ def main() -> int:
     ax.set_ylabel("per-task $f_q$ ($\\mathrm{m}^{-2}$, non-normalised)")
     ax.set_xlim(0, 45)
     ax.set_ylim(0, 60)
-    ax.legend(frameon=False, fontsize=8, loc="upper left")
-    ax.annotate("squint-invariant by design (D05-4):\nthe levels, not slopes, carry the objective",
-                xy=(22, 30), fontsize=7, color="0.35")
-    fig.tight_layout()
+    ax.set_xticks([0, 15, 30, 45])
+    ax.legend(frameon=False, loc="center right")
+    ax.annotate("squint-invariant by design (D05-4):\nthe levels, not slopes,\ncarry the objective",
+                xy=(1.5, 34), fontsize=8, color="0.35", va="top")
     OUT.parent.mkdir(parents=True, exist_ok=True)
-    fig.savefig(OUT)
+    fig.savefig(OUT, bbox_inches="tight")
     print(f"# written {OUT}")
     return 0
 

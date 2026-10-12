@@ -48,6 +48,14 @@ def main() -> int:
 
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
+    plt.rcParams.update({
+        "font.family": "serif", "mathtext.fontset": "cm",
+        "font.size": 9.5, "axes.labelsize": 9.5, "axes.titlesize": 9.5,
+        "xtick.labelsize": 8.5, "ytick.labelsize": 8.5, "legend.fontsize": 8.5,
+        "axes.linewidth": 0.8, "lines.linewidth": 1.4,
+        "pdf.fonttype": 42, "ps.fonttype": 42,
+        "figure.constrained_layout.use": True,
+    })
 
     prereg = json.loads((V3.parent / "analysis_prereg_v2.json").read_text(encoding="utf-8"))
     pd_ = prereg["amendment_20261005_v3_realwindow"]["r_family_effect_size"]["power_design"]
@@ -65,7 +73,7 @@ def main() -> int:
     def power(delta: float, s: float) -> float:
         return 1.0 - scipy_stats.nct.cdf(crit, df, delta / (s / math.sqrt(10.0)))
 
-    fig, ax = plt.subplots(figsize=(4.6, 3.2))
+    fig, ax = plt.subplots(figsize=(3.85, 2.65))
     # colorblind-safe pair + redundant linestyle encoding
     colors = {"R2F": "#0072B2", "R3H": "#D55E00"}
     styles = {"R2F": "-", "R3H": "--"}
@@ -82,19 +90,18 @@ def main() -> int:
     pw_r2f = power(delta_registered, sd["R2F"])
     ax.plot([delta_registered], [pw_r3h], marker="s", color=colors["R3H"], markersize=6)
     ax.annotate(f"registered $\\delta$={delta_registered:.1f}\nR3H power={pw_r3h:.2f}",
-                xy=(delta_registered, pw_r3h), xytext=(delta_registered + 1.2, pw_r3h + 0.12),
-                fontsize=7, arrowprops=dict(arrowstyle="->", lw=0.7))
+                xy=(delta_registered, pw_r3h), xytext=(delta_registered + 4.6, 0.10),
+                fontsize=8, arrowprops=dict(arrowstyle="->", lw=0.7))
     ax.annotate(f"R2F power={pw_r2f:.2f}",
-                xy=(delta_registered, pw_r2f), xytext=(delta_registered + 1.2, pw_r2f - 0.16),
-                fontsize=7, arrowprops=dict(arrowstyle="->", lw=0.7))
+                xy=(delta_registered, pw_r2f), xytext=(delta_registered + 3.2, 0.62),
+                fontsize=8, arrowprops=dict(arrowstyle="->", lw=0.7))
     ax.set_xlabel("effect size $\\delta$ ($\\mathrm{m}^{-2}$, R-family $f_q$ units, non-normalised)")
     ax.set_ylabel("power at $n=10$ seeds per family")
     ax.set_ylim(0.0, 1.0)
     ax.set_xlim(left=0.0)
-    ax.legend(frameon=False, fontsize=7, loc="upper left")
-    fig.tight_layout()
+    ax.legend(frameon=False, loc="lower right")
     OUT.parent.mkdir(parents=True, exist_ok=True)
-    fig.savefig(OUT)
+    fig.savefig(OUT, bbox_inches="tight")
     print(f"# written {OUT}")
     print(f"# registered point: delta={delta_registered}, R2F power={pw_r2f:.2f}, R3H power={pw_r3h:.2f}")
     return 0

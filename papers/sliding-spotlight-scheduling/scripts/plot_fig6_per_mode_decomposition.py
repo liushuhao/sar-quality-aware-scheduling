@@ -41,6 +41,14 @@ def main() -> int:
 
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
+    plt.rcParams.update({
+        "font.family": "serif", "mathtext.fontset": "cm",
+        "font.size": 9.5, "axes.labelsize": 9.5, "axes.titlesize": 9.5,
+        "xtick.labelsize": 8.5, "ytick.labelsize": 8.5, "legend.fontsize": 8.5,
+        "axes.linewidth": 0.8, "lines.linewidth": 1.4,
+        "pdf.fonttype": 42, "ps.fonttype": 42,
+        "figure.constrained_layout.use": True,
+    })
 
     lib = ModeLibrary.from_fixture()
     consts = {m.name: f_q_per_task(m, 0.0, lib.geo.R0_m, lib)
@@ -57,7 +65,7 @@ def main() -> int:
         print(f"# {fam} mode shares: " +
               ", ".join(f"{m}={shares[fam][m]:.3f}" for m in ("STR", "SLS", "SPT")))
 
-    fig, ax = plt.subplots(figsize=(4.8, 3.2))
+    fig, ax = plt.subplots(figsize=(4.8, 2.9))
     fams = ["R1C", "R2F", "R3H"]
     colors = {"STR": "#0072B2", "SLS": "#D55E00", "SPT": "#009E73"}
     bottom = [0.0, 0.0, 0.0]
@@ -68,20 +76,19 @@ def main() -> int:
         for i, v in enumerate(vals):
             if v > 1.0:
                 ax.text(i, bottom[i] + v / 2, f"{v:.1f}", ha="center", va="center",
-                        fontsize=6.5, color="white")
+                        fontsize=8, color="white")
         bottom = [b + v for b, v in zip(bottom, vals)]
     for i, f in enumerate(fams):
-        ax.text(i, bottom[i] + 1.2, f"$\\bar f_Q$={bottom[i]:.1f}", ha="center", fontsize=7)
+        ax.text(i, bottom[i] + 1.2, f"$\\bar f_Q$={bottom[i]:.1f}", ha="center", fontsize=8.5)
     ax.set_ylabel("share $\\times$ mode constant ($\\mathrm{m}^{-2}$, non-normalised)")
     ax.set_ylim(0, 60)
-    ax.legend(frameon=False, fontsize=7.5, title="mode (caliber: real-window v3 library constants)")
-    ax.text(0.02, 0.95,
+    ax.legend(frameon=False, loc="upper left")
+    ax.text(0.30, 0.97,
             "mode share from the promoted scenario manifests;\n"
             "constants are model-level zero-squint values (D05-4)",
-            transform=ax.transAxes, fontsize=6.5, va="top", color="0.35")
-    fig.tight_layout()
+            transform=ax.transAxes, fontsize=8, va="top", color="0.35")
     OUT.parent.mkdir(parents=True, exist_ok=True)
-    fig.savefig(OUT)
+    fig.savefig(OUT, bbox_inches="tight")
     print(f"# written {OUT}")
     return 0
 
