@@ -8,7 +8,7 @@
 
 ## Next
 1. **发射 R2 波（内容波）**：书 `goal-review2/archived/goal_book_review2_r2.md`（sha256 `55c9571a…`）、spec `goal-review2/review2-spec.md`（sha256 `50be1fa4…`）——本轮现算均一致。执行档目录 `r2/` 尚未创建。面板/独立审按 R37 禁云图像路径。
-2. 三处未引用探针残留待用户点头删：`goal-review2/_crop_probe` 4.7M / `_audit_me` 377K / `.scratch/_tmp_img` 257K（均引用已删的中间渲染目录；`r0-selftest/` 被 `review-verdict-round1.md:147` 引用，保留）。
+2. 探针残留已按用户点头处置：删 `_crop_probe` 4.7M + `.scratch/_tmp_img` 257K；**`_audit_me` 377K 保留**——删前扫描发现 `r1/vision/ac_fig4.txt:31` 引其为 fig4 判词溯源件，且 3 个脚本读 main.pdf 仍可复跑，待单独裁。同类散件（`.scratch/` 顶层 14 个 `_*.png`/`_measure.py` 约 1.2M）未动。**`.scratch` 里 v2-run / v2-run-preT23 / v3-run / v3-run-recheck 是 verify 门禁的消费输入，勿删。**
 3. R2 完成后终闸；投稿动作与清单三项人填（推荐/回避审稿人、是否特刊、Data availability）属用户。
 
 ## Context

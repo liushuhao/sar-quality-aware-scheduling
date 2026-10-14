@@ -655,3 +655,9 @@ R35 独立审回 VERDICT PASS（五闸 rc=0、8 数字抽验全回源、5 披露
 [GATE] run_verify 全量（R1 波遗留未跑项）→ PASS：PASS=12 REPORT=1 FAIL=0、EXIT=0，与基线一致；shared_lib_tests 154 passed、domain_tests 374 passed 1 skipped（528 测试 0 失败）。report_pilot.json 仅耗时字符串刷新（计数不变），按脚本输出契约白名单提交。
 
 [NOTE] 收尾扫描另见三处未引用探针残留（_crop_probe 4.7M / _audit_me 377K / _tmp_img 257K，均引用已删的中间渲染目录、无 .md 引用）与 r0-selftest（32K，被 review-verdict-round1.md:147 引用为根因证据，保留）——前者未删，待用户点头。
+
+## 00:35 | main
+删探针残留（用户点头后执行）。删前全仓引用扫描（python 逐文件，非 rtk 管道）发现一条此前漏掉的引用：`r1/vision/ac_fig4.txt:31` 写明「Measurement scripts left in .../goal-review2/_audit_me/ (untracked)」——_audit_me 是 fig4 视觉判词的溯源件，且其中 3 个脚本（fig4_layout.py / pdf_text_fig4.py / render_fig4_page.py）读 main.pdf 仍可复跑。故**删 2 留 1**：
+[DONE] 删 _crop_probe（4.7M）+ _tmp_img（257K）= 约 4.96M；两者除本会话 now.md 记录外零引用，且其输入目录（r1/render_r3、r1/crops）早已删，已不可复跑。
+[HOLD] _audit_me（377K）保留：被 vision 回执引用为溯源件、部分脚本可复跑；待用户单独裁。
+[NOTE] 同类散件仍有：.scratch/ 顶层 14 个 _*.png/_measure.py（约 1.2M，mtime 2026-10-12）+ goal-review2-audit/ 400K + _t33confirm/ 16K + matrix-verify-probes/ 24K + rewcheck-20261006/ 248K；.scratch 总量 74M 中 71M 是 sliding-spotlight-scheduling/，其大头为 v2-run/v2-run-preT23/v3-run/v3-run-recheck（各 9-15M）——这些是 verify 门禁的消费输入（本轮 run_verify 就用了 v2-run/syn_p40g60/pilot_M1NC_seed100.json），**不是残留，勿删**。
