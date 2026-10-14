@@ -687,3 +687,12 @@ firecrawl 升 2.0.0（用户裁「升」，R39 执行并关闭）。
 ## 06:45 | main
 firecrawl 认证路径勘误：用户试 `! claude mcp login plugin:firecrawl:firecrawl` 失败（stdin isn't a terminal——`!` 前缀是管道无 TTY，OAuth 流程代不了）。查升级后 README 得官方口径：认证入口在**应用内 `/mcp` 菜单**（「Connect your Firecrawl account through Claude Code's /mcp menu before using the tools」；升级后先 /reload-plugins 或新开会话再连）。命令行路径仍可用但须独立终端（或 --no-browser headless，同样需 TTY 粘 redirect URL）。handoff 已就地勘误。
 [DISCOVERY] 附带好消息：README「Upgrading from 1.x」明说被移出的 CLI 技能（crawl/map/monitor/interact/download/parse/agent 等）**不是消失而是拆成独立插件**，官方给两条回收通道：npx skills add firecrawl/cli，或 /plugin marketplace add firecrawl/skills → /plugin install firecrawl@firecrawl-skills。故 2.0.0 的净能力损失为零（原判断「8 族操作消失」需按此修正）。CLAUDE.md §2 那行现写「需要时手动走 npx firecrawl-cli」正确但非最优，是否改指插件通道待用户裁。
+
+## 07:20 | main
+firecrawl 认证落地（用户选做法 B=自己写 key 进 .mcp.json）。
+
+[FAULT] 用户手写的 .mcp.json 两处错：①第 5 行 url 后缺逗号（JSON 解析失败）②Authorization 值漏 "Bearer " 前缀。已代改（用 python 重写、不再回显 key）。**副作用须记**：我首次查文件时打的掩码正则按 "Bearer\s+\S+" 匹配，因该值当时无 Bearer 前缀而未命中，**key 明文进了会话转录并已随上下文送往模型端**——已如实告知用户，建议按需轮换。
+[DISCOVERY] key 直连探测（决定性）：同一 key 打 **/v2/mcp-search → 401**（该资源只收 OAuth access token，raw key 与 Bearer 皆拒）；打 **/v2/mcp → 200**、**/v2/mcp-oauth → 200**。即插件默认的 /mcp-search 端点与 API key 天然不兼容。
+[DISCOVERY] /v2/mcp 用 key 暴露 **28 个工具**，含插件文档声称「已移出」的全部 8 族：firecrawl_map / crawl / agent / interact / parse / monitor_* —— 故 2.0.0 的能力损失实为零，「移出」只发生在**技能文档层**，MCP 连接本身全有。工具名与插件技能文案（firecrawl_search/scrape/developer_search/gov_search/research_*/find_tools）**完全对得上**，无命名错配。
+[FIX] .mcp.json url 改指 https://mcp.firecrawl.dev/v2/mcp + 补 Bearer 前缀 → claude mcp list 报 **✔ Connected**；真调用冒烟：firecrawl_search(query) 返回 success:true + 真实结果（非仅握手）。
+[NOTE] 该 .mcp.json 在插件缓存内，**下次 firecrawl 插件更新会被覆盖**——更新后需重打此补丁（key 重填 + url 改 /v2/mcp）。
