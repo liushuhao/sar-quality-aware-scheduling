@@ -672,3 +672,14 @@ R35 独立审回 VERDICT PASS（五闸 rc=0、8 数字抽验全回源、5 披露
 [DECISION] R38 → closed（原前提全部证伪或收窄）：①claude CLI 挂起证伪（marketplace list EXIT=0 秒回）；②「11 项」收窄为 2 项（upstream-status behind=5，真实落后仅 remember+firecrawl，各在 Claude/ZCode 两侧）；③remember 判不升（官方 marketplace pin 死 + 上游仓根无 .claude-plugin/marketplace.json 故加不了直连市场）；④firecrawl 属**行为级大改**（185 insertions/1651 deletions，skills/ 18 文件→4），按 CLAUDE.md §2「apply 前人审 diff」决定权在用户 → 另立 **R39** 承接，关闭条件=用户裁升或不升。内容对账：firecrawl 缓存 vs marketplace clone diff -rq = 0 差异（落后的是克隆本身）。
 [DECISION] R37 维持 open：关闭条件=R2 波图像判读全走本地路径。守卫落点已核实存在——review2-spec 第 8 条明写「稿件不出本机（独立审层走本地异源 CLI 只读路径，禁任何上传路径）」，R2 执行者必读该 spec。另补项目 auto-memory 一条（此前该泄面只在 core-memories 有跨项目版，项目侧缺），索引已同步。
 [NOTE] 台账 open=2（R37 依赖 R2 / R39 待用户裁决），list exit 0 无 stale。
+
+## 06:16 | main
+答用户两问（remember 判不升「官方 marketplace pin 死」之意 / firecrawl R39 升后技能 15→4 何以建议先不升而非重大改进），转实测核查：读 known_marketplaces+官方市场配置、diff firecrawl 新旧 SKILL.md、查 .claude-plugin/GitHub API，未出结论（调查中途截断）。
+## 06:30 | main
+firecrawl 升 2.0.0（用户裁「升」，R39 执行并关闭）。
+
+[TICKET] R39 → closed。步骤与证据：①marketplace 克隆 git pull --ff-only 0f9f7a8→3e1fb0c（2 commit，Sync claude-search 2.0.0）；②plugin-sync.sh refresh firecrawl@firecrawl：sha 0f9f7a8d→3e1fb0c3、version 2.0.0；③plugin-sync.sh mirror firecrawl：ZCode 侧 9 文件镜像 + 注册表更新（备份 installed_plugins.json.bak-plugin-sync）；④旧 1.1.0 缓存目录保留可回滚。验证：upstream-status 复跑 firecrawl 在 claude/zcode/marketplace 三处全 CURRENT；安装树实测 9 文件（含新 .mcp.json 注册 https://mcp.firecrawl.dev/v2/mcp-search 与 .claude-plugin/marketplace.json）。
+[DISCOVERY] 升级后 claude mcp list 报 plugin:firecrawl:firecrawl **Needs authentication** —— 新托管 MCP 需用户跑 claude mcp login plugin:firecrawl:firecrawl（交互式，agent 代不了）。旧路径同样需认证（npx firecrawl-cli init --browser）且本机 firecrawl 二进制从未安装，故无「本来能用、现在不能用」的损失。
+[COMMIT] 全局 CLAUDE.md §2 联网路由行同步改（原文点名 scrape/crawl/download/interact/monitor，2.0.0 已移出技能面）→ ZCode AGENTS.md 逐字节同步，两侧时间戳备份 .bak-20261015-062834；diff 实测仅 1 行变。
+[DISCOVERY] upstream-status behind=8 是**噪声**非新增债：其中 5 项（security-guidance/code-simplifier/claude-md-management/claude-code-setup/ralph-loop，Claude 侧）注册表 gitCommitSha 全是同一个 8d392c81=旧 marketplace 仓 sha，而比对基准是该插件仓 HEAD → marketplace 仓一 bump 就集体假 BEHIND（plugin-sync.sh 头部与 core-memories 2026-10-14 节均记此模式，判据=按内容对账不按计数追）。真实剩余仅 remember（官方 pin 死 + 上游无 marketplace.json，本地不可修，已判不升）。
+[NOTE] 台账 open=1（仅 R37，依赖 R2 波）。
