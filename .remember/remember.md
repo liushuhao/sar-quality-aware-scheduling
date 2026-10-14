@@ -3,13 +3,13 @@
 ## State
 - **review2 R1 波（修图）已完成并收口**：`f5ce52e`（fig2 重建）+ `2ecc2ef`（行距/残重叠）+ `e4b2f88`（fig3-7 rcParams 定稿）。验收全绿（七图 0 文字重叠、五脚本 stdout 零漂移、编译 38 页）。
 - 本轮「清残留」会话已收口：W6 复选框补记证据（`goal-w2w7/PROGRESS.md`）、`r1/fig_predicates.md` 与 `r1/BLOCKED.md` 的 fig2 stale 表述更正、R19 台账关闭转票 27、R38 前提复测推翻并重挂条件、`residual-ledger.py move --why` 静默丢字段缺陷修复（`~/.agents` 27691f3，含 selftest 回归）、**run_verify 全量已跑通**（PASS=12 REPORT=1 FAIL=0 / EXIT=0，528 测试 0 失败）。
-- 台账 open 仅 R37（R2 波清偿）、R38（11 项 plugin refresh），均带条件、未 stale。
+- 台账 open=2：**R37**（稿件图像 CDN 外泄面）待 R2 波清偿，守卫落点已核实（`review2-spec.md` 第 8 条「稿件不出本机…禁任何上传路径」）；**R39**（firecrawl 上游 2.0.0 行为级大改：185+/1651−、skills 18 文件→4）待用户裁升或不升。
 - porcelain：`M .remember/now.md`、`M .remember/residuals.md`、`M papers/sliding-spotlight-scheduling/experiments/results/verify/report_pilot.json`（脚本输出契约）+ `?? .githooks/`（并行会话，勿碰）。
 
 ## Next
 1. **发射 R2 波（内容波）**：书 `goal-review2/archived/goal_book_review2_r2.md`（sha256 `55c9571a…`）、spec `goal-review2/review2-spec.md`（sha256 `50be1fa4…`）——本轮现算均一致。执行档目录 `r2/` 尚未创建。面板/独立审按 R37 禁云图像路径。
-2. 探针残留已按用户点头处置：删 `_crop_probe` 4.7M + `.scratch/_tmp_img` 257K；**`_audit_me` 377K 保留**——删前扫描发现 `r1/vision/ac_fig4.txt:31` 引其为 fig4 判词溯源件，且 3 个脚本读 main.pdf 仍可复跑，待单独裁。同类散件（`.scratch/` 顶层 14 个 `_*.png`/`_measure.py` 约 1.2M）未动。**`.scratch` 里 v2-run / v2-run-preT23 / v3-run / v3-run-recheck 是 verify 门禁的消费输入，勿删。**
-3. R2 完成后终闸；投稿动作与清单三项人填（推荐/回避审稿人、是否特刊、Data availability）属用户。
+2. R2 完成后终闸；投稿动作与清单三项人填（推荐/回避审稿人、是否特刊、Data availability）属用户。
+3. **残留已清完**（2026-10-15）：`.scratch/` 全域盘点+全仓引用核，删 2.8M 零引用产物（含冗余 git bundle 1.13M）；`_audit_me`/`_leader-draft.md`/`rewcheck-20261006`/`matrix-verify-probes`/`_probe_enum25.py`/`_t33confirm`/`_geo_*`+`_probe_*`/`zcode-plugin-sync/issues` 均**有引用**故保留。`.scratch` 里 v2-run / v2-run-preT23 / v3-run / v3-run-recheck 是 verify 门禁的消费输入，勿删。
 
 ## Context
 - 运行纪律不变：勿改 `~/.claude/settings.json`；论文口径禁动（26.9°/真窗 v3/R_fam 8.74/10.91）；`?? .githooks/` 勿碰。

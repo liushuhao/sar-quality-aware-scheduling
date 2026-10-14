@@ -661,3 +661,14 @@ R35 独立审回 VERDICT PASS（五闸 rc=0、8 数字抽验全回源、5 披露
 [DONE] 删 _crop_probe（4.7M）+ _tmp_img（257K）= 约 4.96M；两者除本会话 now.md 记录外零引用，且其输入目录（r1/render_r3、r1/crops）早已删，已不可复跑。
 [HOLD] _audit_me（377K）保留：被 vision 回执引用为溯源件、部分脚本可复跑；待用户单独裁。
 [NOTE] 同类散件仍有：.scratch/ 顶层 14 个 _*.png/_measure.py（约 1.2M，mtime 2026-10-12）+ goal-review2-audit/ 400K + _t33confirm/ 16K + matrix-verify-probes/ 24K + rewcheck-20261006/ 248K；.scratch 总量 74M 中 71M 是 sliding-spotlight-scheduling/，其大头为 v2-run/v2-run-preT23/v3-run/v3-run-recheck（各 9-15M）——这些是 verify 门禁的消费输入（本轮 run_verify 就用了 v2-run/syn_p40g60/pilot_M1NC_seed100.json），**不是残留，勿删**。
+
+## 00:19 | main
+清残留散件（用户令「处理完所有残留事项」）：删 `.scratch/` 顶层 14 个 `_*.png`/`_measure.py`（约 1.2M）+ 仓库根 `texput.log`。
+## 00:55 | main
+清残留收口（用户令「处理完所有残留事项」）。做法=.scratch 全域盘点 + 全仓逐文件引用核（python 扫描，非 rtk 管道，避其 stdout 污染），每个候选给一次裁决。
+
+[DONE] 删 2.8M 零引用产物：_fig4crop/_fig4crop3x/_figaudit_*(4)/_z_*(7) 共 13 张 PNG + fig1_bbox_new.html + fig2_bbox.html + junit_src.xml + _measure.py + goal-review2-audit/(400K) + review/diff.txt(36K) + panel20260830-push.bundle(1.13M) + 仓根 texput.log。bundle 删前验证：git bundle verify 通过且所含 commit b36c486 已在仓内历史=冗余（2026-09-25 投稿 push 早已完成）。
+[KEEP] 逐项留证不删（删前引用核捞出，均非散件）：_leader-draft.md（被 **tracked** 的仓根 PROGRESS.md:3 引为任务书）/ rewcheck-20261006（residuals R27 关闭行引其 anchor_audit_findings.md）/ matrix-verify-probes（today-2026-09-30 明记「探针留存」）/ _probe_enum25.py（residuals R22 关闭行引）/ _fq_noise_probe.py（pipeline-audit.html 引）/ _audit_me（r1/vision/ac_fig4.txt:31 引为 fig4 判词溯源件，其中 3 脚本读 main.pdf 仍可复跑）/ _t33confirm（R16「分类器已能判违规」主张的 4 种转折词包裹形态实测输出）/ _geo_*+_probe_* 脚本群（R14-R22 物理违反调查链留痕）/ zcode-plugin-sync/issues（5 张 completed 票，03/04 记 pinned-lag「本地不可修」裁决）。
+[DECISION] R38 → closed（原前提全部证伪或收窄）：①claude CLI 挂起证伪（marketplace list EXIT=0 秒回）；②「11 项」收窄为 2 项（upstream-status behind=5，真实落后仅 remember+firecrawl，各在 Claude/ZCode 两侧）；③remember 判不升（官方 marketplace pin 死 + 上游仓根无 .claude-plugin/marketplace.json 故加不了直连市场）；④firecrawl 属**行为级大改**（185 insertions/1651 deletions，skills/ 18 文件→4），按 CLAUDE.md §2「apply 前人审 diff」决定权在用户 → 另立 **R39** 承接，关闭条件=用户裁升或不升。内容对账：firecrawl 缓存 vs marketplace clone diff -rq = 0 差异（落后的是克隆本身）。
+[DECISION] R37 维持 open：关闭条件=R2 波图像判读全走本地路径。守卫落点已核实存在——review2-spec 第 8 条明写「稿件不出本机（独立审层走本地异源 CLI 只读路径，禁任何上传路径）」，R2 执行者必读该 spec。另补项目 auto-memory 一条（此前该泄面只在 core-memories 有跨项目版，项目侧缺），索引已同步。
+[NOTE] 台账 open=2（R37 依赖 R2 / R39 待用户裁决），list exit 0 无 stale。
