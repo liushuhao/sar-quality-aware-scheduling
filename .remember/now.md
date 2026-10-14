@@ -630,3 +630,28 @@ review2 R1 修图波续跑并整波收口（用户令「续跑任务书1」→�
 [07:0x] GATE  书验收 1-6 + 暗卷 | PASS | 数据零漂移/编译绿/census 语义冻结/porcelain 净/快照仅1允许行；五快闸全 rc=0
 [07:1x] TICKET R36 → closed（R1 整波完成）；R19/R35/R37 维持 open（触发点未到；R37 泄面再扩一次=授权读图）
 [07:1x] HANDOFF R1 完成终态 → Next=发射 R2 内容波（另一本书，需用户点）
+
+## 07:17 | main
+收工六步：R36→closed（R19/R35/R37 维持 open，触发点未到）、写3条记忆（阈值盲区/TikZ行距/R1波完成）+ MEMORY.md 索引、now.md 事件流（UTF-8复验过）、closeout-sweep FAIL0/NOTE3、记忆产物入库 commit `62c7fd6`、CLAUDE.md 补 goal-review2；待办：neat-freak `_*` 残留属前执行者按书保留。
+## 23:44 | main
+清残留：删 40+ 工作区散件（留最终/基线/工具）；`book-to-skill` skill apply 完成；plugin 11 项 refresh 被阻塞（`claude` CLI hang >90s，非网络）→ 记 R38；R35 独立审层派出 r35-review 运行中；~75MB 大件列清单待确认删；R19/R37 按选维持 open。
+## 00:06 | main
+R35 独立审回 VERDICT PASS（五闸 rc=0、8 数字抽验全回源、5 披露义务全在、无矛盾）已关；R38 真因=残留 `*..clone` 的 `shallow.lock` 卡 CLI，清残留后 `claude plugin marketplace update` 仍挂、缓存为版本号目录手动升不了 → plugin 刷新本环境修不动、定案结案；清工作区渲染残留（留 red_proof/render_r5/figdata_base/vision 回执）；open 剩 R19/R37。
+## 23:26 | main
+核盘列待办（R2 内容波待发、投稿清单 3 项须人填、R19 需裁决/R37/R38 open、5 项残留及 .gates/current-ticket 门禁机制），用户裁决先清残留，清账仅跑 2 探查未完成。
+## 00:20 | main
+清残留（用户令「先清残留」，对象=核盘列出的 5 项 + 台账 3 项）。逐项实做与证据：
+
+[TICKET] W6 摘要+声明 → 勾（实质早已完成，仅复选框未回填）：gates/w6_redlines_maintex_abstract.txt 0 violation、w6_paper_numbers_maintex.txt 39 checked 0 mismatch、w6_citation_abstract_check.txt 摘要数字全⊆正文（numerals NOT in gated body 为空）+ 孤儿键 0（cited 23 / bib 307）、w6_policy_page_check.txt Elsevier 政策页 200 OK 当日核验。证据块补入 goal-w2w7/PROGRESS.md。
+
+[DISCOVERY] r1/fig_predicates.md 的 fig2 行仍写「未修改（BLOCKED）」，r1/BLOCKED.md 仍以阻塞态呈现 → 两件均 stale（fig2 已重建 f5ce52e/2ecc2ef）。已更正：fig_predicates 补「fig2 谓词自验」节（语义 token vs HEAD 现算 AASR 4→4 / 0.25 2→2 / 1.25 0→0 / token 11 2→2 / token 1 9→9；census 30 条 layout 全量入表，表 35 条 = fig1 5 + fig2 30 双法复核）；BLOCKED.md 顶部加「已解除」横幅并记裁决=建议 1+2 合体，正文原样保留（残件不删）。
+
+[TICKET] R19（Ch5 四项物理违反，7d 未动）→ closed，追踪转票 27 持有：票 27 已含 4 项 What to build + 5 条验收 + Tier T1 + Blocked by，台账行与票面双源记账=已知漂移模式。缺陷未修，票 27 Status=blocked 为唯一追踪源。
+
+[DISCOVERY] R38 原前提被复测推翻：`timeout 40 claude plugin marketplace list` EXIT=0 秒回（原判「claude CLI 挂起致 plugin 刷新修不动」）→ R38 重挂新关闭条件=11 项 refresh 完成或逐项判不升（附内容对账证据），前提修正入行。
+
+[DISCOVERY] 工具缺陷：`residual-ledger.py move --why` 把「| <status>: <why>」写进管道分隔单元格，产生幻影第 7 格，parse() 只取 cells[5] ⇒ 关闭理由在下次 add/move 重写整块时被静默丢弃（本轮实中：R19 关闭理由写坏行）。根因=自由文本未转义分隔符。已修（~/.agents commit 27691f3：新增 cell() 归一 | 与换行、分隔符改「；」）+ selftest 补回归（带 | 与换行的理由须跨一次块重写存活 + 全行管道数=7）；对 HEAD 旧版实跑该条 FAIL(kept=False)、新版 ALL PASS，判别力实证。R19 行已手工修复，全表 40 行管道数=7、list rc=0。
+
+[GATE] run_verify 全量（R1 波遗留未跑项）→ PASS：PASS=12 REPORT=1 FAIL=0、EXIT=0，与基线一致；shared_lib_tests 154 passed、domain_tests 374 passed 1 skipped（528 测试 0 失败）。report_pilot.json 仅耗时字符串刷新（计数不变），按脚本输出契约白名单提交。
+
+[NOTE] 收尾扫描另见三处未引用探针残留（_crop_probe 4.7M / _audit_me 377K / _tmp_img 257K，均引用已删的中间渲染目录、无 .md 引用）与 r0-selftest（32K，被 review-verdict-round1.md:147 引用为根因证据，保留）——前者未删，待用户点头。
