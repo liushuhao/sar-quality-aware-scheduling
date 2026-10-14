@@ -13,7 +13,7 @@
 
 ## Context
 - 运行纪律不变：勿改 `~/.claude/settings.json`；论文口径禁动（26.9°/真窗 v3/R_fam 8.74/10.91）；`?? .githooks/` 勿碰。
-- **firecrawl 已升 2.0.0（2026-10-15，用户裁）**：CLI→托管 MCP，技能面只剩 `firecrawl` / `firecrawl-developer-index` / `firecrawl-research-index` 三个（crawl/map/monitor/interact/download/parse/agent 已移出，需要时手动走 `npx firecrawl-cli`）。**新 MCP 尚未认证**——要用先跑 `claude mcp login plugin:firecrawl:firecrawl`。旧 1.1.0 缓存目录保留可回滚。CLAUDE.md §2 路由行与 ZCode AGENTS.md 已同步改。
+- **firecrawl 已升 2.0.0（2026-10-15，用户裁）**：CLI→托管 MCP，技能面只剩 `firecrawl` / `firecrawl-developer-index` / `firecrawl-research-index` 三个（crawl/map/monitor/interact/download/parse/agent 已移出，需要时手动走 `npx firecrawl-cli`）。**新 MCP 尚未认证**——入口在应用内：提示符打 `/mcp` 选 firecrawl 连账号（`! claude mcp login …` 走不通，`!` 无 TTY；要命令行则去独立终端跑 `claude mcp login plugin:firecrawl:firecrawl`，或加 `--no-browser`）。另：被移出的 crawl/map/monitor/interact/download/parse/agent 有官方回收通道——`/plugin marketplace add firecrawl/skills` → `/plugin install firecrawl@firecrawl-skills`（或 `npx skills add firecrawl/cli`），非永久失去。旧 1.1.0 缓存目录保留可回滚。CLAUDE.md §2 路由行与 ZCode AGENTS.md 已同步改。
 - **改任何源码后缀文件前先落门禁标记**（项目 pre-tool hook 实测会拦）：`mkdir -p .gates && printf '<TIER> <票号>\n' > .gates/current-ticket`；`.md` 不受限。
 - 书的钉值是 **sha256**，`git hash-object` 给的是 sha1 blob——两者对不上属正常，别当漂移证据（2026-10-12 曾因此误判一次）。
 - 图 文件→PDF 页映射：figN 文件名=outline 编号 ≠ PDF Figure 编号。真映射：fig1→p10/F1、fig2→p16/F2、fig7→p21/F3、fig4→p25/F4、fig3→p26/F5、fig6→p27/F6、fig5→p28/F7。

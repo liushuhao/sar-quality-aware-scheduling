@@ -683,3 +683,7 @@ firecrawl 升 2.0.0（用户裁「升」，R39 执行并关闭）。
 [COMMIT] 全局 CLAUDE.md §2 联网路由行同步改（原文点名 scrape/crawl/download/interact/monitor，2.0.0 已移出技能面）→ ZCode AGENTS.md 逐字节同步，两侧时间戳备份 .bak-20261015-062834；diff 实测仅 1 行变。
 [DISCOVERY] upstream-status behind=8 是**噪声**非新增债：其中 5 项（security-guidance/code-simplifier/claude-md-management/claude-code-setup/ralph-loop，Claude 侧）注册表 gitCommitSha 全是同一个 8d392c81=旧 marketplace 仓 sha，而比对基准是该插件仓 HEAD → marketplace 仓一 bump 就集体假 BEHIND（plugin-sync.sh 头部与 core-memories 2026-10-14 节均记此模式，判据=按内容对账不按计数追）。真实剩余仅 remember（官方 pin 死 + 上游无 marketplace.json，本地不可修，已判不升）。
 [NOTE] 台账 open=1（仅 R37，依赖 R2 波）。
+
+## 06:45 | main
+firecrawl 认证路径勘误：用户试 `! claude mcp login plugin:firecrawl:firecrawl` 失败（stdin isn't a terminal——`!` 前缀是管道无 TTY，OAuth 流程代不了）。查升级后 README 得官方口径：认证入口在**应用内 `/mcp` 菜单**（「Connect your Firecrawl account through Claude Code's /mcp menu before using the tools」；升级后先 /reload-plugins 或新开会话再连）。命令行路径仍可用但须独立终端（或 --no-browser headless，同样需 TTY 粘 redirect URL）。handoff 已就地勘误。
+[DISCOVERY] 附带好消息：README「Upgrading from 1.x」明说被移出的 CLI 技能（crawl/map/monitor/interact/download/parse/agent 等）**不是消失而是拆成独立插件**，官方给两条回收通道：npx skills add firecrawl/cli，或 /plugin marketplace add firecrawl/skills → /plugin install firecrawl@firecrawl-skills。故 2.0.0 的净能力损失为零（原判断「8 族操作消失」需按此修正）。CLAUDE.md §2 那行现写「需要时手动走 npx firecrawl-cli」正确但非最优，是否改指插件通道待用户裁。
