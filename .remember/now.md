@@ -845,3 +845,5 @@ R2 收尾续：根因定为 01:56 门禁跑在 panel landing(02:45–03:07) 前�
 
 ## 04:2x | main
 R2 收尾全部完成：回填 `freeze-report.md` §3（终闸 11 步逐步骤表 + C2 转义伪差说明 + porcelain 归属 + 页数「增行」定性）；台账 **R41、R43 关闭**（`residual-ledger.py`）；更新 `repairs.md`（12 提交台账）、`BLOCKED.md`（状态改「已裁决」）、`r2/PROGRESS.md`（任务 5/6 标记完成）。**R2 内容波正文工作全部收口**：12 个 main.tex 提交、面板 20 条全裁 11 条落地、终闸全绿。**唯一剩余 = R42**（S10/S11 需用户给 locator，一字未改）。
+## 05:28 | main
+R42 路线裁定为 Zenodo 单快照（`papers/sliding-spotlight-scheduling/` 全子树去缓存 + 冻结态 `main.tex`，~16 MB，零仓改动），已开写 `.scratch/sliding-spotlight-scheduling/goal-review2/r2/build_deposit.py` 组包；两处正文（`main.tex:355` Data availability、`:195` §5.1）仍一字未改，**卡在用户 Zenodo 上传取 DOI 回传**后才能落笔+复快闸+提交。
