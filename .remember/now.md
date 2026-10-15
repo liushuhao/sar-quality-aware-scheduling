@@ -723,3 +723,14 @@ F7 陈旧记忆（#14/#15 标未修）——定位=paper2-deferred-debts.md 尾�
 [STEP5 进度+票账] 本步；now.md 追加并复验 UTF-8；handoff 由 /remember 替换；票账：本会话未开 matt 票，.gates/current-ticket 核空。
 
 [STEP6 neat-freak] 见下一步。
+
+## 19:21 | main
+为 R40 零长窗口守卫立票 #44（windows-zero-length-guard.md）并移台账 open，同时用 claude mcp add 把 firecrawl 配置从插件缓存补丁迁到长期存储，验证结果未出（摘录止于 claude mcp list）。
+## 19:25 | main
+收工后追加两件（用户令）：
+
+[TICKET] R40 → 已开票 **44** `.scratch/sliding-spotlight-scheduling/issues/44-windows-zero-length-guard.md`（Status=ready-for-agent、Tier=T1、5 条验收含红绿+变异红证+全量域套件复跑）；票面录了修复前复现、机理、可达性实测、sss_core 属 review2 spec 只读面须显式放行的边界。已对照 to-tickets SKILL.md 模板核过字段（What to build / Blocked by / Status / Tier + 验收 checklist）。
+
+[DECISION] firecrawl 认证改**用户级持久配置**（用户问「能否换到长期存储的位置」）：`claude mcp add --scope user --transport http firecrawl https://mcp.firecrawl.dev/v2/mcp -H "Authorization: Bearer <key>"` → 落在 `~/.claude.json` 顶层 `mcpServers`（与 tavily/stepfun/exa 同层），**插件更新不影响**。同时把插件缓存里的 `.mcp.json` **回滚为 stock**（`/v2/mcp-search`），自此**没有手工补丁可丢**。
+[DISCOVERY] 两条并存的实测行为：插件那条 stock 因未认证**贡献 0 工具**，用户级那条供 28 工具 ⇒ **无工具重复**。另有一条实测结论值得记：**用户级 server 用同名 `firecrawl` 时，若与插件那条 url 完全相同，`claude mcp list` 只显示一条**（去重）；改回不同 url 后两条并存。
+[NOTE] 残留噪声：`claude mcp list` / `/mcp` 里插件那条长显 `! Needs authentication`。消掉它需在 `~/.claude/settings.json` 加 `disabledMcpServers`——**该文件属本项目运行纪律禁改**（handoff 明写），故留待用户自行决定。另：若日后真去做插件那条的 OAuth，会出现 28 工具重复，届时二选一（保留用户级那条 / 删掉它改用 OAuth）。
