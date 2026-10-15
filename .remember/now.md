@@ -750,3 +750,28 @@ Ticket 44 执行：采纳定向审 FAIL 与 3 条技术发现，将 `windows.py:
 [GATE] 复跑（闸 3：改完重跑产生它的最小单元）→ **PASS=12 REPORT=1 FAIL=0 / EXIT=0**；`domain_tests` expected_n0=376 passed=376 failed=0 skipped=1；`shared_lib_tests` expected_n0=154 passed=154 failed=0。红绿留痕：红=`ZeroDivisionError @ windows.py:87 (h=0.0)`；绿=19 passed。变异红证：回退守卫两测试双红（落点实测某真实任务 `x=227.98573603, h=0.0`），备份还原后逐字节相同、复跑 24 passed。
 [NOTE] 留档不修：`n_scan` 无入口校验（`windows.py:114` 除零 / 负值 IndexError，且与 `:318` 的 `if n_scan else 0` 不对称）——属邻接不同根因，全仓无调用点传 0/负，已写进票面留档。**另一条留给后续**：精确计数钉每加测试都要重钉（注释史三次），可另开票改为下界判据，代价是削弱「测试被 1:1 替换」的检出。
 [NOTE] 残留：工作树仅 `?? .githooks/`（并行会话产物）；临时探针 `.scratch/_tmp_rv_ticket44.log` 已清，`.scratch/` 顶层只剩有引用的留存件。
+
+## 20:58 | main
+用户令处理票 44 两条留档（n_scan 入口校验、DOMAIN_N0 精确计数钉摩擦）——已开始核查 R2 波基线对 374/domain_tests 的引用是否受影响，施工未完进行中。
+## 21:22 | main
+建票 45（n_scan 入口校验，实测 mask_intervals/dip_guard n=-1 静默空集）与票 46（DOMAIN_N0 精确钉改下界），定向审回 45 FAIL/46 PASS，已依审补票面（45：Blocked by:46＋漏抓的第三入口 windows_with_dip_guard 守卫；46：两条残留注记），定序先 46 后 45，票 46 施工中——步 A 纯重构抽判据函数已落（行为不变仍 ==），施工未完进行中。
+## 21:35 | main
+票 46（DOMAIN_N0 精确钉改下界）完成：A 重构→B 红→C 绿→变异红证、还原逐字节同，全量 test_verify_gate 25 passed；转票 45 已写三入口坏输入＋两防误伤红测试入 test_windows_precompile.py 并跑 pytest——票 45 施工中未完。
+## 21:44 | main
+票 45 完成：修 test_windows_precompile.py 插入点错位→红 ZeroDivisionError@windows.py:118→windows.py 三守卫绿 23 passed、逐守卫变异红证还原逐字节同，定向审补出第三入口 windows_with_dip_guard、测试按入口拆三条；全量域套件＋Standards/Spec 两审 subagent 未回，勾验收/翻 Status/提交待其归；AGENTS.md 被 .gitignore:74 忽略、改动不在 diff，已告审者按实读审。
+## 21:56 | main
+Standards 审归（3 硬项：票46 Status/验收未回写、46+45 同攒未提交树违 rule6；5 smell 全采纳）与 Spec 审归（证伪票46 改判依据措辞过强、票45 test_density_parameter_legal_inputs_unchanged 自比无判别力）齐收，停掉在跑全量套件（改其 import 文件会使证据作废），待改完 smell+Spec 项重跑一次终态全量再按 46→45 分提。
+## 22:32 | main
+终态全量 PASS（PASS=12/FAIL=0/EXIT=0，domain 385 过 vs expected_n0=376，+9 测免重钉），smell 5 项+Spec 2 项全改完并验证 inset 漂移测试有判别力，票46 验收回填提交 `71d6819`，票45 收口中尚未提交。
+## 22:35 | main
+执行票 45 + 46（用户令「把两条留档全部处理」）——两票 T1 全套仪式走完，均 completed，分开提交。
+
+[TICKET] 票 46 → completed（commit `71d6819`）：域套件计数判据由精确钉 `passed == DOMAIN_N0` 改为下界 `>=`；判据抽为可单测的纯函数 `domain_counts_ok`（此前要验它得跑 22 分钟全量套件）。
+[TICKET] 票 45 → completed（commit `d8d3120`）：三入口四处密度参数守卫（`feasible_subintervals.n_scan>=1` / `mask_intervals.n_scan>=0` / `dip_guard.n_scan>=1` / `dip_guard.n_step>=1`）。
+[GATE] 开工前 1 路定向审（两票合并一路）= 票 45 **FAIL**（2 处）/ 票 46 **PASS**。FAIL 项：①`Blocked by` 写 None 与票面自认「依赖票 46 的下界才不红」矛盾 → 改 `Blocked by: 46`；②本票自称「同一根因一类清完」却漏第三入口 `windows_with_dip_guard`（实测 `n_scan=0` 崩、`n_step=-1` 静默空 intervals）→ 并入本票。
+[GATE] code-review 双轴：Standards 3 硬项（票 46 已完成却与施工中的 45 攒同一未提交树，违 rule 6 → 分开提；票 46 Status 未回写；`AGENTS.md` 那条它自核判非违规）+ 5 smell（`domain_baseline_ok` 名不副实 → 改 `domain_counts_ok`；注释与 docstring 双写 → 注释缩为指针；`windows.py` 守卫注释密度不齐；`d = lambda` 命名复发；票 45 下界防误伤没测）——**全部已改**。Spec 轴：两票实质验收全落地，无 scope creep，无越界；**独立证伪了我票 46 的一段论据**（见下）。
+[DISCOVERY] Spec 轴独立证伪并**矫正了我自己的论证**：票 46 初稿写「精确钉与下界唯一差别 = 净增时误报」——**过强**。净增分两类：计划性净增（加测试）确是误报；**意外净增**（重复收集）下精确钉 FAIL 是**真检出**、下界是**真漏检**。故下界的净收益是消除前者，代价是放弃后者，**非无代价改进**。票面已改写，盲区写进 `domain_counts_ok()` docstring。
+[DISCOVERY] Spec 轴另抓出票 45 防误伤用例**无判别力**（拿新码跟自己比：`n_scan=200` vs 默认；`mask` 只断 `len==1`）——正是本会话反复踩的「断言覆盖写入不覆盖读回」。已改为钉实测字面值，并当场验证：把 `mask_intervals` 的 inset 下限 `1e-9` 漂成 `2e-9` → 该用例**报红**（改前测不出）。
+[GATE] 终态全量复跑 → **`PASS=12 REPORT=1 FAIL=0` / `EXIT=0`**；`domain_tests` `expected_n0=376`（下界）对 `passed=**385**` —— **加 9 个测试未要求重钉直接过，正是票 46 要买的效果在生产里验到**；`shared_lib_tests` `154/154`（有意保留的精确面未受影响，且其精确钉本轮未误报）。
+[NOTE] 变异红证全部逐测试名留痕：票 45 逐守卫（回退 G1/G2/G3 各只红对应那一条）、票 46 回退 `>=`→`==` 红；所有还原均与原副本逐字节相同。过程事故两条已就地修：一次 Edit 误删 `verify.py` 一行注释（立即读回还原，`git diff` 复核为空）；一次插入点选错把既有测试的一行孤立出函数（读回修好，diff 复核为纯新增）。
+[NOTE] 残留：工作树仅 `?? .githooks/`（并行会话产物）；临时探针已清；`.gates/current-ticket` 已清空（两票均 completed）。
