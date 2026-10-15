@@ -106,15 +106,24 @@ def feasible_subintervals(
     Maximal intervals are assembled by midpoint classification between
     consecutive boundary candidates (closed convention, D04-1).
     """
-    if not t_start <= window_end:
-        raise ValueError("window domain empty: t_start > window_end")
     a, b = float(t_start), float(window_end)
+    if not a < b:
+        # Non-degenerate domain required: zero-length and negative-length are
+        # both invalid input, and NaN lands here too (every NaN comparison is
+        # False). ValueError -- not a numerical fault from deeper in -- is what
+        # evaluator.precompile_tasks already maps to "no feasible subintervals".
+        raise ValueError("window domain empty: t_start >= window_end")
     g = lambda t: t + effective_duration(t) - window_end
 
     step = (b - a) / n_scan
+    h_diff = step / 10.0
+    if h_diff == 0.0:
+        # span > 0 but subnormal: the grid step underflows so the derivative
+        # pass would divide by zero, which the caller's `except ValueError`
+        # cannot catch. Same rejection, same reason.
+        raise ValueError("window domain too narrow: finite-difference step underflows to 0")
     grid = [a + i * step for i in range(n_scan + 1)]
     gv = [g(x) for x in grid]
-    h_diff = step / 10.0
 
     roots: list[float] = []
 

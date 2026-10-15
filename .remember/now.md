@@ -734,3 +734,8 @@ F7 陈旧记忆（#14/#15 标未修）——定位=paper2-deferred-debts.md 尾�
 [DECISION] firecrawl 认证改**用户级持久配置**（用户问「能否换到长期存储的位置」）：`claude mcp add --scope user --transport http firecrawl https://mcp.firecrawl.dev/v2/mcp -H "Authorization: Bearer <key>"` → 落在 `~/.claude.json` 顶层 `mcpServers`（与 tavily/stepfun/exa 同层），**插件更新不影响**。同时把插件缓存里的 `.mcp.json` **回滚为 stock**（`/v2/mcp-search`），自此**没有手工补丁可丢**。
 [DISCOVERY] 两条并存的实测行为：插件那条 stock 因未认证**贡献 0 工具**，用户级那条供 28 工具 ⇒ **无工具重复**。另有一条实测结论值得记：**用户级 server 用同名 `firecrawl` 时，若与插件那条 url 完全相同，`claude mcp list` 只显示一条**（去重）；改回不同 url 后两条并存。
 [NOTE] 残留噪声：`claude mcp list` / `/mcp` 里插件那条长显 `! Needs authentication`。消掉它需在 `~/.claude/settings.json` 加 `disabledMcpServers`——**该文件属本项目运行纪律禁改**（handoff 明写），故留待用户自行决定。另：若日后真去做插件那条的 OAuth，会出现 28 工具重复，届时二选一（保留用户级那条 / 删掉它改用 OAuth）。
+
+## 19:46 | main
+Ticket 44 执行：采纳定向审 FAIL 与 3 条技术发现，将 `windows.py:109` 守卫改为 `not t_start < window_end`（拒 NaN+真实根因 `fl((b-a)/n_scan/10)==0`），S1（`test_windows_precompile.py`）+S2（`test_pilot_exit_codes.py`，引 evaluator 断言不可调度）双红绿+变异红证通过，票面已回写路线裁定；**全量域套件后台跑约 20 分钟运行中未完**。
+## 20:30 | main
+票 44：Standards 轴审返回 2 硬项+2 smell，已修 smell（test_windows_precompile.py lambda 名、test_pilot_exit_codes.py 去 noqa）、run_verify 计数漂移 376≠374 经六闸重钉 `DOMAIN_N0@verify.py:176`（374→376）、门禁标记过期重写；⏳等全量套件复跑(~22min)+Spec 轴审，齐后勾验收、回填证据、提交。

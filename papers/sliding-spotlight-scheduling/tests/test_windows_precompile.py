@@ -415,6 +415,26 @@ def test_empty_window_and_degenerate_point():
         assert lo == pytest.approx(hi, abs=1e-6)
 
 
+def test_degenerate_domain_rejected_not_divided_by_zero():
+    """A degenerate window domain is invalid input, not a numerical accident.
+
+    Pins the entry-guard contract as ``ValueError`` -- which is what
+    ``evaluator.precompile_tasks`` already maps to "no feasible subintervals" --
+    rather than a ``ZeroDivisionError`` escaping the finite-difference pass.
+    ``sss_core.windows.feasible_subintervals`` carries the why.
+    """
+    duration = lambda t: 30.0
+    with pytest.raises(ValueError):
+        feasible_subintervals(duration, 100.0, 100.0)  # zero-length domain
+    with pytest.raises(ValueError):
+        feasible_subintervals(duration, 100.0, 90.0)  # negative-length domain
+    with pytest.raises(ValueError):
+        # span > 0, but the finite-difference step underflows to 0
+        feasible_subintervals(duration, 0.0, 5e-324)
+    with pytest.raises(ValueError):
+        feasible_subintervals(duration, float("nan"), 10.0)  # NaN stays rejected
+
+
 # ── ticket 16: cascade intersection (three-piece, leg 3/3) ───────────────
 
 def test_intersect_intervals_algebra():

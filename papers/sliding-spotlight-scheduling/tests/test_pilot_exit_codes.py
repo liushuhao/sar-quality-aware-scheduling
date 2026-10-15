@@ -101,6 +101,23 @@ def test_fixture_all_infeasible_actually_is(tmp_path):
     )
 
 
+def test_zero_length_window_is_unschedulable_not_a_crash():
+    """Degenerate windows are rejected input, seen from the scheduler's side.
+
+    `_respan(m, 0.0)` collapses every window to `t_start_s == t_ca_s ==
+    t_end_s`. Pins the task-level contract: no exception escapes, and every
+    task comes back unschedulable. `sss_core.windows.feasible_subintervals`
+    carries the why.
+    """
+    lib = ModeLibrary.from_fixture()
+    plans = precompile_tasks(_respan(_load_manifest(), 0.0), lib)
+    assert plans, "fixture has no tasks"
+    assert not any(p.schedulable for p in plans), (
+        "zero-length windows must leave no schedulable task; got "
+        f"{sum(p.schedulable for p in plans)}/{len(plans)} schedulable"
+    )
+
+
 def test_run_pilot_exits_11_on_all_infeasible_manifest(tmp_path):
     """The registered-but-untested branch: no feasible individual survived.
 

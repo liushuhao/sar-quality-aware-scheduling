@@ -173,9 +173,10 @@ def shared_lib_tests() -> dict:
     return _step("shared_lib_tests", "PASS" if ok else "FAIL", detail)
 
 
-DOMAIN_N0 = 374          # measured 2026-10-07 ticket 40: 374 passed + 1 skip
-                        # (tickets 35-37 grew the suite 229->370 without a
-                        # re-pin; ticket 29 precedent f546573 applied again)
+DOMAIN_N0 = 376          # measured 2026-10-15 ticket 44: 376 passed + 1 skip
+                        # (ticket 44 added the 2 degenerate-domain tests; prior
+                        # re-pin 2026-10-07 ticket 40 -> 374, before that
+                        # 229->370 unpinned, ticket 29 precedent f546573)
 DOMAIN_N0_SKIPPED = 1    # baseline conditional skip -- silent removal reads red
 # 2026-10-06: 0, was 1.  The R12 exit-11 marker was retired into a real pass by
 # ticket 25, and tickets 24/25/26/28 added tests; pin now equals the measured
