@@ -739,3 +739,14 @@ F7 陈旧记忆（#14/#15 标未修）——定位=paper2-deferred-debts.md 尾�
 Ticket 44 执行：采纳定向审 FAIL 与 3 条技术发现，将 `windows.py:109` 守卫改为 `not t_start < window_end`（拒 NaN+真实根因 `fl((b-a)/n_scan/10)==0`），S1（`test_windows_precompile.py`）+S2（`test_pilot_exit_codes.py`，引 evaluator 断言不可调度）双红绿+变异红证通过，票面已回写路线裁定；**全量域套件后台跑约 20 分钟运行中未完**。
 ## 20:30 | main
 票 44：Standards 轴审返回 2 硬项+2 smell，已修 smell（test_windows_precompile.py lambda 名、test_pilot_exit_codes.py 去 noqa）、run_verify 计数漂移 376≠374 经六闸重钉 `DOMAIN_N0@verify.py:176`（374→376）、门禁标记过期重写；⏳等全量套件复跑(~22min)+Spec 轴审，齐后勾验收、回填证据、提交。
+## 20:55 | main
+执行票 44（用户令「依次执行票44」）——T1 全套仪式走完，验收 5/5 兑现，commit `b6d677f`。
+
+[TICKET] 票 44 → completed（2026-10-15，b6d677f）；台账 R40 → closed。`.gates/current-ticket` 已清空（指向已完成票）。
+[DECISION] 路线裁定由票面字面式 `b - a <= 0` 改为**针对根因**：`if not a < b`（拒零长/负长，NaN 仍拒）+ `if h_diff == 0.0`（拒跨距 > 0 但步长下溢的次正规输入）。依据=开工前 1 路定向审实测证伪字面式：`a=0, b=5e-324` 跨距 > 0 仍除零（字面式盖不住）；且字面式对 NaN 判 False（放行）而现行守卫拒绝，照写会引入 NaN 回归。
+[GATE] 开工前 1 路定向审（gate-review）→ verdict **FAIL**：1 项 spec FAIL（施工计划漏列本票验收 #4/#5，属计划缺项非代码缺陷）+ 3 条技术发现全部采纳（真实崩溃条件为 `fl((b-a)/n_scan/10)==0`；NaN 反向；`n_scan` 无校验属邻接不同根因留档不修）。
+[GATE] implement 完成 → code-review 双轴：**Standards** 2 硬项（票面未勾/证据未留、临时探针未清——均属「尚未收口」时序态，已补）+ 2 smell（契约释义三处重复、`d = lambda` 命名与无配置支撑的 `# noqa: E731`——**均已修**）；**Spec** 1 未兑现（验收 5 即计数钉那次的 FAIL，重钉后复跑已绿）+ 无 scope creep + 无实现疑点，并**独立证伪**「修复不改变任何现有可调度判定」（旧码接受的输入新码逐位相同；新码新拒的输入旧码一律 ZeroDivisionError）。
+[DISCOVERY] 首跑 run_verify 报 `FAIL=1` 但**非测试失败**：`376 passed, 0 failed` 对上钉死基线 `374`——本票新增 2 测试顶了计数钉。产生处单源 `sss_core/verify.py:176` `DOMAIN_N0`（精确比对），注释史已有两次重钉先例（票 29 f546573、票 40）。过 `tech-zeroing §6` 六闸（产生路径可指／复现有现场／复发形式响亮／判据本身即断言／无回退特判）+ `symptom-fix-gate --worktree` 预筛 PASS（判「数据侧与产生代码、断言同改」）后重钉 374→376。**Tier 复核**：动 verify.py 后重判仍 T1。
+[GATE] 复跑（闸 3：改完重跑产生它的最小单元）→ **PASS=12 REPORT=1 FAIL=0 / EXIT=0**；`domain_tests` expected_n0=376 passed=376 failed=0 skipped=1；`shared_lib_tests` expected_n0=154 passed=154 failed=0。红绿留痕：红=`ZeroDivisionError @ windows.py:87 (h=0.0)`；绿=19 passed。变异红证：回退守卫两测试双红（落点实测某真实任务 `x=227.98573603, h=0.0`），备份还原后逐字节相同、复跑 24 passed。
+[NOTE] 留档不修：`n_scan` 无入口校验（`windows.py:114` 除零 / 负值 IndexError，且与 `:318` 的 `if n_scan else 0` 不对称）——属邻接不同根因，全仓无调用点传 0/负，已写进票面留档。**另一条留给后续**：精确计数钉每加测试都要重钉（注释史三次），可另开票改为下界判据，代价是削弱「测试被 1:1 替换」的检出。
+[NOTE] 残留：工作树仅 `?? .githooks/`（并行会话产物）；临时探针 `.scratch/_tmp_rv_ticket44.log` 已清，`.scratch/` 顶层只剩有引用的留存件。
