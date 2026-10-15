@@ -788,3 +788,50 @@ Standards 审归（3 硬项：票46 Status/验收未回写、46+45 同攒未提�
 [DISCOVERY] Spec 轴独立证伪并矫正我自己的论证（票 46）：初稿写「精确钉与下界唯一差别=净增时误报」**过强**——意外净增（重复收集）下精确钉 FAIL 是**真检出**、下界是**真漏检**；下界净收益=消除计划性净增的误报，代价=放弃意外净增的检出，**非无代价改进**。票面已改写，盲区入 docstring。
 [GATE] 终态全量 `PASS=12 REPORT=1 FAIL=0 / EXIT=0`；`domain_tests` 下界 376 对 `passed=385`（加 9 测试未要求重钉，票 46 的效果在生产验到）；`shared_lib_tests` 154/154（有意保留的精确面未受影响且本轮未误报）。
 [STEP6 neat-freak] 见下一步。
+
+## 22:57 | main
+实测对账待办（票 44/45/46 全 completed、残留 open=1 仅 R37、R2 波未开工），并调研 GLM lite 与 OpenCode go 套餐哪个模型适合跑 R2（查 tooling 记忆/settings/cc-switch 库），调研进行中、尚未给出结论。
+## 23:09 | main
+完成 R2 用模调研（结论：主体走 OpenCode Go/DeepSeek V4.1 Flash，第 5 步独立审切 GLM，避免同源自审），用户拍板后发射 R2（门禁 `T2 R2-wave`，产物 `.scratch/sliding-spotlight-scheduling/goal-review2/r2/`，执行者后台在跑），并确认本机无图像判读工具故本波零判读、只用 PIL 机验，正排查"直接用多模态模型识图"的可行性（问题尚未答完）。
+## 23:39 | main
+查实图像上传点在上游 API 侧（非本机）后，用户接受"图与正文同链到模型商"故关闭台账 R37、解除图像外泄禁令并通知 R2 执行者，又拍板验图改用大模型而非 PIL 机验（feedback 记忆已写），R2 仍在后台跑。
+## 00:04 | main
+R2 执行者获新令：图像/版式验证改用模型读图，PIL 探针仅作交叉佐证；常驻记忆已挂此裁决；数值/口径类验证仍机验优先；R2 仍在后台跑。
+## 00:55 | main
+Independent audit verdict for R2 wave: acceptance suite A1–A6 PASS (0 violations, 39/39 numbers, 28/28 freeze checks, 11/11 provenance, verify 12 PASS + 0 FAIL), census B-C1/C2/C3 reproduced by two methods (884 total numbers, 21/35 cites, 9 protected phrases match baseline), compile 38 pages ×2 with 0 errors, D1–D5 load-bearing claims recomputed and verified; two manuscript defects found — F1 major: stripmap AASR endpoint −25.40 dB quoted for 26° calibration span but actually reads at 45° (in-envelope value is −23.32 dB, untraced by any automated gate), F2 minor must-fix: "160× in evaluations" at main.tex:257 overstates budget ladder by 10× (should be 16×), plus F3 (minor out-of-envelope 45° SLS diagnostic) and F4 (C2 census baselines backslash-stripped); R1–R6 must_fix roadmap items verified still open 6/6 (not addressed), manuscript pinned to sha256 5e1ba2eb…c78c1f unchanged.
+## 02:05 | main
+电脑重启后恢复 R2：修正 repairs.md 陈旧台账（独立复跑证实 C1 恰 4 条 census delta，并补漏列的第 4 个提交 4183957），重新后台发射 R2 终闸 `_final_gate.sh`（11 步已过 5 步，卡在第 6 步 run_verify 域套件，预计 02:35 出），用户选定方案 2（终闸落地后写 freeze-report.md 并对面板 6 条必须改逐条对抗核验再呈报）；6 条必须改按任务书全是内容级须人工裁决（R1 因 writing-checklist-v2:184-189 B15 红线禁 capacity 数字，只剩降级重排一条路），且终闸结果与人工裁决均未落定。
+## 02:19 | main
+R2 续：20 条面板意见全核完落盘 `r2/panel_triage.md`（4 条 absence 判据被原文推翻，含 R5——§7.1 第四条已有 "no wall-clock runtime figure" 原句；真缺 5 条 R2/R4/S2/S10/S11，R4 判定为 10-01 同类复发：非负估计量上注册 t 检验、零假设压支撑边界），产出 `r2/text_fix_batch.md`（A 改 9 条全纯文本 / B 不改 8 条附原文行号 / R1+S10/S11 单独拍）；用户令逐条确认，已启第 1 条 R4（AskUserQuestion 待答）；终闸仍卡第 6 步域套件 45 分钟+，`freeze-report.md` 终闸节待填，R1 定位、R4 降调、S10/S11 公开承诺均待人工裁决。
+## 02:28 | main
+R2 续：20 条面板意见逐条裁决完，裁决落盘权威 sidecar `r2/panel/08_author_adjudication.md`（DRAFT→CONFIRMED）——R1 判不降级（摘要自陈 no number、三腿叙事系 spec.md:61 D15 冻结决定），R5/S1/S5/S6/S9/S12/S14 等据原文现有句判不改，S2 待算分位、S13 待 sss_core 复算方向；正文未动，终闸仍卡第 6 步（第 7 步需编译 main.tex），期间仅做只读核对，待终闸落地再改正文。
+## 02:41 | main
+S2/S13 前置核查落地：S2 算完 90 单元 AASR 分布（median 1.285、p90 3.202、max 3.9722 dB 精确复现，离 6.0 dB 阈值最近 2.03 dB，无贴阈单元）定案写全；S13 代码核准 `sss_core/aasr.py:167` 确为纯方位 sinc²，但对账冻结源 `paper/full.md` 发现 §7.3「不影响任何判词」限定句被 main.tex 手抄漏掉、致 `main.tex:144` 指针悬空，遂改推荐「补回漏抄句 + 依 `aasr.py:256-268` 构造性推得上界方向」，裁决同步更新 `r2/panel/08_author_adjudication.md`；终闸健康但仍在 run_verify 逐单元复算（进程 12612 持续占 CPU），正文未动，另 S10/S11 公开仓方式待用户定。
+## 02:54 | main
+定案可复现面走推荐方案②（沿用 `sar-quality-aware-scheduling` 仓只加 `papers/sliding-spotlight-scheduling/` 实验件、另在 Zenodo 冻本论文专属快照出 DOI，流程件不动），随即掐掉终闸第六步 run_verify 的 90 单元重推（CPU 564s，判定改完正文即作废），并落 main.tex 约 12 处改动、跑校验脚本 + git add；Zenodo 上传与 DOI 登记仍待人工执行。
+## 03:14 | main
+review2 波续落 7 个单元正文改动（U1–U8：§3.2 拆分误差项 `8b7abf0`、§6.1 ρ_rg 口径 `2123ea7`、质量头寸改述 `6ebe630`、§6.2 spread 分布 `23b31aa`、SLS 上限+仰角面方向 `c815daa`、§5.3 加 4 引导小标题 `cb4a9cb`、§7.1「从未测量」`e472355`），各单元五脚本快闸全绿、census C2/C3 逐位不变，另更正 S13「漏抄」误判（实则逐字在场）与 S7 拆列前提（改判为加小标题）；S10/S11 因无 DOI locator 一字未改，且改后树页数 38→39、整树终闸 run_verify 尚未跑，随后按 shutdown 六步开始收工（第 0 步残留台账 open=0、本会话新残留已入账，第 1 步进行中）；Zenodo 上传/DOI 登记仍待人工。
+
+## 03:2x | main（R2 内容波收工）
+
+[LAUNCH] R2 内容波（review2 第二本）执行者于 10-15 23:03 发射，01:01 被电脑重启杀死于终闸第 6 步；产物全落盘
+[DISCOVERY] 复核死点：`r2/final_gate.txt` 停在「===== 6 run_verify (long) =====」无结果；`repairs.md` 陈旧两处（§3 写「例外表为空」而 §1 已引 E1-E4；§5 漏列 `4183957`）→ 已改准
+[VERIFY] census 独立复算：C1 恰 4 条 delta（160−1/25.40−1/23.32+1/4+2），与 `4183957` 提交信息逐条吻合；C2 35 命中、C3 九词逐位不变 ⇒ 执行者该项自述属实
+[GATE] 主线程重跑终闸 → 01–05 步全绿（红线 0/回源 39-0/prereg 28-0/v3 33-0/claim 11-11），第 6 步 run_verify 跑到 CPU 564s 后被主线程主动掐停（树即将被正文改动，结果作废）
+[DISCOVERY] 面板 20 条逐条回正文取证（产物 `r2/panel_triage.md`）：面板大量 `absence:` 判据被原文直接反驳（R5 的 §7.1 第四条、S5 的 §285 末句、S6 的 §59 限定句、S9 的 §311+§343）；真缺 = R2/R4/S2/S10/S11
+[DISCOVERY] R4 属**复发**：估计量 `dq_all` 非负由构造保证 ⇒ 注册的单侧 t 检验零假设压在支撑边界；10-01 Audit3 已判过 v1 Wilcoxon 同型零功效，`prereg:17` 记明 v2 就是为替换它而写 ⇒ **换掉了估计量、未换掉根因**
+[DECISION] 20 条逐条呈问作者（一次一问）：will_address 12 / wont_address 7 / not_on_point 1；R1 只能降级重排（"补容量数字"被 B15 红线封死）
+[DECISION] 用户裁决：图像验证走模型读图（PIL 机验降为交叉佐证）；接受图像与正文同链到模型商 → 台账 R37 关闭
+[DECISION] S10/S11 = 工件与场景模板都公开，走「沿用已有仓 + Zenodo 冻本论文专属快照给 DOI」；实测禁整仓 push（254 未推提交 + 6 个已跟踪内部件会一起公开）
+[COMMIT] `8b7abf0` §3.2 拆两个误差项（R2）
+[COMMIT] `2123ea7` §6.1 ρ_rg 口径指向 + within-run 标注（R3/R6）
+[COMMIT] `6ebe630` 质量头寸改述为描述性读数（R4；§5.3+§6.1+摘要）
+[COMMIT] `23b31aa` §6.2 spread 分布 + §6.4 控制族蕴含（S2/S3/S4）
+[COMMIT] `c815daa` SLS 上限依据 + 仰角面省略方向（S12/S13）
+[COMMIT] `cb4a9cb` §5.3 加 5 段引导小标题（S7，改判后的轻量版）
+[COMMIT] `e472355` §7.1 成本句改「从未测量」（R5 的措辞修正）
+[GATE] 七个单元逐一快闸：五脚本全绿；census C2/C3 逐位不变；C1 只多 S2 两条新报读数（1.285/3.202）
+[GATE] 编译 rc=0、`^!` 0；**页数 38 → 39**（本波累计增行 + 4 个标题），定性待终闸
+[SELF-CORRECT] 两处主线程自纠：①「§7.3 漏抄冻结源那句」证伪（`main.tex:321` 整行在场，仅交叉引用改为 `ef{sec:direction}`）；②S7 原批「拆 5 条短列」前提不成立（五个注册单元不在同一段，分池裁定在 §6.1）→ 回头改判
+[GATE] **终闸未在改完的树上跑过** → 台账 R41（下次第一条）；S10/S11 正文未动 → R42；C1 例外表 6 条超 ≤5 容限 → R43
+[HANDOFF] R2 续跑起点 = 跑 `r2/_final_gate.sh` 全 11 步；其余见项目记忆 `project-paper2-r2-wave-state-20261016`
