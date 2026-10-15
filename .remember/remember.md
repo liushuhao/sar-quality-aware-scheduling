@@ -3,7 +3,7 @@
 ## State
 - **R2 内容波（review2 第二本）正文已改完**：面板 20 条全裁（`r2/panel/08_author_adjudication.md` CONFIRMED，will 12 / wont 7 / not_on_point 1），其中 **11 条落地为 7 个提交**：`8b7abf0`(R2) `2123ea7`(R3/R6) `6ebe630`(R4) `23b31aa`(S2/S3/S4) `c815daa`(S12/S13) `cb4a9cb`(S7) `e472355`(R5)。每个单元五脚本快闸全绿、census C2/C3 逐位不变。
 - **终闸未在改完的树上跑过**（只跑过五脚本 + census）→ 台账 **R41**。首跑（10-15 23:03 发射）被电脑重启杀死于第 6 步，产物全在 `r2/`。
-- 台账 open=**3**（R41 终闸未跑 / R42 S10-S11 待 DOI / R43 C1 例外表 6 条超 ≤5 容限）；porcelain 仅 `M .remember/*`、`M report_pilot.json`、`M main.pdf`、`?? .githooks/`。
+- 台账 open=**3**（R41 终闸未跑 / R42 S10-S11 待 DOI / R43 C1 例外表 6 条超 ≤5 容限）；porcelain 剩 3 项**全部可归属**：`M experiments/results/verify/report_pilot.json` 与 `M paper/main.pdf`（都将在终闸重跑/重编时刷新，届时一并提交；现留作在制）、`?? .githooks/`（并行会话产物，禁碰）。`.remember/` 三件已随 `178b0e1` 提交。
 
 ## Next
 1. **跑终闸**：`bash .scratch/sliding-spotlight-scheduling/goal-review2/r2/_final_gate.sh`（11 步，含 ~40 min 的 run_verify），全绿后填 `r2/freeze-report.md` §3 与 census 例外表（收 R43）。
