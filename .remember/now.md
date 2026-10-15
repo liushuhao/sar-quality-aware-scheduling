@@ -696,3 +696,30 @@ firecrawl 认证落地（用户选做法 B=自己写 key 进 .mcp.json）。
 [DISCOVERY] /v2/mcp 用 key 暴露 **28 个工具**，含插件文档声称「已移出」的全部 8 族：firecrawl_map / crawl / agent / interact / parse / monitor_* —— 故 2.0.0 的能力损失实为零，「移出」只发生在**技能文档层**，MCP 连接本身全有。工具名与插件技能文案（firecrawl_search/scrape/developer_search/gov_search/research_*/find_tools）**完全对得上**，无命名错配。
 [FIX] .mcp.json url 改指 https://mcp.firecrawl.dev/v2/mcp + 补 Bearer 前缀 → claude mcp list 报 **✔ Connected**；真调用冒烟：firecrawl_search(query) 返回 success:true + 真实结果（非仅握手）。
 [NOTE] 该 .mcp.json 在插件缓存内，**下次 firecrawl 插件更新会被覆盖**——更新后需重打此补丁（key 重填 + url 改 /v2/mcp）。
+
+## 19:07 | main
+收工流程：记忆文件写入时 backtick 被 shell 执行致两文件损坏，已回滚重写并 git 提交 .remember；后查 residual ledger 并正检查 papers/sliding-spotlight-scheduling #14 run_pilot schedulable，该项未完成。
+## 07:55 | main
+收工（/shutdown 六步）。本会话=「读记忆列待办 → 清残留 → firecrawl 升级与接通」三件事，全程无人值守以外的用户裁决 4 次（先清残留 / 删三处探针 / 升 firecrawl / 收工）。
+
+[STEP0 残留结转] 三处读完：台账 open 转 open=2（R37 触发点未到=合法维持；新增 R40），wontfix=5、closed=33，list rc=0 无 ≥7d stale；handoff Next 三条（R2 发射待用户 / 投稿动作待用户 / 残留已清=已完成项误列 Next，本轮移入 State）；项目 auto-memory 延后债条目逐条核 —— 挖出**陈旧记忆**：#14 标「未修」但实测已修（run_pilot.py:71 判 schedulable → :77 return EXIT_EMPTY_FRONT，与台账 R12 关闭证据一致）；#15 **仍活**，本轮实测复现（见 STEP1 F7）。
+
+[STEP1 故障归零] 本会话 7 条故障，逐条按技术归零五条：
+F1 residual-ledger.py move --why 静默丢字段（工具缺陷）——定位=写侧 f"{cc} | {status}: {why}" 注入管道分隔单元格；机理=写侧未转义+读侧按分隔符切分只取 cells[5]，下次重写整块即丢弃；为何测试没拦=selftest 调了 move --why 却只断言 rc=0（覆盖写入不覆盖读回）；复现=探针 marker 归零 + 本轮 R19 实中；措施=cell() 归一 + 分隔符改「；」，新旧版对照实跑（旧 FAIL kept=False / 新 ALL PASS）✓
+F2 掩码正则未命中致 key 明文入转录（我的错）——定位=掩码用 Bearer\s+\S+，而该值当时正漏 Bearer 前缀；机理=掩码前提与被掩内容的病同源，自指失效；措施=改结构化解析取字段再选择性打印；举一反三=已入 core-memories ✓
+F3 bash 反引号在双引号 python -c 内被命令替换致 core-memories 写坏——定位=含 `claude mcp list` 的长文走双引号串；机理=双引号内反引号仍展开，命令真跑且 stdout 注入文件，同时反引号片段被吞；复现=文件内出现 "Checking MCP server health…"；措施=截断回滚 + 改引号定界 heredoc + 写后回读校验（片段在/注入不在）✓
+F4 firecrawl 端点与凭据类型不匹配——定位=插件默认 url /v2/mcp-search 只收 OAuth token；机理=该资源为 OAuth 设计；复现=4 端点 × 2 凭据形态矩阵；措施=url 改 /v2/mcp + Bearer，真调用冒烟过 ✓
+F5 用文件数当能力代理误判「砍了 11 个技能」——定位=diffstat 18→4 推能力损失；机理=文件数度量包装层数量；复现=读新 SKILL.md/plugin.json + tools/list 实测 28 工具；措施=改判「建议升」并经用户裁决执行 ✓
+F6 交接写了不可执行的命令（claude mcp login 在 ! 前缀无 TTY）——定位=handoff 直抄 CLI help 未验形态；复现=用户实跑 stdin isn't a terminal；措施=勘误为 /mcp 菜单 ✓
+F7 陈旧记忆（#14/#15 标未修）——定位=paper2-deferred-debts.md 尾行自 10-02 未随票 25 更新；复现=读 run_pilot.py 证实 #14 已修；措施=就地更正 + #15 补精确复现与可达性实测（80 manifest/11885 任务窗口零长=0，最短 0.25s ⇒ 当前不可达）✓
+症状修补闸：本轮改动全为 .md/台账/工具脚本，无数据/常量/期望值/冻结件变更；symptom-fix-gate --staged = PASS（no changes）。
+
+[STEP2 故障模式抽象] 七个可复用模式：P1 写侧未转义分隔符→读侧静默丢字段（结构化记录工具）；P2 掩码/校验依赖被检对象格式正确（自指失效）；P3 双引号 shell 串里反引号/$ 被展开（注入或静默丢失）；P4 端点与凭据类型配对，换凭据必重测端点；P5 用文件数/计数当能力或风险代理；P6 给用户的操作步骤未在同形态环境验证；P7 记忆快照未随下游状态变更更新。
+
+[STEP3 全仓举一反三] P1：grep 用户 scripts 目录的 split('|') 管道表读取器 → 仅 residual-ledger.py 一例（已修）。P3：属我自身 shell 习惯，非仓内模式。R40 同型守卫：grep sss_core 的 `not X <= Y` 守卫 → windows.py:109 为唯一域守卫（其余是范围包含检查，== 合法），非族。P7：本轮已就地更正 1 处陈旧记忆。
+
+[STEP4 记忆沉淀] core-memories 双写 2 条（shell 含密/含特殊字符文本两条硬规矩；文件数与提交数不能当能力或风险代理），两侧逐字节一致；项目 auto-memory 本轮新增 1 条（R37 图像 CDN 外泄）+ 更正 1 条陈旧（paper2-deferred-debts #14/#15）。
+
+[STEP5 进度+票账] 本步；now.md 追加并复验 UTF-8；handoff 由 /remember 替换；票账：本会话未开 matt 票，.gates/current-ticket 核空。
+
+[STEP6 neat-freak] 见下一步。
