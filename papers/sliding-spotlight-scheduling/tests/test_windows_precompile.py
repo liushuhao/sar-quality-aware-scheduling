@@ -496,6 +496,73 @@ def test_mask_run_endpoints_satisfy_their_own_mask():
         assert lo >= 2.0 and hi <= 5.0
 
 
+def test_feasible_subintervals_rejects_bad_n_scan():
+    """Entry point 1 of 3.  ``n_scan=0`` divided by zero and ``n_scan=-1`` left
+    an empty grid whose ``gv[-1]`` raised IndexError -- both inside the kernel,
+    past the caller's `except ValueError`."""
+    duration = lambda t: 30.0
+    with pytest.raises(ValueError):
+        feasible_subintervals(duration, 0.0, 40.0, n_scan=0)
+    with pytest.raises(ValueError):
+        feasible_subintervals(duration, 0.0, 40.0, n_scan=-1)
+
+
+def test_mask_intervals_rejects_negative_n_scan():
+    """Entry point 2 of 3.  ``n_scan=-1`` returned ``()`` for a mask that is true
+    everywhere: the sample loop ran zero times, so the empty answer looked like
+    a legitimate empty window set."""
+    from sss_core.windows import mask_intervals
+
+    with pytest.raises(ValueError):
+        mask_intervals((0.0, 10.0), lambda t: True, n_scan=-1)
+
+
+def test_windows_with_dip_guard_rejects_bad_density():
+    """Entry point 3 of 3.  ``n_scan`` feeds _count_abs_squint_minima's ``/ n``;
+    ``n_step`` feeds the degraded fallback's ``/ n_step`` and a negative value
+    silently produced an empty interval set with the fallback flag still set."""
+    duration = lambda t: 30.0
+    squint = lambda t: math.sin(t)  # multi-dip: reaches the fallback path
+    with pytest.raises(ValueError):
+        windows_with_dip_guard(squint, duration, 0.0, 40.0, n_scan=0)
+    with pytest.raises(ValueError):
+        windows_with_dip_guard(squint, duration, 0.0, 40.0, n_step=-1)
+
+
+def test_density_parameter_legal_inputs_unchanged():
+    """The guards reject only the illegal side, and the defined degenerate mode
+    survives.
+
+    The expectations are measured literals, not values recomputed the way the
+    code computes them -- otherwise the test would compare the implementation
+    with itself and an inset or grid drift would pass unnoticed.
+    """
+    from sss_core.windows import mask_intervals
+
+    duration = lambda t: 30.0
+    squint = lambda t: math.sin(t)
+
+    # n_scan=0 is a deliberate single-point sample (step 0, inset floored at
+    # 1e-9).  Measured; an inset drift must redden this.
+    runs = mask_intervals((0.0, 10.0), lambda t: True, n_scan=0)
+    assert len(runs) == 1, "n_scan=0 is a defined single-point sample, not an error"
+    assert runs[0][0] == pytest.approx(1.000017763568394e-09, abs=1e-18)
+    assert runs[0][1] == pytest.approx(9.999999998999982, abs=1e-12)
+
+    # legal densities: measured before the guards were added
+    assert feasible_subintervals(duration, 0.0, 40.0, n_scan=200).intervals == ((0.0, 10.0),)
+    fw, diag = windows_with_dip_guard(squint, duration, 0.0, 40.0)
+    assert fw.intervals == ((0.0, 10.0),)
+    assert diag == {"n_squint_dips": 12, "n_dip_fallback": 1}
+
+    # The lower bound of the legal range must not be rejected.  Its grid is too
+    # coarse to carry contract meaning (at n_scan=1 the dip counter reads 0), so
+    # only "does not raise, still returns the coarse answer" is pinned.
+    assert feasible_subintervals(duration, 0.0, 40.0, n_scan=1).intervals == ((0.0, 10.0),)
+    windows_with_dip_guard(squint, duration, 0.0, 40.0, n_scan=1)
+    windows_with_dip_guard(squint, duration, 0.0, 40.0, n_step=1)
+
+
 def test_cascade_three_legs_actually_narrows():
     """The cascade must be a real intersection, not a pass-through: each leg
     removes something, and the result is narrower than every input."""

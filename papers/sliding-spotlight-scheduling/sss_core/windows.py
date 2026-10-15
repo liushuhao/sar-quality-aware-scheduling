@@ -115,6 +115,12 @@ def feasible_subintervals(
         raise ValueError("window domain empty: t_start >= window_end")
     g = lambda t: t + effective_duration(t) - window_end
 
+    if n_scan < 1:
+        # Grid density, not a domain property: the step below is (b - a) / n_scan
+        # and the grid index below that is gv[-1], so either side of 1 crashes
+        # inside the kernel (ZeroDivisionError / IndexError) instead of reaching
+        # the caller's `except ValueError`.
+        raise ValueError(f"n_scan must be >= 1: got {n_scan}")
     step = (b - a) / n_scan
     h_diff = step / 10.0
     if h_diff == 0.0:
@@ -226,6 +232,14 @@ def windows_with_dip_guard(
     suite bounds against analytically known sets.
     """
     a, b = float(t_start), float(window_end)
+    if n_scan < 1:
+        # Feeds _count_abs_squint_minima's (b - a) / n: zero divides, and a
+        # negative value leaves the index walk with nothing to read.
+        raise ValueError(f"n_scan must be >= 1: got {n_scan}")
+    if n_step < 1:
+        # Only the degraded (multi-dip) path uses n_step, but a guard that only
+        # fires on the path you happen to take is not a guard.
+        raise ValueError(f"n_step must be >= 1: got {n_step}")
     dips = _count_abs_squint_minima(squint_fn, a, b, n_scan)
     diagnostics = {"n_squint_dips": dips, "n_dip_fallback": 0}
     if dips <= 1:
@@ -324,6 +338,11 @@ def mask_intervals(span: tuple[float, float], mask_fn, n_scan: int = 200) -> tup
     a, b = float(span[0]), float(span[1])
     if b < a:
         raise ValueError(f"mask span inverted: [{a}, {b}]")
+    if n_scan < 0:
+        # n_scan == 0 is the defined single-point mode just below; a negative
+        # grid size makes the sample loop empty, so this returns no runs for a
+        # mask that is true everywhere -- an empty answer that looks normal.
+        raise ValueError(f"n_scan must be >= 0: got {n_scan}")
     step = (b - a) / n_scan if n_scan else 0.0
     # inset must absorb grid rounding as well as the step itself: a run
     # closing on the last in-mask sample lands a ULP past the boundary
