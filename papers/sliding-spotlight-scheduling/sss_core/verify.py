@@ -167,16 +167,18 @@ def shared_lib_tests() -> dict:
     m_f = re.search(r"(\d+) failed", tail)
     passed = int(m_p.group(1)) if m_p else 0
     failed = int(m_f.group(1)) if m_f else 0
+    # Exact on purpose, not an oversight: unlike DOMAIN_N0 (a floor since ticket
+    # 46) the shared-library suite has sat at 154 since 2026-10-05, so a count
+    # change here IS the signal.  Ticket 46 scoped the floor to the domain suite.
     ok = proc.returncode == 0 and passed == SHARED_LIB_N0 and failed == 0
     detail = {"exit": proc.returncode, "passed": passed, "failed": failed,
               "expected_n0": SHARED_LIB_N0, "tail": tail}
     return _step("shared_lib_tests", "PASS" if ok else "FAIL", detail)
 
 
-DOMAIN_N0 = 376          # measured 2026-10-15 ticket 44: 376 passed + 1 skip
-                        # (ticket 44 added the 2 degenerate-domain tests; prior
-                        # re-pin 2026-10-07 ticket 40 -> 374, before that
-                        # 229->370 unpinned, ticket 29 precedent f546573)
+DOMAIN_N0 = 376          # FLOOR, not an equality (ticket 46); 376 passed + 1
+                        # skip as measured on 2026-10-15.  See domain_counts_ok()
+                        # for why a floor and for what it still does not catch.
 DOMAIN_N0_SKIPPED = 1    # baseline conditional skip -- silent removal reads red
 # 2026-10-06: 0, was 1.  The R12 exit-11 marker was retired into a real pass by
 # ticket 25, and tickets 24/25/26/28 added tests; pin now equals the measured
@@ -188,6 +190,35 @@ DOMAIN_N0_SKIPPED = 1    # baseline conditional skip -- silent removal reads red
 # Measured by stashing the guard file and re-running --collect-only: HEAD
 # collects 224, the extended guard collects 229.
 DOMAIN_N0_XFAILED = 0
+
+
+def domain_counts_ok(passed: int, failed: int, skipped: int, xfailed: int) -> bool:
+    """Do the DOMAIN suite's *counts* match the baseline? (ticket 46)
+
+    Extracted so the gate's contract is unit-testable without a 22-minute run.
+    The process exit code stays with the caller -- this is about counts only.
+
+    ``passed`` is a FLOOR, not an equality.  The suite is expected to grow, and
+    an exact pin fired on every addition, forcing a re-pin each time (tickets 29
+    f546573, 30, 40, 44).  A floor detects the failure that matters -- tests
+    silently disappearing: a net decrease drops below it exactly as reliably as
+    it breaks equality -- without the false alarm on additions.
+
+    Known blind spot, stated rather than implied: a floor also passes on an
+    *accidental net increase* (a duplicated collection, or bad tests replacing
+    good ones and making up the count).  Catching 1:1 replacement would mean
+    pinning test node-ids or their hash -- a different order of change, not done
+    here.
+
+    ``failed``/``skipped``/``xfailed`` stay exact: they encode known conditions
+    (zero failures, one conditional skip), so any drift there is itself signal.
+    """
+    return (
+        failed == 0
+        and passed >= DOMAIN_N0
+        and skipped == DOMAIN_N0_SKIPPED
+        and xfailed == DOMAIN_N0_XFAILED
+    )
 
 
 def domain_tests() -> dict:
@@ -232,12 +263,8 @@ def domain_tests() -> dict:
     failed = int(m_f.group(1)) if m_f else 0
     skipped = int(m_s.group(1)) if m_s else 0
     xfailed = int(m_x.group(1)) if m_x else 0
-    ok = (
-        proc.returncode == 0
-        and passed == DOMAIN_N0
-        and failed == 0
-        and skipped == DOMAIN_N0_SKIPPED
-        and xfailed == DOMAIN_N0_XFAILED
+    ok = proc.returncode == 0 and domain_counts_ok(
+        passed, failed, skipped, xfailed
     )
     detail = {
         "exit": proc.returncode, "passed": passed, "failed": failed,

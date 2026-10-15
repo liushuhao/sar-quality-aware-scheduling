@@ -294,5 +294,47 @@ def test_claim_provenance_missing_script_fails(monkeypatch):
     assert "missing" in step["detail"]
 
 
+# ── domain-suite baseline predicate (ticket 46) ──────────────────────────
+
+def test_domain_counts_is_a_floor_not_an_equality():
+    """The suite is expected to GROW, so its pass count is a floor.
+
+    An exact pin fired on every addition and forced a re-pin (tickets 29
+    f546573, 30, 40, 44).  A floor still catches tests silently disappearing --
+    a net decrease drops below it exactly as reliably as it breaks equality --
+    while dropping the false alarm on additions.
+    """
+    from sss_core.verify import (
+        DOMAIN_N0,
+        DOMAIN_N0_SKIPPED,
+        DOMAIN_N0_XFAILED,
+        domain_counts_ok,
+    )
+
+    assert domain_counts_ok(DOMAIN_N0 + 3, 0, DOMAIN_N0_SKIPPED, DOMAIN_N0_XFAILED), (
+        "adding tests must not fail the gate -- the count is a floor"
+    )
+    assert domain_counts_ok(DOMAIN_N0, 0, DOMAIN_N0_SKIPPED, DOMAIN_N0_XFAILED)
+    assert not domain_counts_ok(
+        DOMAIN_N0 - 1, 0, DOMAIN_N0_SKIPPED, DOMAIN_N0_XFAILED
+    ), "a net decrease must still fail -- that is the failure the baseline exists for"
+
+
+@pytest.mark.parametrize(
+    "failed,skipped,xfailed",
+    [
+        (1, 1, 0),  # a failure
+        (0, 2, 0),  # an extra conditional skip appeared
+        (0, 0, 0),  # the one expected skip disappeared
+        (0, 1, 1),  # an xfail appeared
+    ],
+)
+def test_domain_counts_keeps_failures_skips_xfails_exact(failed, skipped, xfailed):
+    """Those three stay exact: each drift encodes a real change in condition."""
+    from sss_core.verify import DOMAIN_N0, domain_counts_ok
+
+    assert not domain_counts_ok(DOMAIN_N0, failed, skipped, xfailed)
+
+
 if __name__ == "__main__":
     sys.exit(pytest.main([__file__, "-v"]))
