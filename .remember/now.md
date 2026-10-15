@@ -835,3 +835,13 @@ review2 波续落 7 个单元正文改动（U1–U8：§3.2 拆分误差项 `8b7
 [SELF-CORRECT] 两处主线程自纠：①「§7.3 漏抄冻结源那句」证伪（`main.tex:321` 整行在场，仅交叉引用改为 `ef{sec:direction}`）；②S7 原批「拆 5 条短列」前提不成立（五个注册单元不在同一段，分池裁定在 §6.1）→ 回头改判
 [GATE] **终闸未在改完的树上跑过** → 台账 R41（下次第一条）；S10/S11 正文未动 → R42；C1 例外表 6 条超 ≤5 容限 → R43
 [HANDOFF] R2 续跑起点 = 跑 `r2/_final_gate.sh` 全 11 步；其余见项目记忆 `project-paper2-r2-wave-state-20261016`
+
+## 03:20 | main
+会话复盘收尾（非 R2 新进展）：抽象 5 故障 F1-F5 + 3 规则（P1 截断读当全读、P2 census 逐 token 计数非语义、P3 「本机只能 X」类约束前未验存在），写 3 条记忆 `feedback-truncated-read-as-full-read.md`/`feedback-census-counts-tokens-not-meaning.md`/`project-paper2-r2-wave-state-20261016.md`；`report_pilot.json` 被判 SUSPECT 属 spec §0.9 白名单副产物（`run_verify.py` 每次重写）非症状修补；追加仓内 `.remember/now.md` 事件流并 9 秒复验无 NDC 竞态；票账干净（本会话零票级提交、`issues/` 末改 22:32）；`/neat-freak` 改 `CLAUDE.md` 两处被本会话推翻的陈旧说法；收工门禁 3 FAIL 逐条裁定——FAIL#1 系门禁查跨项目 `~/.remember/now.md` 而本项目事件流在仓内 `.remember/now.md`（路径与 store 布局不匹配、非真漏），FAIL#3 已提交 `.remember/now.md`，余项待裁，**门禁未全绿**。
+## 03:27 | main
+接手 R2 波剩余工作（R41：在改动树上跑收工门禁），先核真相源（PROGRESS.md mtime 00:10 已落后、读 `.remember/remember.md`/`residuals.md`/`freeze-report.md`/`final_gate.txt`/`_final_gate.sh`/`_quickgate.sh`，HEAD 含 7 个 R2 提交），查出 S2 改动同时破两道门：census C1 增量达 6 条（`1.285`/`3.202` 为 baseline 无的新 token）超 spec §3「diff 空或例外表 ≤5」预算，且 `verify_paper_numbers.py` 在当前树 exit 1（`spread[^;]{0,40}?(\d+)` 把「spread is **1.285**」比对 artifact max 3.9722，属数值溯源门 FAIL）；仅完成诊断+脚本/规则核对，未落任何修复，**门禁仍红、R2 波未收尾**。
+## 04:09 | main
+R2 收尾续：根因定为 01:56 门禁跑在 panel landing(02:45–03:07) 前的 stale green，按 spec §3「指向式改写」把 S2 §6.2 句子改成无数字（commit `cedcebf`），数值溯源回 39-0、census C1 回 4 deltas(≤5)、C2/C3 不变、compile ×2 0 err/39 页；后台跑完 R41 11 步门禁（1–7、9 绿：run_verify PASS=12/REPORT=1/FAIL=0，step8 C1 diff 为预期 4 deltas、C2 diff 仅已知反斜杠 artifact 且 35 keys 与 baseline 逐字节同，acronym 已登记 `style_selfcheck.md` §5），并核 38→39 为 refs 溢出文本增行（无 float/Underfull vbox）；已核 8/8 frozen hash、更新 freeze-report/repairs.md/BLOCKED.md，**剩 freeze-report §3 待填、R41/R43 未关闭，S10/S11 = R42 待用户 locator**。
+
+## 04:2x | main
+R2 收尾全部完成：回填 `freeze-report.md` §3（终闸 11 步逐步骤表 + C2 转义伪差说明 + porcelain 归属 + 页数「增行」定性）；台账 **R41、R43 关闭**（`residual-ledger.py`）；更新 `repairs.md`（12 提交台账）、`BLOCKED.md`（状态改「已裁决」）、`r2/PROGRESS.md`（任务 5/6 标记完成）。**R2 内容波正文工作全部收口**：12 个 main.tex 提交、面板 20 条全裁 11 条落地、终闸全绿。**唯一剩余 = R42**（S10/S11 需用户给 locator，一字未改）。
