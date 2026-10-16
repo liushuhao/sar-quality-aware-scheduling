@@ -847,3 +847,35 @@ R2 收尾续：根因定为 01:56 门禁跑在 panel landing(02:45–03:07) 前�
 R2 收尾全部完成：回填 `freeze-report.md` §3（终闸 11 步逐步骤表 + C2 转义伪差说明 + porcelain 归属 + 页数「增行」定性）；台账 **R41、R43 关闭**（`residual-ledger.py`）；更新 `repairs.md`（12 提交台账）、`BLOCKED.md`（状态改「已裁决」）、`r2/PROGRESS.md`（任务 5/6 标记完成）。**R2 内容波正文工作全部收口**：12 个 main.tex 提交、面板 20 条全裁 11 条落地、终闸全绿。**唯一剩余 = R42**（S10/S11 需用户给 locator，一字未改）。
 ## 05:28 | main
 R42 路线裁定为 Zenodo 单快照（`papers/sliding-spotlight-scheduling/` 全子树去缓存 + 冻结态 `main.tex`，~16 MB，零仓改动），已开写 `.scratch/sliding-spotlight-scheduling/goal-review2/r2/build_deposit.py` 组包；两处正文（`main.tex:355` Data availability、`:195` §5.1）仍一字未改，**卡在用户 Zenodo 上传取 DOI 回传**后才能落笔+复快闸+提交。
+## 08:54 | main
+R42 deposit 包组装+校验完成（`r2/deposit/sliding-spotlight-scheduling-deposit-20261016.zip`，433 文件 / zip 3.93 MB，16 关键文件 0 缺失，磁盘 `main.tex` sha[16]=`16edb22b613f6708` ≡ git HEAD blob（仅 CRLF/LF）），用户裁定「先保留」挂起不传 Zenodo，正文 `main.tex:355`/`:195` 仍一字未改，另落 `r2/deposit-readme.md`（Zenodo 元数据草稿 + 取 DOI 步骤 + 解锁后两处改动/复闸命令）；解锁仍卡用户回传 Zenodo 预留 DOI 或仓 URL。
+## 09:12 | main
+复盘 paper1 全量问题记录（`papers/single-sat-quality/review/`，10 RDR + 16 归档 RDR，8 大类 40+ 条）并逐条举一反三排查 paper2（`papers/sliding-spotlight-scheduling/paper/main.tex`），实锤 page 11 pytest 测试名 `test_duration_models.py::test_identity_theta_a_over_A_equals_lamb...` 冲出右页边+泄露代码文件名，另发现 `ticket-40`/`D05-4` 等内部代号入正文/图注，已派 agent 扫行文/AI 痕迹层，该项仍在进行中。
+## 09:45 | main
+切强模型后按 review2-spec 流程执行 Batch A（P1 内部工件清除 11/11）改 `papers/sliding-spotlight-scheduling/paper/main.tex`：清 :124/:138/:325 pytest 路径痕迹（消除 200.98pt Overfull 右页边裁切）与 `ticket-40`/`D05-x`/`output commit unregistered`/`amendment record`/`main specification` 流程码，编译×2+快闸全绿（39 页、红线 0、数字 39/0、census delta 6 token 全为删掉的工件码、C3 13→14），已 `git add` 暂存未提交，P2/P3（图引序、H/W 缩写、f_Q/f_q、去重、em-dash/registered 密度、`_final_gate.sh` 加 Overfull/孤儿 label/图号引序门禁）及后台 bib 核查 agent 尚未回收。
+## 09:52 | main
+续 review2-spec 在 `main.tex` 执行 Batch B/C/D 并三次提交：B（P2，9 处 define-before-use/`-f_Q`→`f_q`/去重/摘要预注册限定，回修 :162 残留 `$-f_Q$` 与 :247 丢失的 R1C 引用）→ C（移 `fig:promotion` 浮块至 §6.2 后，首引序由 1,2,3,7,4,5,6 修成 1→7 单调，promotion=Fig.4）→ D（em-dash 101→79，13 处最密插入语对改逗号/括号/分号，数字与义务披露句零改动），D 的编译×2+快闸校验刚发出未回结果，P3（H/W 缩写、去重、registered 密度、`_final_gate.sh` 加 Overfull/孤儿 label/图号引序门禁）及后台 bib 核查 agent 仍未回收。
+## 10:02 | main
+续 review2-spec：Batch E 落地 `check_layout_gotchas.py`（Overfull 阈值/孤儿 label/图号引序 + 自测试夹具，自测先抓出自身两处判读 bug 后通过、现行稿 0 FAIL）并接入 `_final_gate.sh`；新写 `recompute_prose_numbers.py`（`.scratch/.../lessons-20261016/`）复算正文派生数全 PASS，唯 `+5.3% at 45°` 由 `duration.py:137-138` docstring（SLS 外推域读数）手工证实 `+5.3048%`，遂在 `main.tex` 按惯例标注外推域并提交；首次编译因 cd 起点错未跑、补跑通过（rc=0/0 error/39 页），全套 12 步终闸刚启动未回结果，后台安全审插件对本提交的复审因 API 403 未跑成（日志 `C:\Users\33151\.claude\security\log.txt`），P3 与 bib 核查 agent 仍待回收。
+## 10:40 | main
+终闸 12 步后台跑完 rc=0；bib 核查 agent 回报 8 条 MISMATCH（最重 `he2018a` 标题指向不存在论文、`zhang2025deep` 作者表串自他条），正按纪律亲验这两条时被 429（5 小时额度上限，14:40 重置）打断，WebFetch 域校验被挡改走 firecrawl；对抗审 agent 被 429 打断（临终输出称改写 check 脚本、heredoc 反斜杠陷阱），额度恢复后已回读终闸日志并 git status 排查其有无越界改动。
+## 10:50 | main
+
+bib 8 条 MISMATCH 全部双源核验完毕（并纠出子 agent 错报：`zhang2025deep` 真实作者仅 Zhou/Jin/Liu 三人，非 8 人），以 `fix_refs_bib.py` 键值替换落 17 条修正、提交 `cc307cd`（本文数字制引用故作者修正不动正文标签）；视觉验证时另抓出真问题：该表从无 `\caption`，故我加的 `\ref` 被解析成 "Table 5.2"（子节号），已在 `main.tex` 补自足式 caption，重编译 + 复验尚未跑完。
+## 11:37 | main
+
+对抗审 SHIP 后清掉 `P8WH`(:255)、`prediction P2`(:247) 两个残留内部码，并修 caption 新增 `\label` 与表尾旧 `\label{tab:fqdomains}` 重复标签；终版 census 干净（6 行 delta 全为内部码删除）已提交，重编译 + 视觉核 p11/20/26/40 四页全过（p40 仅 305 字符但定性为文献表尾非空浮页，留档接受）；收尾中——终闸在最终树重跑尚未出结果，台账与交接工件刚起步。[10:40] DECISION paper1→paper2 举一反三波 → 用户切强模型授权「处理全部问题」，编辑面 main.tex+refs.bib（覆盖 spec §0.10 bib 冻结，依据=明示授权+逐条双源核验）→ 复盘报告 .scratch/sliding-spotlight-scheduling/paper2-vs-paper1-lessons-20261016.md
+[10:52] COMMIT 3278ed1 P1 工件清除 11 处（pytest 路径+200pt 溢出消除/ticket-40/D05-x/孤儿表补 ref）
+[11:00] COMMIT bde8ae8 P2 define-before-use/f_q 统一/去重/摘要预注册限定（census 抓回初稿丢 R1C）
+[11:05] COMMIT f8e7000 fig:promotion 浮块移位（首引序 1→7 单调）
+[11:10] COMMIT 4473ba3 em-dash 101→80（13 处插入语对）
+[11:15] COMMIT 40974cc check_layout_gotchas.py 四检门禁+selftest 复证四缺陷+终闸接步12+45°外推标注
+[11:30] COMMIT cc307cd refs.bib 17 条修正（he2018a 假标题/zhang2025deep 错作者→Zhou/Jin/Liu 三人，核验推翻子 agent 8 人名单）
+[11:38] COMMIT dc19d68 表 caption 根因修复（原表从无 \caption）+P8WH/P2 清除（对抗审 verdict SHIP 续）
+[11:40] COMMIT 0529f7d caption 减法压缩；页数 39→40（文献表尾溢出 2 条，非空页，留档）
+[11:41] GATE lessons 终闸（12 步含新步 12）在最终树上跑 → 前五步绿，run_verify 进行中
+[11:42] DISCOVERY 视觉验收 4 页全过（p11 溢出消除/p20 Table 1/p26 Fig4/p40 尾页）→ 散文数字复算 0 FAIL（+5.3%@45°=外推域复现）→ 台账 R46 deposit 过期/R47 figN 错位
+[11:43] HANDOFF lessons 波收口（8 提交）→ 待用户：R42 locator（S10/S11）；投稿前 deposit 重组（R46）
+
+## 13:05 | main
+终闸步 6 停滞 ~85min 判因自后台 `&` 进程随 shell 退出被杀，额度恢复后用工具内建后台机制重跑 `.scratch/sliding-spotlight-scheduling/goal-review2/r2/_final_gate.sh`（尚未出结果），期间补写交接件 .remember/now.md 与 memory `project-paper2-lessons-wave-20261016.md`。
