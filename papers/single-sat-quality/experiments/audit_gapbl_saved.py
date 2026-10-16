@@ -52,8 +52,12 @@ for n, (key, e) in enumerate(prog.items(), 1):
     phi_arr = np.zeros(N)
     t_arr = np.zeros(N)
     for i, t, ph in zip(sel, ta, phis):
-        wt = inst.tasks[i].window_times
-        if not any(ws <= t <= we for ws, we in wt):
+        task = inst.tasks[i]
+        wt = task.window_times
+        # Full observation interval [t, t+duration] must lie in one window
+        # (aligned with _audit_full_hard: start-only lets short windows host
+        # an OOW observation).
+        if wt and not any(ws <= t and t + task.duration <= we for ws, we in wt):
             xwin += 1
         if abs(ph) < inst.phi_min or abs(ph) > inst.phi_max:
             c1p += 1

@@ -222,7 +222,8 @@ def audit_group_stats(rpt, bl, m3, m2):
     # MOEA-3 stats
     m3_stats = compute_stats(m3_groups, is_baselines=False)
     
-    # Paper Table 2 claims (all density classes; values synced to tex @ e01ca3d)
+    # Paper Table 2 claims (all density classes; values synced to tex @ e01ca3d;
+    # S1 MOEA-2 f1* std 0.14->0.13 synced 2026-10-16 per current tex).
     # GA-P-BL rows omitted: guard forces GA-P-BL == G-BL (fallback collapse),
     # so its table rows duplicate G-BL by construction.
 
@@ -241,7 +242,7 @@ def audit_group_stats(rpt, bl, m3, m2):
         "S1": {
             "G-BL":   {"f1*": (1.00, 0.00), "f2": (0.295, 0.037), "f3": (0.497, 0.044)},
             "G-SM":   {"f1*": (0.51, 0.16), "f2": (0.389, 0.086), "f3": (0.722, 0.058)},
-            "MOEA-2": {"f1*": (0.86, 0.14), "f2": (0.394, 0.059), "f3": (0.654, 0.038)},
+            "MOEA-2": {"f1*": (0.86, 0.13), "f2": (0.394, 0.059), "f3": (0.654, 0.038)},
             "MOEA-3": {"f1*": (0.85, 0.12), "f2": (0.377, 0.050), "f3": (0.699, 0.037)},
         },
         "S2": {
@@ -357,8 +358,10 @@ def audit_orphan_scan(rpt, bl, m3, m2):
     # Extract key numerical patterns from abstract and key sections
     # Pattern: look for numbers in specific contexts
     
-    # 1. The orphan threat: MOEA-2/3 f3 = 0.169 ± 0.066 / 0.170 ± 0.066 in S4
-    # Check: does moea_2obj have f3 data for S4?
+    # 1. Orphan scan (existence only).  The former stale-value comparison
+    # (0.169/0.170 ± 0.066) predated the window-fixed rerun and produced
+    # permanent false WARNs; the live values are owned by the Table 2 dict
+    # above (synced to tex).  Removed 2026-10-16.
     s4_m2_entries = [sd for k, sd in m2.get("completed", {}).items() if k.startswith("S4/")]
     s4_m3_entries = [sd for k, sd in m3.get("completed", {}).items() if k.startswith("S4/")]
     
@@ -369,11 +372,6 @@ def audit_orphan_scan(rpt, bl, m3, m2):
             import numpy as np
             mean_f3, std_f3 = np.mean(f3_vals), np.std(f3_vals, ddof=1)
             rpt.ok(f"MOEA-2 S4 f3 exists: {len(f3_vals)} entries, mean={mean_f3:.4f}±{std_f3:.4f}")
-            # Compare with 0.169 ± 0.066
-            mean_ok = abs(mean_f3 - 0.169) <= 0.005
-            std_ok = abs(std_f3 - 0.066) <= 0.005
-            if not (mean_ok and std_ok):
-                rpt.warn(f"MOEA-2 S4 f3: paper says 0.169±0.066, actual {mean_f3:.4f}±{std_f3:.4f}")
         else:
             rpt.fail("MOEA-2 S4: f3 field MISSING from all entries — ORPHAN")
     else:
@@ -386,10 +384,6 @@ def audit_orphan_scan(rpt, bl, m3, m2):
             import numpy as np
             mean_f3, std_f3 = np.mean(f3_vals), np.std(f3_vals, ddof=1)
             rpt.ok(f"MOEA-3 S4 f3 exists: {len(f3_vals)} entries, mean={mean_f3:.4f}±{std_f3:.4f}")
-            mean_ok = abs(mean_f3 - 0.170) <= 0.005
-            std_ok = abs(std_f3 - 0.066) <= 0.005
-            if not (mean_ok and std_ok):
-                rpt.warn(f"MOEA-3 S4 f3: paper says 0.170±0.066, actual {mean_f3:.4f}±{std_f3:.4f}")
         else:
             rpt.fail("MOEA-3 S4: f3 field MISSING from all entries — ORPHAN")
     else:

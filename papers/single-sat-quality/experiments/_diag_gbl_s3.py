@@ -2,7 +2,7 @@ import pickle, sys
 from pathlib import Path
 import numpy as np
 from datetime import timedelta
-ROOT = Path(r"D:/hermes/my-workspace/projects/planning paper")
+ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(ROOT / "src"))
 from sar_sim.solver.baselines import baseline_b1, _c2_transition_los
 from sar_sim.solver.types import build_agile_instance, compute_full_attitude, precompute_geometry, compute_los_separation

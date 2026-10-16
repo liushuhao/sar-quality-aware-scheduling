@@ -45,7 +45,14 @@ def audit_schedule(schedule, inst):
         sel.append(i)
         phi_arr[i] = roll
         t_arr[i] = t
-        if not any(ws <= t <= we for ws, we in inst.tasks[i].window_times):
+        # Full observation interval [t, t+duration] must lie in one window
+        # (aligned with _audit_full_hard: start-only lets short windows host
+        # an OOW observation).
+        task = inst.tasks[i]
+        if task.window_times and not any(
+            ws <= t and t + task.duration <= we
+            for ws, we in task.window_times
+        ):
             xwin += 1
     c1p = sum(1 for i in sel
               if abs(phi_arr[i]) < inst.phi_min or abs(phi_arr[i]) > inst.phi_max)

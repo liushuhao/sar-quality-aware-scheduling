@@ -147,8 +147,10 @@ def verify_c1_incidence_squint(
           geom_cache read that looks legal, so neither (a) nor (b) can see
           it.  Per task; does not add to ``total_checks``.
 
-    Note: the resolution sub-constraint has been merged into θ^min per the
-    latest paper revision (resolution determines the lower incidence bound).
+    Note: the per-task resolution sub-constraint is retired from the paper
+    (the current tex states no per-task resolution constraint; phi_min_res /
+    theta_min_res are unused legacy defaults, always 0.0).  The theta^min
+    bound is the platform incidence envelope, not a resolution-derived one.
 
     Args:
         selected_indices: which tasks are selected

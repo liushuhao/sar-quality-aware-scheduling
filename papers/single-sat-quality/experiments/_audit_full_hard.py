@@ -36,6 +36,14 @@ def audit_one(args):
     alt = float(data.get("satellite", {}).get("altitude_km", 693.0)) * 1000.0
     inst = build_agile_instance_from_scenario(
         data, max_slew_rate=SLEW, settle_time=SETTLE, altitude_m=alt)
+    # Value anchors (2026-10-16): tex prints E_max=1e7, M_max=1e11,
+    # e_i=5e4, m_i=5e8 (the 200-task ceiling).  A default drift would
+    # silently invalidate the printed ceiling while every <=budget check
+    # stays green.
+    assert inst.energy_budget == 1e7 and inst.memory_budget == 1e11, (
+        inst.energy_budget, inst.memory_budget)
+    assert all(tk.energy == 50000.0 and tk.memory == 5e8 for tk in inst.tasks), (
+        "per-task energy/memory deviate from the printed values")
     precompute_geometry(inst, step_s=10.0)
     sel = list(sd["selected"]); ta = list(sd["t_actuals"])
     phis = list(sd["phis_off_nadir"])
