@@ -879,3 +879,5 @@ bib 8 条 MISMATCH 全部双源核验完毕（并纠出子 agent 错报：`zhang
 
 ## 13:05 | main
 终闸步 6 停滞 ~85min 判因自后台 `&` 进程随 shell 退出被杀，额度恢复后用工具内建后台机制重跑 `.scratch/sliding-spotlight-scheduling/goal-review2/r2/_final_gate.sh`（尚未出结果），期间补写交接件 .remember/now.md 与 memory `project-paper2-lessons-wave-20261016.md`。
+## 13:40 | main
+终闸在最终树 12 步全绿（`FINAL_GATE_EXIT=0`，红线 0、数字回源 39-0、claim 11/11、编译×2 零 error 40 页、步 12 layout 0 FAIL），提交构建物+交接件（`.remember/now.md`、`remember.md`）后工作树净，用户确认收工并启动归零复盘；残留 R42（S10/S11 locator 待用户给）、R46（投稿前 deposit 重组，zip 仍是本波前树）与投稿包三项人填仍待用户。
