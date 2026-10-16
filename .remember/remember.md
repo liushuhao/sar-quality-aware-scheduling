@@ -1,20 +1,29 @@
 # Handoff
 
 ## State
-- **R2 内容波（review2 第二本）收口 2026-10-16**：正文工作全部完成——12 个 main.tex 提交（面板 11 条落地 7 提交 + 独立层 F1/F2 `4183957` + 文风层 `ae24f83`/`712b434` + T-P2-1 `5ba004f` + 收尾 S2 数字门修复 `cedcebf`）；面板 20 条全裁（sidecar `r2/panel/08_author_adjudication.md` CONFIRMED：will 12 / wont 7 / not_on_point 1）。
-- **终闸在覆盖全树的 HEAD=`cedcebf` 上跑完**（`_final_gate.sh` 11 步，`FINAL_GATE_EXIT=0`）：六脚本 rc=0、run_verify `PASS=12 REPORT=1 FAIL=0`、编译 ×2 零 error **39 页**、census C1 例外 4 条(≤5)/C2 键本体不变(转义伪差)/C3 不变、渲染 39 页、缩略语 advisory 全登记、porcelain 全可归属。逐步骤见 `r2/freeze-report.md` §3。
-- **收尾会话抓出并修复**：01:56 首跑在 panel landing(02:45–03:07) 之前的 stale green；S2（`23b31aa`）新增的 §6.2 数字触发 `verify_paper_numbers.py` 红(40-1)+census 超额(6>5)，`cedcebf` 按 spec §3 改无数字表述后两门同绿。台账 **R41/R43 已关闭**。
-- 台账 open 属本波者=**1（R42）**：S10/S11 正文未改（面板决定=工件与场景模板公开），待用户 locator。另 R44/R45 属收尾期立的其他面（shutdown-gate 路径 / 资产落后上游 8 项），非本波。
-- porcelain：`M paper/main.pdf`（编译产物）、`M experiments/results/verify/report_pilot.json`（run_verify 白名单副产物）、`M .remember/now.md`、`?? .githooks/`（并行会话，禁碰）——收口时提交前三者（`.githooks/` 不动）。
+- **paper2「paper1→paper2 举一反三」波收口 2026-10-16**：用户切强模型授权「处理全部问题」。
+  复盘报告+执行全程 `.scratch/sliding-spotlight-scheduling/paper2-vs-paper1-lessons-20261016.md`。
+  **9 提交**（`3278ed1..7d4d393`）：正文清内部工件码(pytest 全路径/ticket-40/D05-x)→消 200pt 溢出；
+  define-before-use(H/W/C2/R3H/ALIVE-DEAD)+f_Q→f_q 统一+去重+摘要预注册限定；fig:promotion
+  浮块移位(首引序 1→7 单调)；em-dash 101→80；表 caption 根因修复(原表从无 \caption)+P8WH/P2 清除；
+  refs.bib 17 条双源核验修正(he2018a 假标题/zhang2025deep 错作者)/新增 `scripts/check_layout_gotchas.py` 门禁。
+- **终闸 12 步在最终树(`0529f7d`)绿，`FINAL_GATE_EXIT=0`**：红线0 / 数字回源39-0 / prereg28 / v3-33 /
+  claim 11/11 / run_verify PASS=12 REPORT=1 FAIL=0 / 编译×2 零error **40页** / census C1 DIFF(6条工件码删除)·
+  C2 键本体不变(35 hits)·C3 只增(48→50,13→14) / 渲染40页 / 新步12 layout 0 FAIL。
+- **对抗审(fresh 子 agent)verdict SHIP**（零 blocker/零回归）；**视觉读图 4 页全过**（p11 溢出消除/Table1/Fig.4/p40）。
+- 工作树净（仅 `?? .githooks/` 并行会话，禁碰）。台账新 **R46**（deposit zip 过期）/ **R47**（figN↔Figure 号错位 wontfix）。
 
 ## Next
-1. **R42（S10/S11）**：用户给 locator（已定 = 沿用已有仓 `sar-quality-aware-scheduling` + Zenodo 冻本论文专属快照给 DOI）后，改 `main.tex:355`（Data availability）与 `:195`（§5.1）；bundle 须用冻结态 main.tex 组装。**本波唯一未完正文动作。**
-2. 投稿包：三项人填（推荐/回避审稿人、是否特刊、Data availability locator）属用户。
-3. （可选）若要保留 S2 的 spread 分位数：需接受 census C1 例外超 ≤5，或另立载体。
+1. **R42（S10/S11）**：用户给 locator（已定 = 仓 `sar-quality-aware-scheduling` + Zenodo 冻本论文快照给 DOI）后，
+   改 `main.tex:355`（Data availability）与 `§5.1`；bundle 用冻结态 main.tex 组装。**本波唯一未完正文动作。**
+2. **R46**：投稿前用最新 main.tex+refs.bib 重组 deposit zip（现包是 lessons 波前树）。
+3. 投稿包三项人填（推荐/回避审稿人、是否特刊、Data availability locator）属用户。
 
 ## Context
-- **页数 38 → 39 = 增行**（正文增长致文献表溢出到 +1 页；零 float 警告、0 `Underfull \vbox`、无近空页）——非浮图移位，模型读 page-38/39 版式正常。
-- **禁整仓 push**：仓自 2026-09-27 未推、本地领先 254 提交，push 会连带公开 6 个已跟踪内部件（`.remember/{now,remember,residuals}.md`、`.scratch/.../issues/23-*.md`、`BLOCKED.md`、`PROGRESS.md`）。
-- **census 逐 token/逐行计数**：`_final_gate.sh` 的 C2 快照用 `\\cite`（保留前导反斜杠）而任务 0 基线用 `\cite`（缺之）⇒ 字面 diff 恒非空，判据=计数级（21 distinct / 35 total）+ 键本体。
-- 面板自身**不是独立误差过程**（五席同模型族同会话自披露）。
-- `.gates/current-ticket` = `T2 R2-wave` **保留**（R42 未完）；`.scratch/.../r2/_quickgate.sh <tag>` 可复用快闸。
+- **页数 39→40 = 文献表尾溢出 2 条**（表 caption + bib 补卷期页）：非浮图移位、非空页，review 模式接受留档。
+- **禁整仓 push**：仓自 2026-09-27 未推、本地大幅领先，push 会连带公开 6 个已跟踪内部件
+  (`.remember/{now,remember,residuals}.md`、`.scratch/.../issues/23-*.md`、`BLOCKED.md`、`PROGRESS.md`)。
+- **模型记忆**：`.claude/.../memory/project-paper2-lessons-wave-20261016.md`——含 STR≡SLS AASR 恒等、
+  +5.3%@45° 外推域口径、bib 核验须对出版社 byline 复核（子 agent 曾编 8 人名单）等非显而易见事实。
+- `review2-spec.md §0.10` 的 refs.bib 冻结已被本波经用户明示授权覆盖（可 `git revert cc307cd`）。
+- `.gates/current-ticket` = `T2 R42-pending`。
