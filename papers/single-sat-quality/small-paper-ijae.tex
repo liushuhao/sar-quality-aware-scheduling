@@ -512,14 +512,6 @@ confines feasible acquisitions; the selected
 schedules concentrate at mean $|\psi_{\text{sq}}|$ of $16$--$24^\circ$
 (\S\ref{sec:pareto-coupling}).
 Both are observation-geometry limits applied before scheduling.
-\emph{Caliber note.} The observation incidence angle is computed in two
-independent places: the off-nadir angle consumed at window generation, and
-the attitude-derived off-nadir the solver records with each schedule. The two
-agree to within a small fraction of a degree but are not the same quantity,
-so an acquisition hosted by a window whose generation-side incidence minimum
-lies within that fraction of $\theta^{\min}$ can read marginally below the
-stated bound when the solver's own incidence is evaluated. The bound itself is
-enforced on the generation caliber, and the reported schedules are unchanged.
 
 \paragraph{Physical modeling scope.}
 The quality objectives capture first-order geometric and radiometric
