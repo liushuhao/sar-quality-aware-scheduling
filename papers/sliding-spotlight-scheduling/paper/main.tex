@@ -256,6 +256,13 @@ The promotion verdict is stated on two separated axes, and the separation is the
 
 \paragraph{Reading axis.} Over all 90 units (3 families $\times$ 3 budget tiers $\times$ 10 seeds) the promotion decision is no\_promotion everywhere, with a maximum spread of 3.9722~dB against the frozen 6.0~dB threshold (Fig.~\ref{fig:promotion}b). The no-promotion verdict is robust across the 16$\times$ budget ladder (4$\times$ in population and 4$\times$ in generations, i.e.\ 16$\times$ in evaluations) and may be cited as a structural reading with its budget evidence attached. The axes must not be merged: structural ALIVE is not a prediction that promotion triggers, and the 90/90 reading-axis outcome does not contradict the structural verdict. The spread distribution over those units is skewed well below the maximum quoted above rather than crowding the threshold, which is what makes the uniform verdict a calibration reading rather than a near-miss: even that maximum leaves a margin of more than two decibels to the frozen threshold. The budget-robustness statement above concerns the promotion verdict, which is bounded; the frontier-richness qualifier concerns a different object, for which no bound is claimed in either direction --- the two are not in tension.
 
+\begin{figure}[t]
+\centering
+\includegraphics[width=\linewidth]{figures/fig5_promotion_two_axis.pdf}
+\caption{The promotion verdict on its two separated axes. (a)~Structural axis, model-level only: recomputed $R_{fam}$ per family under the registered rotation-centre caliber from the promoted scenario manifests (3.9998 / 8.74 / 10.91~dB, base seeds; live recomputation reproduces the registration within its registered tolerance), against the frozen 6.0~dB threshold. R1C is STRUCTURAL DEAD; R2F/R3H are descriptively ALIVE at the model-level bound. (b)~Reading axis: raw per-unit promotion outcomes for all 90 units (3 families $\times$ 3 tiers $\times$ 10 seeds, real-window v3 caliber); every unit is no\_promotion; the largest reads 3.9722~dB. The axes are not merged: (a) never predicts (b).}
+\label{fig:promotion}
+\end{figure}
+
 \subsection{Convergence verdicts and budget tiers}\label{sec:convergence}
 
 Convergence was calibrated under a preregistered rule frozen before the two additional budget tiers were run. Both treatment families carry the SEARCH-ARTIFACT verdict, and both disclosures are of falsified readings, not assertions.
@@ -296,13 +303,6 @@ A required disclosure on double weighting. The quality aggregate is weighted twi
 \subsection{Coverage parity}\label{sec:coverage}
 
 The coverage axis is a constructive parity outcome, not a hypothesis test. The dense-domain construction guarantees the per-node serviceability criterion by design (Section~\ref{sec:scenarios}), and the warm start makes the parity verifiable on the promoted artifacts themselves: recomputed over all 90 promoted units (three budget tiers, three families, ten seeds each), the coverage-maximal front member ties the anchor's served fraction exactly in 90/90 units, with R1C saturating at $f_1^*=1.0$ in 30/30 --- the real-window reading of the construction's degeneracy; the 49/50 figure sometimes quoted for this construction is the earlier synthetic-family measurement and is not citable here. A significance test on coverage therefore has no power by construction. We report coverage as what it is --- a construction product inherited by every run --- and make no claim of the form that coverage passed or failed in any branch.
-
-\begin{figure}[t]
-\centering
-\includegraphics[width=\linewidth]{figures/fig5_promotion_two_axis.pdf}
-\caption{The promotion verdict on its two separated axes. (a)~Structural axis, model-level only: recomputed $R_{fam}$ per family under the registered rotation-centre caliber from the promoted scenario manifests (3.9998 / 8.74 / 10.91~dB, base seeds; live recomputation reproduces the registration within its registered tolerance), against the frozen 6.0~dB threshold. R1C is STRUCTURAL DEAD; R2F/R3H are descriptively ALIVE at the model-level bound. (b)~Reading axis: raw per-unit promotion outcomes for all 90 units (3 families $\times$ 3 tiers $\times$ 10 seeds, real-window v3 caliber); every unit is no\_promotion; the largest reads 3.9722~dB. The axes are not merged: (a) never predicts (b).}
-\label{fig:promotion}
-\end{figure}
 
 \section{Discussion and Limitations}\label{sec:discussion}
 
