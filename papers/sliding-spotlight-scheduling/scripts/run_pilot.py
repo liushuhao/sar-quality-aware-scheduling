@@ -47,6 +47,11 @@ def main(argv=None) -> int:
     ap.add_argument("--pop", type=int, default=40)
     ap.add_argument("--gen", type=int, default=60)
     ap.add_argument("--out", default=None)
+    ap.add_argument(
+        "--freeze-dwell", action="store_true",
+        help="fixed-dwell ablation: hold dwell at its zero-squint value "
+             "at every consumption point (panel R1 comparison arm)",
+    )
     args = ap.parse_args(argv)
 
     import pymoo
@@ -67,7 +72,7 @@ def main(argv=None) -> int:
     # task unschedulable the greedy anchor serves nothing, so the seed
     # row would carry cv=1.0 and the seed-CV assertion would turn the
     # distinguishing exit 11 into a crash (exit 1).
-    sp = SchedulingProblem(manifest, lib)
+    sp = SchedulingProblem(manifest, lib, freeze_durations=args.freeze_dwell)
     if not any(p.schedulable for p in sp.plans):
         print(
             "D11 EXIT 11: no feasible individual can exist "
@@ -78,7 +83,7 @@ def main(argv=None) -> int:
 
     # anchor seed (D12-1/2): encode the greedy anchor solution as population
     # row 0, with the fail-loud CV/f1 dual check inside run_nsga2
-    anchor = anchor_on_manifest(manifest, lib)
+    anchor = anchor_on_manifest(manifest, lib, freeze_durations=args.freeze_dwell)
     seed_vec = (
         encode_seed_individual(sp, anchor.starts) if anchor.starts else None
     )
@@ -86,6 +91,7 @@ def main(argv=None) -> int:
         manifest, lib, seed=args.seed, pop_size=args.pop,
         generations=args.gen, seed_individual=seed_vec,
         anchor_f1_star=anchor.f1_star,
+        freeze_durations=args.freeze_dwell,
     )
     feasible = [r for r in result.front if r["cv"] <= CV_DUST_TOL]
     if not feasible:

@@ -230,6 +230,7 @@ def run_nsga2(
     generations: int = 60,
     seed_individual: list[float] | None = None,
     anchor_f1_star: float | None = None,
+    freeze_durations: bool = False,
 ) -> PilotResult:
     """One deterministic NSGA-II run over a scenario manifest.
 
@@ -237,7 +238,7 @@ def run_nsga2(
     of the initial population (pymoo accepts an array sampling); its CV==0
     and f1* >= anchor are ASSERTED at construction (fail-loud dual check).
     """
-    sp = SchedulingProblem(manifest, lib)
+    sp = SchedulingProblem(manifest, lib, freeze_durations=freeze_durations)
     sampling = FloatRandomSampling()
     if seed_individual is not None:
         rng = np.random.default_rng(seed)

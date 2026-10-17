@@ -204,7 +204,9 @@ class TaskPlan:
         return self.window_at(t).t_ca_s
 
 
-def precompile_tasks(manifest: dict, lib: ModeLibrary) -> list[TaskPlan]:
+def precompile_tasks(
+    manifest: dict, lib: ModeLibrary, freeze_durations: bool = False
+) -> list[TaskPlan]:
     """Precompile per-task feasible subintervals with the manifest's OWN
     window-tail pad (D04-2/D10-8 single source: manifest pads).
 
@@ -269,11 +271,12 @@ def precompile_tasks(manifest: dict, lib: ModeLibrary) -> list[TaskPlan]:
         for lo, hi, t_ca, w_r0, w_inc in specs:
 
             def duration(t, _mode=mode, _tca=t_ca, _r0=w_r0):
+                _squint = (
+                    0.0 if freeze_durations
+                    else squint_at(t, _tca, lib.geo, r0_m=_r0)
+                )
                 return pad_window_tail(
-                    duration_scene_s(
-                        _mode, squint_at(t, _tca, lib.geo, r0_m=_r0), lib,
-                        r0_m=_r0,
-                    ),
+                    duration_scene_s(_mode, _squint, lib, r0_m=_r0),
                     pads,
                 )
 
@@ -328,10 +331,13 @@ class SchedulingProblem:
       * C3/C4 evaluated per selected task (slack by construction, D10-6)
     """
 
-    def __init__(self, manifest: dict, lib: ModeLibrary):
+    def __init__(
+        self, manifest: dict, lib: ModeLibrary, freeze_durations: bool = False
+    ):
         self.manifest = manifest
         self.lib = lib
-        self.plans = precompile_tasks(manifest, lib)
+        self.freeze_durations = freeze_durations
+        self.plans = precompile_tasks(manifest, lib, freeze_durations)
         self.n = len(self.plans)
         self.pads = MarginPads(
             float(manifest["preregistration"]["pads"]["inter_task_fraction"]),
@@ -356,9 +362,13 @@ class SchedulingProblem:
     def _dwell(self, i: int, start: float) -> float:
         plan = self.plans[i]
         w = plan.window_at(start)
+        squint = (
+            0.0 if self.freeze_durations
+            else squint_at(start, w.t_ca_s, self.lib.geo, r0_m=w.r0_m)
+        )
         return duration_scene_s(
             plan.mode,
-            squint_at(start, w.t_ca_s, self.lib.geo, r0_m=w.r0_m),
+            squint,
             self.lib,
             r0_m=w.r0_m,
         )
