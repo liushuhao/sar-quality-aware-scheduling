@@ -176,8 +176,9 @@ def shared_lib_tests() -> dict:
     return _step("shared_lib_tests", "PASS" if ok else "FAIL", detail)
 
 
-DOMAIN_N0 = 376          # FLOOR, not an equality (ticket 46); 376 passed + 1
-                        # skip as measured on 2026-10-15.  See domain_counts_ok()
+DOMAIN_N0 = 376          # FLOOR, not an equality (ticket 46); baseline
+                        # 376+1 skip (2026-10-15), 407+1 skip after ticket 48
+                        # (2026-10-19).  See domain_counts_ok()
                         # for why a floor and for what it still does not catch.
 DOMAIN_N0_SKIPPED = 1    # baseline conditional skip -- silent removal reads red
 # 2026-10-06: 0, was 1.  The R12 exit-11 marker was retired into a real pass by
