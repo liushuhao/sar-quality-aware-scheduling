@@ -37,6 +37,14 @@ from .modes import Mode
 # the original ">= 6x (1.0 + 0.2)" wording 2026-09-29, ticket 13 --
 # 6*1.2 = 7.2 > 6.0 was false as registered; threshold value unchanged)
 PROMOTION_SPREAD_DB = 6.0
+# ticket 48: under a single objective the rank-0 set is "all schedules
+# reaching max coverage" -- an AASR spread over it is an arbitrary property
+# of tie multiplicity, not a trade-off reading, so deriving
+# promote/no_promotion from it would fabricate a decision.  New-record
+# decisions carry this fixed void marker (fail-loud: a replay cannot
+# silently reproduce a decision that was never made); the spread value is
+# kept as a descriptive column only.
+PROMOTION_VOID_SINGLE_OBJECTIVE = "vacuous_single_objective"
 from .modes import ModeLibrary
 
 PYMOO_PINNED = "0.6.1.6"
@@ -56,28 +64,32 @@ CV_DUST_TOL = 1e-9
 
 
 class SchedulingProblemPymoo(Problem):
-    """pymoo adapter: 2N decision vector, two minimized objectives
-    (-f1*, -f_q: BOTH quality axes are maximized), one aggregated CV from
-    the evaluator's violation sum."""
+    """pymoo adapter (ticket 48 single-objective world): 2N decision vector,
+    ONE minimized objective (-f1*: coverage), one aggregated CV from the
+    evaluator's violation sum.  ``f_q`` left the objective vector (the
+    measured single-true-axis adjudication, 2026-10-19): it survives only as
+    a descriptive reading on the front records, never as selection pressure.
+    With n_obj=1 the NSGA-II machinery degenerates to an elitist GA
+    (non-dominated sort ranks by the single objective); the anchor seed,
+    operators, and determinism convention are unchanged."""
 
     def __init__(self, problem: SchedulingProblem):
         self.sp = problem
         n = problem.n
         super().__init__(
             n_var=2 * n,
-            n_obj=2,
+            n_obj=1,
             n_constr=1,
             xl=np.zeros(2 * n),
             xu=np.ones(2 * n),
         )
 
     def _evaluate(self, X, out, *args, **kwargs):
-        f = np.empty((X.shape[0], 2))
+        f = np.empty((X.shape[0], 1))
         g = np.empty((X.shape[0], 1))
         for p in range(X.shape[0]):
             ev = self.sp.evaluate(X[p])
             f[p, 0] = -ev["f1_star"]  # maximize coverage
-            f[p, 1] = -ev["f_q"]  # maximize delivered quality (finer = larger f_q)
             g[p, 0] = ev["cv"]
         out["F"] = f
         out["G"] = g
@@ -268,20 +280,29 @@ def run_nsga2(
     )
     front = []
     if res.F is not None:
-        for k in range(len(res.F)):
-            x = res.X[k]
+        # pymoo 0.6.1.6 squeezes res.F/CV/X to 1-D when n_obj==1 AND the
+        # rank-0 set holds exactly one member (core/algorithm.py: "create a
+        # 1d array").  f1* is a discrete priority sum, so a unique optimum is
+        # common (tight orders) -- indexing [k, 0] on the squeezed array is an
+        # intermittent IndexError.  atleast_2d makes every shape uniform.
+        F2 = np.atleast_2d(res.F)
+        CV2 = np.atleast_2d(res.CV) if res.CV is not None else None
+        X2 = np.atleast_2d(res.X)
+        for k in range(len(F2)):
+            x = X2[k]
             rec = decode_solution(sp, x)
             front.append(
                 {
-                    "f1_star": float(-res.F[k, 0]),
-                    "f_q": float(-res.F[k, 1]),
-                    "cv": float(res.CV[k, 0]) if res.CV is not None else rec["cv"],
+                    "f1_star": float(-F2[k, 0]),
+                    "f_q": float(rec["f_q"]),  # descriptive reading, NOT an objective
+                    "cv": float(CV2[k, 0]) if CV2 is not None else rec["cv"],
                     "n_selected": rec["n_selected"],
                     "starts": {str(i): float(s) for i, s in rec["starts"].items()},
                 }
             )
     all_zero = all(r["cv"] <= CV_DUST_TOL for r in front) if front else False
     promo = promotion_spread_db(sp, front)
+    promotion_decision = PROMOTION_VOID_SINGLE_OBJECTIVE
     anchor_f1 = anchor_f1_star
     search_only = None
     if anchor_f1 is not None and front:
@@ -296,7 +317,7 @@ def run_nsga2(
         anchor_f1_star=anchor_f1,
         search_only_max_f1_star=search_only,
         promotion_spread_db=promo["spread_db"],
-        promotion_decision=promo["decision"],
+        promotion_decision=promotion_decision,
     )
 
 

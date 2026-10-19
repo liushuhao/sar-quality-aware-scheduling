@@ -149,7 +149,7 @@ class TaskPlan:
 
     index: int
     priority: int
-    rho_req_m: float
+    rho_req_m: float | None  # None = manifest carries no order (pre-ticket-25)
     mode: Mode
     prf_hz: float
     azimuth_size_m: float
@@ -311,7 +311,17 @@ def precompile_tasks(
             TaskPlan(
                 index=i,
                 priority=int(t["priority"]),
-                rho_req_m=float(t["rho_req_m"]),
+                # ticket 48 fix: the clip guard above keys on .get(), but this
+                # constructor read the key unconditionally -- a pre-ticket-25
+                # manifest would have KeyError'd HERE, after the clip skip, so
+                # the commit-message promise ("no-field manifests skip
+                # bit-for-bit") was false end-to-end.  None flows through; the
+                # C4 consumer's rho parameter is a registered interface-stability
+                # slot (D09-4, deleted inside the predicate), so None is inert.
+                rho_req_m=(
+                    float(t["rho_req_m"])
+                    if t.get("rho_req_m") is not None else None
+                ),
                 mode=mode,
                 prf_hz=float(t["prf_hz"]),
                 azimuth_size_m=float(t["azimuth_size_m"]),

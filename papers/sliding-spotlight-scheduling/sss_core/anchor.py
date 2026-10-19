@@ -311,7 +311,13 @@ def _precompile_frozen(manifest: dict, lib: ModeLibrary, pads: MarginPads):
             TaskPlan(
                 index=i,
                 priority=int(t["priority"]),
-                rho_req_m=float(t["rho_req_m"]),
+                # ticket 48: same None tolerance as the evaluator constructor
+                # -- the clip guard skips above, the field read must not
+                # KeyError behind it (pre-ticket-25 manifests).
+                rho_req_m=(
+                    float(t["rho_req_m"])
+                    if t.get("rho_req_m") is not None else None
+                ),
                 mode=mode,
                 prf_hz=float(t["prf_hz"]),
                 azimuth_size_m=float(t["azimuth_size_m"]),

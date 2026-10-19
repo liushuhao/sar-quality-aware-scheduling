@@ -209,6 +209,12 @@ def main(argv=None) -> int:
                     help="JSON file with the platform orbit (required for "
                          "--generator realwindow: the orbit is a registered "
                          "input, not something the driver may invent)")
+    ap.add_argument("--s-factor", type=float, default=1.0,
+                    help="ticket 48 demand sweep: pass through to run_pilot "
+                         "which scales every task's rho_req_m by this factor "
+                         "in memory (population fixed).  Each s point MUST "
+                         "get its own --matrix-dir: the progress ledger and "
+                         "the pilot artifacts are per-s-world.")
     args = ap.parse_args(argv)
 
     dirs = MatrixDirs()
@@ -304,13 +310,16 @@ def main(argv=None) -> int:
 
         t0 = time.monotonic()
         env = dict(os.environ, PYTHONHASHSEED="0")
+        cmd = [sys.executable, str(dirs.pilot_script),
+               "--manifest", str(mpath),
+               "--seed", seed_s,
+               "--pop", str(args.pop),
+               "--gen", str(args.gen),
+               "--out", str(dirs.matrix)]
+        if args.s_factor != 1.0:
+            cmd += ["--s-factor", str(args.s_factor)]
         proc = subprocess.run(
-            [sys.executable, str(dirs.pilot_script),
-             "--manifest", str(mpath),
-             "--seed", seed_s,
-             "--pop", str(args.pop),
-             "--gen", str(args.gen),
-             "--out", str(dirs.matrix)],
+            cmd,
             env=env, capture_output=True, text=True,
         )
         wall = time.monotonic() - t0

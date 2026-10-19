@@ -52,6 +52,14 @@ def main(argv=None) -> int:
         help="fixed-dwell ablation: hold dwell at its zero-squint value "
              "at every consumption point (panel R1 comparison arm)",
     )
+    ap.add_argument(
+        "--s-factor", type=float, default=1.0,
+        help="ticket 48 demand-sweep slack: scale every task's rho_req_m "
+             "by this factor IN MEMORY after load (task population, "
+             "priorities, and mode assignments stay exactly the manifest's; "
+             "only the ordered resolution moves).  1.0 = the order as "
+             "placed.  Recorded in the payload as s_factor when != 1.0.",
+    )
     args = ap.parse_args(argv)
 
     import pymoo
@@ -64,6 +72,23 @@ def main(argv=None) -> int:
     if not manifest["tasks"]:
         print("D11 EXIT 10: scenario has zero served tasks", file=sys.stderr)
         return EXIT_ZERO_SERVED
+
+    # ticket 48 sweep: scale the ORDER, never the population.  Done once,
+    # here, before any consumer (SchedulingProblem, greedy anchor, run_nsga2)
+    # touches the dict -- all three read this same in-memory object (no
+    # reload seam).  Tasks without rho_req_m are skipped by the same per-task
+    # gate the clip itself uses.
+    if args.s_factor != 1.0:
+        n_scaled = 0
+        for t in manifest["tasks"]:
+            if t.get("rho_req_m") is not None:
+                t["rho_req_m"] = args.s_factor * float(t["rho_req_m"])
+                n_scaled += 1
+        print(
+            f"ticket-48 sweep: rho_req_m scaled by s={args.s_factor} "
+            f"on {n_scaled}/{len(manifest['tasks'])} tasks (population fixed)",
+            flush=True,
+        )
 
     lib = ModeLibrary.from_fixture()
 
@@ -121,7 +146,15 @@ def main(argv=None) -> int:
             "max_cv_on_reported_front": max(r["cv"] for r in feasible),
             "all_cv_zero": True,
         },
+        # ticket 48 world marker: every run through this revision is the
+        # single-objective model (f_q is a reading, promotion decision is
+        # the registered void marker).  Unconditional, so no consumer can
+        # mistake a new pilot for a double-objective frozen record.
+        "single_objective": True,
     }
+    if args.s_factor != 1.0:
+        # provenance of the sweep arm; absence = the order as placed (1.0)
+        payload["s_factor"] = args.s_factor
     if args.out:
         outdir = Path(args.out)
         outdir.mkdir(parents=True, exist_ok=True)
