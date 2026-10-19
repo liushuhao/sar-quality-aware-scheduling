@@ -69,7 +69,7 @@ from .predicates import (
     schedule_conflict,
 )
 from .quality import f_q_aggregate, f_q_per_task
-from .windows import feasible_subintervals
+from .windows import feasible_subintervals, resolution_clip
 
 EMPTY_SELECTION_FQ_PLACEHOLDER = 1.0  # worst normalized-quality stand-in
 
@@ -285,6 +285,13 @@ def precompile_tasks(
                 ivs = tuple(fw.intervals) if fw else ()
             except ValueError:
                 ivs = ()
+            # ticket 48: the ordered resolution must hold where the task is
+            # actually shot, not only at zero squint.  Manifests without
+            # rho_req_m (pre-ticket families) skip the clip bit-for-bit.
+            if ivs and t.get("rho_req_m") is not None:
+                ivs = resolution_clip(
+                    ivs, mode, float(t["rho_req_m"]), t_ca, w_r0, lib
+                )
             # truthiness matches FeasibleWindows.__bool__ exactly: an
             # all-degenerate feasible set is NOT schedulable (decode_tau
             # cannot walk a zero-measure union) -- this is what keeps a

@@ -287,6 +287,15 @@ def _precompile_frozen(manifest: dict, lib: ModeLibrary, pads: MarginPads):
                 ivs = tuple(fw.intervals) if fw else ()
             except ValueError:
                 ivs = ()
+            # ticket 48: the SAME resolution hard constraint as the production
+            # precompile -- otherwise the frozen arm describes a different
+            # feasible set than the one it is compared against.
+            if ivs and t.get("rho_req_m") is not None:
+                from .windows import resolution_clip
+
+                ivs = resolution_clip(
+                    ivs, mode, float(t["rho_req_m"]), w_tca, w_r0, lib
+                )
             any_feasible = any_feasible or any(h > l for l, h in ivs)
             # the freeze applies to the DWELL only (D11-8 scope): the
             # window's squint zero stays the manifest's real t_ca, exactly

@@ -42,7 +42,7 @@ from dataclasses import dataclass
 
 from scipy.optimize import brentq
 
-from .duration import MarginPads, pad_window_tail
+from .duration import MarginPads, mode_squint_envelope_rad, pad_window_tail
 from .modes import Mode, ModeLibrary
 
 __all__ = [
@@ -438,3 +438,45 @@ def scan_rate_ok(rate_rad_s: float, max_rate_rad_s) -> bool:
             "refusing a silent skip"
         )
     return abs(rate_rad_s) <= max_rate_rad_s
+
+
+def clip_to_squint_span(
+    intervals, t_ca_s: float, r0_m: float, vs_mps: float, psi_max_rad: float,
+    tol: float = 1e-12,
+):
+    """Ticket 48 geometric clause: keep only the sub-intervals whose squint
+    magnitude stays within ``psi_max_rad``.
+
+    The planar squint is ``psi(t) = atan(vs * (t - t_ca) / r0)`` (single
+    source: ``geometry.squint_at``), so ``|psi| <= psi_max`` is exactly
+    ``|t - t_ca| <= r0 * tan(psi_max) / vs``.  Tolerance is the same source
+    floor as the mode-routing comparison (``aasr.route_mode``), not the
+    encode round-trip belt.
+    """
+    span = r0_m * math.tan(psi_max_rad) / vs_mps
+    lo_b, hi_b = t_ca_s - span, t_ca_s + span
+    out = []
+    for a, b in intervals:
+        lo2 = a if a > lo_b else lo_b
+        hi2 = b if b < hi_b else hi_b
+        if hi2 > lo2 + tol:
+            out.append((lo2, hi2))
+    return tuple(out)
+
+
+def resolution_clip(ivs, mode, rho_req_m: float, t_ca_s: float, r0_m, lib):
+    """Ticket 48: clip a window's feasible set to where the ACHIEVED azimuth
+    resolution ``rho_a(mode) / cos(psi)`` is within the ordered ``rho_req``.
+
+    ``route_mode`` routes on the ZERO-SQUINT library value; this enforces the
+    same order at the actual imaging squint.  A requirement finer than the
+    mode's zero-squint value is unsatisfiable at every start, so the result
+    is the empty set.  ``r0_m=None`` falls back to the library R0 (the
+    synthetic-family caliber, identical to the dwell chain's own fallback).
+    """
+    ratio = lib.rho_az(mode) / rho_req_m
+    if ratio > 1.0:
+        return ()
+    psi_max = min(math.acos(min(1.0, ratio)), mode_squint_envelope_rad(mode))
+    r0 = lib.geo.R0_m if r0_m is None else float(r0_m)
+    return clip_to_squint_span(ivs, t_ca_s, r0, lib.geo.vs_mps, psi_max)

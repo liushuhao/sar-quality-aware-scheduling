@@ -306,7 +306,7 @@ ALLOWED_R0_READS = {
     "quality": {"q_rad"},  # D05-6 reference normalization (R_ref/R)^3
     "evaluator": {"evaluate"},  # f_q r_m None fallback
     "maneuver": {"boundary_rate"},  # None fallback (this ticket)
-    "windows": {"footprint_ok"},  # None fallback (this ticket)
+    "windows": {"footprint_ok", "resolution_clip"},  # None fallbacks
     "aasr": {"aasr_direct", "_build_dense"},  # None fallback / registered grid
     # REPORT mirrors' synthetic-family None fallback (same registration
     # reason as the evaluator f_q fallback)
