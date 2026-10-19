@@ -272,7 +272,8 @@ def main(argv=None) -> int:
     progress = load_progress(dirs.progress)
     if progress is None:
         progress = {"schema": "matrix-progress/1.0", "code_head": head,
-                    "pop": args.pop, "gen": args.gen, "units": {}}
+                    "pop": args.pop, "gen": args.gen,
+                    "s_factor": args.s_factor, "units": {}}
     elif progress.get("code_head") != head:
         raise SystemExit(
             f"CODE IDENTITY CHANGED since matrix start: progress head "
@@ -285,6 +286,15 @@ def main(argv=None) -> int:
             f"pop/gen changed since matrix start: progress "
             f"({progress.get('pop')},{progress.get('gen')}) != "
             f"({args.pop},{args.gen}). Refused (analysis_prereg.json)."
+        )
+    elif progress.get("s_factor", 1.0) != args.s_factor:
+        # ticket 48: the order-scaling factor is part of a directory's
+        # identity -- resuming a directory under a different s would keep
+        # old-s artifacts as if they answered the new-s question.
+        raise SystemExit(
+            f"s_factor changed since matrix start: progress "
+            f"({progress.get('s_factor', 1.0)}) != ({args.s_factor}). "
+            f"Refused (each s point MUST live in its own --matrix-dir)."
         )
 
     paths = ensure_manifests(vmap, dirs=dirs, generator=generator, platform=platform)
@@ -375,13 +385,17 @@ def main(argv=None) -> int:
     # 11 of 40 units crashed still exited 0.  Measured on 2026-10-03: five
     # distinct real defects (anchor caliber, generator cascade caliber, C3/C4
     # caliber, AASR gate point-vs-window, promotion readout) all presented as
-    # exit 1 and the first four runs reported success.
-    if counts.get(1, 0):
+    # exit 1 and the first four runs reported success.  Ticket 48 review:
+    # UNKNOWN codes (2 usage, 134/137 crashes, ...) were recorded but did not
+    # influence the return -- only {0, 11} are outcomes, everything else
+    # fails the run exactly like exit 1.
+    unaccounted = sorted(e for e in counts if e not in (EXIT_OK, 11))
+    if unaccounted:
         print(
-            f"ALARM: {counts[1]} unit(s) failed with exit 1 (setup error). "
-            "A setup error is a crash, not an outcome -- the run is NOT clean. "
-            "Re-run the affected units after fixing the cause; per-unit stderr "
-            "is in the pilot subprocess output, not in this summary.",
+            f"ALARM: unit exit code(s) {unaccounted} are crashes/setup errors, "
+            "not outcomes -- the run is NOT clean. Re-run the affected units "
+            "after fixing the cause; per-unit stderr is in the pilot "
+            "subprocess output, not in this summary.",
             flush=True,
         )
         return EXIT_UNIT_SETUP_ERROR

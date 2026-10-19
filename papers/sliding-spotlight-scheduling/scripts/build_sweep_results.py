@@ -7,7 +7,7 @@ joins each pilot artifact with its payload provenance (s_factor), and
 emits per-(family, s) readings plus the preregistered shape checks
 (ticket 48 item 17, frozen before data):
 
-  C1  monotone non-decreasing median coverage over s in {0.8 .. 1.5}
+  C1  monotone non-decreasing median coverage over the whole frozen grid
   C2  saturation arm: median(s=2.0) >= median(s=1.5)
   C3  tighter-than-platform arm: median(s=0.8) < median(s=1.0)
 
@@ -53,6 +53,28 @@ def main() -> int:
             # outcome at tight s, not missing data: they enter the curve as
             # zero coverage -- the order is unsatisfiable, nothing is served
             n_exit11 = sum(1 for e in exits.get(fam, []) if e == 11)
+            # census + orphan guard (independent-review finding): an exit-11
+            # unit must NOT have an artifact (a stale one would be
+            # double-counted as zero AND read as data), and every family
+            # must account for all SEEDS_PER_VARIANT units.  Ledger keys are
+            # "<fam>_<seed>" (no "_seed" segment); artifact names carry
+            # "seed<seed>.json".
+            artifacts = sorted(sdir.glob(f"pilot_{fam}_seed*.json"))
+            e11_seeds = {k.rsplit("_", 1)[1]
+                         for k, r in progress["units"].items()
+                         if k.startswith(fam + "_") and r["exit"] == 11}
+            orphans = [a.name for a in artifacts
+                       if any(a.name.endswith(f"seed{sd}.json")
+                              for sd in e11_seeds)]
+            if orphans:
+                print(f"ORPHAN ARTIFACTS for exit-11 units of {fam} at s={s}: "
+                      f"{orphans}", file=sys.stderr)
+                return 1
+            accounted = len(artifacts) + n_exit11
+            if accounted != 10:
+                print(f"CENSUS BREAK: {fam} at s={s}: {len(artifacts)} artifacts "
+                      f"+ {n_exit11} exit-11 != 10 units", file=sys.stderr)
+                return 1
             covs = [0.0] * n_exit11
             for _ in range(n_exit11):
                 fq_readings.append(0.0)

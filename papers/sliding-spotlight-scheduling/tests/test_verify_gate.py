@@ -175,6 +175,16 @@ def test_evaluator_output_matches_frozen_fronts(lib):
     units += [(p, 1.2) for p in sorted((v4 / "sweep" / "s1_2").glob("pilot_*.json"))]
     assert len(units) == 110, f"pinned v4 census changed: {len(units)}"
     families = set()
+    # constraint-removal discrimination (independent-review finding): the
+    # record re-evaluation below re-encodes starts into whatever intervals
+    # the CURRENT precompile produces, so deleting the clip outright would
+    # leave it green -- pin the feasible-measure drop itself.  Per unit the
+    # clipped total must not exceed the unconstrained one; per family the
+    # drop must be STRICT somewhere in the pinned set, so an identity-clip
+    # mutation flips this red instead of only the unit-level clip tests.
+    import copy as _copy
+
+    family_strict = {}
     for p, s in units:
         art = json.loads(p.read_text(encoding="utf-8"))
         assert art.get("single_objective") is True, p.name
@@ -186,8 +196,21 @@ def test_evaluator_output_matches_frozen_fronts(lib):
             for t in manifest["tasks"]:
                 if t.get("rho_req_m") is not None:
                     t["rho_req_m"] = s * float(t["rho_req_m"])
-        families.add(manifest["scenario"]["family_code"])
+        family = manifest["scenario"]["family_code"]
+        families.add(family)
         sp = SchedulingProblem(manifest, lib)
+        m0 = _copy.deepcopy(manifest)
+        for t in m0["tasks"]:
+            t.pop("rho_req_m", None)
+        sp0 = SchedulingProblem(m0, lib)
+        _mi = lambda pl: sum(  # noqa: E731 -- local measure helper
+            hi - lo for q in pl for lo, hi in (q.intervals or ())
+        )
+        m_clip, m_raw = _mi(sp.plans), _mi(sp0.plans)
+        assert m_clip <= m_raw + 1e-9, (p.name, m_clip, m_raw)
+        family_strict[family] = family_strict.get(family, False) or (
+            m_clip < m_raw - 1e-9
+        )
         front = art["front"]
         assert front, p.name
         for rec in front:
@@ -213,6 +236,11 @@ def test_evaluator_output_matches_frozen_fronts(lib):
     assert families == {
         "M1NC", "M2WH", "M3NC", "M2WF", "M4WH", "R1C", "R2F", "R3H",
     }, families
+    # strict somewhere in the pinned set, not per family -- measured: the
+    # constraint genuinely does not bind on M1NC/M3NC at s=1.0 (their orders
+    # sit loose against the mode floor, zero measure loss); an identity-clip
+    # mutation zeroes ALL entries and flips this red
+    assert any(family_strict.values()), family_strict
 
 
 def test_gate_aggregation_fail_exits_20(pilot, manifest, lib):

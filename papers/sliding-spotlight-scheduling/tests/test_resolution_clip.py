@@ -247,6 +247,15 @@ def test_manifest_without_rho_req_survives_full_precompile(lib, m1nc):
         assert total0 > 0.0, freeze
 
 
+def test_anchor_frozen_arm_without_rho_req_survives(lib, m1nc):
+    """The frozen-arm precompile (anchor._precompile_frozen) is reachable
+    ONLY via anchor_on_manifest -- the SchedulingProblem(freeze_durations)
+    arm above does not exercise it.  A no-field manifest must survive it
+    too (same KeyError class, different code path)."""
+    anchor = anchor_on_manifest(strip_rho(m1nc), lib, freeze_durations=True)
+    assert anchor.starts
+
+
 def test_task_without_rho_req_is_immune_to_other_tasks_orders(lib, m1nc):
     """The compat gate is per-task: an entry without rho_req_m keeps its
     exact pre-ticket feasible set no matter what its neighbours order."""
