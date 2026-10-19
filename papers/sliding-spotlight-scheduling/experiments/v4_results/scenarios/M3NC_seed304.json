@@ -1,7 +1,7 @@
 {
   "generation_ledger": {
     "anchor_t_dispersion_limit": 1.1,
-    "anchor_t_dispersion_max_min": 1.00169686,
+    "anchor_t_dispersion_max_min": 1.00169688,
     "h_coarse_draws": 0,
     "n_drawn": 300,
     "n_served": 300,

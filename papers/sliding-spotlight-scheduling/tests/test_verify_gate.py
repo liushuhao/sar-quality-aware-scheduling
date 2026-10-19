@@ -143,48 +143,76 @@ def test_anchor_crosscheck_passes(pilot, manifest, lib):
 
 
 def test_evaluator_output_matches_frozen_fronts(lib):
-    """MUST-3 guard (ticket 25): the post-AD-3 evaluator reproduces every
-    frozen front record's f1*/f_q from the frozen manifests.  The front
-    starts are re-encoded through the registered round-trip (1e-9, D12-1),
-    so the assertions carry that tolerance on f_q and an exact-fraction
-    tolerance on f1; a squint/quality-chain drift anywhere flips this red.
+    """MUST-3 guard, re-pinned to the ticket-48 world (L7, caliber v4):
+    the post-constraint, single-objective evaluator reproduces every frozen
+    front record from the frozen manifests.  The pinned world is
+    ``experiments/v4_results/`` (constraint armed, n_obj=1): 50 synthetic
+    matrix units + the s=1.0 and s=1.2 sweep arms (30 units each).
 
-    Anti-vacuous: the loop must actually visit all 50 frozen pilots and a
-    floor of front records, so an empty glob cannot pass silently."""
+    Tie-set caliber (ticket 48 item 18): a single-objective rank-0 is the
+    set of schedules REACHING the unit's max coverage -- a discrete-objective
+    tie set (measured: the whole 40-population at loose orders, down to a
+    handful at tight ones).  Every record must equal the unit's max f1*;
+    one representative record per unit is fully re-encoded through the
+    registered round-trip (1e-9, D12-1) and re-evaluated, so the assertions
+    carry that tolerance on f_q and an exact-fraction tolerance on f1.
+    A squint/quality-chain drift anywhere flips this red.
+
+    Anti-vacuous: the loop must actually visit all 110 pinned units, verify
+    the tie property on every record, and assert the world markers (the
+    single_objective flag and the vacuous promotion decision), so an empty
+    glob or a stale double-objective artifact cannot pass silently."""
     from sss_core.evaluator import SchedulingProblem
-    from sss_core.nsga2 import encode_seed_individual
+    from sss_core.nsga2 import (
+        PROMOTION_VOID_SINGLE_OBJECTIVE,
+        encode_seed_individual,
+    )
 
-    matrix = FORK_DOMAIN / "experiments" / "results" / "matrix"
-    scenarios = FORK_DOMAIN / "experiments" / "results" / "scenarios"
-    pilots = sorted(matrix.glob("pilot_*.json"))
-    assert len(pilots) == 50, f"frozen pilot census changed: {len(pilots)}"
-    n_records = 0
+    v4 = FORK_DOMAIN / "experiments" / "v4_results"
+    scenarios = v4 / "scenarios"
+    units = [(p, 1.0) for p in sorted((v4 / "matrix").glob("pilot_*.json"))]
+    units += [(p, 1.0) for p in sorted((v4 / "sweep" / "s1_0").glob("pilot_*.json"))]
+    units += [(p, 1.2) for p in sorted((v4 / "sweep" / "s1_2").glob("pilot_*.json"))]
+    assert len(units) == 110, f"pinned v4 census changed: {len(units)}"
     families = set()
-    for p in pilots:
+    for p, s in units:
         art = json.loads(p.read_text(encoding="utf-8"))
-        mpath = scenarios / Path(art["manifest"]).name
-        manifest = load_manifest(mpath)
+        assert art.get("single_objective") is True, p.name
+        assert abs(float(art.get("s_factor", 1.0)) - s) <= 1e-12, p.name
+        assert art["promotion"]["decision"] == PROMOTION_VOID_SINGLE_OBJECTIVE, p.name
+        manifest = load_manifest(scenarios / Path(art["manifest"]).name)
+        if s != 1.0:
+            # mirror run_pilot's in-memory order scaling (population fixed)
+            for t in manifest["tasks"]:
+                if t.get("rho_req_m") is not None:
+                    t["rho_req_m"] = s * float(t["rho_req_m"])
         families.add(manifest["scenario"]["family_code"])
         sp = SchedulingProblem(manifest, lib)
-        for rec in art["front"]:
-            starts = {int(k): float(v) for k, v in rec["starts"].items()}
-            x = encode_seed_individual(sp, starts)
-            ev = sp.evaluate(x)
-            assert ev["f1_star"] == pytest.approx(rec["f1_star"], abs=1e-9), (
-                p.name, rec
-            )
-            assert ev["f_q"] == pytest.approx(rec["f_q"], abs=1e-9), (
-                p.name, rec
-            )
-            # CV belt: the 1e-9 round-trip start dust can cross a steep C2
-            # boundary-rate gradient and produce ~1e-6 s deficits.  Genuine
-            # violations are ~seconds (evaluator C2_TOL_S registration), so
-            # a 1e-3 belt is three orders below anything real while still
-            # catching a violated schedule.
-            assert ev["cv"] <= 1e-3, (p.name, rec)
-            n_records += 1
-    assert families == {"M1NC", "M2WH", "M3NC", "M2WF", "M4WH"}, families
-    assert n_records >= 100, n_records
+        front = art["front"]
+        assert front, p.name
+        for rec in front:
+            assert rec["f1_star"] == pytest.approx(
+                art["max_f1_star_on_front"], abs=1e-12
+            ), p.name
+        rec = front[0]
+        starts = {int(k): float(v) for k, v in rec["starts"].items()}
+        x = encode_seed_individual(sp, starts)
+        ev = sp.evaluate(x)
+        assert ev["f1_star"] == pytest.approx(rec["f1_star"], abs=1e-9), (
+            p.name, rec
+        )
+        assert ev["f_q"] == pytest.approx(rec["f_q"], abs=1e-9), (
+            p.name, rec
+        )
+        # CV belt: the 1e-9 round-trip start dust can cross a steep C2
+        # boundary-rate gradient and produce ~1e-6 s deficits.  Genuine
+        # violations are ~seconds (evaluator C2_TOL_S registration), so
+        # a 1e-3 belt is three orders below anything real while still
+        # catching a violated schedule.
+        assert ev["cv"] <= 1e-3, (p.name, rec)
+    assert families == {
+        "M1NC", "M2WH", "M3NC", "M2WF", "M4WH", "R1C", "R2F", "R3H",
+    }, families
 
 
 def test_gate_aggregation_fail_exits_20(pilot, manifest, lib):
