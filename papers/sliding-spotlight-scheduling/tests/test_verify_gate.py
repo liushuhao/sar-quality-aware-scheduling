@@ -185,6 +185,7 @@ def test_evaluator_output_matches_frozen_fronts(lib):
     import copy as _copy
 
     family_strict = {}
+    s1_pool: dict[str, list] = {}
     for p, s in units:
         art = json.loads(p.read_text(encoding="utf-8"))
         assert art.get("single_objective") is True, p.name
@@ -211,6 +212,10 @@ def test_evaluator_output_matches_frozen_fronts(lib):
         family_strict[family] = family_strict.get(family, False) or (
             m_clip < m_raw - 1e-9
         )
+        if s == 1.0:
+            s1_pool.setdefault(family, [0.0, 0.0])
+            s1_pool[family][0] += m_clip
+            s1_pool[family][1] += m_raw
         front = art["front"]
         assert front, p.name
         for rec in front:
@@ -241,6 +246,17 @@ def test_evaluator_output_matches_frozen_fronts(lib):
     # sit loose against the mode floor, zero measure loss); an identity-clip
     # mutation zeroes ALL entries and flips this red
     assert any(family_strict.values()), family_strict
+    # calibrated retention pin (review P1: the checks above catch clip
+    # REMOVAL; relaxation needs a quantitative anchor).  Pooled s=1.0
+    # feasible-measure retention per real-window family, registered from
+    # the landed-code probe (.scratch/.../step1/step1-baselines-20261019.md
+    # post-landing section: 51.20 / 84.40 / 63.70 %).  A ~10% psi_max
+    # relaxation moves retention by several points -- far outside the band;
+    # the manifests are frozen, so the pin cannot drift under them.
+    retention_expect = {"R1C": 0.5120, "R2F": 0.8440, "R3H": 0.6370}
+    for fam, want in retention_expect.items():
+        got = s1_pool[fam][0] / s1_pool[fam][1]
+        assert got == pytest.approx(want, abs=0.002), (fam, got)
 
 
 def test_gate_aggregation_fail_exits_20(pilot, manifest, lib):

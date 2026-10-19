@@ -355,6 +355,14 @@ def main(argv=None) -> int:
         elif exit_code == 11:
             rec["note"] = "empty front (no feasible individual) -- recorded outcome"
             empty_variants.add(code)
+            # two distinct branches return 11 (all tasks unschedulable at
+            # precompile vs no feasible individual surviving the search);
+            # the branch is the audit trail for WHY a tight-s seed served
+            # nothing (review P2-9) -- run_pilot prints it as the last
+            # stderr line
+            err_lines = (proc.stderr or "").strip().splitlines()
+            if err_lines:
+                rec["exit11_branch"] = err_lines[-1]
         progress["units"][key] = rec
         atomic_write_json(dirs.progress, progress)
         lines = (proc.stdout or "").strip().splitlines()

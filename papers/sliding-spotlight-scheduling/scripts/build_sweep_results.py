@@ -24,6 +24,10 @@ from pathlib import Path
 FORK = Path(__file__).resolve().parent.parent
 V4 = FORK / "experiments" / "v4_results"
 SWEEP = V4 / "sweep"
+if str(FORK) not in sys.path:
+    # fulfillment_ratio imports sss_core (ticket 48 item 20 caliber);
+    # the aggregator previously needed no solver imports
+    sys.path.insert(0, str(FORK))
 
 S_GRID = [0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 2.0]
 FAMILIES = ("R1C", "R2F", "R3H")
@@ -31,6 +35,57 @@ FAMILIES = ("R1C", "R2F", "R3H")
 
 def s_dir_name(s: float) -> str:
     return f"s{str(s).replace('.', '_')}"
+
+
+_LIB = None
+
+
+def fulfillment_ratio(artifact_path: Path, s: float) -> float:
+    """Ticket 48 item 20 registered caliber (review P1 fix): per served
+    task, the ACHIEVED-window f_q (actual squint, as the evaluator scores
+    it) over the task's best-REACHABLE-window f_q (each window scored at
+    its zero-squint best point, max over windows) -- a <=1 ratio, averaged
+    over served tasks and over the tie-set records."""
+    import sys as _sys
+
+    from sss_core.evaluator import SchedulingProblem
+    from sss_core.geometry import squint_at
+    from sss_core.nsga2 import load_manifest
+    from sss_core.quality import f_q_per_task
+
+    global _LIB
+    if _LIB is None:
+        from sss_core.modes import ModeLibrary
+
+        _LIB = ModeLibrary.from_fixture()
+    art = json.loads(artifact_path.read_text(encoding="utf-8"))
+    manifest = load_manifest(
+        V4 / "scenarios" / Path(art["manifest"]).name
+    )
+    if s != 1.0:
+        for t in manifest["tasks"]:
+            if t.get("rho_req_m") is not None:
+                t["rho_req_m"] = s * float(t["rho_req_m"])
+    sp = SchedulingProblem(manifest, _LIB)
+
+    def fq(mode, psi, w):
+        r0 = _LIB.geo.R0_m if w.r0_m is None else w.r0_m
+        return f_q_per_task(mode, psi, r0, _LIB)
+
+    per_record = []
+    for rec in art["front"]:
+        ratios = []
+        for k, start in rec["starts"].items():
+            plan = sp.plans[int(k)]
+            w_sel = plan.window_at(start)
+            psi = squint_at(start, w_sel.t_ca_s, _LIB.geo, r0_m=w_sel.r0_m)
+            got = fq(plan.mode, psi, w_sel)
+            cap = max(fq(plan.mode, 0.0, w) for w in plan.windows)
+            if cap > 0:
+                ratios.append(got / cap)
+        if ratios:
+            per_record.append(statistics.fmean(ratios))
+    return statistics.fmean(per_record) if per_record else float("nan")
 
 
 def main() -> int:
@@ -48,7 +103,7 @@ def main() -> int:
             fam = key.split("_")[0]
             exits.setdefault(fam, []).append(rec["exit"])
         for fam in FAMILIES:
-            covs, fq_readings, front_sizes = [], [], []
+            covs, fq_readings, front_sizes, fulfill = [], [], [], []
             # exit-11 seeds (no feasible individual survived) are a RECORDED
             # outcome at tight s, not missing data: they enter the curve as
             # zero coverage -- the order is unsatisfiable, nothing is served
@@ -77,7 +132,9 @@ def main() -> int:
                 return 1
             covs = [0.0] * n_exit11
             for _ in range(n_exit11):
-                fq_readings.append(0.0)
+                # quality reading is NOT-APPLICABLE for an unservable seed --
+                # 0.0 would read as "served at zero quality" (review P2-8)
+                fq_readings.append(None)
                 front_sizes.append(0)
             for f in sorted(sdir.glob(f"pilot_{fam}_seed*.json")):
                 art = json.loads(f.read_text(encoding="utf-8"))
@@ -93,6 +150,7 @@ def main() -> int:
                 front_sizes.append(art["front_size"])
                 fq = [r["f_q"] for r in art["front"]]
                 fq_readings.append(statistics.fmean(fq) if fq else float("nan"))
+                fulfill.append(fulfillment_ratio(f, s))
             families[fam][s] = {
                 "n_artifacts": len(covs) - n_exit11,
                 "n_exit11_no_feasible": n_exit11,
@@ -101,7 +159,16 @@ def main() -> int:
                 "coverage_median": statistics.median(covs) if covs else None,
                 "coverage_min": min(covs) if covs else None,
                 "coverage_max": max(covs) if covs else None,
-                "f_q_reading_mean_per_seed": fq_readings,
+                # RAW aggregate f_q (absolute m^-2-scale quantity, NOT a
+                # ratio); None for unservable seeds
+                "f_q_absolute_mean_per_seed": fq_readings,
+                # ticket 48 item 20 registered caliber: per served task,
+                # achieved-window f_q over its best-reachable-window f_q
+                # (<=1), averaged over the tie set; median over seeds
+                "f_q_fulfillment_ratio_per_seed": fulfill,
+                "f_q_fulfillment_ratio_median": (
+                    statistics.median(fulfill) if fulfill else None
+                ),
                 "front_size_median": statistics.median(front_sizes) if front_sizes else None,
             }
 
