@@ -1,0 +1,60 @@
+#!/usr/bin/env bash
+# paper2 机械护栏。设计原则见 .scratch/sliding-spotlight-scheduling/ 下 retro 记录：
+#   机械违规（固定可 grep 的字符串 / 计数账）→ 确定性检查，不靠审稿人记得。
+# 两条：
+#   1. python3 调用  —— 本机 python3 是另一个解释器，一律用 python（见 ~/.claude/rules/research-ideation.md）
+#   2. 义务映射表分段账 —— 表头分布的求和必须等于实际行数与分段字母
+set -uo pipefail
+
+ROOT=$(git rev-parse --show-toplevel)
+fail=0
+
+# ---------------------------------------------------------------- 检查 1：python3
+# 只查**被 stage 的文件**，且只查"命令形态"——行首或以引用/管道/分号开头、后跟 python3 与空格。
+# 散文里提到的 "python3"（例如规则正文讲"禁用 python3"）不查，否则全仓误报。
+staged_py3=$(git diff --cached --name-only --diff-filter=ACM -z \
+  | xargs -0 -r grep -nE '(^|[;&|`(])[[:space:]]*python3[[:space:]]' 2>/dev/null)
+if [ -n "$staged_py3" ]; then
+  echo "🔴 pre-commit: 暂存文件里出现 python3 调用（本机 python3 是另一个解释器，一律用 python）：" >&2
+  echo "$staged_py3" | sed 's/^/    /' >&2
+  fail=1
+fi
+
+# ---------------------------------------------------------------- 检查 2：义务映射表分段账
+# 段字母集取 A-Z 而非枚举 ABCDEF：实测把声明串写成 [ABDEF] 会把表头的 C14 截成 A9 B18，
+# 报出的"表头声明"比真实声明短——错误信息本身误导。宁可宽匹配，别让报错撒谎。
+MAP="$ROOT/.scratch/sliding-spotlight-scheduling/goal-w0w1/obligations-map-v1-20261010.md"
+if [ -f "$MAP" ]; then
+  # 实际分段：从表格行 "(| A1 |" 提取段字母，统计每段条数
+  actual=$(grep -oE '^\| [A-Z][0-9-]+ \|' "$MAP" | tr -d '| ' | sed 's/[0-9-].*//' | sort | uniq -c \
+    | awk '{printf "%s%s ", $2, $1}')
+  actual_total=$(grep -cE '^\| [A-Z][0-9-]+ \|' "$MAP")
+
+  # 表头声明：形如 "59 项 = A9+B18+D6+E12+F14"
+  declared=$(grep -oE '= [A-Z][0-9]+(\+[A-Z][0-9]+)+' "$MAP" | tail -1 | sed 's/^= //' | tr '+' ' ')
+  declared_total=$(grep -oE '[0-9]+ 项' "$MAP" | head -1 | grep -oE '[0-9]+')
+
+  # 归一化成 "字母=条数" 后按字母排序，逐段比对（顺序无关）
+  norm() { echo "$@" | tr ' ' '\n' | grep -E '^[A-Z][0-9]+$' | sort | tr '\n' ' '; }
+
+  if [ -n "$declared" ]; then
+    if [ "$(norm $actual)" != "$(norm $declared)" ]; then
+      echo "🔴 pre-commit: obligations-map 表头分段与表内实际分段不一致：" >&2
+      echo "    表头声明 : $declared" >&2
+      echo "    实际统计 : $actual" >&2
+      fail=1
+    fi
+  fi
+
+  if [ -n "$declared_total" ] && [ "$declared_total" != "$actual_total" ]; then
+    echo "🔴 pre-commit: obligations-map 表头声明的总项数 ($declared_total) ≠ 实际行数 ($actual_total)" >&2
+    fail=1
+  fi
+fi
+
+if [ "$fail" -ne 0 ]; then
+  echo "" >&2
+  echo "修法见 .scratch/sliding-spotlight-scheduling/goal-w0w1/ 的 retro 记录；确认要绕过请用 git commit --no-verify 并在提交信息里写明原因。" >&2
+  exit 1
+fi
+exit 0
