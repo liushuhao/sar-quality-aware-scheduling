@@ -1,3 +1,5 @@
+> **现役状态不在此文件**：本文件是 2026-10-05 前的过程记录。当前状态见 `.remember/remember.md`（handoff）、`papers/sliding-spotlight-scheduling/experiments/RUN_LINEAGE.md`（运行谱系）与票面 `.scratch/sliding-spotlight-scheduling/issues/`。
+
 # PROGRESS — paper2 四票施工（22 → 15 → 16 → 17）
 
 任务书：`.scratch/sliding-spotlight-scheduling/_leader-draft.md`
