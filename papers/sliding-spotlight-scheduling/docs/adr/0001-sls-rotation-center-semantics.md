@@ -55,3 +55,7 @@ SLS（滑动聚束）模式的天线方位扫描律在文献中有两种表述�
 ## 8. 验证记录
 
 判决文档 §9（三轨对抗审：物理重推/文献逐字/异源 CLI，0🔴 + 确认轮 CLOSED）；票 40 收口记录（全量 374P/0F/1S exit 0、verify gate PASS=12/REPORT=1/FAIL=0、变异红证、R/M 再生成字节同一）。
+
+## 9. B-full 参数化消费（2026-10-20，票 49 blocking gate）
+
+A0 的 $k$ 连续体允许工作点取任意 $k\in(0,1)$；票 49 把它从注册工作点 $k=0.7973$ 推广为逐任务取值 $k_{\text{task}}=1-A_{\text{task}}$，$A_{\text{task}}=2\rho_{req}\cos\psi_{\text{sel}}/D$（$\psi_{\text{sel}}$ = 评估基准时刻斜视，唯一源 `squint_at`；交付律 $\rho_{a,\mathrm{ach}}(\psi_{\text{sel}})=\rho_{req}$ 点态精确）。旋转中心几何、扫描律 $\tan\psi=Vt/r_{\text{rot}}$、$a_{\mathrm{res}}\equiv A$ 三条注册结论原样成立，只是 $r_{\text{rot}}$ 取任务值。故 B-full 不新增几何、不新增模式，是对 A0 的参数化消费；冻结工作点是其特例 $\rho_{req}=0.5\sec\psi_{\text{sel}}$（三点实测 ulp=0）。SLS AASR 在一致换算（$k$ 与 $B_D$ 同源随任务）下精确只依赖 $(\psi,\mathrm{PRF})$（$a_{\mathrm{res}}B_D=2V_s\cos\psi/D$ 与 $\rho$ 无关）。公式注册见 formula-spec v1.9 §8.17；证伪条件与读数影响面同节。
