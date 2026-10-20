@@ -30,7 +30,7 @@ LINEAGE = EXPERIMENTS / "RUN_LINEAGE.md"
 
 # ticket 30: directories that sit beside results/ but are run nodes in their
 # own right.  Each must be named in RUN_LINEAGE.md if it exists on disk.
-EXTRA = ("v2_results", "v3_results", "v4_results")
+EXTRA = ("v2_results", "v3_results", "v4_results", "v5_results")
 
 PATH_TOKEN = re.compile(r"experiments/results/([A-Za-z0-9_][A-Za-z0-9_\-]*)")
 # any experiments/<dir>/ PATH the registry names -- not just EXTRA, or an

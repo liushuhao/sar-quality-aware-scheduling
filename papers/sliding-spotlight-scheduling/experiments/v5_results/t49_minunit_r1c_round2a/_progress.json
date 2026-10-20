@@ -1,0 +1,45 @@
+{
+  "code_head": "a3a7122bcbe8408f5a07269f589e77aa7d36e81a",
+  "gen": 60,
+  "pop": 40,
+  "s_factor": 1.0,
+  "schema": "matrix-progress/1.0",
+  "units": {
+    "R1C_100": {
+      "anchor_f1_star": 0.8717948717948718,
+      "artifact": "papers\\sliding-spotlight-scheduling\\experiments\\v4_results\\t49_minunit\\pilot_R1C_seed100.json",
+      "exit": 0,
+      "front_size": 40,
+      "manifest": "papers\\sliding-spotlight-scheduling\\experiments\\v4_results\\scenarios\\R1C_seed100.json",
+      "manifest_sha1": "7fbb9a342c625548ffa4db57b90da36ca96c5b60",
+      "max_f1_star": 0.9145299145299145,
+      "promotion_decision": "vacuous_single_objective",
+      "promotion_spread_db": 0.1520034336604752,
+      "wall_s": 4.4
+    },
+    "R1C_101": {
+      "anchor_f1_star": 1.0,
+      "artifact": "papers\\sliding-spotlight-scheduling\\experiments\\v4_results\\t49_minunit\\pilot_R1C_seed101.json",
+      "exit": 0,
+      "front_size": 40,
+      "manifest": "papers\\sliding-spotlight-scheduling\\experiments\\v4_results\\scenarios\\R1C_seed101.json",
+      "manifest_sha1": "a007d123744a44254bff895051afbcf5004abf7c",
+      "max_f1_star": 1.0,
+      "promotion_decision": "vacuous_single_objective",
+      "promotion_spread_db": 0.10378933701242232,
+      "wall_s": 4.7
+    },
+    "R1C_102": {
+      "anchor_f1_star": 0.9465648854961832,
+      "artifact": "papers\\sliding-spotlight-scheduling\\experiments\\v4_results\\t49_minunit\\pilot_R1C_seed102.json",
+      "exit": 0,
+      "front_size": 40,
+      "manifest": "papers\\sliding-spotlight-scheduling\\experiments\\v4_results\\scenarios\\R1C_seed102.json",
+      "manifest_sha1": "3d96c9aceb94023cbfbcf691d7232deb9f8fc593",
+      "max_f1_star": 0.9465648854961832,
+      "promotion_decision": "vacuous_single_objective",
+      "promotion_spread_db": 0.19765236757701388,
+      "wall_s": 4.5
+    }
+  }
+}

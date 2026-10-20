@@ -1,0 +1,21 @@
+{
+  "code_head": "a3a7122bcbe8408f5a07269f589e77aa7d36e81a",
+  "gen": 60,
+  "pop": 40,
+  "s_factor": 1.0,
+  "schema": "matrix-progress/1.0",
+  "units": {
+    "R2F_200": {
+      "anchor_f1_star": 0.9962406015037594,
+      "artifact": "papers\\sliding-spotlight-scheduling\\experiments\\v5_results\\t49_minunit\\pilot_R2F_seed200.json",
+      "exit": 0,
+      "front_size": 40,
+      "manifest": "papers\\sliding-spotlight-scheduling\\experiments\\v5_results\\scenarios\\R2F_seed200.json",
+      "manifest_sha1": "446406638edbd4a35c77f014c83d6f7c0c722885",
+      "max_f1_star": 0.9962406015037594,
+      "promotion_decision": "vacuous_single_objective",
+      "promotion_spread_db": 0.0,
+      "wall_s": 10.7
+    }
+  }
+}

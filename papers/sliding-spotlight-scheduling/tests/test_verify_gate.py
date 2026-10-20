@@ -168,7 +168,12 @@ def test_evaluator_output_matches_frozen_fronts(lib):
         encode_seed_individual,
     )
 
-    v4 = FORK_DOMAIN / "experiments" / "v4_results"
+    # Ticket 49 re-pin: the pinned world is now L8 (caliber v5, B-full task
+    # law, code head 50795ca).  The L7 pin (v4_results, 51.20/84.40/63.70%)
+    # belonged to the frozen-parameter clip world and is superseded; the
+    # retention expectations below are re-registered from the v5 s=1.0 pool
+    # measured under the same formula.
+    v4 = FORK_DOMAIN / "experiments" / "v5_results"
     scenarios = v4 / "scenarios"
     units = [(p, 1.0) for p in sorted((v4 / "matrix").glob("pilot_*.json"))]
     units += [(p, 1.0) for p in sorted((v4 / "sweep" / "s1_0").glob("pilot_*.json"))]
@@ -200,10 +205,26 @@ def test_evaluator_output_matches_frozen_fronts(lib):
         family = manifest["scenario"]["family_code"]
         families.add(family)
         sp = SchedulingProblem(manifest, lib)
-        m0 = _copy.deepcopy(manifest)
-        for t in m0["tasks"]:
-            t.pop("rho_req_m", None)
-        sp0 = SchedulingProblem(m0, lib)
+        # Ticket 49 re-pin: rho now feeds BOTH the constraint layers and the
+        # dwell, so the unconstrained arm must strip ONLY the resolution
+        # constraint while keeping the task-law dwell.  Two subtleties,
+        # both measured:
+        #   * popping rho would change the dwell caliber and the "raw"
+        #     measure is no longer an upper bound (M2WF_seed400: raw
+        #     3482.75 < clip 3560.64);
+        #   * the SPT start-domain clamp must stay in BOTH arms -- it is
+        #     the task law's DOMAIN device (8.17-11), not a constraint;
+        #     patching it away re-exposes the whole-window ValueError loss
+        #     the clamp exists to prevent (R2F_seed200: raw 12973 << 23683).
+        # So only the resolution clip is neutralised here.
+        import sss_core.evaluator as _ev_mod
+
+        _orig_clip = _ev_mod.resolution_clip
+        _ev_mod.resolution_clip = lambda ivs, mode, rho, t_ca, r0, lib_: tuple(ivs)
+        try:
+            sp0 = SchedulingProblem(_copy.deepcopy(manifest), lib)
+        finally:
+            _ev_mod.resolution_clip = _orig_clip
         _mi = lambda pl: sum(  # noqa: E731 -- local measure helper
             hi - lo for q in pl for lo, hi in (q.intervals or ())
         )
@@ -248,12 +269,16 @@ def test_evaluator_output_matches_frozen_fronts(lib):
     assert any(family_strict.values()), family_strict
     # calibrated retention pin (review P1: the checks above catch clip
     # REMOVAL; relaxation needs a quantitative anchor).  Pooled s=1.0
-    # feasible-measure retention per real-window family, registered from
-    # the landed-code probe (.scratch/.../step1/step1-baselines-20261019.md
-    # post-landing section: 51.20 / 84.40 / 63.70 %).  A ~10% psi_max
-    # relaxation moves retention by several points -- far outside the band;
-    # the manifests are frozen, so the pin cannot drift under them.
-    retention_expect = {"R1C": 0.5120, "R2F": 0.8440, "R3H": 0.6370}
+    # feasible-measure retention per real-window family.
+    # Ticket 49 re-registration (L8): the pin now measures the STR
+    # resolution clip ONLY -- the L7 values (51.20 / 84.40 / 63.70 %,
+    # step1-baselines-20261019.md) included the SLS/SPT library-caliber
+    # narrowing that 8.17-12 retired, so R2F reads 1.0 and R3H rises
+    # (measured from the v5 s=1.0 pool under the same formula:
+    # 0.511417 / 1.0 / 0.710020).  A ~10% psi_max relaxation on the STR
+    # arm moves R1C/R3H by several points -- far outside the band; the
+    # manifests are frozen, so the pin cannot drift under them.
+    retention_expect = {"R1C": 0.5114, "R2F": 1.0, "R3H": 0.7100}
     for fam, want in retention_expect.items():
         got = s1_pool[fam][0] / s1_pool[fam][1]
         assert got == pytest.approx(want, abs=0.002), (fam, got)

@@ -1,0 +1,9 @@
+{
+  "semi_major_axis_m": 6941000.0,
+  "eccentricity": 0.001,
+  "inclination_deg": 45.0,
+  "raan_deg": 0.0,
+  "arg_perigee_deg": 0.0,
+  "true_anomaly_deg": 0.0,
+  "epoch": "2026-01-01T00:00:00"
+}

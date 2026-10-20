@@ -88,10 +88,16 @@ def fulfillment_ratio(artifact_path: Path, s: float) -> float:
     return statistics.fmean(per_record) if per_record else float("nan")
 
 
-def main() -> int:
+def main(argv=None) -> int:
+    # Default stays the L7 world (v4_results); ticket 49 harvest passes
+    # "v5_results" so the L7 output artifact is never rewritten.
+    results = V4
+    if argv:
+        results = FORK / "experiments" / argv[0]
+    sweep = results / "sweep"
     families: dict[str, dict[float, dict]] = {f: {} for f in FAMILIES}
     for s in S_GRID:
-        sdir = SWEEP / s_dir_name(s)
+        sdir = sweep / s_dir_name(s)
         if not sdir.is_dir():
             print(f"MISSING s-point directory: {sdir}", file=sys.stderr)
             return 1
@@ -190,7 +196,7 @@ def main() -> int:
             "coverage_median_by_s": {str(s): med[s] for s in S_GRID},
         }
 
-    out = V4 / "sweep_results.json"
+    out = results / "sweep_results.json"
     out.write_text(
         json.dumps(
             {"s_grid": S_GRID, "families": families, "checks": checks},
@@ -219,4 +225,4 @@ def main() -> int:
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    sys.exit(main(sys.argv[1:]))
