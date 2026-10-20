@@ -177,7 +177,7 @@ def shared_lib_tests() -> dict:
 
 
 DOMAIN_N0 = 376          # FLOOR, not an equality (ticket 46); baseline
-                        # 376+1 skip (2026-10-15), 407+1 skip after ticket 48
+                        # 376+1 skip (2026-10-15), 408+1 skip after ticket 48 (407->408 remeasured 2026-10-20; floor stays 376)
                         # (2026-10-19).  See domain_counts_ok()
                         # for why a floor and for what it still does not catch.
 DOMAIN_N0_SKIPPED = 1    # baseline conditional skip -- silent removal reads red
