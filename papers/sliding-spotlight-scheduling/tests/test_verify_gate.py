@@ -143,10 +143,10 @@ def test_anchor_crosscheck_passes(pilot, manifest, lib):
 
 
 def test_evaluator_output_matches_frozen_fronts(lib):
-    """MUST-3 guard, re-pinned to the ticket-48 world (L7, caliber v4):
+    """MUST-3 guard, re-pinned to the ticket-49 world (L8, caliber v5):
     the post-constraint, single-objective evaluator reproduces every frozen
     front record from the frozen manifests.  The pinned world is
-    ``experiments/v4_results/`` (constraint armed, n_obj=1): 50 synthetic
+    ``experiments/v5_results/`` (constraint armed, n_obj=1): 50 synthetic
     matrix units + the s=1.0 and s=1.2 sweep arms (30 units each).
 
     Tie-set caliber (ticket 48 item 18): a single-objective rank-0 is the
@@ -173,12 +173,12 @@ def test_evaluator_output_matches_frozen_fronts(lib):
     # belonged to the frozen-parameter clip world and is superseded; the
     # retention expectations below are re-registered from the v5 s=1.0 pool
     # measured under the same formula.
-    v4 = FORK_DOMAIN / "experiments" / "v5_results"
-    scenarios = v4 / "scenarios"
-    units = [(p, 1.0) for p in sorted((v4 / "matrix").glob("pilot_*.json"))]
-    units += [(p, 1.0) for p in sorted((v4 / "sweep" / "s1_0").glob("pilot_*.json"))]
-    units += [(p, 1.2) for p in sorted((v4 / "sweep" / "s1_2").glob("pilot_*.json"))]
-    assert len(units) == 110, f"pinned v4 census changed: {len(units)}"
+    v5 = FORK_DOMAIN / "experiments" / "v5_results"
+    scenarios = v5 / "scenarios"
+    units = [(p, 1.0) for p in sorted((v5 / "matrix").glob("pilot_*.json"))]
+    units += [(p, 1.0) for p in sorted((v5 / "sweep" / "s1_0").glob("pilot_*.json"))]
+    units += [(p, 1.2) for p in sorted((v5 / "sweep" / "s1_2").glob("pilot_*.json"))]
+    assert len(units) == 110, f"pinned v5 census changed: {len(units)}"
     families = set()
     # constraint-removal discrimination (independent-review finding): the
     # record re-evaluation below re-encodes starts into whatever intervals
