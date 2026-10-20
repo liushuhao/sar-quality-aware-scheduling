@@ -22,7 +22,7 @@ from sss_core.anchor import (  # noqa: E402
     assert_fallback_active,
     greedy_anchor,
 )
-from sss_core.modes import ModeLibrary  # noqa: E402
+from sss_core.modes import Mode, ModeLibrary  # noqa: E402
 from sss_core.nsga2 import load_manifest  # noqa: E402
 from sss_core.predicates import c2_transfer_requirement_s  # noqa: E402
 
@@ -111,14 +111,24 @@ def test_unservable_overlap_witness(m1nc, lib):
 def test_repair_recovers_blocked_task(lib):
     """A(pri 8) and B(pri 6) share one wide window: B's earliest start is
     C2-blocked by A; the repair candidate (A.end + need) recovers it.
-    Expectations computed via the ticket-09 predicate (no magic numbers)."""
-    dur_a = 6.4  # SLS scene dwell near zero squint (~6.43 actual; slack ok)
+    Expectations computed via the ticket-09 predicate (no magic numbers).
+
+    Ticket 49 re-base: the dwell is the TASK-LEVEL SLS dwell for this task's
+    own order and scene size (rho=0.8, l_az=3 km -> ~3.20 s at psi=0), not
+    the library-caliber ~6.43 s constant.
+    """
+    from sss_core.duration import duration_scene_s
+
+    dur_a = duration_scene_s(
+        Mode.SLS, 0.0, lib, rho_req_m=0.8, l_az_m=3000.0
+    )
     need = c2_transfer_requirement_s(
         dur_a, lib,
         __import__("sss_core.duration", fromlist=["MarginPads"]).MarginPads.degenerate_anchor(),
         d_psi_rad=0.1,
     )["requirement_s"]
-    assert 10.0 < need < 16.0  # behavioral sanity band (D11-5)
+    # behavioral sanity band: padded dwell + maneuver + settle (D09-1)
+    assert dur_a + 2.0 <= need < dur_a + 10.0
 
     tasks = [
         {"t_start_s": 0.0, "t_end_s": 40.0, "t_ca_s": 20.0,

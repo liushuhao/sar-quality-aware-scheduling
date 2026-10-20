@@ -183,6 +183,13 @@ def promotion_spread_db(sp: SchedulingProblem, front_records: list[dict]) -> dic
     reading.  A promotion readout is by definition an UNENFORCED measurement
     (D12-3), so an out-of-domain sample is recorded as +inf dB (infinitely bad
     AASR), which keeps the spread meaningful and the unit alive.
+
+    Ticket 49 (§8.17-6 exemption, registered): this readout stays at the
+    LIBRARY caliber -- ``sp.lib.geo.k`` AND ``aasr_direct``'s library B_D are
+    the same source, so it is NOT the half update the delivery law forbids.
+    The task-caliber AASR is a point query at the admission gate; promotion is
+    void in the single-objective world, so switching this descriptive readout
+    would add a caliber without a consumer.
     """
     vals = []
     for rec in front_records:

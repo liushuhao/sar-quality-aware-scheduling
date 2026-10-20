@@ -19,7 +19,7 @@ sys.path.insert(0, str(FORK.parent.parent / "src"))
 
 from sss_core.duration import duration_scene_s  # noqa: E402
 from sss_core.evaluator import SchedulingProblem, precompile_tasks  # noqa: E402
-from sss_core.modes import ModeLibrary  # noqa: E402
+from sss_core.modes import Mode, ModeLibrary  # noqa: E402
 from sss_core.nsga2 import load_manifest  # noqa: E402
 
 MANIFEST = FORK / "experiments" / "v3_results" / "scenarios" / "R2F_seed200.json"
@@ -55,7 +55,13 @@ def test_frozen_dwell_is_zero_squint_closure(lib, man):
         lo, hi = p.intervals[0]
         t = lo + 0.5 * (hi - lo)
         w = p.window_at(t)
-        expected = duration_scene_s(p.mode, 0.0, lib, r0_m=w.r0_m)
+        # ticket 49: the frozen arm is the task-level dwell at psi=0 (the
+        # library caliber only when the task carries no order/scene size).
+        expected = duration_scene_s(
+            p.mode, 0.0, lib, r0_m=w.r0_m,
+            rho_req_m=(p.rho_req_m if p.mode is not Mode.STR else None),
+            l_az_m=p.azimuth_size_m,
+        )
         got = froz._dwell(i, t)
         assert abs(got - expected) < 1e-9, (i, got, expected)
         # the endogenous arm never uses a shorter dwell than the frozen one
@@ -73,7 +79,11 @@ def test_default_keeps_squint_dependent_dwell(lib, man):
         lo, hi = p.intervals[0]
         t = lo + 0.5 * (hi - lo)
         w = p.window_at(t)
-        zero = duration_scene_s(p.mode, 0.0, lib, r0_m=w.r0_m)
+        zero = duration_scene_s(
+            p.mode, 0.0, lib, r0_m=w.r0_m,
+            rho_req_m=(p.rho_req_m if p.mode is not Mode.STR else None),
+            l_az_m=p.azimuth_size_m,
+        )
         if abs(endo._dwell(i, t) - zero) > 1e-9:
             n_diff += 1
     assert n_diff > 0, "default arm should use a squint-dependent dwell"

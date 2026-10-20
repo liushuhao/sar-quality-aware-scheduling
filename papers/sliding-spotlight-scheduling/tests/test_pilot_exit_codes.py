@@ -11,6 +11,9 @@ The fixture is built by shrinking every task's window until no task has a
 feasible subinterval.  Measured on M1NC_seed100 (12 s baseline span):
   span >= 6.0 s  -> 20/20 schedulable (feasible control)
   span <= 1.2 s  ->  0/20 schedulable (exit-11 fixture)
+  (ticket 49 re-base: the span used by the fixture is now 0.2 s -- the
+  task-level dwell shrank the STR scene dwells, so 1.2 s stopped being
+  infeasible for 13/20 tasks; the exit-11 CONTRACT is unchanged)
 `precompile_tasks` maps a falsy `feasible_subintervals` result to
 intervals=None, i.e. TaskPlan.schedulable is False, so selecting any task
 costs +1 cv and the empty selection is itself infeasible.
@@ -86,9 +89,15 @@ def _run(manifest_path: Path) -> int:
 def test_fixture_all_infeasible_actually_is(tmp_path):
     """Guard the fixture itself: the exit-11 manifest must genuinely have
     zero schedulable tasks, otherwise the test below would be asserting the
-    exit code for some unrelated reason."""
+    exit code for some unrelated reason.
+
+    Ticket 49 re-base: the infeasible window span went 1.2 s -> 0.2 s.  The
+    task-level dwell now consumes each task's own (shorter) scene size, so
+    M1NC's STR dwells fell to ~0.8-1.0 s and 13 of 20 tasks fit inside the
+    old 1.2 s window -- the fixture had silently stopped being all-infeasible.
+    """
     lib = ModeLibrary.from_fixture()
-    infeasible = precompile_tasks(_respan(_load_manifest(), 1.2), lib)
+    infeasible = precompile_tasks(_respan(_load_manifest(), 0.2), lib)
     assert infeasible, "fixture has no tasks"
     assert not any(p.schedulable for p in infeasible), (
         "expected every task unschedulable in the exit-11 fixture; "
@@ -133,7 +142,7 @@ def test_run_pilot_exits_11_on_all_infeasible_manifest(tmp_path):
     honest: if the manifest stops being all-infeasible, this test would
     pass for an unrelated reason.
     """
-    m = _write(tmp_path, _respan(_load_manifest(), 1.2), "infeasible.json")
+    m = _write(tmp_path, _respan(_load_manifest(), 0.2), "infeasible.json")
     lib = ModeLibrary.from_fixture()
     plans = precompile_tasks(json.loads(m.read_text(encoding="utf-8")), lib)
     assert not any(p.schedulable for p in plans), (

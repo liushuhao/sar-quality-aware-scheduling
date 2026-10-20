@@ -86,9 +86,13 @@ C4_RANGE_SAMPLES_NR = 10_000
 CALIBRATION_KIM_RMT_S = 1.84
 
 
-def _t_env_max(lib: ModeLibrary, r0_m: float | None = None) -> float:
-    """Envelope reference dwell (D09-3): largest library-mode scene dwell at
-    that mode's OWN squint envelope edge.
+def _t_env_max(
+    lib: ModeLibrary,
+    r0_m: float | None = None,
+    rho_req_m: float | None = None,
+) -> float:
+    """Envelope reference dwell (D09-3): largest mode scene dwell at that
+    mode's OWN squint envelope geometry.
 
     Ticket 17 adjudication (2026-10-03, the C3/C4 caliber split).  Per-task
     geometry (ticket 16) moved the MEASURED dwell onto a per-task caliber
@@ -109,10 +113,34 @@ def _t_env_max(lib: ModeLibrary, r0_m: float | None = None) -> float:
       * ``r0_m`` given -> the same envelope edge evaluated at THAT task's
         slant range, which is the true bound for that task.
 
-    Budget stays 1.0 in both cases, so exceeding the reference still means
+    Ticket 49 (formula-spec §8.17-13, the ticket-17 precedent extended).
+    Under the B-full task law the library-mode reference is no longer an
+    upper bound: a fine order makes the dwell grow at the envelope edge
+    (SPT rho=0.300907 at psi_star=42.98 deg: 13.4829 s vs the library
+    10.5830 s = 1.274x), so a legal task reads a FALSE C3/C4 violation.
+    ``rho_req_m`` therefore selects the TASK-LAW reference:
+
+      * ``rho_req_m is None`` -> the library constant, bit-for-bit (the
+        pre-ticket-49 path);
+      * ``rho_req_m`` given -> the largest task-law dwell across the modes
+        that can serve this order, each evaluated on its OWN registered
+        envelope geometry (STR: 45 deg edge, no task parameter; SLS: the
+        26.9 deg edge with ``rho_eff = rho_req*cos(edge)``; SPT: the
+        feasibility boundary ``psi_star``, where the dwell is maximal
+        because it is monotone in |psi|).  Modes whose applicability
+        condition fails for this order (SLS ``A_task`` outside (0,1),
+        SPT with no admissible start) are not part of the admissible
+        envelope and are skipped.  ``l_az_m`` is NOT passed: the reference
+        stays on the 5 km library scene, the upper bound for every task.
+
+    The reference is evaluated at the registered envelope GEOMETRY, never
+    at the measured task's solve point, so it is not a self-comparison.
+    Budget stays 1.0 in every case, so exceeding the reference still means
     the dwell leaves the certified envelope.
     """
-    return max(_scene_durations(lib, r0_m).values())
+    if rho_req_m is None:
+        return max(_scene_durations(lib, r0_m).values())
+    return max(_task_envelope_durations(lib, r0_m, rho_req_m).values())
 
 
 def _scene_durations(lib: ModeLibrary, r0_m: float | None = None) -> dict:
@@ -122,6 +150,48 @@ def _scene_durations(lib: ModeLibrary, r0_m: float | None = None) -> dict:
         m: duration_scene_s(m, mode_squint_envelope_rad(m), lib, r0_m=r0_m)
         for m in Mode
     }
+
+
+def _task_envelope_durations(
+    lib: ModeLibrary, r0_m: float | None, rho_req_m: float
+) -> dict:
+    """Per-mode task-law dwell at each mode's registered envelope geometry.
+
+    Only the modes that can serve ``rho_req_m`` at all appear in the dict:
+    SLS needs ``A_task in (0,1)`` (§8.17-9), SPT needs an admissible start
+    (``psi_star > 0``; a span that already fills the 45 deg envelope at zero
+    squint has none).  STR always applies -- its resolution is antenna-fixed.
+    """
+    from .duration import (
+        duration_scene_s,
+        mode_squint_envelope_rad,
+        spt_start_squint_limit,
+        task_sls_factor,
+    )
+
+    geo = lib.geo
+    out = {
+        Mode.STR: duration_scene_s(
+            Mode.STR, mode_squint_envelope_rad(Mode.STR), lib, r0_m=r0_m
+        )
+    }
+    sls_edge = mode_squint_envelope_rad(Mode.SLS)
+    try:
+        task_sls_factor(rho_req_m, sls_edge, geo)
+    except ValueError:
+        # The order is outside the sliding mode's (0,1) applicability
+        # (§8.17-9): the mode is not part of the envelope for this order.
+        pass
+    else:
+        out[Mode.SLS] = duration_scene_s(
+            Mode.SLS, sls_edge, lib, r0_m=r0_m, rho_req_m=rho_req_m
+        )
+    psi_star = spt_start_squint_limit(rho_req_m, geo)
+    if psi_star > 0.0:
+        out[Mode.SPT] = duration_scene_s(
+            Mode.SPT, psi_star, lib, r0_m=r0_m, rho_req_m=rho_req_m
+        )
+    return out
 
 
 def c2_transfer_requirement_s(
@@ -178,7 +248,11 @@ def c2_transfer_ok(
 
 
 def c3_energy_normalized(
-    mode: Mode, dur_s: float, lib: ModeLibrary, r0_m: float | None = None
+    mode: Mode,
+    dur_s: float,
+    lib: ModeLibrary,
+    r0_m: float | None = None,
+    rho_req_m: float | None = None,
 ) -> float:
     """Normalized weighted dwell in [0, ~1] against the envelope reference
     (D09-3); budget = 1.0.
@@ -187,8 +261,12 @@ def c3_energy_normalized(
     dwell was computed with.  Passing it evaluates the reference on the SAME
     caliber; omitting it uses the library constant, which is what every
     pre-ticket-16 family does.
+
+    ``rho_req_m`` (ticket 49, §8.17-13): the task's order.  Passing it moves
+    the reference to the task-law envelope (``_t_env_max``); omitting it is
+    the library-mode reference bit-for-bit.
     """
-    ref = max(C3_WEIGHTS.values()) * _t_env_max(lib, r0_m)
+    ref = max(C3_WEIGHTS.values()) * _t_env_max(lib, r0_m, rho_req_m)
     return C3_WEIGHTS[mode] * dur_s / ref
 
 
@@ -214,13 +292,20 @@ def c4_memory_normalized(
     prf_hz: float,
     lib: ModeLibrary,
     r0_m: float | None = None,
+    rho_req_ref_m: float | None = None,
 ) -> float:
     """Memory against the envelope reference (D09-3); budget = 1.0.
 
     ``r0_m``: see ``c3_energy_normalized`` -- same-caliber reference.
+
+    ``rho_req_ref_m`` (ticket 49, §8.17-13): the REFERENCE-side order, same
+    role as ``c3_energy_normalized``'s ``rho_req_m``.  It cannot share the
+    name: the positional ``rho_req_m`` above is the raw-data interface slot
+    (inert here, D09-4, consumed by ``c4_memory_bytes``).  ``None`` = the
+    library-mode reference bit-for-bit.
     """
     ref = (
-        prf_hz * _t_env_max(lib, r0_m) * C4_RANGE_SAMPLES_NR
+        prf_hz * _t_env_max(lib, r0_m, rho_req_ref_m) * C4_RANGE_SAMPLES_NR
         * C4_BITS_PER_COMPONENT * 2 / 8.0
     )
     return c4_memory_bytes(mode, dur_s, rho_req_m, prf_hz, lib) / ref
@@ -229,8 +314,12 @@ def c4_memory_normalized(
 def c3_ok(
     mode: Mode, dur_s: float, lib: ModeLibrary,
     budget: float = 1.0, r0_m: float | None = None,
+    rho_req_m: float | None = None,
 ) -> bool:
-    return c3_energy_normalized(mode, dur_s, lib, r0_m) <= budget + 1e-12
+    return (
+        c3_energy_normalized(mode, dur_s, lib, r0_m, rho_req_m)
+        <= budget + 1e-12
+    )
 
 
 def c4_ok(
@@ -241,9 +330,12 @@ def c4_ok(
     lib: ModeLibrary,
     budget: float = 1.0,
     r0_m: float | None = None,
+    rho_req_ref_m: float | None = None,
 ) -> bool:
     return (
-        c4_memory_normalized(mode, dur_s, rho_req_m, prf_hz, lib, r0_m)
+        c4_memory_normalized(
+            mode, dur_s, rho_req_m, prf_hz, lib, r0_m, rho_req_ref_m
+        )
         <= budget + 1e-12
     )
 

@@ -198,6 +198,7 @@ def aasr_direct(
     spt_edge_worst: bool = True,
     spt_scene_wa_m: float | None = None,
     r0_m: float | None = None,
+    rho_zero_task_m: float | None = None,
 ) -> dict:
     """Direct AASR (power ratio) for one library mode (D06-1/2/3).
 
@@ -213,12 +214,33 @@ def aasr_direct(
     r0-invariant at a given squint (K_c/K_a = k cancels, ticket 40
     (yi) semantics), so threading r0 there changes nothing by
     construction.  None falls back to the library R0, which is the
-    calibration/synthetic caliber."""
+    calibration/synthetic caliber.
+
+    ``rho_zero_task_m`` (ticket 49, formula-spec §8.17-6): the TASK-level
+    zero-squint achieved resolution ``A_task*D/2``.  When given (SLS only),
+    the SLS band uses ``B_D = Vs*cos(psi)/rho_zero_task_m`` INSTEAD of the
+    library caliber -- the caller must pass ``k = k_task = 1 - A_task`` from
+    the same delivery law, because switching only one of the pair manufactures
+    a spurious rho dependence (measured 5.10-22.87 dB across rho 0.3-1.0).
+    With BOTH switched, ``a_res*B_D = 2*Vs*cos(psi)/D`` is rho-independent and
+    AASR_SLS depends only on (psi, PRF) -- the registered invariance.  The
+    mode is a CALLER INPUT here: this path never calls ``route_mode`` (a
+    selection key, not a physics law), so an SLS task stays SLS.
+    """
     geo = lib.geo
     vs, lam = geo.vs_mps, geo.wavelength_m
     r0 = geo.R0_m if r0_m is None else float(r0_m)
     rho_ach = lib.rho_az(mode)
     cos_psi = math.cos(psi_bar_rad)
+    if rho_zero_task_m is not None and mode is not Mode.SLS:
+        # fail loud BEFORE any branch: SPT has no B_D channel (Song Eq.(7)
+        # collapses) and STR has no task parameter at all (§8.17-9), so a
+        # caller passing the task caliber there is using the wrong interface,
+        # not asking for an inert argument.
+        raise ValueError(
+            f"rho_zero_task_m is SLS-only (task-law B_D): got {mode.name}, "
+            "which has no task-level mode parameter (formula-spec §8.17-9)"
+        )
 
     if mode is Mode.SPT:
         # Eq.(7): the integrand is independent of f_a; worst azimuth edge
@@ -230,7 +252,10 @@ def aasr_direct(
         den = float(_pattern(np.array(-kat0), vs, geo.D_m) ** 2)
         ratio = num / den
     else:
-        b_d = lib.bandwidth_d_hz(mode, psi_bar_rad)  # D06-1, ticket-15 re-registration
+        if rho_zero_task_m is not None:
+            b_d = vs * cos_psi / float(rho_zero_task_m)  # §8.17-6 task caliber
+        else:
+            b_d = lib.bandwidth_d_hz(mode, psi_bar_rad)  # D06-1, ticket-15 re-registration
         if mode is Mode.SLS:
             # Ticket 40 / A-CROSS (yi) semantics: the beam points at the
             # fixed virtual rotation centre, so K_c is the rotation-centre
@@ -288,6 +313,13 @@ class GridAxes:
 
 class AASRGrid:
     """Preregistered lookup grid over (rho_req, psi, k, PRF).
+
+    Ticket 49 downgrade (formula-spec §8.17-7): the four-key cell-bound
+    premise ("rho_req is constant within a routed band") is void under B-full
+    -- rho is no longer a selection key, and k and B_D are both functions of
+    it -- so this grid is VERIFY-ONLY (``grid_halving`` and anti-fixtures).
+    The production -13 dB admission is a point query against
+    ``aasr_direct``, which has no upper-bound requirement.
 
     rho_req routes to a mode; within a routed band the physics is
     rho_req-independent, so each cell bound = max over the 4 corners of

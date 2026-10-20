@@ -390,7 +390,13 @@ def predicate_source() -> dict:
 
 def promotion_replay(pilot: dict, manifest: dict, lib: ModeLibrary) -> dict:
     """US12: recompute the criterion from STARTS + manifest (raw data) and
-    compare the derived decision with the recorded one."""
+    compare the derived decision with the recorded one.
+
+    Ticket 49 (§8.17-6 exemption, registered): like ``promotion_spread_db``
+    this replay stays at the LIBRARY caliber (``lib.geo.k`` + library B_D from
+    the same source) -- a consistent pair, not the half update; and the
+    promotion decision is void in the single-objective world.
+    """
     sp_plans = {int(i): p for i, p in enumerate(_plans_of(manifest, lib))}
     vals = []
     for rec in pilot["front"]:

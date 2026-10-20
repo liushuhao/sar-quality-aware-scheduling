@@ -42,7 +42,12 @@ from dataclasses import dataclass
 
 from scipy.optimize import brentq
 
-from .duration import MarginPads, mode_squint_envelope_rad, pad_window_tail
+from .duration import (
+    MarginPads,
+    mode_squint_envelope_rad,
+    pad_window_tail,
+    spt_start_squint_limit,
+)
 from .modes import Mode, ModeLibrary
 
 __all__ = [
@@ -59,6 +64,7 @@ __all__ = [
     "effective_duration_fn",
     "intersect_intervals",
     "mask_intervals",
+    "spt_task_start_domain",
 ]
 
 
@@ -78,6 +84,16 @@ class FeasibleWindows:
         return any(lo - tol <= t <= hi + tol for lo, hi in self.intervals)
 
 
+# Feasible-subinterval scan grid (D04-4): the default scan count and the
+# centred finite-difference divisor (``h = step / divisor``).  The
+# domain-edge probes therefore run OUTSIDE the scan span by ``h``, which is
+# what ``spt_task_start_domain``'s inset must absorb -- so the inset is
+# derived from this same pair instead of a hard-coded denominator that
+# would silently fall behind a grid change.
+FEASIBLE_SCAN_N_DEFAULT = 200
+FEASIBLE_DIFF_STEP_DIVISOR = 10
+
+
 def effective_duration_fn(duration, pads: MarginPads):
     """Wrap a bare duration with the caller's window-tail pad (D04-2)."""
     return lambda t: pad_window_tail(duration(t), pads)
@@ -92,7 +108,7 @@ def feasible_subintervals(
     t_start: float,
     window_end: float,
     *,
-    n_scan: int = 200,
+    n_scan: int = FEASIBLE_SCAN_N_DEFAULT,
     tol_g: float = 1e-9,
     merge_tol: float = 1e-9,
     xtol: float = 1e-12,
@@ -122,7 +138,7 @@ def feasible_subintervals(
         # the caller's `except ValueError`.
         raise ValueError(f"n_scan must be >= 1: got {n_scan}")
     step = (b - a) / n_scan
-    h_diff = step / 10.0
+    h_diff = step / FEASIBLE_DIFF_STEP_DIVISOR
     if h_diff == 0.0:
         # span > 0 but subnormal: the grid step underflows so the derivative
         # pass would divide by zero, which the caller's `except ValueError`
@@ -219,7 +235,7 @@ def windows_with_dip_guard(
     t_start: float,
     window_end: float,
     *,
-    n_scan: int = 200,
+    n_scan: int = FEASIBLE_SCAN_N_DEFAULT,
     n_step: int = 200,
     tol_g: float = 1e-9,
 ):
@@ -464,19 +480,78 @@ def clip_to_squint_span(
     return tuple(out)
 
 
-def resolution_clip(ivs, mode, rho_req_m: float, t_ca_s: float, r0_m, lib):
-    """Ticket 48: clip a window's feasible set to where the ACHIEVED azimuth
-    resolution ``rho_a(mode) / cos(psi)`` is within the ordered ``rho_req``.
+def spt_task_start_domain(ivs, rho_req_m, t_ca_s, r0_m, lib):
+    """SPT task-law START DOMAIN: keep only where ``|psi| + beta_task/2 <= 45``.
 
-    ``route_mode`` routes on the ZERO-SQUINT library value; this enforces the
-    same order at the actual imaging squint.  A requirement finer than the
-    mode's zero-squint value is unsatisfiable at every start, so the result
-    is the empty set.  ``r0_m=None`` falls back to the library R0 (the
-    synthetic-family caliber, identical to the dwell chain's own fallback).
+    Ticket 49 (formula-spec §8.17-11) makes the envelope a property of the
+    TASK span, not just of the parked-beam design point, so the admissible
+    start domain is ``|psi(t)| <= psi_star(rho_req)`` with ``psi_star`` the
+    root solved by ``duration.spt_start_squint_limit``.  Clamping the DOMAIN
+    before the end-check is what keeps the §8.17-11 guard from firing on an
+    interior grid sample: the precompile's duration closure maps ANY
+    ValueError to "this window is empty", so a single out-of-envelope sample
+    would discard the whole transit (measured on R2F_seed200 before this
+    clamp: 128 of 252 SPT windows carried a guard-violating endpoint).
+
+    ``r0_m=None`` is the library slant range (same fallback as the dwell
+    chain).  The returned intervals are the input intersected with the
+    ``|t - t_ca| <= r0*tan(psi_star)/Vs`` span; an empty tuple means no
+    admissible start exists in the window.
     """
-    ratio = lib.rho_az(mode) / rho_req_m
-    if ratio > 1.0:
-        return ()
-    psi_max = min(math.acos(min(1.0, ratio)), mode_squint_envelope_rad(mode))
+    psi_star = spt_start_squint_limit(rho_req_m, lib.geo)
     r0 = lib.geo.R0_m if r0_m is None else float(r0_m)
-    return clip_to_squint_span(ivs, t_ca_s, r0, lib.geo.vs_mps, psi_max)
+    clipped = clip_to_squint_span(
+        ivs, t_ca_s, r0, lib.geo.vs_mps, psi_star
+    )
+    # Finite-difference inset.  ``feasible_subintervals`` probes g at the
+    # DOMAIN EDGES with a centred step h = span/(n_scan*10), i.e. it
+    # evaluates the duration closure OUTSIDE the clamped span by h.  Without
+    # this inset those probes land past psi_star, the §8.17-11 guard raises,
+    # and the whole window is discarded anyway -- the clamp would be
+    # cosmetic.  2.5h exceeds the probe step with margin.  h is derived from
+    # the SAME grid constants the enumerator uses, so a grid change cannot
+    # leave the inset silently too small; an enumerator called with a
+    # COARSER grid would need a larger inset.
+    out: list[tuple[float, float]] = []
+    for lo, hi in clipped:
+        probe_h = (hi - lo) / (
+            FEASIBLE_SCAN_N_DEFAULT * FEASIBLE_DIFF_STEP_DIVISOR
+        )
+        inset = 2.5 * probe_h
+        if hi - lo > 2.0 * inset:
+            out.append((lo + inset, hi - inset))
+    return tuple(out)
+
+
+def resolution_clip(ivs, mode, rho_req_m: float, t_ca_s: float, r0_m, lib):
+    """Per-task resolution layer, mode-split (ticket 48 + ticket 49 §8.17-12).
+
+    STR -- UNCHANGED ticket-48 semantics: clip a window's feasible set to
+    where the ACHIEVED azimuth resolution ``rho_a(STR)/cos(psi)`` is within
+    the ordered ``rho_req``.  ``route_mode`` routes on the ZERO-SQUINT
+    library value; this enforces the same order at the actual imaging squint.
+    A requirement finer than the mode's zero-squint value is unsatisfiable at
+    every start, so the result is the empty set.  ``r0_m=None`` falls back to
+    the library R0 (the synthetic-family caliber, identical to the dwell
+    chain's own fallback).
+
+    SLS / SPT -- B-full redefinition: the task law DELIVERS the order at every
+    solve point (``rho_a,ach = rho_req`` by construction, §8.17-1), so the
+    library-caliber clip no longer describes the mode and would FALSELY
+    narrow (or empty) the feasible set -- e.g. an SLS order of 0.45 m is
+    finer than the library value 0.5 and the old clip returns ().  The
+    function therefore returns the feasible subintervals UNCHANGED; the
+    §8.17-12 delivery identity is checked where a solve point exists
+    (``duration_scene_s``, consumed by the evaluator's and anchor's dwell
+    calls), not here at precompile time where no start is known.
+    """
+    if mode is Mode.STR:
+        ratio = lib.rho_az(mode) / rho_req_m
+        if ratio > 1.0:
+            return ()
+        psi_max = min(math.acos(min(1.0, ratio)), mode_squint_envelope_rad(mode))
+        r0 = lib.geo.R0_m if r0_m is None else float(r0_m)
+        return clip_to_squint_span(ivs, t_ca_s, r0, lib.geo.vs_mps, psi_max)
+    if mode in (Mode.SLS, Mode.SPT):
+        return tuple(ivs)
+    raise ValueError(f"unknown mode {mode!r}")

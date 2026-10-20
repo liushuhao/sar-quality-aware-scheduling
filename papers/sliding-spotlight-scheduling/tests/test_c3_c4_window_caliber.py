@@ -50,6 +50,14 @@ smaller".
 
 Mutation contract: reverting either C3/C4 call site in evaluator.py:404-417
 back to ``r0_m=plan.r0_m`` turns the first test RED.
+
+TICKET 49 RE-BASE (2026-10-20): the numbers in the block above are the
+ORIGINAL ticket-28 recipe (library SPT span, rho order 1.5, start -134 s at
+psi=-44.70 deg).  Under the B-full task law the span is set by the order, so
+that start now violates the §8.17-11 envelope and the recipe moved to
+psi=-40 deg / rho=0.40 m.  The SAME caliber straddle is preserved and the
+current expected values are recorded next to the constants; the historical
+block is kept as the defect's record, not as the current reading.
 """
 import sys
 from pathlib import Path
@@ -69,12 +77,26 @@ from sss_core.predicates import (  # noqa: E402
     c4_ok,
 )
 
-# Recipe constants (ticket 28 design point 2)
+# Recipe constants (ticket 28 design point 2; ticket 49 re-base below)
 WIN_LO_S = -135.0
 WIN_HI_S = 10.0
 WIN_T_CA_S = 0.0
 WIN_R0_M = 1_026_000.0
-START_S = -134.0
+# Ticket 49 re-base: the original start sat at psi = -44.70 deg with the
+# LIBRARY SPT span.  Under the task law the span is a function of the order
+# (beta/2 ~ 2 deg), so that point violates the §8.17-11 envelope.  The recipe
+# moved to psi = -40 deg and the order to 0.40 m, which keeps the original
+# discriminator: the window-caliber reference (14.0029 s) is not exceeded by
+# the dwell (11.6785 s -> 0.834) while the library-caliber reference
+# (10.5830 s) is (-> 1.1035); the two straddle the budget by 0.2695.
+PSI_START_DEG = -40.0
+
+
+def _start_time(lib: ModeLibrary) -> float:
+    """Start time whose planar squint is PSI_START_DEG (single source)."""
+    import math
+
+    return WIN_T_CA_S + WIN_R0_M * math.tan(math.radians(PSI_START_DEG)) / lib.geo.vs_mps
 
 
 @pytest.fixture(scope="module")
@@ -97,7 +119,7 @@ def _windows_form_manifest() -> dict:
                 "t_ca_s": WIN_T_CA_S,
                 "azimuth_size_m": 4000.0,
                 "priority": 5,
-                "rho_req_m": 1.5,
+                "rho_req_m": 0.40,
                 "mode": "SPT",
                 "prf_hz": 1150.0,
                 "windows": [
@@ -131,14 +153,15 @@ def test_c3_c4_reference_follows_the_window_geometry(lib):
     0.0."""
     sp = SchedulingProblem(_windows_form_manifest(), lib)
     plan = sp.plans[0]
+    start = _start_time(lib)
     assert plan.schedulable, "window dropped at precompile -- recipe is invalid"
     assert plan.r0_m is None, "task-level r0 must be absent (the defect's premise)"
-    w = plan.window_at(START_S)
+    w = plan.window_at(start)
     assert w.r0_m == pytest.approx(WIN_R0_M)
-    assert any(lo - 1e-12 <= START_S <= hi + 1e-12 for lo, hi in plan.intervals)
+    assert any(lo - 1e-12 <= start <= hi + 1e-12 for lo, hi in plan.intervals)
 
-    rec = sp.evaluate([1.0, _tau_for(plan.intervals, START_S)])
-    assert rec["starts"] == {0: pytest.approx(START_S)}, rec["starts"]
+    rec = sp.evaluate([1.0, _tau_for(plan.intervals, start)])
+    assert rec["starts"] == {0: pytest.approx(start)}, rec["starts"]
     assert rec["cv"] == pytest.approx(0.0, abs=1e-9), (
         f"cv={rec['cv']}: the C3/C4 reference is not on the window caliber "
         "(pre-fix this scenario reads cv=2.0 -- a false violation)"
@@ -149,11 +172,21 @@ def test_c3_c4_predicates_agree_with_the_evaluator(lib):
     """Anti-bypass: the same-caliber predicates the evaluator is supposed to
     call must return the SAME verdict as ``evaluate`` on this scenario.  Pins
     the two calibers on opposite sides of the budget so a swapped reference
-    (library instead of window, or vice versa) cannot pass either assertion."""
+    (library instead of window, or vice versa) cannot pass either assertion.
+
+    SCOPE (ticket 49 §8.17-13): this test isolates the GEOMETRY caliber
+    (window r0 vs library r0).  The evaluator's reference additionally carries
+    the task-law envelope when the manifest has an order, so the agreement
+    below is scoped to the geometry axis -- the task-law reference has its
+    own discriminating power in
+    ``test_ticket49_task_params.py::test_c3_c4_reference_is_the_task_law_envelope``
+    (end-to-end arm: ``test_evaluator_c3_c4_no_false_violation_on_the_task_law``).
+    """
     sp = SchedulingProblem(_windows_form_manifest(), lib)
     plan = sp.plans[0]
-    w = plan.window_at(START_S)
-    dwell = sp._dwell(0, START_S)
+    start = _start_time(lib)
+    w = plan.window_at(start)
+    dwell = sp._dwell(0, start)
 
     same_caliber = {
         "c3": c3_energy_normalized(plan.mode, dwell, lib, w.r0_m),
@@ -183,7 +216,7 @@ def test_c3_c4_predicates_agree_with_the_evaluator(lib):
         plan.mode, dwell, plan.rho_req_m, plan.prf_hz, lib, r0_m=None
     )
     # the evaluator's cv of 0.0 (test above) is only honest if these agree
-    rec = sp.evaluate([1.0, _tau_for(plan.intervals, START_S)])
+    rec = sp.evaluate([1.0, _tau_for(plan.intervals, start)])
     assert rec["cv"] == pytest.approx(0.0, abs=1e-9)
 
 

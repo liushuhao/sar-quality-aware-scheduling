@@ -117,11 +117,173 @@ def _check_envelope(mode: Mode, psi_bar_rad: float) -> None:
         )
 
 
+# ── B-full task-level mode parameters (formula-spec §8.17) ───────────────
+
+def task_sls_factor(rho_req_m: float, psi_sel_rad: float, geo: DerivedGeometry) -> float:
+    """Task-level sliding factor ``A_task = 2*rho_req*cos(psi_sel)/D`` (§8.17-1).
+
+    The delivery law: with ``r0 = R0*A/(1-A)`` the sliding mode delivers
+    ``rho_a,ach = A*D/(2*cos(psi))`` exactly at the solve point, so fixing
+    ``A = A_task`` pins the delivered resolution to the order.  ``A`` is the
+    registered sign (``k = 1 - A`` is the blueprint bridge).
+
+    The applicability clause is §8.17-9's: ``A in (0,1)`` iff
+    ``rho_req*cos(psi_sel) < D/2``.  Outside it the order is not serviceable
+    by the sliding mode at this squint -- fail loud rather than return an
+    out-of-family factor.
+    """
+    a = 2.0 * float(rho_req_m) * math.cos(psi_sel_rad) / geo.D_m
+    if not 0.0 < a < 1.0:
+        raise ValueError(
+            f"A_task={a!r} outside (0,1) at rho_req={rho_req_m} m, "
+            f"psi_sel={math.degrees(psi_sel_rad):.3f} deg: SLS needs "
+            f"rho_req*cos(psi_sel) < D/2 = {geo.D_m / 2.0} m (formula-spec §8.17-9)"
+        )
+    return a
+
+
+def task_spt_span(rho_req_m: float, psi_sel_rad: float, geo: DerivedGeometry) -> float:
+    """Task-level steering span ``beta_task = lambda*sec(psi_sel)/(2*rho_req)``
+    (§8.17-1) with the FORMATION-POINT envelope guard (§8.17-11).
+
+    ``|psi_sel| + beta_task/2 <= 45 deg`` is the §3.1 design envelope extended
+    by the sweep span.  The tan closure stays evaluable past it (it only
+    diverges at 90 deg), so without this guard the mode silently leaves its
+    registered domain.  Raising HERE, where beta forms, is what the spec
+    registers -- not at the caller.
+    """
+    beta = geo.wavelength_m / (2.0 * float(rho_req_m) * math.cos(psi_sel_rad))
+    half = beta / 2.0
+    env = math.radians(SQUINT_ENVELOPE_DEG)
+    if abs(psi_sel_rad) + half > env:
+        raise ValueError(
+            f"SPT task span leaves the envelope: |psi_sel|={math.degrees(abs(psi_sel_rad)):.3f} "
+            f"+ beta_task/2={math.degrees(half):.3f} = "
+            f"{math.degrees(abs(psi_sel_rad) + half):.3f} deg > "
+            f"{SQUINT_ENVELOPE_DEG:.1f} deg (rho_req={rho_req_m} m; formula-spec §8.17-11)"
+        )
+    return beta
+
+
+def spt_start_squint_limit(rho_req_m: float, geo: DerivedGeometry) -> float:
+    """Largest ``|psi|`` at which the SPT task law is inside its envelope [rad].
+
+    Solves ``psi + beta_task(psi)/2 = 45 deg`` with
+    ``beta_task(psi)/2 = lambda/(4*rho*cos psi)``.  The precompile pipeline
+    clips a window's START DOMAIN with this limit BEFORE the end-check, so the
+    §8.17-11 guard never fires on an interior grid point: without the clamp,
+    a single out-of-envelope sample raises inside the duration closure and the
+    whole transit window is discarded (measured: 128/252 SPT windows on
+    R2F_seed200 carry a guard-violating endpoint), silently halving the SPT
+    opportunity set.
+
+    Bisection is monotone here (the left side is strictly increasing in
+    ``psi``); the returned endpoint is the ADMISSIBLE side (f < 0), with a
+    1e-9 rad inset so float rounding at the clamp boundary cannot re-trip the
+    guard.  ``beta(0)/2 >= 45 deg`` (rho below ~lambda/pi) has no admissible
+    start and returns 0.0 -- the whole window is then dropped by the clamp.
+    """
+    a = geo.wavelength_m / (4.0 * float(rho_req_m))
+    target = math.pi / 4.0
+    if a >= target:
+        return 0.0
+    f = lambda x: x + a / math.cos(x) - target  # noqa: E731
+    lo, hi = 0.0, target
+    for _ in range(80):
+        mid = 0.5 * (lo + hi)
+        if f(mid) < 0.0:
+            lo = mid
+        else:
+            hi = mid
+    return max(0.0, lo - 1e-9)
+
+
+def task_rho_ach(
+    mode: Mode, rho_req_m: float, psi_sel_rad: float, lib: ModeLibrary
+) -> float:
+    """Azimuth resolution DELIVERED at the solve point under the task law.
+
+    SLS: ``A_task*D/(2*cos(psi_sel))``; SPT: ``lambda/(2*beta_task*cos(psi_sel))``.
+    Both are identities in ``rho_req`` (§8.17-1) -- the point of the delivery
+    law.  STR has no task-level parameter (§8.17-9), so it raises.
+    """
+    geo = lib.geo
+    c = math.cos(psi_sel_rad)
+    if mode is Mode.SLS:
+        return task_sls_factor(rho_req_m, psi_sel_rad, geo) * geo.D_m / (2.0 * c)
+    if mode is Mode.SPT:
+        return geo.wavelength_m / (2.0 * task_spt_span(rho_req_m, psi_sel_rad, geo) * c)
+    raise ValueError(
+        f"{mode.name} has no task-level mode parameter: the resolution order "
+        "is carried by the ticket-48 hard constraint there (formula-spec §8.17-9)"
+    )
+
+
+def _check_sls_delivery(
+    rho_req_m: float,
+    psi_sel_rad: float,
+    a_task: float,
+    r0_used_m: float,
+    R0_m: float,
+    geo: DerivedGeometry,
+    tol: float = 1e-12,
+) -> None:
+    """Solve-point delivery identity on the CONSUMED sliding parameter.
+
+    ``r0_used`` is the rotation radius the checker actually built from the rho
+    slot it was handed, so ``A_implied = r0/(R0+r0)`` measures what the dwell
+    chain CONSUMED (§8.17-4 registers this chain identity at 2.4e-16).  Two
+    checks, because the law and the slot are two expressions: the implied
+    factor must equal the declared ``A_task`` (catches a mutated law), and the
+    delivered resolution must equal the order (catches a mutated slot, e.g.
+    dropping ``cos(psi)`` or falling back to the library rho).  A check that
+    only re-derives from the same helper would pass the slot mutation.
+    """
+    a_implied = r0_used_m / (R0_m + r0_used_m)
+    if abs(a_implied - a_task) > tol:
+        raise ValueError(
+            f"delivery identity violated (SLS law vs consumed slot): "
+            f"A_implied={a_implied!r} != A_task={a_task!r} at "
+            f"psi_sel={math.degrees(psi_sel_rad):.3f} deg (formula-spec §8.17-12)"
+        )
+    ach = a_implied * geo.D_m / (2.0 * math.cos(psi_sel_rad))
+    if abs(ach - float(rho_req_m)) > tol:
+        raise ValueError(
+            f"delivery identity violated (SLS delivered): rho_ach={ach!r} != "
+            f"rho_req={rho_req_m!r} at psi_sel={math.degrees(psi_sel_rad):.3f} deg "
+            "(formula-spec §8.17-12)"
+        )
+
+
+def _check_spt_delivery(
+    rho_req_m: float,
+    psi_sel_rad: float,
+    span_used_rad: float,
+    geo: DerivedGeometry,
+    tol: float = 1e-12,
+) -> None:
+    """Solve-point delivery identity on the CONSUMED SPT span (§8.17-12).
+
+    ``span_used`` is exactly the span handed to ``_tan_diff_s``; a mutated
+    span helper (or a fallback to the library design point) breaks the
+    identity.
+    """
+    ach = geo.wavelength_m / (2.0 * span_used_rad * math.cos(psi_sel_rad))
+    if abs(ach - float(rho_req_m)) > tol:
+        raise ValueError(
+            f"delivery identity violated (SPT delivered): rho_ach={ach!r} != "
+            f"rho_req={rho_req_m!r} at psi_sel={math.degrees(psi_sel_rad):.3f} deg "
+            "(formula-spec §8.17-12)"
+        )
+
+
 def duration_scene_s(
     mode: Mode,
     psi_bar_rad: float,
     lib: ModeLibrary,
     r0_m: float | None = None,
+    rho_req_m: float | None = None,
+    l_az_m: float | None = None,
 ) -> float:
     """Scene-level dwell [s] (ticket 03 D03-3; PRODUCTION = formula-spec
     §4.1 Kim Eq.(22)/(24) chain after ticket 15; §4.2 planar forms demoted to
@@ -146,21 +308,63 @@ def duration_scene_s(
     task imaged away from the design incidence has a materially different
     dwell.  ``None`` means "use the library constant", which is what every
     pre-ticket-16 family does -- so their results stay bit-identical.
+
+    ``rho_req_m`` / ``l_az_m`` (ticket 49, formula-spec §8.17): the B-full
+    task-level caliber, both defaulting to the library caliber.
+
+    * ``rho_req_m=None`` -> the pre-ticket-49 path bit-for-bit (the library
+      design point for SLS/SPT; the order is then a routing/clip key only).
+    * SLS with an order -> the checker consumes ``rho_eff =
+      rho_req*cos(psi_sel)`` (§8.17-4) and the consumed parameter is
+      re-derived for the §8.17-12 delivery identity.
+    * SPT with an order -> the tan difference consumes ``beta_task`` (and
+      the §8.17-11 envelope guard fires where beta forms).
+    * STR has NO task-level parameter: a non-None ``rho_req_m`` is a caller
+      bug and raises (the order is carried by the ticket-48 clip there).
+    * ``l_az_m`` replaces the scene constant ``W_a`` in the STR transit term
+      and in the SLS checker's scene term (R53, §8.17-8).  SPT is a parked
+      beam: its scene extent is a footprint question, never a dwell term, so
+      the argument is deliberately inert there.
     """
     _check_envelope(mode, psi_bar_rad)
     geo = lib.geo
     r0 = geo.R0_m if r0_m is None else float(r0_m)
+    wa = geo.scene_wa_m if l_az_m is None else float(l_az_m)
     if mode is Mode.STR:
+        if rho_req_m is not None:
+            raise ValueError(
+                "STR has no task-level mode parameter (formula-spec §8.17-9): "
+                f"got rho_req={rho_req_m!r}; the order is enforced by the "
+                "ticket-48 hard constraint instead"
+            )
         return (
             _tan_diff_s(psi_bar_rad, geo.theta_a_rad, r0, geo.vs_mps)
-            + geo.scene_wa_m / geo.vs_mps
+            + wa / geo.vs_mps
         )
     if mode is Mode.SLS:
-        return kim_checker_scene_sls(
-            psi_bar_rad, lib.rho_az(Mode.SLS), geo, r0_m=r0
-        )["sat_raw_s"]
+        if rho_req_m is None:
+            return kim_checker_scene_sls(
+                psi_bar_rad, lib.rho_az(Mode.SLS), geo, r0_m=r0, scene_wa_m=wa
+            )["sat_raw_s"]
+        a_task = task_sls_factor(rho_req_m, psi_bar_rad, geo)
+        out = kim_checker_scene_sls(
+            psi_bar_rad,
+            float(rho_req_m) * math.cos(psi_bar_rad),  # rho_eff, §8.17-4
+            geo,
+            r0_m=r0,
+            scene_wa_m=wa,
+        )
+        _check_sls_delivery(
+            rho_req_m, psi_bar_rad, a_task, out["r0_m"], r0, geo
+        )
+        return out["sat_raw_s"]
     if mode is Mode.SPT:
-        return _tan_diff_s(psi_bar_rad, lib.beta_span_spt_rad, r0, geo.vs_mps)
+        if rho_req_m is None:
+            span = lib.beta_span_spt_rad
+        else:
+            span = task_spt_span(rho_req_m, psi_bar_rad, geo)
+            _check_spt_delivery(rho_req_m, psi_bar_rad, span, geo)
+        return _tan_diff_s(psi_bar_rad, span, r0, geo.vs_mps)
     raise ValueError(f"unknown mode {mode!r}")
 
 
@@ -249,6 +453,7 @@ def kim_checker_scene_sls(
     rho_req_m: float,
     geo: DerivedGeometry,
     r0_m: float | None = None,
+    scene_wa_m: float | None = None,
 ) -> dict:
     """Scene-level sliding-spotlight SAT via the symmetric-alpha construction.
 
@@ -257,6 +462,10 @@ def kim_checker_scene_sls(
     the returned dict is Kim's Eq.(16) rotation-centre radius, a different
     quantity, and is left alone.
 
+    ``scene_wa_m`` (ticket 49, R53 / §8.17-8): the task's along-track scene
+    size replacing the library constant ``Wa``; ``None`` is the library
+    constant, so every pre-ticket-49 caller stays bit-identical.
+
     Chain (formula-spec §4.1/§4.3, D03-1): Eq.(14) alpha_req = lambda/(2 rho)
     -> Eq.(16) r0 = R0*theta_a/(alpha_req - theta_a) -> Eq.(18)
     dtheta_broad = (R0*theta_a + Wa)/r0 -> alpha = dtheta_broad + theta_a ->
@@ -264,16 +473,17 @@ def kim_checker_scene_sls(
     SAT = L/Vs (raw; x1.25 margin separate).
     """
     R0 = geo.R0_m if r0_m is None else float(r0_m)
+    wa = geo.scene_wa_m if scene_wa_m is None else float(scene_wa_m)
     theta_a = geo.theta_a_rad
     alpha_req = geo.wavelength_m / (2.0 * rho_req_m)
     r0 = R0 * theta_a / (alpha_req - theta_a)
-    dtheta_broad = (R0 * theta_a + geo.scene_wa_m) / r0
+    dtheta_broad = (R0 * theta_a + wa) / r0
     alpha = dtheta_broad + theta_a
     hi = psi_bar_rad + alpha / 2.0
     lo = psi_bar_rad - alpha / 2.0
     if abs(math.cos(hi)) < 1e-12 or abs(math.cos(lo)) < 1e-12:
         raise ValueError("checker domain: squint + alpha/2 reaches 90 deg")
-    big_l = R0 * (math.tan(hi) - math.tan(lo)) + geo.scene_wa_m
+    big_l = R0 * (math.tan(hi) - math.tan(lo)) + wa
     sat_raw = big_l / geo.vs_mps
     return {
         "L_m": big_l,

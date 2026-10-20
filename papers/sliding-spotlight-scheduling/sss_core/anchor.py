@@ -116,13 +116,20 @@ def greedy_anchor(
         # the evaluator re-precompiles with r0_m and the two disagreed.
         # ticket 25: per-WINDOW geometry -- t falls in one transit window,
         # and that window's own zero and slant range drive the dwell.
+        # ticket 49 (§8.17-4/8): the task's order and scene size drive the
+        # mode parameters and the scene term, exactly as in the evaluator.
         w = plan.window_at(t)
+        rho = plan.rho_req_m if plan.mode is not Mode.STR else None
         if freeze_durations:
-            return duration_scene_s(plan.mode, 0.0, lib, r0_m=w.r0_m)
+            return duration_scene_s(
+                plan.mode, 0.0, lib, r0_m=w.r0_m,
+                rho_req_m=rho, l_az_m=plan.azimuth_size_m,
+            )
         return duration_scene_s(
             plan.mode,
             squint_at(t, w.t_ca_s, lib.geo, r0_m=w.r0_m),
             lib, r0_m=w.r0_m,
+            rho_req_m=rho, l_az_m=plan.azimuth_size_m,
         )
 
     # precompile with the SAME frozen-dwell wrapper (D11-8 scope)
@@ -251,8 +258,13 @@ def _precompile_frozen(manifest: dict, lib: ModeLibrary, pads: MarginPads):
     fields are read straight from the manifest.
     """
 
-    def duration(t, mode: Mode, _tca: float, r0=None):
-        return pad_window_tail_(duration_scene_s(mode, 0.0, lib, r0_m=r0), pads)
+    def duration(t, mode: Mode, _tca: float, r0=None, rho=None, laz=None):
+        return pad_window_tail_(
+            duration_scene_s(
+                mode, 0.0, lib, r0_m=r0, rho_req_m=rho, l_az_m=laz
+            ),
+            pads,
+        )
 
     plans = []
     for i, t in enumerate(manifest["tasks"]):
@@ -261,6 +273,17 @@ def _precompile_frozen(manifest: dict, lib: ModeLibrary, pads: MarginPads):
         # the production precompile, or its intervals describe a different
         # feasible set than the one it is compared against
         r0_t = float(t["r0_m"]) if t.get("r0_m") is not None else None
+        # ticket 49: the frozen arm carries the same task parameters and the
+        # same SPT start-domain clamp as production -- otherwise its feasible
+        # set describes a different mode.
+        rho_t = (
+            float(t["rho_req_m"]) if t.get("rho_req_m") is not None else None
+        )
+        az_t = (
+            float(t["azimuth_size_m"])
+            if t.get("azimuth_size_m") is not None else None
+        )
+        task_rho = rho_t if mode is not Mode.STR else None
         if "windows" in t:
             specs = [
                 (
@@ -277,16 +300,29 @@ def _precompile_frozen(manifest: dict, lib: ModeLibrary, pads: MarginPads):
         windows = []
         any_feasible = False
         for lo, hi, w_tca, w_r0 in specs:
-            try:
+            # ticket 49 (§8.17-11): the same SPT start-domain clamp as the
+            # production precompile (mode applicability is not an ablation
+            # arm -- the frozen arm holds the DWELL, not the domain).
+            domains = ((lo, hi),)
+            if mode is Mode.SPT and task_rho is not None:
+                from .windows import spt_task_start_domain
+
+                domains = spt_task_start_domain(
+                    ((lo, hi),), task_rho, w_tca, w_r0, lib
+                )
+            ivs: tuple = ()
+            for d_lo, d_hi in domains:
                 from .windows import feasible_subintervals
 
-                fw = feasible_subintervals(
-                    lambda tt, m=mode, _r0=w_r0: duration(tt, m, 0.0, _r0),
-                    lo, hi,
-                )
-                ivs = tuple(fw.intervals) if fw else ()
-            except ValueError:
-                ivs = ()
+                try:
+                    fw = feasible_subintervals(
+                        lambda tt, m=mode, _r0=w_r0, _rho=task_rho,
+                        _laz=az_t: duration(tt, m, 0.0, _r0, _rho, _laz),
+                        d_lo, d_hi,
+                    )
+                    ivs += tuple(fw.intervals) if fw else ()
+                except ValueError:
+                    continue
             # ticket 48: the SAME resolution hard constraint as the production
             # precompile -- otherwise the frozen arm describes a different
             # feasible set than the one it is compared against.

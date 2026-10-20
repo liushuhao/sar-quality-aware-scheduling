@@ -145,25 +145,40 @@ def test_clip_drops_subtolerance_slivers():
 # ── resolution_clip: the order-aware wrapper ─────────────────────────────
 
 def test_resolution_clip_finer_than_mode_is_empty(lib):
-    """rho_req finer than the mode's zero-squint resolution is unsatisfiable
-    at EVERY start -> empty set, not a crash and not a partial clip."""
+    """STR only: rho_req finer than ``D/2`` is unsatisfiable at EVERY start
+    -> empty set, not a crash and not a partial clip.
+
+    Ticket 49 (§8.17-12): SLS/SPT are no longer clipped at the library
+    caliber -- the task law delivers the order at every solve point, so a
+    requirement "finer than the library value" is serviceable and the layer
+    returns the feasible set unchanged.
+    """
     ivs = ((0.0, 100.0),)
-    for mode in Mode:
-        req = 0.5 * lib.rho_az(mode)
-        assert resolution_clip(ivs, mode, req, 50.0, None, lib) == ()
+    assert resolution_clip(
+        ivs, Mode.STR, 0.5 * lib.rho_az(Mode.STR), 50.0, None, lib
+    ) == ()
+    for mode in (Mode.SLS, Mode.SPT):
+        assert resolution_clip(
+            ivs, mode, 0.5 * lib.rho_az(mode), 50.0, None, lib
+        ) == ivs
 
 
 def test_resolution_clip_clamps_to_mode_envelope(lib):
-    """A very coarse order leaves psi_max = the mode's own envelope: the
-    clip then coincides with the plain envelope-span clip."""
+    """STR: a very coarse order leaves psi_max at the mode's own envelope, so
+    the clip coincides with the plain envelope-span clip.  SLS/SPT: the
+    B-full layer returns the input unchanged (§8.17-12).
+    """
     ivs = ((0.0, 500.0),)
-    for mode in Mode:
-        req = 100.0 * lib.rho_az(mode)
-        got = resolution_clip(ivs, mode, req, 250.0, 6e5, lib)
-        want = clip_to_squint_span(
-            ivs, 250.0, 6e5, lib.geo.vs_mps, mode_squint_envelope_rad(mode)
-        )
-        assert got == want
+    req = 100.0 * lib.rho_az(Mode.STR)
+    got = resolution_clip(ivs, Mode.STR, req, 250.0, 6e5, lib)
+    want = clip_to_squint_span(
+        ivs, 250.0, 6e5, lib.geo.vs_mps, mode_squint_envelope_rad(Mode.STR)
+    )
+    assert got == want
+    for mode in (Mode.SLS, Mode.SPT):
+        assert resolution_clip(
+            ivs, mode, 100.0 * lib.rho_az(mode), 250.0, 6e5, lib
+        ) == ivs
 
 
 def test_resolution_clip_none_r0_falls_back_to_library(lib):

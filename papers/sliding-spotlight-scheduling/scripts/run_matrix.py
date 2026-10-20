@@ -141,21 +141,27 @@ def ensure_manifests(
     dirs: "MatrixDirs | None" = None,
     generator=None,
     platform=None,
+    seed_indexes: list[int] | None = None,
 ) -> dict[str, Path]:
     """Generate missing manifests; byte-verify existing ones (determinism).
 
     ``generator`` defaults to the synthetic-box ``generate_scenario``; the
     real-window family injects ``generate_real_scenario`` instead, so the
     driver need not know which family it is driving.
+
+    ``seed_indexes`` (ticket 49 minimum-unit support) restricts the sweep to
+    the listed seed offsets within each variant; None = all ten.  The seed
+    rule itself (variant_index*100 + seed_index) is unchanged.
     """
     dirs = dirs or MatrixDirs()
     generate = generator or generate_scenario
+    indexes = list(range(SEEDS_PER_VARIANT)) if seed_indexes is None else list(seed_indexes)
     paths: dict[str, Path] = {}
     lib = None
     for vidx, spec in sorted(variants.items()):
         code, density = spec[0], spec[1]
         rest = tuple(spec[2:])
-        for si in range(SEEDS_PER_VARIANT):
+        for si in indexes:
             seed = vidx * 100 + si
             path = dirs.scenarios / f"{code}_seed{seed}.json"
             if lib is None:
@@ -215,7 +221,30 @@ def main(argv=None) -> int:
                          "in memory (population fixed).  Each s point MUST "
                          "get its own --matrix-dir: the progress ledger and "
                          "the pilot artifacts are per-s-world.")
+    ap.add_argument("--seeds", default=None,
+                    help="ticket 49 minimum unit: comma-separated seed "
+                         "INDEXES within each variant (0-9).  Default = all "
+                         "ten.  The seed rule (variant_index*100 + index) is "
+                         "unchanged, so '0,1,2' selects seeds 100/101/102 "
+                         "for variant 1.")
     args = ap.parse_args(argv)
+
+    if args.seeds is None:
+        seed_indexes = list(range(SEEDS_PER_VARIANT))
+    else:
+        try:
+            seed_indexes = [int(tok) for tok in args.seeds.split(",") if tok.strip()]
+        except ValueError:
+            raise SystemExit(
+                f"--seeds must be comma-separated integers: {args.seeds!r}"
+            ) from None
+        if not seed_indexes or len(set(seed_indexes)) != len(seed_indexes):
+            raise SystemExit(f"--seeds must be a non-empty unique list: {args.seeds!r}")
+        bad = [s for s in seed_indexes if not 0 <= s < SEEDS_PER_VARIANT]
+        if bad:
+            raise SystemExit(
+                f"--seeds indexes {bad} outside 0..{SEEDS_PER_VARIANT - 1}"
+            )
 
     dirs = MatrixDirs()
     if args.scenarios_dir:
@@ -297,7 +326,10 @@ def main(argv=None) -> int:
             f"Refused (each s point MUST live in its own --matrix-dir)."
         )
 
-    paths = ensure_manifests(vmap, dirs=dirs, generator=generator, platform=platform)
+    paths = ensure_manifests(
+        vmap, dirs=dirs, generator=generator, platform=platform,
+        seed_indexes=seed_indexes,
+    )
     dirs.matrix.mkdir(parents=True, exist_ok=True)
 
     counts: dict[int, int] = {}
@@ -408,7 +440,7 @@ def main(argv=None) -> int:
         )
         return EXIT_UNIT_SETUP_ERROR
     for code in empty_variants:
-        if by_variant.get(code, {}).get(11, 0) == SEEDS_PER_VARIANT:
+        if by_variant.get(code, {}).get(11, 0) == len(seed_indexes):
             print(f"ALARM: variant {code} empty front on all seeds", flush=True)
             return EXIT_VARIANT_EMPTY
     return EXIT_OK

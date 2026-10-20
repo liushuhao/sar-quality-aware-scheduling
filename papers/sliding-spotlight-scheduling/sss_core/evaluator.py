@@ -71,7 +71,11 @@ from .predicates import (
     schedule_conflict,
 )
 from .quality import f_q_aggregate, f_q_per_task
-from .windows import feasible_subintervals, resolution_clip
+from .windows import (
+    feasible_subintervals,
+    resolution_clip,
+    spt_task_start_domain,
+)
 
 EMPTY_SELECTION_FQ_PLACEHOLDER = 1.0  # worst normalized-quality stand-in
 
@@ -245,6 +249,18 @@ def precompile_tasks(
             float(t["vector_squint_min_t_s"])
             if t.get("vector_squint_min_t_s") is not None else None
         )
+        # ticket 49 (formula-spec §8.17): the task's own order and along-track
+        # size drive the mode parameters and the scene term.  STR has no
+        # task-level parameter, so it is never handed the order (duration
+        # raises on it -- the fail-loud proof that this is deliberate).
+        rho_t = (
+            float(t["rho_req_m"]) if t.get("rho_req_m") is not None else None
+        )
+        az_t = (
+            float(t["azimuth_size_m"])
+            if t.get("azimuth_size_m") is not None else None
+        )
+        task_rho = rho_t if mode is not Mode.STR else None
 
         if "windows" in t:
             specs = [
@@ -272,21 +288,37 @@ def precompile_tasks(
         any_feasible = False
         for lo, hi, t_ca, w_r0, w_inc in specs:
 
-            def duration(t, _mode=mode, _tca=t_ca, _r0=w_r0):
+            def duration(t, _mode=mode, _tca=t_ca, _r0=w_r0, _rho=task_rho,
+                         _laz=az_t):
                 _squint = (
                     0.0 if freeze_durations
                     else squint_at(t, _tca, lib.geo, r0_m=_r0)
                 )
                 return pad_window_tail(
-                    duration_scene_s(_mode, _squint, lib, r0_m=_r0),
+                    duration_scene_s(
+                        _mode, _squint, lib, r0_m=_r0,
+                        rho_req_m=_rho, l_az_m=_laz,
+                    ),
                     pads,
                 )
 
-            try:
-                fw = feasible_subintervals(duration, lo, hi)
-                ivs = tuple(fw.intervals) if fw else ()
-            except ValueError:
-                ivs = ()
+            # SPT task law: the §8.17-11 envelope is a property of the task
+            # span, so the admissible START DOMAIN is clamped BEFORE the
+            # end-check (see windows.spt_task_start_domain).  Without this,
+            # one out-of-envelope grid sample raises inside the duration
+            # closure and the whole transit window is discarded.
+            domains = ((lo, hi),)
+            if mode is Mode.SPT and task_rho is not None:
+                domains = spt_task_start_domain(
+                    ((lo, hi),), task_rho, t_ca, w_r0, lib
+                )
+            ivs: tuple[tuple[float, float], ...] = ()
+            for d_lo, d_hi in domains:
+                try:
+                    fw = feasible_subintervals(duration, d_lo, d_hi)
+                    ivs += tuple(fw.intervals) if fw else ()
+                except ValueError:
+                    continue
             # ticket 48: the ordered resolution must hold where the task is
             # actually shot, not only at zero squint.  Manifests without
             # rho_req_m (pre-ticket families) skip the clip bit-for-bit.
@@ -385,11 +417,16 @@ class SchedulingProblem:
             0.0 if self.freeze_durations
             else squint_at(start, w.t_ca_s, self.lib.geo, r0_m=w.r0_m)
         )
+        # ticket 49 (§8.17-4/12): the dwell consumes the task's own order and
+        # scene size; duration_scene_s re-derives the consumed parameter and
+        # raises on any delivery-identity break.  STR never receives the order.
         return duration_scene_s(
             plan.mode,
             squint,
             self.lib,
             r0_m=w.r0_m,
+            rho_req_m=(plan.rho_req_m if plan.mode is not Mode.STR else None),
+            l_az_m=plan.azimuth_size_m,
         )
 
     # ── evaluate ─────────────────────────────────────────────────────
@@ -439,14 +476,21 @@ class SchedulingProblem:
             # schema-2.1 real-window family the task-level block is absent, so
             # quoting ``plan.r0_m`` silently fell back to the library constant.
             w = plan.window_at(starts[i])
+            # ticket 49 (§8.17-13): the reference moves to the task-law
+            # envelope under this task's ORDER -- the library-mode reference
+            # is no longer an upper bound once a fine order lengthens the
+            # dwell (measured false violation: SPT task-law / library-ref
+            # 1.274x).  Still a platform-level bound (envelope geometry, not
+            # the solve point); None keeps the frozen families bit-identical.
             if not c3_ok(
                 plan.mode, self._dwell(i, starts[i]), self.lib,
-                r0_m=w.r0_m,
+                r0_m=w.r0_m, rho_req_m=plan.rho_req_m,
             ):
                 violations += 1.0
             if not c4_ok(
                 plan.mode, self._dwell(i, starts[i]), plan.rho_req_m,
                 plan.prf_hz, self.lib, r0_m=w.r0_m,
+                rho_req_ref_m=plan.rho_req_m,
             ):
                 violations += 1.0
 
