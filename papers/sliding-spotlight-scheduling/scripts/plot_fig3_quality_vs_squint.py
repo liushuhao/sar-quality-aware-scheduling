@@ -1,16 +1,18 @@
 #!/usr/bin/env python3
-"""fig-3 per-mode f_Q versus squint (W3, outline section 6.4 / obligation A5).
+"""Platform-model figure: per-mode f_q versus squint (ticket 50 phase 2).
+
+Role after the single-axis repositioning: this is a PLATFORM MODEL figure, not
+a result axis. It shows that the per-task quality model exists, that its
+per-mode levels are library-caliber constants, and that it is squint-invariant
+by design (D05-4: the sec^2 squint factor cancels inside g_T exactly for
+SLS/STR and to better than 0.1% for SPT; rho_rg and R are layer constants).
+Nothing is optimised against it and no trade-off is read off it -- the level
+differences are what the reported readings are measured against.
 
 Data-source whitelist note: computes from the FROZEN platform fixture via
 ``sss_core`` only (ModeLibrary.from_fixture + quality.f_q_per_task) -- the same
-frozen constants the formulation chapter states.  No v2 sources are read
-(v2_results is never referenced).
-
-What the figure shows: the per-mode f_q levels (zero-squint library caliber)
-and their squint-invariance (D05-4: the sec^2 squint factor cancels inside g_T
-exactly for SLS/STR and to 0.02% for SPT, rho_rg and R are layer constants).
-The three levels ARE the second objective's whole explainability carrier
-(a6_adjudication_20260929 adjudication 2).
+frozen constants the formulation chapter states. No result directory (v2/v3/
+v4/v5) is read, so this figure cannot go stale with a re-run.
 
 Usage (repo root):
     PYTHONHASHSEED=0 PYTHONPATH=src:papers/sliding-spotlight-scheduling \
@@ -82,7 +84,8 @@ def main() -> int:
     ax.set_ylim(0, 60)
     ax.set_xticks([0, 15, 30, 45])
     ax.legend(frameon=False, loc="center right")
-    ax.annotate("squint-invariant by design (D05-4):\nthe levels, not slopes,\ncarry the objective",
+    ax.annotate("squint-invariant by design (D05-4):\nthe levels, not the slopes,\n"
+                "are platform constants",
                 xy=(1.5, 34), fontsize=8, color="0.35", va="top")
     OUT.parent.mkdir(parents=True, exist_ok=True)
     fig.savefig(OUT, bbox_inches="tight")
