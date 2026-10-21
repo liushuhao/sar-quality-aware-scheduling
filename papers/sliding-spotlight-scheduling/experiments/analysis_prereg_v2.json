@@ -469,5 +469,12 @@
     ],
     "frozen_artifacts": "No v1/v2/v3/v4 artifact, threshold or verdict moves. The frozen prefix above keeps its bytes; this block is the operative reading of the paper's result for the L8 world.",
     "registration": "formulas/formula-spec.md v1.9 section 8.17 (unchanged); experiments/caliber_registry.json calibers.v5; experiments/RUN_LINEAGE.md section 6."
+  },
+  "amendment_20261021_ticket50_fulfillment_denominator_clarification": {
+    "_doc": "2026-10-21 clarification appended after the ticket-50 phase-5 final review: the parent key's fulfillment_ratio.aggregation says 'the task's best reachable window'. The implementation (scripts/build_sweep_results.py:83) computes cap = max(f_q(mode, 0.0, w) for w in plan.windows) -- the best over ALL of the task's windows, each window at its zero-squint best, with NO reachability filter. The parent key's bytes stay as the original record; the operative wording is below.",
+    "clarifies": "amendment_20261021_ticket50_single_axis.registers.fulfillment_ratio.aggregation",
+    "operative_denominator": "per served task: the achieved-window f_q divided by the best f_q over ALL of the task's windows (each window at its zero-squint best), no reachability filter; ratio <= 1; mean over the served tasks of a tie-set member and then over ALL tie-set members; scripts/build_sweep_results.py:75-88.",
+    "paper_wording": "The manuscript states 'divided by the best f_q the task could reach over all of its windows at zero squint' (sections 3.3 and 6.6) -- that wording matches the implementation and is the operative one.",
+    "registration": "caliber_registry.json calibers.v5.f_q_unit_note reworded to match (2026-10-21)."
   }
 }

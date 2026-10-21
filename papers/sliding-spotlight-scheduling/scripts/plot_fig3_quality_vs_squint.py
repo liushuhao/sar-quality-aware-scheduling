@@ -84,7 +84,7 @@ def main() -> int:
     ax.set_ylim(0, 60)
     ax.set_xticks([0, 15, 30, 45])
     ax.legend(frameon=False, loc="center right")
-    ax.annotate("squint-invariant by design (D05-4):\nthe levels, not the slopes,\n"
+    ax.annotate("squint-invariant by design:\nthe levels, not the slopes,\n"
                 "are platform constants",
                 xy=(1.5, 34), fontsize=8, color="0.35", va="top")
     OUT.parent.mkdir(parents=True, exist_ok=True)

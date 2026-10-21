@@ -27,10 +27,11 @@ Three features distinguish the submission:
    recomputed in the present scenario world; image quality is a platform
    capability and a reported reading, not an optimization target; and the
    conclusions are scoped to order sensitivity under a fixed mode assignment.
-3. Auditable results: every manuscript number is recomputed from the promoted
-   artifacts by a verification script, and the coverage–demand curve, its
-   order-point costs, the demand-satisfaction count and the retention readings
-   each carry their caliber where it is stated.
+3. Auditable results: every headline reading is recomputed from the promoted
+   artifacts by a verification script --- all nine curve points per family,
+   the order-point costs, the demand-satisfaction count, the retention, dip
+   and per-seed displacement readings --- and each reading carries its
+   caliber where it is stated.
 
 The manuscript has not been published previously and is not under
 consideration elsewhere. All authors approve the submission and declare no

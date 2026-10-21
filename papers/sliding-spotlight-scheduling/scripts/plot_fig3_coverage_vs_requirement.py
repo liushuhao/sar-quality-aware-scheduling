@@ -109,7 +109,7 @@ def main() -> int:
             ax.annotate("no feasible individual\n(10/10 seeds, not a\n"
                         "zero-coverage reading)",
                         xy=(x, 0.0), xytext=(x + 0.10, 0.13),
-                        fontsize=6.6, color=COLORS[fam],
+                        fontsize=7.6, color=COLORS[fam],
                         arrowprops=dict(arrowstyle="-", lw=0.6,
                                         color=COLORS[fam]))
             print(f"# {fam}: s={x} has NO feasible individual "
@@ -118,7 +118,7 @@ def main() -> int:
             if m is None:
                 print(f"# {fam} s={x}: infeasible")
 
-    ax.set_ylabel("median served fraction")
+    ax.set_ylabel("median served fraction $\eta$")
     ax.set_ylim(0.0, 1.03)
     ax.set_yticks([0.0, 0.25, 0.5, 0.75, 1.0])
     ax.legend(frameon=False, loc="lower right", ncol=1,

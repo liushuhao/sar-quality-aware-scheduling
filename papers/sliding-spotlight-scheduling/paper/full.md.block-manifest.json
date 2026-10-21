@@ -1,4 +1,5 @@
 {
+  "_historical_snapshot_note": "Historical build snapshot (annotated 2026-10-21, ticket-50 phase 5): this manifest predates the ticket-50 positioning rewrite and its block excerpts (including the bi-objective wording in blocks such as B0053 and B0056) no longer describe paper/full.md. full.md is the live manuscript; do not rebuild full.md from this manifest.",
   "manifest_format_version": "1.0",
   "base_draft_hash": "b716a1f0eadc",
   "blocks": [

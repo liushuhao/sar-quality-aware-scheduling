@@ -1,15 +1,15 @@
 # paper2 投稿操作清单 — Acta Astronautica
 
-**状态**：票 50 全链完成（阶段三·A/B 改写 + 阶段四终检），2026-10-21 全量门禁绿（红闸 0/1076、L8 数字闸 36 项 0 mismatch、预注册闸 28 项 0 失败、版式闸 0 FAIL、编译两遍 45 页 0 error 0 未定义引用、域套件 papers 664p/1s + src 154p rc=0）；本文件随稿同步（旧定位条目已清）。
+**状态**：票 50 全链完成（阶段三·A/B 改写 + 阶段四终检 + 阶段五终审处置），2026-10-21 全量门禁绿（红闸 0/1076、L8 数字闸 136 项 0 mismatch【两稿面各 68，阶段五扩至逐句全数】、预注册闸 28 项 0 失败、版式闸 0 FAIL、编译两遍 46 页 0 error 0 未定义引用、域套件 papers + src rc=0）；本文件随稿同步（旧定位条目已清）。
 **投稿动作由你本人在 Editorial Manager 完成。**
 
 ## 一、投稿文件（全部在 `papers/sliding-spotlight-scheduling/paper/`）
 
 | EM 表单要求的件 | 本仓文件 | 备注 |
 |---|---|---|
-| Manuscript（主稿） | `main.pdf`（45 页）或 `main.tex` + `refs.bib` + `figures/` | AST 通常要 pdf 供审、源文件录用后收。建议两者都备 |
+| Manuscript（主稿） | `main.pdf`（46 页）或 `main.tex` + `refs.bib` + `figures/` | AST 通常要 pdf 供审、源文件录用后收。建议两者都备 |
 | Cover Letter | `cover_letter.md` | 已含定稿标题；需转 pdf 或纯文本粘贴 |
-| Highlights | `highlights.md`（5 条，最长 79 字符） | EM 表单逐条填入 |
+| Highlights | `highlights.md`（5 条，最长 82 字符） | EM 表单逐条填入 |
 | Declaration of Competing Interest | `declaration.md` | 已含 "no specific grant" Funding 段 |
 | CRediT authorship | `credit.md` | 单作者全角色 |
 | Suggested reviewers | **需你填** | 见下方第三节 |
@@ -34,9 +34,9 @@
 
 ## 四、投稿前最后三项自检（你点上传前做）
 
-1. **pdf 页数与图表**：45 页、4 图全部在位；编译零 error、零未定义引用（本次重编译实测）。
+1. **pdf 页数与图表**：46 页、4 图全部在位；编译零 error、零未定义引用（本次重编译实测）。
 2. **标题五处一致**：`main.tex` / `highlights.md` / `cover_letter.md` / `credit.md` / `declaration.md`。
-3. **refs.bib 三条缺页码**：`mittermayer2003sliding`、`caleiras2026a`、`wang2024research` 无 page 字段，bibtex 报 3 个 `empty pages` warning。不影响审稿，但编辑部排版时会来找你补。建议投稿前顺手补上。
+3. **refs.bib 一条缺页码**：`caleiras2026a` 无 page 字段，bibtex 报 1 个 `empty pages` warning（阶段五实测：`mittermayer2003sliding` 有 `pages = {1462-1464}`、`wang2024research` 有 `pages = {328--332}`）。不影响审稿，但编辑部排版时会来找你补。建议投稿前顺手补上。
 
 ## 五、本版已裁决、勿在投稿前临时改
 

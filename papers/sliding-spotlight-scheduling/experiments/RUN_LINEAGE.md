@@ -92,6 +92,8 @@
 > （`main.tex:235` fig7、`:262` fig5、`:277` fig4、`:297` fig6；`paper/full.md` 对应位置同），
 > 故此区间内 `pdflatex` 会 fatal。这是"图件真退役"与"本阶段禁改正文"两条约束的直接后果，不是遗漏：
 > 阶段三改写这些图槽时一并移除引用。恢复单件用 `git checkout -- <path>`（四件均为 git 跟踪文件）。
+>
+> **状态取代说明（阶段五追加，2026-10-21）**：上方三行（rc=2 与构建中断）是**阶段二当刻**的记录。阶段三改写后正文已含 L8 数字，`verify_paper_numbers_l8.py --paper main.tex --paper full.md` 转绿；阶段五（票 50 终审处置）把该闸覆盖面从每稿面 18 项扩到 **68 项**（逐句全数断言 + 新增 dip/逐种子位移/交付口径/模式地板/普查计数类）。旧行号（`main.tex:235/:262/:277/:297`）为阶段二行号。详见 `.scratch/sliding-spotlight-scheduling/t50/phase5-receipt.md`。
 
 ## 七、票 50 阶段二：数据面与图面（2026-10-21）
 

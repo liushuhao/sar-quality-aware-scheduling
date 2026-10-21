@@ -198,6 +198,40 @@ def recompute(need_deliv: bool = False) -> dict:
                      f"at s={sat_s}")
     exp["coverage_cost_pp"] = cost
 
+    # ---- the two local declines and their per-seed movers ------------------
+    # A "dip" is the median difference between two adjacent grid points, in
+    # percentage points; the "movers" are the per-seed differences behind it
+    # (only nonzero movers are registered -- the paper accounts exactly those).
+    dips: dict = {}
+    moves: dict = {}
+    for fam in FAMILIES:
+        for a, b in ((0.8, 0.9), (1.3, 1.4)):
+            ma, mb = coverage[(fam, a)][0], coverage[(fam, b)][0]
+            if ma is not None and mb is not None:
+                dips[(fam, a, b)] = (
+                    (ma - mb) * 100.0,
+                    f"median s={a} minus median s={b}, pp")
+            pa = {p.name.rsplit("seed", 1)[1][:-5]:
+                  _load(p)["max_f1_star_on_front"] for p in _units(fam, a)}
+            pb = {p.name.rsplit("seed", 1)[1][:-5]:
+                  _load(p)["max_f1_star_on_front"] for p in _units(fam, b)}
+            mv = sorted((pa[seed] - pb[seed]) * 100.0
+                        for seed in sorted(set(pa) & set(pb))
+                        if abs(pa[seed] - pb[seed]) > 1e-12)
+            if mv:
+                moves[(fam, a, b)] = (mv,
+                                      f"per-seed s={a} minus s={b}, pp, "
+                                      "nonzero movers only")
+    exp["dip_pp"] = dips
+    exp["per_seed_moves"] = moves
+
+    # ---- census numbers the results section states -------------------------
+    exp["launched_units"] = (N_SEEDS * len(FAMILIES) * len(S_GRID),
+                             "nine grid points x three families x ten seeds")
+    exp["treatment_units"] = (sum(len(_units(f, s)) for f in ("R2F", "R3H")
+                                  for s in S_GRID),
+                              "sweep artifacts of the two treatment families")
+
     # ---- demand satisfaction -------------------------------------------------
     served = records = 0
     cv_max = 0.0
@@ -250,6 +284,10 @@ def recompute(need_deliv: bool = False) -> dict:
         lib = ModeLibrary.from_fixture()
         exp["str_floor_m"] = (float(lib.rho_az(Mode.STR)),
                               "ModeLibrary.from_fixture().rho_az(Mode.STR)")
+        exp["mode_floor_m"] = (
+            {m.name: float(lib.rho_az(m)) for m in (Mode.STR, Mode.SLS,
+                                                    Mode.SPT)},
+            "ModeLibrary.from_fixture().rho_az(mode), zero-squint")
     except Exception as exc:                      # pragma: no cover
         exp["str_floor_m_abort"] = (str(exc), "sss_core import failed")
 
@@ -330,12 +368,57 @@ _SENT_SPLIT = re.compile(r"(?<=[.;。；])\s+")
 _S_TAG = re.compile(r"\bs\s*=\s*(\d(?:\.\d)?)\b|订单原要求|order\s+point",
                     re.IGNORECASE)
 _S_TAG_ANY = re.compile(r"\bs\s*=\s*\d(?:\.\d)?", re.IGNORECASE)
+# Family codes R1C/R2F/R3H and world tags L7/L8/v5 contain digits; a bare
+# \d+ would read those as candidate readings and truncate a trailing
+# "for R3H" context before the pairing phrase completes (measured: the "3"
+# of R3H was scored, and the "8" of L8 failed a synthetic draft).  Digits
+# directly preceded by a letter are therefore not candidate numbers, and
+# the same truncation happens at the "50" of "50-task family", so any number
+# whose tail is digit/dash + "task" is excluded too (the lookahead must span
+# digits, or the engine backtracks to "5" and slips past it).
+_NUM = re.compile(r"(?<![A-Za-z])\d+(?:\.\d+)?(?![\d-]*task\b)")
+_COST_RE = re.compile(r"\bcost\b[^;]{0,40}?(\d+(?:\.\d+)?)\s*"
+                      r"(?:pp|percentage\s+points)", re.IGNORECASE)
+_DELIV_TOKEN = re.compile(r"f[_ ]?\{?\\?Q[_, ]?\\?(?:mathrm|text)?\{?deliv"
+                          r"\}?\}?", re.IGNORECASE)
+_DELIV_NUM = re.compile(r"(\d+(?:\.\d+)?)\s*m\s*\$\^\{?-2\}?\$")
+_FUL_FAM = re.compile(r"for\s+(R1C|R2F|R3H)", re.IGNORECASE)
+_RET_FAM = re.compile(r"for\s+the\s+(control|50-task|100-task)\s+family",
+                      re.IGNORECASE)
+_RET_FAM_MAP = {"control": "R1C", "50-task": "R2F", "100-task": "R3H"}
+_FAM_DESC = (("R1C", r"control\s+family|single[-\s]orbit"),
+             ("R2F", r"50[-\s]task"),
+             ("R3H", r"100[-\s]task"))
+_RANGE_CTX = re.compile(r"from\s+\$?s\s*=\s*(\d(?:\.\d)?)[^;]*?"
+                        r"to\s+\$?s\s*=\s*(\d(?:\.\d)?)", re.IGNORECASE)
+# The closing math "$" sits between a grid value and the following "and" in
+# the LaTeX faces ("$s=0.8$ and $s=0.9$"), so the between/range patterns eat
+# an optional "$" after each number.
+_BETWEEN = re.compile(r"between\s+\$?s\s*=\s*(\d(?:\.\d)?)\$?\s+and\s+"
+                      r"\$?s\s*=\s*(\d(?:\.\d)?)\$?", re.IGNORECASE)
+_MOVE = re.compile(r"\b(?:loses?|gains?)\s+(\d+(?:\.\d+)?)", re.IGNORECASE)
+_DIP = re.compile(r"(\d+(?:\.\d+)?)\s+(?:pp|percentage\s+points)\s+between\s+"
+                  r"\$?s\s*=\s*(\d(?:\.\d)?)\$?\s+and\s+\$?s\s*=\s*"
+                  r"(\d(?:\.\d)?)\$?", re.IGNORECASE)
+_MODE_FLOOR = re.compile(r"rho_\{a,\\mathrm\{(STR|SLS|SPT)\}\}[^;]{0,60}?"
+                         r"(\d+(?:\.\d+)?)\s*\$?\s*~?m", re.IGNORECASE)
 
 
 def _family_in(sent: str):
     for fam in FAMILIES:
         if fam in sent:
             return fam
+    return None
+
+
+def _fam_in_text(sent: str):
+    """Family code, or the family a descriptive phrase names."""
+    fam = _family_in(sent)
+    if fam:
+        return fam
+    for code, rx in _FAM_DESC:
+        if re.search(rx, sent, re.I):
+            return code
     return None
 
 
@@ -351,12 +434,53 @@ def _s_in(sent: str):
     return 1.0                      # "订单原要求" / "order point" == s=1.0
 
 
+def _s_in_ctx(ctx: str):
+    """s value from a context string (the first tag it contains)."""
+    m = _S_TAG.search(ctx)
+    if not m:
+        return None
+    if m.group(1):
+        try:
+            return float(m.group(1))
+        except ValueError:
+            return None
+    return 1.0
+
+
+def _s_tags(sent: str) -> "list[tuple[int, float]]":
+    """(position, s value) for every s-tag in the sentence, in order."""
+    out = []
+    for m in _S_TAG.finditer(sent):
+        if m.group(1):
+            try:
+                out.append((m.start(), float(m.group(1))))
+            except ValueError:
+                continue
+        else:
+            out.append((m.start(), 1.0))
+    return out
+
+
 def _blank_s_tag(sent: str) -> str:
-    """Drop the s-tag number so it cannot be scored as the reading itself."""
-    return _S_TAG_ANY.sub(" ", sent)
+    """Drop the s-tag number so it cannot be scored as the reading itself.
+
+    Length-preserving: every tag match becomes same-length spaces, so number
+    positions in the blanked text equal the original positions and the
+    cost-match exclusion can use spans from either view.
+    """
+    return _S_TAG_ANY.sub(lambda m: " " * len(m.group(0)), sent)
 
 
 def check_paper(text: str, label: str, exp: dict) -> "tuple[list, list, list, int]":
+    """Score EVERY reading in each sentence, not just the first.
+
+    Ticket-50 phase-5 correction: the results section packs several readings
+    into one sentence (one sentence carries all nine curve medians), and the
+    earlier ``re.search`` asserted only the first number per sentence -- a
+    mutation test showed 8 of 14 probed manuscript numbers could be changed
+    with the gate still green.  Each class below now walks all candidate
+    numbers and pairs each one with its own (family, s) context.
+    """
     fails: list = []
     passes: list = []
     seen = 0
@@ -367,38 +491,89 @@ def check_paper(text: str, label: str, exp: dict) -> "tuple[list, list, list, in
         line = re.sub(r"[ \t]+", " ", line)
         if not line.strip():
             continue
+
+        # ---- delivered caliber (descriptive variant): line-level -----------
+        # The token and the number can sit in different sentences of the same
+        # line (the label sentence and the reading sentence), so this class
+        # runs on the line rather than the sentence.
+        if "deliv" in exp and _DELIV_TOKEN.search(line):
+            fam_l, s_l = _family_in(line), _s_in(line)
+            if fam_l and s_l is not None:
+                for m in _DELIV_NUM.finditer(line):
+                    want = exp["deliv"][(fam_l, s_l)]["median"]
+                    seen += 1
+                    if want is None:
+                        fails.append(f"{label}: {fam_l} f_Q_deliv @ s={s_l} "
+                                     "has no defined domain")
+                    else:
+                        _score(label, fails, passes, float(m.group(1)), want,
+                               _printed_tol(m.group(1)),
+                               f"{fam_l} f_Q_deliv @ s={s_l}",
+                               "recomputed from the stored starts", m.group(0))
+
         for sent in _SENT_SPLIT.split(line):
             fam, s = _family_in(sent), _s_in(sent)
             blank = _blank_s_tag(sent)
 
             # ---- coverage reading ------------------------------------------
             # A coverage-COST sentence also contains the word "coverage" and a
-            # number, so it must not be scored against the curve: the number it
-            # carries is a difference in percentage points, not a level.
+            # number, so the number the cost states must not be scored against
+            # the curve: it is a difference in percentage points, not a level.
             is_cost = bool(
-                re.search(r"\bcost\b[^;]{0,40}?\d+(?:\.\d+)?\s*"
-                          r"(?:pp|percentage\s+points)", blank, re.I)
+                _COST_RE.search(blank)
                 and re.search(r"saturat|饱和", sent, re.I))
-            if (fam and s is not None and not is_cost
-                    and re.search(r"coverage|覆盖", sent, re.I)):
+            if fam and re.search(r"coverage|覆盖", sent, re.I):
                 idx = sent.lower().find("coverage")
                 if idx == -1:
                     idx = sent.find("覆盖")
-                tail = _blank_s_tag(sent[idx:])
-                m = re.search(r"(\d+(?:\.\d+)?)\s*(%?)", tail)
-                if m:
-                    printed = float(m.group(1))
-                    if m.group(2):
+                cost_span = None
+                if is_cost:
+                    cm = _COST_RE.search(blank)
+                    if cm:
+                        cost_span = (cm.start(1), cm.end(1))
+                tail = blank[idx:]
+                tags = _s_tags(sent)
+                for m in _NUM.finditer(tail):
+                    a, b = idx + m.start(), idx + m.end()
+                    if cost_span and a >= cost_span[0] and b <= cost_span[1]:
+                        continue
+                    nxt = _NUM.search(tail, m.end())
+                    end_ctx = idx + nxt.start() if nxt else len(sent)
+                    ctx = sent[b:end_ctx]
+                    pct = re.match(r"\s*\\?%", ctx)
+                    printed = float(m.group(0))
+                    if pct:
                         printed /= 100.0
-                    want, prov = exp["coverage_median"][(fam, s)]
+                    tok_tol = m.group(0) + ("%" if pct else "")
+                    # a "from s=A ... to s=B" span: every grid point in the
+                    # range must equal the printed value
+                    rg = _RANGE_CTX.search(ctx)
+                    if rg:
+                        lo, hi = float(rg.group(1)), float(rg.group(2))
+                        for g in S_GRID:
+                            if lo - 1e-9 <= g <= hi + 1e-9:
+                                want, prov = exp["coverage_median"][(fam, g)]
+                                seen += 1
+                                _score(label, fails, passes, printed, want,
+                                       _printed_tol(tok_tol),
+                                       f"{fam} coverage @ s={g} (range)",
+                                       prov, m.group(0))
+                        continue
+                    sval = _s_in_ctx(ctx)
+                    if sval is None:
+                        prev = [t for t in tags if t[0] < a]
+                        if prev:
+                            sval = prev[-1][1]
+                    if sval is None:
+                        continue
+                    want, prov = exp["coverage_median"][(fam, sval)]
                     seen += 1
                     _score(label, fails, passes, printed, want,
-                           _printed_tol(m.group(0)), f"{fam} coverage @ s={s}",
+                           _printed_tol(tok_tol), f"{fam} coverage @ s={sval}",
                            prov, m.group(0))
 
             # ---- coverage cost against the family's own saturation ---------
-            cm = re.search(r"\bcost\b[^;]{0,40}?(\d+(?:\.\d+)?)\s*"
-                           r"(?:pp|percentage\s+points)", blank, re.I)
+            cm = _COST_RE.search(blank)
             if cm and fam and re.search(r"saturat|饱和", sent, re.I) and (
                     s == 1.0 or re.search(r"order\s+point|订单", sent, re.I)):
                 printed = abs(float(cm.group(1)))
@@ -428,32 +603,26 @@ def check_paper(text: str, label: str, exp: dict) -> "tuple[list, list, list, in
                        _printed_tol(dm.group(1)), "served task instances",
                        prov, dm.group(0))
 
-            # ---- retention --------------------------------------------------
-            rm = re.search(r"retention[^;]{0,40}?(\d+(?:\.\d+)?)\s*%", blank,
-                           re.I)
-            if rm and fam:
+            # ---- retention (per-number family pairing, LaTeX \%) -----------
+            rm_tok = re.search(r"retention", sent, re.I)
+            if rm_tok:
                 retain = exp["retention_pct"][0]
-                if fam in retain:
-                    want, prov = retain[fam]
+                for m in _NUM.finditer(blank, rm_tok.end()):
+                    nxt = _NUM.search(blank, m.end())
+                    ctx = sent[m.end():nxt.start() if nxt else len(sent)]
+                    if not re.match(r"\s*\\?%", ctx):
+                        continue
+                    fam_r = _RET_FAM.search(ctx)
+                    fam_i = (_RET_FAM_MAP[fam_r.group(1)] if fam_r else fam)
+                    if fam_i is None or fam_i not in retain:
+                        continue
+                    want, prov = retain[fam_i]
                     seen += 1
-                    _score(label, fails, passes, float(rm.group(1)), want,
-                           _printed_tol(rm.group(1)), f"{fam} retention (%)",
-                           prov, rm.group(0))
+                    _score(label, fails, passes, float(m.group(0)), want,
+                           _printed_tol(m.group(0)), f"{fam_i} retention (%)",
+                           prov, m.group(0))
 
-            # ---- delivered caliber (descriptive variant) --------------------
-            dq = re.search(r"f[_ ]?q[_ ]?deliv[^;]{0,50}?(\d+(?:\.\d+)?)",
-                           blank, re.I)
-            if dq and fam and s is not None and "deliv" in exp:
-                want = exp["deliv"][(fam, s)]["median"]
-                seen += 1
-                if want is None:
-                    fails.append(f"{label}: {fam} f_Q_deliv @ s={s} has no "
-                                 "defined domain")
-                else:
-                    _score(label, fails, passes, float(dq.group(1)), want,
-                           _printed_tol(dq.group(1)),
-                           f"{fam} f_Q_deliv @ s={s}",
-                           "recomputed from the stored starts", dq.group(0))
+            # ---- squint-loss factor (delivered caliber) --------------------
             sl = re.search(r"squint[-\s]?loss[^;]{0,50}?(\d+(?:\.\d+)?)", blank,
                            re.I)
             if sl and fam and s is not None and "deliv" in exp:
@@ -468,28 +637,140 @@ def check_paper(text: str, label: str, exp: dict) -> "tuple[list, list, list, in
                            f"{fam} squint-loss factor @ s={s}",
                            "median of 1/cos^2(psi_sel)", sl.group(0))
 
-            # ---- fulfillment reading (three-part tag obligatory) ------------
-            fm = re.search(r"(?:fulfillment[-\s]?ratio|兑现率)[^;]{0,40}?"
-                           r"(\d+(?:\.\d+)?)", blank, re.I)
-            if fm and fam and s is not None:
-                printed = float(fm.group(1))
-                want, prov = exp["fulfillment_median"][(fam, s)]
+            # ---- fulfillment reading (three-part tag obligatory) -----------
+            ful = re.search(r"fulfillment[-\s]?ratio|兑现率", sent, re.I)
+            if ful and fam and s is not None:
+                scored_any = False
+                for m in _NUM.finditer(blank, ful.end()):
+                    nxt = _NUM.search(blank, m.end())
+                    ctx = sent[m.end():nxt.start() if nxt else len(sent)]
+                    fm2 = _FUL_FAM.search(ctx)
+                    fam_i = fm2.group(1).upper() if fm2 else fam
+                    want, prov = exp["fulfillment_median"][(fam_i, s)]
+                    seen += 1
+                    if want is not None:
+                        scored_any = True
+                        _score(label, fails, passes, float(m.group(0)), want,
+                               _printed_tol(m.group(0)),
+                               f"{fam_i} fulfillment ratio @ s={s}",
+                               prov, m.group(0))
+                if scored_any:
+                    missing = [n for n, rx in (
+                        ("library caliber", r"library[-\s]?caliber|库口径"),
+                        ("tie-set mean", r"tie[-\s]?set|全体成员"),
+                        ("reading, not a target",
+                         r"not\s+an?\s+(?:optimization|optimisation)\s+target|"
+                         r"报告读数|非优化目标|不进目标"),
+                    ) if not re.search(rx, line, re.I)]
+                    if missing:
+                        fails.append(f"{label}: fulfillment-ratio reading lacks "
+                                     f"caliber element(s) {missing}  "
+                                     f"[{line[:90]!r}]")
+
+            # ---- tie-set records -------------------------------------------
+            tm = re.search(r"(\d[\d,]*)\s+tie[-\s]?set\s+records", sent, re.I)
+            if tm:
+                printed = float(tm.group(1).replace(",", ""))
+                want, prov = exp["tie_set_records"]
                 seen += 1
-                if want is not None:
-                    _score(label, fails, passes, printed, want,
-                           _printed_tol(fm.group(1)),
-                           f"{fam} fulfillment ratio @ s={s}", prov, fm.group(0))
-            if fm:
-                missing = [n for n, rx in (
-                    ("library caliber", r"library[-\s]?caliber|库口径"),
-                    ("tie-set mean", r"tie[-\s]?set|全体成员"),
-                    ("reading, not a target",
-                     r"not\s+an?\s+(?:optimization|optimisation)\s+target|"
-                     r"报告读数|非优化目标|不进目标"),
-                ) if not re.search(rx, line, re.I)]
-                if missing:
-                    fails.append(f"{label}: fulfillment-ratio reading lacks "
-                                 f"caliber element(s) {missing}  [{line[:90]!r}]")
+                _score(label, fails, passes, printed, float(want),
+                       _printed_tol(tm.group(1)), "tie-set records", prov,
+                       tm.group(0))
+
+            # ---- anchor-optimal units (X of [the] Y [sweep] units) ---------
+            am = re.search(r"(\d+)\s+of\s+(?:the\s+)?(\d+)\s+(?:sweep\s+)?units",
+                           sent, re.I)
+            if am:
+                want_a, prov_a = exp["anchor_optimal_units"]
+                want_s, prov_s = exp["sweep_units"]
+                seen += 1
+                _score(label, fails, passes, float(am.group(1)), float(want_a),
+                       _printed_tol(am.group(1)), "anchor-optimal units",
+                       prov_a, am.group(0))
+                seen += 1
+                _score(label, fails, passes, float(am.group(2)), float(want_s),
+                       _printed_tol(am.group(2)),
+                       "sweep units (artifact census)", prov_s, am.group(0))
+            for m in re.finditer(r"(\d+)\s+sweep\s+units", sent, re.I):
+                if am and am.start() <= m.start() < am.end():
+                    continue
+                want, prov = exp["treatment_units"]
+                seen += 1
+                _score(label, fails, passes, float(m.group(1)), float(want),
+                       _printed_tol(m.group(1)), "treatment sweep units",
+                       prov, m.group(0))
+
+            # ---- launched units --------------------------------------------
+            lm = re.search(r"(\d+)\s+launched\s+units", sent, re.I)
+            if lm:
+                want, prov = exp["launched_units"]
+                seen += 1
+                _score(label, fails, passes, float(lm.group(1)), float(want),
+                       _printed_tol(lm.group(1)), "launched units", prov,
+                       lm.group(0))
+
+            # ---- delivery-identity violation ceiling -----------------------
+            vm = re.search(r"maximum[^;]{0,40}?over every record is\s+"
+                           r"(\d+(?:\.\d+)?)", sent, re.I)
+            if vm:
+                want, prov = exp["delivery_cv_max"]
+                seen += 1
+                _score(label, fails, passes, float(vm.group(1)), float(want),
+                       _printed_tol(vm.group(1)),
+                       "delivery-identity violation ceiling", prov, vm.group(0))
+
+            # ---- the two local declines (pp between two grid points) -------
+            # Fail-loud: a dip sentence whose (family, s, s) key has no
+            # registered reading must not be silently skipped -- that is
+            # exactly the silent-green the phase-5 fix removes.
+            fam_d = _fam_in_text(sent)
+            for m in _DIP.finditer(sent):
+                if fam_d is None:
+                    continue
+                key = (fam_d, float(m.group(2)), float(m.group(3)))
+                if key not in exp["dip_pp"]:
+                    fails.append(f"{label}: dip statement s={m.group(2)}->"
+                                 f"{m.group(3)} for {fam_d} has no registered "
+                                 f"reading  [{sent[:90]!r}]")
+                    continue
+                want, prov = exp["dip_pp"][key]
+                seen += 1
+                _score(label, fails, passes, float(m.group(1)), want,
+                       _printed_tol(m.group(1)),
+                       f"{fam_d} dip (pp) s={m.group(2)}->{m.group(3)}",
+                       prov, m.group(0))
+
+            # ---- per-seed movers (loses/gains between two grid points) -----
+            bet = _BETWEEN.search(sent)
+            moves_m = list(_MOVE.finditer(sent))
+            if bet and moves_m:
+                lo, hi = float(bet.group(1)), float(bet.group(2))
+                printed_moves = [float(m.group(1)) for m in moves_m]
+                cands = []
+                for (f, a, b), (mv, _prov) in exp["per_seed_moves"].items():
+                    if (abs(a - lo) > 1e-9 or abs(b - hi) > 1e-9
+                            or len(mv) != len(printed_moves)):
+                        continue
+                    # the paper prints magnitudes; the registered moves are
+                    # signed (positive = the seed lost coverage)
+                    if all(any(abs(p - abs(q)) <= _printed_tol(m.group(1))
+                               for q in mv)
+                           for p, m in zip(printed_moves, moves_m)):
+                        cands.append((f, mv))
+                if len(cands) == 1:
+                    fam_m, mv = cands[0]
+                    for p, m in zip(printed_moves, moves_m):
+                        near = min(mv, key=lambda q: abs(p - abs(q)))
+                        seen += 1
+                        _score(label, fails, passes, p, abs(near),
+                               _printed_tol(m.group(1)),
+                               f"{fam_m} per-seed move (pp) s={lo}->{hi}",
+                               "per-seed s=a minus s=b, pp", m.group(0))
+                else:
+                    fails.append(f"{label}: per-seed move statement s={lo}->"
+                                 f"{hi} matches {len(cands)} registered mover "
+                                 f"set(s) -- unverifiable or ambiguous  "
+                                 f"[{sent[:90]!r}]")
 
             # ---- the STR floor (a step, not a continuous degradation) ------
             sm = re.search(r"STR[^;]{0,60}?(?:floor|地板)[^;]{0,20}?"
@@ -501,6 +782,17 @@ def check_paper(text: str, label: str, exp: dict) -> "tuple[list, list, list, in
                 _score(label, fails, passes, printed, want,
                        _printed_tol(sm.group(1)), "STR library floor", prov,
                        sm.group(0))
+
+            # ---- per-mode zero-squint resolutions (library constants) ------
+            if "mode_floor_m" in exp:
+                for mm in _MODE_FLOOR.finditer(sent):
+                    mode, printed = mm.group(1), float(mm.group(2))
+                    want = exp["mode_floor_m"][0][mode]
+                    seen += 1
+                    _score(label, fails, passes, printed, want,
+                           _printed_tol(mm.group(2)),
+                           f"{mode} zero-squint azimuth resolution (m)",
+                           exp["mode_floor_m"][1], mm.group(0))
     return fails, passes, [], seen
 
 
@@ -567,7 +859,8 @@ def main(argv=None) -> int:
                 print(f"ABORT: manuscript {a} does not exist", file=sys.stderr)
                 return 2
             texts[p] = p.read_text(encoding="utf-8", errors="ignore")
-    need_deliv = any(re.search(r"f[_ ]?q[_ ]?deliv|squint[-\s]?loss", t, re.I)
+    need_deliv = any(_DELIV_TOKEN.search(t) or re.search(r"squint[-\s]?loss", t,
+                                                         re.I)
                      for t in texts.values())
 
     try:
