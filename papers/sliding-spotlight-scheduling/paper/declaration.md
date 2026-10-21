@@ -1,7 +1,7 @@
 Declaration of Competing Interest
 ===================================
 
-Paper: Agile Sliding-Spotlight SAR Satellite Scheduling with Mode-Determined Dwell Duration and an Image-Quality Objective
+Paper: Agile Sliding-Spotlight SAR Satellite Scheduling with Per-Task Resolution Requirements: The Coverage Cost of Tightening the Order
 Author: LIU Shuhao
 
 The author declares that he has no known competing financial interests
