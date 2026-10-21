@@ -80,15 +80,39 @@
     },
     {
       "file": "papers/sliding-spotlight-scheduling/paper/full.md",
+      "line": 171,
+      "label": "W14 single-axis positioning",
+      "trigger": "first objective"
+    },
+    {
+      "file": "papers/sliding-spotlight-scheduling/paper/full.md",
       "line": 174,
       "label": "W14 single-axis positioning",
       "trigger": "bi-objective"
     },
     {
       "file": "papers/sliding-spotlight-scheduling/paper/full.md",
+      "line": 174,
+      "label": "W14 single-axis positioning",
+      "trigger": "two axes as (-f_1^*,-f_Q) minimis"
+    },
+    {
+      "file": "papers/sliding-spotlight-scheduling/paper/full.md",
+      "line": 174,
+      "label": "W14 single-axis positioning",
+      "trigger": "both axes are maximis"
+    },
+    {
+      "file": "papers/sliding-spotlight-scheduling/paper/full.md",
       "line": 184,
       "label": "W14 single-axis positioning",
       "trigger": "dual-objective"
+    },
+    {
+      "file": "papers/sliding-spotlight-scheduling/paper/full.md",
+      "line": 221,
+      "label": "W14 single-axis positioning",
+      "trigger": "first objective"
     },
     {
       "file": "papers/sliding-spotlight-scheduling/paper/full.md",
@@ -125,6 +149,12 @@
       "line": 383,
       "label": "W14 single-axis positioning",
       "trigger": "second objective"
+    },
+    {
+      "file": "papers/sliding-spotlight-scheduling/paper/full.md",
+      "line": 402,
+      "label": "W14 single-axis positioning",
+      "trigger": "quality index of the served set is a first-class objective"
     },
     {
       "file": "papers/sliding-spotlight-scheduling/paper/highlights.md",
@@ -194,15 +224,39 @@
     },
     {
       "file": "papers/sliding-spotlight-scheduling/paper/main.tex",
+      "line": 160,
+      "label": "W14 single-axis positioning",
+      "trigger": "first objective"
+    },
+    {
+      "file": "papers/sliding-spotlight-scheduling/paper/main.tex",
       "line": 162,
       "label": "W14 single-axis positioning",
       "trigger": "bi-objective"
     },
     {
       "file": "papers/sliding-spotlight-scheduling/paper/main.tex",
+      "line": 162,
+      "label": "W14 single-axis positioning",
+      "trigger": "two axes as (-f_1^*,-f_q) minimis"
+    },
+    {
+      "file": "papers/sliding-spotlight-scheduling/paper/main.tex",
+      "line": 162,
+      "label": "W14 single-axis positioning",
+      "trigger": "both axes are maximis"
+    },
+    {
+      "file": "papers/sliding-spotlight-scheduling/paper/main.tex",
       "line": 168,
       "label": "W14 single-axis positioning",
       "trigger": "dual-objective"
+    },
+    {
+      "file": "papers/sliding-spotlight-scheduling/paper/main.tex",
+      "line": 195,
+      "label": "W14 single-axis positioning",
+      "trigger": "first objective"
     },
     {
       "file": "papers/sliding-spotlight-scheduling/paper/main.tex",
@@ -247,6 +301,12 @@
       "trigger": "second objective"
     },
     {
+      "file": "papers/sliding-spotlight-scheduling/paper/main.tex",
+      "line": 342,
+      "label": "W14 single-axis positioning",
+      "trigger": "quality index of the served set is a first-class objective"
+    },
+    {
       "file": "papers/sliding-spotlight-scheduling/paper/sections/sec1_introduction.md",
       "line": 15,
       "label": "W14 single-axis positioning",
@@ -281,6 +341,12 @@
       "line": 25,
       "label": "W2 E1 no-prior-work claim",
       "trigger": "no prior work"
+    },
+    {
+      "file": "papers/sliding-spotlight-scheduling/paper/sections/sec3_problem_formulation.md",
+      "line": 58,
+      "label": "W14 single-axis positioning",
+      "trigger": "first objective"
     },
     {
       "file": "papers/sliding-spotlight-scheduling/paper/sections/sec3_problem_formulation.md",
@@ -329,6 +395,12 @@
       "line": 21,
       "label": "W14 single-axis positioning",
       "trigger": "second objective"
+    },
+    {
+      "file": "papers/sliding-spotlight-scheduling/paper/sections/sec8_conclusion.md",
+      "line": 3,
+      "label": "W14 single-axis positioning",
+      "trigger": "quality index of the served set is a first-class objective"
     }
   ]
 }

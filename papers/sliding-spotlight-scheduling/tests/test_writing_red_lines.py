@@ -905,6 +905,593 @@ def test_w15b_labelled_incomparable_reading_clears(name, body, sfx):
     assert_clears(body, sfx)
 
 
+def test_w15b_clear_fixtures_actually_contain_a_hit(tmp_path):
+    """A clearance fixture that the ban never matches proves NOTHING.
+
+    The .tex fixture here used to be exactly that: ``_strip_markup`` never
+    produced the string W15b looked for, so the fixture "cleared" by not being
+    seen -- and a mutation that made the guard licence nothing still left it
+    green.  W9's fixtures carry this requirement in a comment; W15b now
+    enforces it (probe defect H7).
+    """
+    for name, body, sfx in W15B_CLEARS:
+        p = tmp_path / ("c" + sfx)
+        p.write_text(body, encoding="utf-8", newline="")
+        _violations, cleared = _scan_one(p)
+        assert any(c[0] == W15B for c in cleared), (
+            f"{name}: W15b never matched this fixture -- the clearance is fake")
+
+
+# --------------------------------------------------------------------------
+# Ticket 50 phase 1.5 -- discrimination repairs.
+#
+# The source is .scratch/sliding-spotlight-scheduling/t50/
+# gate-bypass-probe-20261021.md, an independent attack that ran 142 bypass
+# samples against the phase-1 gate and judged it GATE-DISCRIMINATION-FAIL.
+# Every defect below gets an attacking sample that must FIRE, the legitimate
+# shape the fix must not swallow, and -- for the high-severity ones -- a
+# mutation that reverts the specific fix and flips the pair.
+# --------------------------------------------------------------------------
+
+# H1: the retired framing said without the word "objective".  "two axes" as an
+# OBJECTIVE axis is the paper's own sentence (main.tex:162) with one word
+# removed; the promotion verdict's structural/reading axes must stay clear.
+W14_AXIS_VIOLATES = [
+    ("two axes minimised then maximised",
+     "The search implements the two axes as (-f1,-fQ) minimisation, so both axes are maximised.\n"),
+    ("we optimise two axes", "We optimise two axes: coverage and image quality.\n"),
+    ("objective vector",
+     "The objective vector of the schedule contains image quality and served fraction.\n"),
+    ("objective space",
+     "The optimisation explores objective space in two dimensions: coverage and image quality.\n"),
+    ("secondary criterion", "Image quality is a secondary criterion of the schedule.\n"),
+    ("second criterion", "The second criterion is image quality.\n"),
+    ("second optimisation axis",
+     "Quality is optimised alongside coverage as a second optimisation axis.\n"),
+    ("second axis", "Image quality forms the second axis of the search.\n"),
+    ("bi-criteria",
+     "This paper is a bi-criteria problem: served fraction and image quality.\n"),
+    ("two-criterion",
+     "We optimise coverage and quality as a two-criterion problem.\n"),
+]
+W14_AXIS_CLEARS = [
+    ("promotion section heading", "## 6.2 Promotion, two axes\n"),
+    ("promotion verdict on two separated axes",
+     "The promotion verdict is stated on two separated axes, and the separation "
+     "is the result.\n"),
+    ("promotion figure caption",
+     "The promotion verdict on its two separated axes. (a) Structural axis, "
+     "model-level only.\n"),
+    ("quality axis is a SCALE, not an objective",
+     "The R1C quality axis operates on a different scale from the pooled families.\n"),
+    ("the two axes must not be merged",
+     "The axes must not be merged: structural ALIVE is not a reading.\n"),
+    ("first-class CONSTRAINT is the legitimate phrase",
+     "Treating the steering-coupling loop as a first-class constraint is what "
+     "the platform leg buys.\n"),
+]
+
+
+@pytest.mark.parametrize("name,body", W14_AXIS_VIOLATES,
+                         ids=[n for n, _ in W14_AXIS_VIOLATES])
+def test_w14_objective_axis_shapes_fire(name, body):
+    assert_bans(body, W14)
+
+
+@pytest.mark.parametrize("name,body", W14_AXIS_CLEARS,
+                         ids=[n for n, _ in W14_AXIS_CLEARS])
+def test_w14_promotion_axes_and_quality_axis_stay_clear(name, body):
+    assert_clears(body)
+
+
+def test_mutation_w14_without_the_axis_patterns_the_own_sentence_passes(
+        tmp_path):
+    """Drop only the objective-axis patterns and the paper's own problem
+    statement (minus the word "bi-objective") passes again -- the exact
+    one-word bypass the probe demonstrated."""
+    saved = crl.WRITING_BANS
+    try:
+        crl.WRITING_BANS = [
+            (lbl, tuple(p for p in pats if "axes" not in p and "space" not in p
+                        and "vector" not in p and "criteri" not in p
+                        and "axis" not in p)
+             if lbl == W14 else pats, g)
+            for lbl, pats, g in saved]
+        p = tmp_path / "c.md"
+        p.write_text(W14_AXIS_VIOLATES[0][1], encoding="utf-8", newline="")
+        violations, _ = _scan_one(p)
+        assert not any(v.startswith(W14) for v in violations), violations
+    finally:
+        crl.WRITING_BANS = saved
+
+
+# H2 -- the CURRENT manuscript's own leak: the conclusion chapter asserted
+# "the quality index of the served set is a first-class objective" and the
+# phase-1 gate never looked at it.
+W14_FIRST_CLASS_VIOLATES = [
+    ("conclusion sentence",
+     "On the platform leg, the quality index of the served set is a "
+     "first-class objective.\n", ".md"),
+    ("first objective",
+     "The task priorities that drive the first objective are drawn uniformly "
+     "at random.\n", ".md"),
+    ("tex conclusion sentence",
+     "On the platform leg the quality index of the served set is a first-class "
+     "objective.\n", ".tex"),
+]
+
+
+@pytest.mark.parametrize("name,body,sfx", W14_FIRST_CLASS_VIOLATES,
+                         ids=[n for n, _, _ in W14_FIRST_CLASS_VIOLATES])
+def test_w14_first_class_objective_fires(name, body, sfx):
+    assert_bans(body, W14, sfx)
+
+
+def test_the_conclusion_chapter_is_in_the_expected_red_ledger():
+    """H2 at the ARTIFACT level, not just at the pattern level.
+
+    The phase-1 ledger listed 13 files and sec8_conclusion.md was not one of
+    them: phase 2 would have rewritten everything else, gone green, and left
+    the conclusion asserting the retired framing.  The machine-readable ledger
+    is the artifact that drives phase 2, so the conclusion must be IN it.
+    """
+    ledger = json.loads(LEDGER.read_text(encoding="utf-8"))
+    files = {v["file"] for v in ledger["violations"]}
+    assert any(f.endswith("paper/sections/sec8_conclusion.md") for f in files), (
+        "the conclusion chapter is not in the expected-red ledger: phase 2 "
+        f"would go green with the old framing still asserted. files={sorted(files)}")
+
+
+# H3 -- the copula was fixed to "is".
+def test_w14_quality_remains_an_objective_fires():
+    assert_bans("Quality remains an objective of the schedule, though not the "
+                "second.\n", W14)
+
+
+def test_mutation_w14_with_the_old_is_only_copula_remains_passes(tmp_path):
+    saved = crl.WRITING_BANS
+    try:
+        crl.WRITING_BANS = [
+            (lbl, tuple(p for p in pats if "remains?" not in p)
+             + (r"\bquality\s+is\s+an?\s+(?:independent\s+)?objective\b",)
+             if lbl == W14 else pats, g)
+            for lbl, pats, g in saved]
+        p = tmp_path / "c.md"
+        p.write_text("Quality remains an objective of the schedule, though not "
+                     "the second.\n", encoding="utf-8", newline="")
+        violations, _ = _scan_one(p)
+        assert not any(v.startswith(W14) for v in violations), violations
+    finally:
+        crl.WRITING_BANS = saved
+
+
+def test_mutation_w14_without_the_first_class_patterns_the_conclusion_passes(
+        tmp_path):
+    """H2's discriminating mutation: with the first-class / first-objective
+    patterns gone, the conclusion sentence passes again -- which is exactly the
+    state the manuscript was in when the probe found it."""
+    saved = crl.WRITING_BANS
+    try:
+        # Two independent patterns cover the conclusion sentence (the
+        # first-class pattern itself and the "quality index ... is an objective"
+        # bridge form), so BOTH have to go for the mutation to be a mutation.
+        crl.WRITING_BANS = [
+            (lbl, tuple(p for p in pats
+                        if "first" not in p and "quality\\s+index" not in p)
+             if lbl == W14 else pats, g)
+            for lbl, pats, g in saved]
+        for name, body, sfx in W14_FIRST_CLASS_VIOLATES:
+            p = tmp_path / ("c" + sfx)
+            p.write_text(body, encoding="utf-8", newline="")
+            violations, _ = _scan_one(p)
+            assert not any(v.startswith(W14) for v in violations), (name, violations)
+    finally:
+        crl.WRITING_BANS = saved
+
+
+# H4 -- a prohibition whose object is ANOTHER proposition must not license a
+# claim in the same sentence.  The contrast is deliberate: the semicolon form
+# always fired; only the bare "and" form was laundered.
+def test_w14_trailing_prohibition_does_not_license_a_claim_in_the_same_sentence():
+    assert_bans("Image quality is a second objective and any statement to the "
+                "contrary is forbidden.\n", W14)
+    assert_bans("Image quality is a second objective; any statement to the "
+                "contrary is forbidden.\n", W14)
+    # The legitimate AFTER shape: one marker governing the quoted phrases.
+    assert_clears("'A second objective' and 'an independent objective "
+                  "dimension' are forbidden declarations.\n")
+
+
+def test_mutation_w14_without_the_laundering_veto_the_trailing_marker_licenses(
+        tmp_path):
+    saved = crl._PROHIBITION_LAUNDER_RX
+    try:
+        crl._PROHIBITION_LAUNDER_RX = _never_match()
+        p = tmp_path / "c.md"
+        p.write_text("Image quality is a second objective and any statement to "
+                     "the contrary is forbidden.\n", encoding="utf-8", newline="")
+        violations, _ = _scan_one(p)
+        assert not any(v.startswith(W14) for v in violations), violations
+    finally:
+        crl._PROHIBITION_LAUNDER_RX = saved
+
+
+# H5 -- a retrospective shell that KEEPS the framing.
+W14_RETENTION_VIOLATES = [
+    ("former ... retained as the core framing",
+     "The former two-objective formulation is retained as the core framing of "
+     "this paper.\n"),
+    ("no longer ... and still defines",
+     "We no longer formulate a second objective and the second objective still "
+     "defines the trade-off.\n"),
+    ("no longer ... while ... remains",
+     "We no longer treat image quality as a second objective while image "
+     "quality remains a second objective in the formulation.\n"),
+    ("superseded ... retained because ... is the contribution",
+     "Superseded dual-objective search is retained because the dual-objective "
+     "trade-off is the contribution.\n"),
+    ("falsified marker on another clause",
+     "The search artifact reading is retired and image quality is a second "
+     "objective of the schedule.\n"),
+    ("former ... and we retain it",
+     "The former two-objective formulation is our core framing and we retain "
+     "it.\n"),
+    ("superseded ... retained as the core framing",
+     "Superseded two-objective search is retained as the core framing of this "
+     "paper.\n"),
+]
+W14_RETROSPECTIVE_CLEARS = [
+    ("no longer treat", "We no longer treat image quality as a second objective.\n"),
+    ("former formulation replaced",
+     "The former two-objective formulation has been replaced by a per-task "
+     "hard constraint.\n"),
+    ("formulation retired", "The two-objective formulation is retired in this paper.\n"),
+    ("withdrawn framing", "The second objective has been withdrawn.\n"),
+    ("no longer use", "We no longer use a second objective.\n"),
+    ("withdrawn in revision",
+     "The second objective was withdrawn in revision 2.\n"),
+    ("not a study of it", "This paper is not a second-objective study.\n"),
+    ("zh retired", "不再把图像质量作为第二目标；改为逐任务硬约束。\n"),
+]
+
+
+@pytest.mark.parametrize("name,body", W14_RETENTION_VIOLATES,
+                         ids=[n for n, _ in W14_RETENTION_VIOLATES])
+def test_w14_retrospective_shell_that_keeps_the_framing_fires(name, body):
+    assert_bans(body, W14)
+
+
+@pytest.mark.parametrize("name,body", W14_RETROSPECTIVE_CLEARS,
+                         ids=[n for n, _ in W14_RETROSPECTIVE_CLEARS])
+def test_w14_genuine_retrospective_mentions_still_clear(name, body):
+    assert_clears(body)
+
+
+def test_mutation_w14_without_the_retention_veto_the_shell_licenses_the_claim(
+        tmp_path):
+    saved = crl._RETENTION_RX
+    try:
+        crl._RETENTION_RX = _never_match()
+        for name, body in W14_RETENTION_VIOLATES[:4]:
+            p = tmp_path / "c.md"
+            p.write_text(body, encoding="utf-8", newline="")
+            violations, _ = _scan_one(p)
+            assert not any(v.startswith(W14) for v in violations), (name, violations)
+    finally:
+        crl._RETENTION_RX = saved
+
+
+# H6 -- W9 needs a WIDER boundary set: its predicate is an independent
+# declarative, so a comma + "which", a bare "and" or a bare "or" splits it.
+W9_WIDE_BOUNDARY_VIOLATES = [
+    ("comma which", "Coverage passed at the base budget, which is not a test.\n"),
+    ("bare and",
+     "Coverage has no power as a test and coverage passed at the base budget.\n"),
+    ("comma and",
+     "Coverage passed at the base budget, and the coverage axis is not a "
+     "hypothesis test.\n"),
+]
+W9_WIDE_BOUNDARY_CLEARS = [
+    # The comma ALONE is not a boundary: this licensed sentence must stay clear.
+    ("comma without a conjunction",
+     "Coverage has no power as a test, so a coverage axis failed reading is "
+     "not a result.\n"),
+    ("reported as a reading, not a test",
+     "Coverage is reported as a reading, not a test: coverage passed is not a "
+     "claim this paper makes.\n"),
+]
+
+
+@pytest.mark.parametrize("name,body", W9_WIDE_BOUNDARY_VIOLATES,
+                         ids=[n for n, _ in W9_WIDE_BOUNDARY_VIOLATES])
+def test_w9_comma_or_conjunction_does_not_wash_a_pass_fail_claim(name, body):
+    assert_bans(body, W9)
+
+
+@pytest.mark.parametrize("name,body", W9_WIDE_BOUNDARY_CLEARS,
+                         ids=[n for n, _ in W9_WIDE_BOUNDARY_CLEARS])
+def test_w9_licensed_sentences_without_a_conjunction_stay_clear(name, body):
+    assert_clears(body)
+
+
+def test_mutation_w9_without_the_conjunction_rule_the_laundered_forms_clear(
+        tmp_path):
+    saved = crl._W9_CONJUNCTION_RX
+    try:
+        crl._W9_CONJUNCTION_RX = _never_match()
+        for name, body in W9_WIDE_BOUNDARY_VIOLATES:
+            p = tmp_path / "c.md"
+            p.write_text(body, encoding="utf-8", newline="")
+            violations, _ = _scan_one(p)
+            assert not any(v.startswith(W9) for v in violations), (name, violations)
+    finally:
+        crl._W9_CONJUNCTION_RX = saved
+
+
+# H7 -- W15b on a .tex manuscript: the pattern must match what _strip_markup
+# actually produces.
+W15B_TEX_VIOLATES = [
+    ("text subscript", "The $f_{Q,\\text{deliv}}$ value is 71.3.\n"),
+    ("mathrm subscript", "The $f_{Q,\\mathrm{deliv}}$ value is 71.3.\n"),
+    ("deliv reading, no label",
+     "The $f_{Q,\\text{deliv}}$ reaches 0.71 in the same units.\n"),
+]
+
+
+@pytest.mark.parametrize("name,body", W15B_TEX_VIOLATES,
+                         ids=[n for n, _ in W15B_TEX_VIOLATES])
+def test_w15b_fires_on_the_tex_subscript_form(name, body):
+    assert_bans(body, W15B, ".tex")
+
+
+def test_mutation_w15b_without_the_tex_pattern_the_tex_reading_passes(
+        tmp_path):
+    """Reverting the .tex pattern (back to the string the stripper never
+    produces) must make the .tex sample pass -- proving this fixture is
+    driven by the fix and was not an empty fixture like its predecessor."""
+    saved = crl.WRITING_BANS
+    try:
+        crl.WRITING_BANS = [
+            (lbl, (r"f[_ ]?q[_ ]?deliv\b",
+                   r"\bf\s+q\s*,\s*(?:text\s+)?deliv\b")
+             if lbl == W15B else pats, g)
+            for lbl, pats, g in saved]
+        p = tmp_path / "c.tex"
+        p.write_text(W15B_TEX_VIOLATES[0][1], encoding="utf-8", newline="")
+        violations, _ = _scan_one(p)
+        assert not any(v.startswith(W15B) for v in violations), violations
+    finally:
+        crl.WRITING_BANS = saved
+
+
+# H8 -- LaTeX spacing and formatting wrappers must normalise to a word gap.
+W14_TEX_SPACING_VIOLATES = [
+    ("line break", "The quality headroom is a second\\\\objective of the schedule.\n"),
+    ("non-breaking space", "The quality headroom is a second~objective of the "
+                           "schedule.\n"),
+    ("thin space", "The quality headroom is a second\\,objective of the "
+                   "schedule.\n"),
+    ("emph wrapper", "The quality headroom is a second \\emph{objective} of "
+                     "the schedule.\n"),
+    ("text space", "The quality headroom is a second\\text{ }objective of the "
+                   "schedule.\n"),
+    ("discretionary hyphen", "The quality headroom is a second\\-objective of "
+                             "the schedule.\n"),
+    ("blank line between the words",
+     "The quality headroom is a second\n\nobjective of the schedule.\n"),
+]
+
+
+@pytest.mark.parametrize("name,body", W14_TEX_SPACING_VIOLATES,
+                         ids=[n for n, _ in W14_TEX_SPACING_VIOLATES])
+def test_tex_spacing_forms_do_not_split_a_banned_phrase(name, body):
+    assert_bans(body, W14, ".tex")
+
+
+def test_tex_escaped_underscore_keeps_the_fulfillment_ratio_token():
+    assert_bans("The fulfillment\\_ratio reached 0.62.\n", W15A, ".tex")
+
+
+def test_mutation_without_the_spacing_normalisation_the_split_forms_pass(
+        tmp_path, monkeypatch):
+    """Revert `_strip_markup` to spacing-blind and the split forms go green.
+
+    The mutation reproduces the pre-fix behaviour for the three forms that come
+    from SPACING alone (~, \\,, \\\\).  The ``\\emph`` form is deliberately not
+    asserted here: the old stripper produced "second objective" for it by
+    accident, which is why the H8 defect looked narrower than it was.
+    """
+    def _spacing_blind(line: str) -> str:
+        out = re.sub(r"\\[a-zA-Z]+\*?(?:\[[^\]]*\])?", " ", line)
+        out = out.replace("\\_", "_")
+        for ch in ("$", "{", "}"):
+            out = out.replace(ch, " ")
+        return re.sub(r"[ \t]{2,}", " ", out)
+
+    monkeypatch.setattr(crl, "_strip_markup", _spacing_blind)
+    for name, body in W14_TEX_SPACING_VIOLATES[:3]:
+        p = tmp_path / "c.tex"
+        p.write_text(body, encoding="utf-8", newline="")
+        violations, _ = _scan_one(p)
+        assert not any(v.startswith(W14) for v in violations), (name, violations)
+
+
+# M1 -- a retrospective marker on the line ABOVE the ban, and a withdrawal verb
+# on the line BELOW it, are still the same sentence.
+W14_CROSS_LINE_CLEARS = [
+    ("withdrawal verb on the next line",
+     "The second objective was\nwithdrawn.\n"),
+    ("retrospective marker on the previous line",
+     "We no longer treat image quality as a\nsecond objective of the schedule.\n"),
+]
+
+
+@pytest.mark.parametrize("name,body", W14_CROSS_LINE_CLEARS,
+                         ids=[n for n, _ in W14_CROSS_LINE_CLEARS])
+def test_w14_cross_line_retrospective_clears(name, body):
+    assert_clears(body)
+
+
+def test_w14_cross_line_context_does_not_swallow_the_previous_sentence():
+    """The window must not become a laundering channel in the other direction:
+    a withdrawal in the NEXT sentence is outside the hit's clause."""
+    assert_bans("The second objective drives the schedule.\n"
+                "We no longer treat it so.\n", W14)
+
+
+# M2 -- the third caliber element is one obligation, not an OR.
+def test_w15a_reading_without_the_not_a_target_half_fires():
+    assert_bans("The median fulfillment ratio is 0.62 (library caliber f_q, "
+                "tie-set mean, reported reading).\n", W15A)
+
+
+def test_mutation_w15a_without_the_not_target_half_the_full_tag_goes_red(
+        tmp_path, monkeypatch):
+    """Before the split, "reported reading" and "not an optimization target"
+    were alternatives, so dropping the recogniser for either one still cleared
+    the fully tagged fixture.  Now each is required, and removing one must red
+    it."""
+    monkeypatch.setattr(crl, "_FULFILLMENT_NONTARGET_RX", _never_match())
+    p = tmp_path / "c.md"
+    p.write_text(W15A_CLEARS[0][1], encoding="utf-8", newline="")
+    violations, _ = _scan_one(p)
+    assert any(v.startswith(W15A) for v in violations), violations
+
+
+# M3 -- a reading may put a copula or a bridge between token and number.
+M3_VIOLATES = [
+    ("value is N (W15a)", "The f_q_fulfillment value is 0.62.\n", W15A),
+    ("value is N (W15b)", "The f_Q_deliv value is 71.3.\n", W15B),
+    ("participial bridge",
+     "The fulfillment ratio, computed on the library f_q, reached 0.62.\n", W15A),
+]
+
+
+@pytest.mark.parametrize("name,body,label", M3_VIOLATES,
+                         ids=[n for n, _, _ in M3_VIOLATES])
+def test_m3_bound_readings_with_a_copula_or_bridge_fire(name, body, label):
+    assert_bans(body, label)
+
+
+def test_m3_a_formula_mention_is_still_not_a_reading():
+    assert_clears("We denote the delivered quality by $f_Q$ and define it in "
+                  "Eq.~(9).\n", ".tex")
+    assert_clears("The f_q domains over all 90 promotion units.\n")
+
+
+def test_mutation_without_the_bridge_the_participial_reading_passes(
+        tmp_path, monkeypatch):
+    monkeypatch.setattr(crl, "_READING_BRIDGED_RX", _never_match())
+    p = tmp_path / "c.md"
+    p.write_text(M3_VIOLATES[2][1], encoding="utf-8", newline="")
+    violations, _ = _scan_one(p)
+    assert not any(v.startswith(W15A) for v in violations), violations
+
+
+# M4 -- label on one line, number on the next.
+M4_VIOLATES = [
+    ("fulfillment label / number", "The median fulfillment ratio\nis 0.62.\n", W15A),
+    ("deliv label / number", "The f_Q_deliv value\nis 71.3.\n", W15B),
+]
+
+
+@pytest.mark.parametrize("name,body,label", M4_VIOLATES,
+                         ids=[n for n, _, _ in M4_VIOLATES])
+def test_m4_an_untagged_reading_split_across_lines_fires(name, body, label):
+    assert_bans(body, label)
+
+
+def test_mutation_without_the_line_window_the_split_reading_passes(
+        tmp_path, monkeypatch):
+    monkeypatch.setattr(crl, "_CONTEXT_LABELS", frozenset())
+    p = tmp_path / "c.md"
+    p.write_text(M4_VIOLATES[0][1], encoding="utf-8", newline="")
+    violations, _ = _scan_one(p)
+    assert not any(v.startswith(W15A) for v in violations), violations
+
+
+# M5 -- W2 paraphrase coverage.
+W2_VARIANTS = [
+    ("no previous work", "No previous work has addressed this coupling.\n"),
+    ("nobody has", "Nobody has studied the coupling between dwell and mode choice.\n"),
+    ("first to place",
+     "This paper is the first to place the steering-coupling loop inside the "
+     "scheduler.\n"),
+    ("zh 无人研究过", "无人研究过该耦合问题。\n"),
+    ("zh 前人未研究", "前人未研究过该耦合问题。\n"),
+]
+
+
+@pytest.mark.parametrize("name,body", W2_VARIANTS, ids=[n for n, _ in W2_VARIANTS])
+def test_w2_paraphrases_of_the_no_prior_work_claim_fire(name, body):
+    assert_bans(body, W2)
+
+
+# L1 -- Chinese variants that were regex holes rather than policy choices.
+W14_ZH_VARIANTS = [
+    ("质量作为目标", "质量作为目标进入调度回路。\n"),
+    ("第 2 个目标", "第 2 个目标为图像质量。\n"),
+    ("两项目标", "两项目标分别是覆盖率与图像质量。\n"),
+]
+
+
+@pytest.mark.parametrize("name,body", W14_ZH_VARIANTS,
+                         ids=[n for n, _ in W14_ZH_VARIANTS])
+def test_w14_chinese_variants_fire(name, body):
+    assert_bans(body, W14)
+
+
+def test_w14_chinese_negation_stays_clear():
+    assert_clears("质量不作为目标，只作观测读数。\n")
+
+
+# L2 / F3 -- a colon-introduced prohibition list governs what follows it.
+def test_colon_introduced_prohibition_clears():
+    assert_clears("Forbidden: image quality is a second objective.\n")
+    assert_clears("禁：图像质量是第二目标。\n")
+
+
+# F1 -- the hyphenated compound is the same negation, not a claim.
+def test_negated_hyphenated_compound_clears():
+    assert_clears("This paper is not a second-objective study.\n")
+
+
+# L4 -- build caches are not manuscript prose.
+def test_build_cache_files_are_not_scanned(tmp_path):
+    (tmp_path / ".pytest_cache").mkdir()
+    (tmp_path / ".pytest_cache" / "README.md").write_text(
+        "The second objective is retained here.\n", encoding="utf-8", newline="")
+    (tmp_path / "chapter.md").write_text("A clean sentence.\n",
+                                         encoding="utf-8", newline="")
+    env = dict(os.environ, PYTHONHASHSEED="0")
+    r = subprocess.run(
+        [sys.executable, "-B", str(CHECKER), "--path", str(tmp_path)],
+        capture_output=True, text=True, encoding="utf-8", errors="replace", env=env)
+    assert r.returncode == 0, r.stdout
+    assert ".pytest_cache" not in r.stdout, r.stdout
+
+
+# M6 -- a nonexistent --path is a usage error, not a clean pass over nothing.
+def test_nonexistent_path_is_a_usage_error_not_a_clean_pass(tmp_path):
+    missing = tmp_path / "nowhere" / "chapter.md"
+    env = dict(os.environ, PYTHONHASHSEED="0")
+    r = subprocess.run(
+        [sys.executable, "-B", str(CHECKER), "--path", str(missing)],
+        capture_output=True, text=True, encoding="utf-8", errors="replace", env=env)
+    assert r.returncode == 2, (r.returncode, r.stdout, r.stderr)
+    assert "does not exist" in r.stderr
+
+
+# M8 -- --include-scratch must actually extend the writing-ban scope.
+def test_include_scratch_extends_the_writing_ban_scope(monkeypatch):
+    scratch_md = (crl.REPO / ".scratch" / "sliding-spotlight-scheduling"
+                  / "spec.md")
+    assert scratch_md.exists(), "the scratch dir moved; update this fixture"
+    assert not crl._is_manuscript_shaped(scratch_md)
+    monkeypatch.setattr(crl, "_INCLUDE_SCRATCH", True)
+    assert crl._is_manuscript_shaped(scratch_md)
+
+
 # --------------------------------------------------------------------------
 # English falsified markers (ticket 37, review-fable D block).
 # Without them the COLLAPSE pattern fires on the sentence that WITHDRAWS the

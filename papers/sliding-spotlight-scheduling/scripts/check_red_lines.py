@@ -26,6 +26,31 @@ files legitimately quote every forbidden phrase in order to forbid it:
   W14 single-axis positioning (no second / independent objective framing)
   W15a A4 fulfillment-ratio caliber  W15b A4 f_Q_deliv descriptive tag
 
+Scan surface (what this gate does and does NOT read):
+  * Default root ``papers/sliding-spotlight-scheduling``; file suffixes
+    ``.py/.md/.json/.tex``; ``results/`` and this checker are skipped, as are
+    the build caches ``.pytest_cache/`` and ``__pycache__/`` (a cache README
+    is not manuscript prose).
+  * The W-family bans run ONLY on manuscript-shaped files --
+    ``_is_manuscript_shaped``: ``.md``/``.tex``, not under a registration
+    directory (experiments / formulas / scripts / sss_core / tests), not
+    under ``review/`` (an audit record must quote what it audits), and not
+    under ``.scratch/`` unless ``--include-scratch`` is given.
+  * ``paper/main.pdf`` (the submission artifact) is NOT scanned.  A PDF is a
+    compilation product, not a source of truth: scanning it would let a stale
+    build pass while the ``.tex`` is already rewritten, or fail while the
+    ``.tex`` is clean.  The manuscript of record this gate polices is
+    ``paper/main.tex``; keep the PDF in sync by rebuilding it (a separate
+    obligation, see SUBMISSION_CHECKLIST.md).
+  * ``paper/refs.bib`` and ``paper/main.bbl`` are NOT scanned: ``.bib`` is a
+    citation database and ``.bbl`` is generated from it, and both legitimately
+    carry banned tokens inside TITLES OF CITED WORKS (``bi-objective`` in
+    zehetner2017sampling / chang2021integrated).  Banning a cited title would
+    be banning the literature, not the manuscript's own claim.
+  * ``--path`` must exist: a nonexistent path used to yield an empty scan set
+    and a clean rc=0, i.e. a green gate over nothing.  It is a usage error
+    (rc=2) now.
+
 Usage (repo root):
     PYTHONHASHSEED=0 "/d/Program Files/Python/python" -B \
         papers/sliding-spotlight-scheduling/scripts/check_red_lines.py [--path ...]
@@ -280,6 +305,10 @@ def scan_texts(paths, patterns, label, violations, cleared):
 # (dir, file) components that are registration / provenance, not manuscript.
 _REGISTRATION_DIRS = ("experiments", "formulas", "scripts", "sss_core", "tests")
 
+# Build caches that must never enter the scan set.
+_SKIP_DIR_NAMES = frozenset({".pytest_cache", "__pycache__", ".mypy_cache",
+                             ".git", ".ruff_cache"})
+
 # ---------------------------------------------------------------------------
 # Contexts that license a RETROSPECTIVE mention (ticket 50, W14 / W15).
 # ---------------------------------------------------------------------------
@@ -318,11 +347,15 @@ _RETROSPECTIVE_RX = re.compile(
 # ASSERTS that the paper carries one (phase-1 review finding: a free-floating
 # negation cleared the assertion).  So the negation must sit next to a
 # first-person / this-paper subject.
+#
+# ``[-\s]+`` rather than ``\s+``: the hyphenated compound ("not a
+# second-objective study") is the same claim and was firing as a false positive
+# (F1 in the discrimination probe).
 _NEGATED_IN_PAPER_RX = re.compile(
     r"\b(?:we|our|this\s+(?:paper|work|study))\b[^.\n]{0,80}"
-    r"\bnot\s+(?:an?|the)\s+(?:second|secondary|independent)\s+"
+    r"\bnot\s+(?:an?|the)\s+(?:second|secondary|independent)[-\s]+"
     r"(?:objective|target)\b"
-    r"|\bnot\s+(?:an?|the)\s+(?:second|secondary|independent)\s+"
+    r"|\bnot\s+(?:an?|the)\s+(?:second|secondary|independent)[-\s]+"
     r"(?:objective|target)\b[^.\n]{0,40}"
     r"\b(?:in|for)\s+this\s+(?:paper|work|study)\b"
     r"|\b(?:we|our|this\s+(?:paper|work|study))\b[^.\n]{0,80}"
@@ -355,7 +388,66 @@ def _clause_marker(line: str, pos: int, markers) -> str:
         i = low.find(mk.lower())
         if i != -1 and not _has_contrast(low[i:]):
             return mk
+    # A colon-introduced prohibition list ("Forbidden: X, Y", "禁：X") puts the
+    # marker in the PREVIOUS clause, because _LABEL_CLAUSE_CUTS contains ':'.
+    # Without this branch the listed phrases fired on the marker that forbids
+    # them (false positive F3 in the discrimination probe).
+    if _start is not None and _COLON_PROHIBITION_RX.search(line[: _start]):
+        return "colon-introduced prohibition"
     return ""
+
+
+def _marker_gap(line: str, pos: int, marker: str) -> str:
+    """Text between ``pos`` and the nearest occurrence of ``marker``.
+
+    Used for the laundering vetoes: a marker only governs a hit it is adjacent
+    to.  When an independent clause sits in between, the marker belongs to that
+    clause and must not license this hit.
+    """
+    clause, start = _clause_around(line, pos)
+    if clause is None:
+        return ""
+    low = clause.lower()
+    mk = marker.lower()
+    before = low.rfind(mk, 0, max(0, pos - start))
+    if before != -1:
+        return line[start + before + len(mk): pos]
+    after = low.find(mk, max(0, pos - start))
+    if after != -1:
+        return line[pos: start + after]
+    return ""
+
+
+# Ticket-50 discrimination probe, defect H4: "Image quality is a second
+# objective and any statement to the contrary is forbidden."  The trailing
+# "and" does not end the clause (a deliberate design choice -- "'X' and 'Y' are
+# forbidden" governs both phrases), so the prohibition marker at the end of the
+# sentence shielded an assertion in its middle.  A marker whose object is
+# ANOTHER proposition ("any statement to the contrary", "otherwise", "any
+# claim") is not a licence for this one.
+_PROHIBITION_LAUNDER_RX = re.compile(
+    r"to\s+the\s+contrary|otherwise|\bcontrary\s+to\b|any\s+statement|"
+    r"no\s+statement|any\s+claim|den(?:y|ies|ied)|counts?\s+as",
+    re.IGNORECASE)
+
+# Ticket-50 discrimination probe, defect H5: a retrospective shell that KEEPS
+# the framing.  "The former two-objective formulation is retained as the core
+# framing of this paper" reports the old framing as former while asserting it
+# is the paper's framing; the retro word must not license a retention verb in
+# the same clause.
+_RETENTION_RX = re.compile(
+    r"\bretain(?:s|ed|ing)?\b|\bwe\s+keep\b|\bkeeps?\b|\bkept\b|"
+    r"\bstill\s+defines?\b|\bstill\s+central\b|\bcore\s+framing\b|"
+    r"\bas\s+the\s+contribution\b|\bis\s+the\s+contribution\b|\bremains?\b|"
+    r"保留|仍是|仍为|核心框架",
+    re.IGNORECASE)
+
+# A falsified-verdict marker ("search artifact") licenses a hit only when it is
+# adjacent to it.  "The search artifact reading is retired and image quality is
+# a second objective" puts an independent subject+predicate between the marker
+# and the claim, so the marker describes a different clause (defect K1).
+_INDEPENDENT_PREDICATE_RX = re.compile(
+    r"\b(?:is|are|was|were|remains?|becomes?|has|have|had)\b", re.IGNORECASE)
 
 
 def _clear_dual_objective(line: str, m) -> str:
@@ -363,7 +455,11 @@ def _clear_dual_objective(line: str, m) -> str:
     negated mention of it is licensed."""
     mk = _clause_marker(line, m.start(), PROHIBITION_MARKERS)
     if mk:
-        return f"inside a prohibition ({mk!r})"
+        # The marker must govern THIS hit: a prohibition whose object is some
+        # other proposition ("any statement to the contrary is forbidden") does
+        # not license the assertion it trails (H4).
+        if not _PROHIBITION_LAUNDER_RX.search(_marker_gap(line, m.start(), mk)):
+            return f"inside a prohibition ({mk!r})"
     mk = _clause_marker(line, m.start(), FALSIFIED_MARKERS)
     if mk:
         # "is NOT withdrawn" negates the retraction and therefore ASSERTS the
@@ -373,10 +469,20 @@ def _clear_dual_objective(line: str, m) -> str:
                      r"replaced|falsified|refuted)\b|未(?:作废|退役|取消|撤回)",
                      clause or "", re.IGNORECASE):
             return ""
+        # An independent predicate between marker and claim means the marker
+        # attaches to another clause (K1).
+        gap = _marker_gap(line, m.start(), mk)
+        if _INDEPENDENT_PREDICATE_RX.search(gap) or _RETENTION_RX.search(gap):
+            return ""
         return f"reports the framing as withdrawn ({mk!r})"
     clause, _start = _clause_around(line, m.start())
     if clause and (_RETROSPECTIVE_RX.search(clause)
                    or _NEGATED_IN_PAPER_RX.search(clause)):
+        # The retro shell must not carry a retention claim in the same clause:
+        # "the former two-objective formulation is retained as the core framing"
+        # reports a withdrawal it does not make (H5).
+        if _RETENTION_RX.search(clause):
+            return ""
         return "retrospective mention in the hit's own clause"
     return ""
 
@@ -428,6 +534,13 @@ _COPULA_BEFORE_LABEL_RX = re.compile(
 # Boundaries of the clause a label modifies.
 _LABEL_CLAUSE_CUTS = (";", "；", ":", "：", ",", "，", "(", ")", "[", "]",
                       "。", ".", "—", "–")
+
+# A prohibition that INTRODUCES a list with a colon ("Forbidden: ...", "禁：...")
+# sits in the previous clause by construction, because the clause cut includes
+# ':' / '：'.  The listed phrases are exactly what it forbids, so the marker
+# must govern them (false-positive F3 in the ticket-50 discrimination probe).
+_COLON_PROHIBITION_RX = re.compile(
+    r"(?:forbidden|prohibited|banned|禁[止用]?|不得)\s*[:：]\s*$", re.IGNORECASE)
 
 
 def _clause_around(line: str, pos: int) -> tuple:
@@ -513,6 +626,13 @@ _REPORTING_RX = re.compile(
 )
 
 
+# Set by ``--include-scratch``.  The flag used to add the scratch directory to
+# the FILE set while ``_is_manuscript_shaped`` kept filtering every W-family
+# hit out of it, so the flag was a no-op for the writing bans (probe defect
+# M8).  The module-level switch makes the flag mean what its help says.
+_INCLUDE_SCRATCH = False
+
+
 def _is_manuscript_shaped(p: Path) -> bool:
     """True when a file can hold manuscript prose rather than registration.
 
@@ -529,7 +649,7 @@ def _is_manuscript_shaped(p: Path) -> bool:
         rel = p                      # out-of-repo -- treat as manuscript
     if any(part in _REGISTRATION_DIRS for part in rel.parts):
         return False
-    if rel.as_posix().startswith(".scratch/"):
+    if rel.as_posix().startswith(".scratch/") and not _INCLUDE_SCRATCH:
         return False
     # Review records (review/) are audit artifacts, not manuscript prose: a
     # reconciliation report MUST quote the retired framing in order to audit
@@ -564,7 +684,7 @@ def _drop_fences(text: str) -> str:
 def _strip_markup(line: str) -> str:
     """Drop TeX commands and code fences, but KEEP what they wrap.
 
-    Three traps, all measured on fixtures rather than assumed:
+    Four traps, all measured on fixtures rather than assumed:
 
     * A code fence is not prose -- see ``_drop_fences``, which handles the
       payload, not just the delimiter.
@@ -572,16 +692,37 @@ def _strip_markup(line: str) -> str:
       delimiters and braces, so deleting math bodies silently disarmed every
       ban in a .tex manuscript (the ticket's W5.5 step runs this gate against
       the elsarticle port).  A command name is therefore kept as a bare word
-      (``\\emph{X}`` -> ``emph X``, ``\\rho`` -> ``rho``) and the grouping
-      characters are deleted, so ``\\rho_{a,\\mathrm{ach}}`` collapses to
-      ``rhoa,ach`` -- one token a regex can match, instead of a symbol that
-      vanishes and disarms W7.
+      (``\\rho`` -> ``rho``) and the grouping characters are deleted, so
+      ``\\rho_{a,\\mathrm{ach}}`` collapses to ``rho a, ach`` -- one token a
+      regex can match, instead of a symbol that vanishes and disarms W7.
     * ``\\label{}`` / ``\\ref{}`` must not manufacture prose.  They leave
       ``label``/``ref`` plus the key text, neither of which is a banned token.
+    * SPACING is spacing.  LaTeX has a dozen ways to write a word gap
+      (``~``, ``\\,``, ``\\;``, ``\\:``, ``\\ ``, ``\\thinspace``,
+      ``\\\\``, ``\\text{ }``) and a dozen formatting wrappers (``\\emph{X}``,
+      ``\\textbf{X}``, ``\\text{X}``).  Left unnormalised, each one splits a
+      banned phrase into tokens no pattern matches: ``second~objective``,
+      ``second\\emph{objective}`` (which became ``second emph objective``) and
+      ``second\\\\objective`` (where the bare-command rule ate ``\\\\objective``
+      whole) were all invisible (defect H8 in the discrimination probe).  They
+      are normalised to a single space, or to their content, BEFORE the command
+      rules run.
     """
     line = line.strip()
     if line.startswith(("```", "~~~")):
         return ""
+    # -- spacing, before any command rule can treat it as a command ----------
+    line = line.replace("\\\\", " ")                     # TeX line break
+    line = re.sub(r"\\[,;:! ]", " ", line)               # \, \; \: \! "\ "
+    line = line.replace("\\-", "-")                      # discretionary hyphen
+    line = line.replace("~", " ")                        # non-breaking space
+    line = re.sub(r"\\(?:thinspace|enspace|quad|qquad|hfill|hspace\*?"
+                  r"\{[^{}]*\})", " ", line)
+    # -- formatting wrappers keep their CONTENT and drop their name ----------
+    for _ in range(2):
+        line = re.sub(r"\\(?:emph|textbf|textit|textrm|textnormal|textsc|"
+                      r"textsuperscript|textsubscript|text)\s*\{([^{}]*)\}",
+                      r" \1 ", line)
     # \command[opt]_{arg} -> "command arg"  (name kept, argument kept).  The
     # subscript/superscript group is where the math symbols live: without it
     # ``\rho_{a,\mathrm{ach}}`` lost "rho" to the bare-command rule below and
@@ -691,8 +832,25 @@ _READING_BINDING = (
     r"(?:=|＝|≈|:|：|of|is|are|was|were|reached|reaches|reads?|reading|"
     r"ranges?|values?|equals?|median|中位数\s*为|中位数|为|达|是|约|范围)"
 )
+# A binding word may be followed by a copula before the number: "the value IS
+# 71.3", "the ratio, computed on the library f_q, WAS 0.62".  The first cut
+# required the number to sit immediately after the binding token, so
+# "the f_Q_deliv value is 71.3" was read as "no reading on the line" and the
+# caliber obligation never started (defect M3 in the discrimination probe).
 _READING_AFTER_RX = re.compile(
-    r"\s*" + _READING_BINDING + r"\s*(?:of\s*)?[-+]?\d+(?:\.\d+)?",
+    r"\s*" + _READING_BINDING + r"\s*(?:of\s*)?"
+    r"(?:(?:is|are|was|were|equals?|reaches?|reads?|of)\s*)?"
+    r"[-+]?\d+(?:\.\d+)?",
+    re.IGNORECASE,
+)
+# The same, when a parenthetical / participial bridge separates the token from
+# its binding ("the fulfillment ratio, computed on the library f_q, reached
+# 0.62").  Anchored at the token and bounded at 40 characters with no sentence
+# terminator, so a digit belonging to a LATER sentence cannot bind here.
+_READING_BRIDGED_RX = re.compile(
+    r"[^.\n]{0,40}?" + _READING_BINDING + r"\s*(?:of\s*)?"
+    r"(?:(?:is|are|was|were|equals?|reaches?|reads?)\s*)?"
+    r"[-+]?\d+(?:\.\d+)?",
     re.IGNORECASE,
 )
 
@@ -704,11 +862,13 @@ def _states_a_reading(line: str, m) -> bool:
     mention is not a reading, so a digit that belongs to a cross-reference
     ("f_q is defined in Eq.(9)", "see Table 4") must not trip the obligation.
     """
-    tail = line[m.end(): m.end() + 40]
+    tail = line[m.end(): m.end() + 60]
     xref = _XREF_RX.search(tail)
     if xref:
         tail = tail[:xref.start()]
-    return bool(_READING_AFTER_RX.match(tail))
+    if _READING_AFTER_RX.match(tail):
+        return True
+    return bool(_READING_BRIDGED_RX.match(tail))
 
 
 def _clear_plateau_qualifier(line: str, m) -> str:
@@ -780,6 +940,11 @@ _W9_NO_JUDGEMENT_RX = re.compile(
     r"|no\s+power|无功效|不作检验|非检验|非判词|无判词|不计通过|非通过",
     re.IGNORECASE,
 )
+# W9's own boundary set (defect H6).  Deliberately NOT applied to the other
+# bans: there, a bare "and" coordinates two phrases under one trailing marker
+# ("'X' and 'Y' are forbidden"); here the predicate is a full declarative, so a
+# conjunction means a second clause.
+_W9_CONJUNCTION_RX = re.compile(r"\b(?:and|or|which)\b", re.IGNORECASE)
 
 
 def _clear_coverage_reading(line: str, m) -> str:
@@ -789,6 +954,17 @@ def _clear_coverage_reading(line: str, m) -> str:
     and the hit blocks the clearance -- otherwise "coverage is reported as a
     reading; yet coverage passed at the base budget" would launder the claim
     the ban exists to catch.
+
+    W9 also uses a WIDER boundary set than the other bans
+    (``_W9_CONJUNCTION_RX``).  Its predicate is an independent declarative, so
+    there is no "'X' and 'Y' are forbidden" governing relation to protect: a
+    bare "and", a bare "or" or a relative "which" between predicate and hit
+    means the predicate describes something else.  Without it, "Coverage passed
+    at the base budget, which is not a test" and "Coverage has no power as a
+    test and coverage passed at the base budget" both cleared (defect H6).  A
+    comma ALONE is not a boundary -- "Coverage has no power as a test, so a
+    coverage axis failed reading is not a result" is a licensed sentence and
+    must stay clear.
     """
     mk = _clause_marker(line, m.start(), PROHIBITION_MARKERS)
     if mk:
@@ -799,7 +975,8 @@ def _clear_coverage_reading(line: str, m) -> str:
         # A sentence terminator blocks as well as a contrast: "Coverage has no
         # power as a test. Coverage passed at the base budget." is two claims
         # on one line, and the first must not licence the second.
-        if not _has_clause_boundary(seg):
+        if not (_has_clause_boundary(seg)
+                or _W9_CONJUNCTION_RX.search(seg)):
             return "no-judgement predicate governs the hit"
     return ""
 
@@ -811,10 +988,16 @@ _FULFILLMENT_LIB_RX = re.compile(
 _FULFILLMENT_TIESET_RX = re.compile(
     r"tie[-\s]?set|tie\s+set|全体成员|all\s+(?:front|tie)|mean\s+over|"
     r"averaged\s+over\s+(?:the\s+)?(?:tie|front|members)", re.IGNORECASE)
+# The third element is ONE obligation -- "a reported reading, not an
+# optimization target" -- so it is TWO recognisers, both required.  A single OR
+# let "(library caliber, tie-set mean, reported reading)" pass with the
+# not-a-target half missing (defect M2 in the discrimination probe).
+_FULFILLMENT_READING_RX = re.compile(
+    r"reported?\s+reading|reporting\s+reading|reading,?\s+not|"
+    r"reported?\s+only|报告读数|只读数|仅作读数", re.IGNORECASE)
 _FULFILLMENT_NONTARGET_RX = re.compile(
     r"not\s+an?\s+(?:optimization|optimisation)\s+target|not\s+an?\s+objective|"
-    r"reported?\s+(?:reading|only)|reporting\s+reading|reading,?\s+not|"
-    r"报告读数|非优化目标|不进目标|只读数|仅作读数|非目标", re.IGNORECASE)
+    r"非优化目标|不进目标|非目标", re.IGNORECASE)
 
 
 def _clear_fulfillment_caliber(line: str, m) -> str:
@@ -835,7 +1018,9 @@ def _clear_fulfillment_caliber(line: str, m) -> str:
     missing = [name for name, rx in (
         ("library caliber", _FULFILLMENT_LIB_RX),
         ("tie-set mean", _FULFILLMENT_TIESET_RX),
-        ("reading, not a target", _FULFILLMENT_NONTARGET_RX)) if not rx.search(line)]
+        ("reported reading", _FULFILLMENT_READING_RX),
+        ("not an optimization target", _FULFILLMENT_NONTARGET_RX))
+        if not rx.search(line)]
     if missing:
         return ""
     return "three-part caliber tag present"
@@ -927,21 +1112,36 @@ WRITING_BANS = [
     # W2 / E1: the no-prior-work ban, both halves plus the English shapes.
     ("W2 E1 no-prior-work claim", [
         r"无人做", r"尚无人做", r"尚无人(?:研究|提出|报道)",
+        # Ticket-50 discrimination probe, defect M5: the ordinary paraphrases.
+        # "无人研究过" / "前人未研究过" are the same claim as "无人做"; the verb
+        # list was the hole, not the concept.
+        r"无人(?:研究|提出|报道|考察|建模|触及)过?",
+        r"前人(?:未|没有|未曾?)(?:研究|提出|报道|涉及|考察)",
         r"no\s+prior\s+work\s+(?:on|for|has|does|study)",
+        # Ticket 50: the clause-final form.  "…has no prior work;" ends the
+        # clause, so the registered pattern above (which requires a following
+        # on/for/has/does/study) never matched the manuscript's own novelty
+        # sentence.  That is why retiring the spec.md:82 licence alone left
+        # the sentence green: W2 was not looking at it.
+        r"\bno\s+prior\s+work\b",
+        # "No previous work has addressed ..." -- a different noun phrase for
+        # the same claim, invisible to the "prior work" patterns.
+        r"\bno\s+previous\s+work\b",
         r"\bno\s+one\s+has\s+(?:yet\s+)?(?:studied|proposed|addressed)\b",
+        r"\bnobody\s+has\s+(?:yet\s+)?"
+        r"(?:studied|proposed|addressed|considered|investigated|modelled|"
+        r"modeled|explored)\b",
         # "the coupling HAS NEVER BEEN STUDIED" -- the passive is the form a
         # related-work sentence actually uses; the active-only first cut let
         # the single most likely English phrasing through.
         r"\b(?:has|have|had)\s+never\s+been\s+"
         r"(?:studied|addressed|explored|considered|investigated|modelled|modeled)\b",
-        r"\bfirst\s+to\s+(?:study|propose|introduce|establish|show)\b",
+        # The verb list, not the concept, was the hole: "the first to PLACE the
+        # loop inside the scheduler" is the same claim as "the first to study".
+        r"\bfirst\s+to\s+(?:study|propose|introduce|establish|show|place|put|"
+        r"formulate|model|treat|combine|join|consider|explore|address|"
+        r"quantify|characterise|characterize)\b",
         r"首次(?:提出|研究|报道|将)",
-        # Ticket 50: the clause-final form.  "…has no prior work;" ends the
-        # clause, so the registered patterns above (which require a following
-        # on/for/has/does/study) never matched the manuscript's own novelty
-        # sentence.  That is why retiring the spec.md:82 licence alone left
-        # the sentence green: W2 was not looking at it.
-        r"\bno\s+prior\s+work\b",
     ], _clear_no_prior_work),
 
     # W3a / E3 + spec D15 red line 1: the per-orbit capacity caliber.  The
@@ -1101,10 +1301,40 @@ WRITING_BANS = [
         r"\btwo[-\s]?objectives?\b",
         r"\b(?:independent\s+)?objective\s+dimensions?\b",
         r"\bimage[-\s]?quality\s+objectives?\b",
-        # the same claim without the word "second": "quality is an objective"
-        r"\bquality\s+is\s+an?\s+(?:independent\s+)?objective\b",
+        # the same claim without the word "second": "quality is an objective".
+        # The copula is a SET, not just "is": "Quality remains an objective of
+        # the schedule, though not the second" asserted the framing while
+        # slipping past the "is"-only pattern (defect H3).
+        r"\bquality\s+(?:is|are|was|were|remains?|stays?|becomes?|counts?\s+as)"
+        r"\s+(?:an?|one\s+of\s+the)\s+(?:independent\s+|second\s+|primary\s+|"
+        r"key\s+)?objectives?\b",
         r"\bquality\b[^.\n]{0,20}\bas\s+an?\s+(?:independent\s+)?objective\b",
-        r"第二目标", r"第[二2]\s*个?\s*目标", r"双目标", r"两(?:个)?目标",
+        # Ticket-50 discrimination probe, defect H1: the retired framing said
+        # without the word "objective".  Every pattern below was verified to
+        # MISS in the current manuscript, and the ones that must keep missing
+        # are the promotion verdict's "two separated axes" (structural /
+        # reading) and the R1C "quality axis" (a scale, not an objective) --
+        # both stay clear because the pattern demands an objective-family word
+        # in the same clause.
+        r"\b(?:two|both)\s+(?:\w+\s+){0,2}axes\b[^.\n:]{0,40}?"
+        r"(?:objectiv|maximi[sz]|minimi[sz]|trade[-\s]?off|criteri)",
+        r"(?:optimi[sz]|maximi[sz]|minimi[sz])\w*[^.\n:]{0,40}?"
+        r"\b(?:two|both)\s+(?:\w+\s+){0,2}axes\b",
+        r"\bobjective\s+(?:vector|space)\b",
+        r"\b(?:secondary|second)\s+criteri(?:on|a)\b",
+        r"\b(?:two|bi)[-\s]?criteri(?:on|a)\b",
+        r"\bsecond\s+(?:\w+\s+){0,2}?axis\b",
+        # Defect H2 -- the CURRENT manuscript's own leak: the conclusion asserts
+        # "the quality index of the served set is a first-class objective" and
+        # "the task priorities that drive the first objective", neither of which
+        # any pattern above matched, so sec8_conclusion.md was entirely absent
+        # from the expected-red ledger.  "first-class constraint" (a legitimate
+        # phrase used four times) is not matched: the noun must be "objective".
+        r"\bfirst[-\s]class\s+objectives?\b",
+        r"\bfirst\s+objective\b",
+        r"\bquality\s+index\b[^.\n]{0,40}\bis\s+an?\s+[^.\n]{0,18}objective\b",
+        r"第二目标", r"第\s*[二2]\s*个?\s*目标", r"双目标",
+        r"两(?:个|项|条)?目标", r"质量(?:作为|当作|视作)(?:一[个条])?目标",
         r"独立目标维", r"第二优化目标", r"次要目标",
     ], _clear_dual_objective),
 
@@ -1115,16 +1345,21 @@ WRITING_BANS = [
     # have to dispatch on the matched text, and the ledger's per-line label
     # would stop naming which obligation failed.
     ("W15a A4 fulfillment-ratio caliber", [
-        r"fulfill?ment[-\s]?ratio", r"兑现率", r"\bf_q_fulfillment\b",
+        # ``fulfillment\_ratio`` in .tex keeps its underscore through
+        # _strip_markup, so the character class has to admit "_" (defect H8).
+        r"fulfill?ment[_\- \t]?ratio", r"兑现率", r"\bf_q_fulfillment\b",
     ], _clear_fulfillment_caliber),
 
     # W15b (ticket 50 A4): the descriptive variant f_Q_deliv, once implemented
     # (formula-spec 8.17-10), must be labelled descriptive and declared
-    # incomparable with the library caliber.  Two patterns because the .tex
-    # form survives _strip_markup as "f Q, text deliv".
+    # incomparable with the library caliber.  Two patterns because _strip_markup
+    # turns the .tex form into "f_ Q, deliv" (the subscript underscore survives
+    # and \text / \mathrm leave their CONTENT behind).  The first cut required
+    # ``f Q, text deliv`` -- a string _strip_markup never produces -- so W15b
+    # never fired on a .tex manuscript at all (defect H7).
     ("W15b A4 f_Q_deliv descriptive tag", [
         r"f[_ ]?q[_ ]?deliv\b",
-        r"\bf\s+q\s*,\s*(?:text\s+)?deliv\b",
+        r"\bf[_ ]*q\s*,\s*(?:(?:text|mathrm|mathit|textrm)\s+)?deliv\b",
     ], _clear_fq_deliv),
 ]
 
@@ -1132,6 +1367,25 @@ WRITING_BANS = [
 # The bans whose phrases are multi-word and can therefore be split by a hard
 # line wrap.  See the wrap-junction pass in scan_writing_bans.
 _WRAP_SCAN_LABELS = frozenset({
+    "W14 single-axis positioning",
+    "W15a A4 fulfillment-ratio caliber",
+    "W15b A4 f_Q_deliv descriptive tag",
+})
+
+# Guards that need the SURROUNDING lines to classify the hit.
+#   * A retrospective marker ("We no longer treat image quality as a") sits on
+#     the line above the banned phrase it governs, and a withdrawal verb ("was"
+#     / "withdrawn.") on the line below it: a line-scoped guard saw only half
+#     the sentence and fired on a licensed mention (defect M1 / false positive
+#     F2).  The guard's own clause cut is what keeps this honest -- a marker in
+#     the NEXT sentence is outside the hit's clause and still does not clear.
+#   * The caliber obligations (W15) start when EITHER the label or its number
+#     appears, so a label on line 1 and the number on line 2 ("The fulfillment
+#     ratio" / "is 0.62") must still be judged (defect M4).
+# Scoped to these labels on purpose: W13's caliber tag is per-line by design,
+# and widening its window would let a tag on one line license a number on the
+# next.
+_CONTEXT_LABELS = frozenset({
     "W14 single-axis positioning",
     "W15a A4 fulfillment-ratio caliber",
     "W15b A4 f_Q_deliv descriptive tag",
@@ -1167,8 +1421,18 @@ def scan_writing_bans(paths, violations, cleared):
             for m in rx.finditer(stripped):
                 line_no = _line_index(stripped, m.start())
                 line = lines[line_no - 1]
-                rel = _RelMatch(m, _line_start(stripped, m.start()))
-                reason = guard(line, rel)
+                abs_start = _line_start(stripped, m.start())
+                context, offset = line, abs_start
+                if label in _CONTEXT_LABELS:
+                    lead = lines[line_no - 2] if line_no >= 2 else ""
+                    tail = lines[line_no] if line_no < len(lines) else ""
+                    if lead.strip():
+                        context = lead + " " + context
+                        offset -= len(lead) + 1
+                    if tail.strip():
+                        context = context + " " + tail
+                rel = _RelMatch(m, offset)
+                reason = guard(context, rel)
                 if reason:
                     cleared.append((label, p, line_no, m.group(0), reason))
                 else:
@@ -1181,10 +1445,14 @@ def scan_writing_bans(paths, violations, cleared):
         # per-line scan.  Joining each adjacent pair restores it; only matches
         # that CROSS the junction are reported, so nothing is double-counted.
         # Scoped to the ban labels whose phrases are multi-word.
-        for i in range(len(lines) - 1):
-            left, right = lines[i], lines[i + 1]
-            if not left.strip() or not right.strip():
-                continue
+        #
+        # The pairs are taken over NON-BLANK lines: a blank line is a paragraph
+        # break a hostile draft can hide a split behind ("second" / blank /
+        # "objective"), and the earlier version skipped those pairs outright
+        # (defect H8 / case F4).
+        live = [i for i, ln in enumerate(lines) if ln.strip()]
+        for a, b in zip(live, live[1:]):
+            left, right = lines[a], lines[b]
             joined = left + " " + right
             for label, rx, guard in compiled:
                 if label not in _WRAP_SCAN_LABELS:
@@ -1192,7 +1460,7 @@ def scan_writing_bans(paths, violations, cleared):
                 for m in rx.finditer(joined):
                     if m.end() <= len(left) or m.start() >= len(left):
                         continue          # does not cross the junction
-                    line_no = i + 1
+                    line_no = a + 1
                     if (label, line_no) in fired:
                         continue
                     reason = guard(joined, m)
@@ -1205,6 +1473,7 @@ def scan_writing_bans(paths, violations, cleared):
 
 
 def main(argv=None) -> int:
+    global _INCLUDE_SCRATCH
     ap = argparse.ArgumentParser()
     ap.add_argument("--path", action="append", default=None,
                     help="extra roots to scan")
@@ -1214,7 +1483,9 @@ def main(argv=None) -> int:
                          "the REGISTERED ARTIFACTS, while the scratch is where "
                          "the bans themselves are discussed -- scanning it "
                          "yields a hit on every document that quotes the "
-                         "forbidden phrase in order to forbid it")
+                         "forbidden phrase in order to forbid it.  It now also "
+                         "extends the W-family (writing-ban) scope, which it "
+                         "did not before: see _INCLUDE_SCRATCH")
     ap.add_argument("--must-include", action="append", default=None,
                     metavar="PATH",
                     help="fail unless PATH is in the scanned set (repeatable). "
@@ -1228,11 +1499,18 @@ def main(argv=None) -> int:
 
     default_roots = [REPO / "papers" / "sliding-spotlight-scheduling"]
     if args.include_scratch:
+        _INCLUDE_SCRATCH = True
         default_roots.append(REPO / ".scratch" / "sliding-spotlight-scheduling")
     roots = [Path(a) for a in args.path] if args.path else default_roots
     files: list[Path] = []
     for root in roots:
         root = Path(root).resolve()
+        # A path that does not exist scanned ZERO files and printed a clean
+        # rc=0: a green gate over nothing (probe defect M6).  It is a usage
+        # error, like a mis-typed --must-include.
+        if not root.exists():
+            print(f"SCAN SET: --path {str(root)!r} does not exist", file=sys.stderr)
+            return 2
         if root.is_file():
             files.append(root)
         elif root.is_dir():
@@ -1241,6 +1519,9 @@ def main(argv=None) -> int:
                 if p.is_file()
                 and p.suffix in (".py", ".md", ".json", ".tex")
                 and "results" not in p.parts
+                # Build caches are not manuscript prose; .pytest_cache/README.md
+                # was in the 1075-file scan set (probe defect L4).
+                and not any(part in _SKIP_DIR_NAMES for part in p.parts)
                 and p.resolve() != Path(__file__).resolve()  # the checker
                 # necessarily contains the forbidden patterns themselves
                 and p.name not in _SELF_SCAN_EXEMPT
