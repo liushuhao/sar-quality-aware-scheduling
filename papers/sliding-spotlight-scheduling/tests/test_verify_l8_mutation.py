@@ -92,6 +92,17 @@ PROBES = [
     (FULL, FULL_TEXT, "51.14% for the control family",
      "22.22% for the control family"),
     (FULL, FULL_TEXT, "0.9924 at $s=1.4$", "0.1111 at $s=1.4$"),
+    # --- R50: the printed per-mode f_q constants and their ratios ---------
+    (MAIN, MAIN_TEXT, "$0.8107$ (STR)", "$0.1111$ (STR)"),
+    (MAIN, MAIN_TEXT, "$19.7352$ (SLS)", "$11.1111$ (SLS)"),
+    (MAIN, MAIN_TEXT, "$54.8322$ (SPT)", "$44.4444$ (SPT)"),
+    (MAIN, MAIN_TEXT, "$24.3\\times$ (SLS over STR)",
+     "$99.9\\times$ (SLS over STR)"),
+    (MAIN, MAIN_TEXT, "$67.6\\times$ (SPT over STR)",
+     "$99.9\\times$ (SPT over STR)"),
+    (MAIN, MAIN_TEXT, "$2.8\\times$ (SPT over SLS)",
+     "$99.9\\times$ (SPT over SLS)"),
+    (FULL, FULL_TEXT, "0.8107$ (STR)", "0.1111$ (STR)"),
 ]
 
 

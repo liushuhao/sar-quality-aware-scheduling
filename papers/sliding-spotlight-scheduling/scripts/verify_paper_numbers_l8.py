@@ -288,6 +288,20 @@ def recompute(need_deliv: bool = False) -> dict:
             {m.name: float(lib.rho_az(m)) for m in (Mode.STR, Mode.SLS,
                                                     Mode.SPT)},
             "ModeLibrary.from_fixture().rho_az(mode), zero-squint")
+        # R50: the per-mode library f_q constants and their magnitude ratios
+        # are PRINTED in the quality-model section, so they belong under the
+        # number gate -- a fixture change would otherwise fork the printed
+        # text from the platform figure silently.
+        from sss_core.quality import f_q_per_task
+        _fq = {m.name: float(f_q_per_task(m, 0.0, lib.geo.R0_m, lib))
+               for m in (Mode.STR, Mode.SLS, Mode.SPT)}
+        exp["mode_fq_const"] = (
+            _fq, "sss_core.quality.f_q_per_task(mode, psi=0, r=lib.geo.R0_m)")
+        exp["mode_fq_ratio"] = (
+            {("SLS", "STR"): _fq["SLS"] / _fq["STR"],
+             ("SPT", "STR"): _fq["SPT"] / _fq["STR"],
+             ("SPT", "SLS"): _fq["SPT"] / _fq["SLS"]},
+            "ratio of the recomputed per-mode f_q constants")
     except Exception as exc:                      # pragma: no cover
         exp["str_floor_m_abort"] = (str(exc), "sss_core import failed")
 
@@ -402,6 +416,16 @@ _DIP = re.compile(r"(\d+(?:\.\d+)?)\s+(?:pp|percentage\s+points)\s+between\s+"
                   r"(\d(?:\.\d)?)\$?", re.IGNORECASE)
 _MODE_FLOOR = re.compile(r"rho_\{a,\\mathrm\{(STR|SLS|SPT)\}\}[^;]{0,60}?"
                          r"(\d+(?:\.\d+)?)\s*\$?\s*~?m", re.IGNORECASE)
+
+# R50: the printed per-mode f_q constants ("$0.8107$ (STR)") and their
+# magnitude ratios ("$24.3\times$ (SLS over STR)").  The ratio form carries
+# a LaTeX macro (and its closing "$") between the number and the
+# parenthesis, so both are part of the pattern.
+_MODE_FQ_CONST_RX = re.compile(
+    r"\$?(\d+(?:\.\d+)?)\$?\s*\((STR|SLS|SPT)\)")
+_MODE_FQ_RATIO_RX = re.compile(
+    r"(\d+(?:\.\d+)?)\s*\\times\$?\s*"
+    r"\((STR|SLS|SPT)\s+over\s+(STR|SLS|SPT)\)")
 
 
 def _family_in(sent: str):
@@ -793,6 +817,32 @@ def check_paper(text: str, label: str, exp: dict) -> "tuple[list, list, list, in
                            _printed_tol(mm.group(2)),
                            f"{mode} zero-squint azimuth resolution (m)",
                            exp["mode_floor_m"][1], mm.group(0))
+
+            # ---- per-mode library f_q constants + magnitude ratios (R50) --
+            # Only the sentence that states the constants is checked, so the
+            # "N (MODE)" shape elsewhere in the manuscript is not mistaken
+            # for a capability reading.
+            if "mode_fq_const" in exp and re.search(
+                    r"per-?mode\s+constants?", sent, re.I):
+                for mm in _MODE_FQ_CONST_RX.finditer(sent):
+                    printed, mode = float(mm.group(1)), mm.group(2)
+                    want = exp["mode_fq_const"][0][mode]
+                    seen += 1
+                    _score(label, fails, passes, printed, want,
+                           max(_printed_tol(mm.group(1)), 1e-3),
+                           f"{mode} zero-squint f_q constant (m^-2)",
+                           exp["mode_fq_const"][1], mm.group(0))
+                for mm in _MODE_FQ_RATIO_RX.finditer(sent):
+                    printed = float(mm.group(1))
+                    num, den = mm.group(2), mm.group(3)
+                    want = exp["mode_fq_ratio"][0].get((num, den))
+                    if want is None:
+                        continue
+                    seen += 1
+                    _score(label, fails, passes, printed, want,
+                           _printed_tol(mm.group(1)),
+                           f"f_q magnitude ratio {num} over {den}",
+                           exp["mode_fq_ratio"][1], mm.group(0))
     return fails, passes, [], seen
 
 
