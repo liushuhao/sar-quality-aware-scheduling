@@ -361,7 +361,20 @@ _NEGATED_IN_PAPER_RX = re.compile(
     r"|\b(?:we|our|this\s+(?:paper|work|study))\b[^.\n]{0,80}"
     r"\bnot\s+(?:an?|the)\s+objective\s+dimension\b"
     r"|\bnot\s+(?:an?|the)\s+objective\s+dimension\b[^.\n]{0,40}"
-    r"\b(?:in|for)\s+this\s+(?:paper|work|study)\b",
+    r"\b(?:in|for)\s+this\s+(?:paper|work|study)\b"
+    # "This paper does NOT CARRY an image-quality objective as an independent
+    # objective dimension" -- the negated VERB form of the same retirement.
+    # Round-2 self-attack finding: the noun-phrase alternatives above cover
+    # "is not a second objective", not "does not carry ... as an objective".
+    #
+    # The bridge between the verb and "objective" is tempered against a bare
+    # "and": "We do not model quality post hoc AND the quality index is a
+    # second objective" is an assertion, and the untempered window licensed it
+    # (round-2 audit finding).
+    r"|\b(?:we|our|this\s+(?:paper|work|study))\b[^.\n]{0,80}"
+    r"\b(?:do|does|did|will|would)?\s*not\s+"
+    r"(?:carry|treat|use|model|formulate|regard|optimise|optimize|include)\b"
+    r"(?:(?!\band\b)[^.\n]){0,60}\bobjectives?\b",
     re.IGNORECASE,
 )
 
@@ -397,12 +410,17 @@ def _clause_marker(line: str, pos: int, markers) -> str:
     return ""
 
 
-def _marker_gap(line: str, pos: int, marker: str) -> str:
-    """Text between ``pos`` and the nearest occurrence of ``marker``.
+def _marker_gap(line: str, pos: int, marker: str, hit_end: int = None) -> str:
+    """Text between the hit and the nearest occurrence of ``marker``.
 
     Used for the laundering vetoes: a marker only governs a hit it is adjacent
     to.  When an independent clause sits in between, the marker belongs to that
     clause and must not license this hit.
+
+    ``hit_end`` extends the BEFORE-marker gap to the end of the matched phrase.
+    Without it a pattern that spans its own copula ("quality IS a second
+    objective") hid the copula from the check, and "… is forbidden and image
+    quality is a second objective" cleared (round-2 audit finding).
     """
     clause, start = _clause_around(line, pos)
     if clause is None:
@@ -411,10 +429,12 @@ def _marker_gap(line: str, pos: int, marker: str) -> str:
     mk = marker.lower()
     before = low.rfind(mk, 0, max(0, pos - start))
     if before != -1:
-        return line[start + before + len(mk): pos]
+        end = hit_end if hit_end is not None else pos
+        return line[start + before + len(mk): end]
     after = low.find(mk, max(0, pos - start))
     if after != -1:
-        return line[pos: start + after]
+        begin = hit_end if hit_end is not None else pos
+        return line[begin: start + after]
     return ""
 
 
@@ -427,19 +447,46 @@ def _marker_gap(line: str, pos: int, marker: str) -> str:
 # claim") is not a licence for this one.
 _PROHIBITION_LAUNDER_RX = re.compile(
     r"to\s+the\s+contrary|otherwise|\bcontrary\s+to\b|any\s+statement|"
-    r"no\s+statement|any\s+claim|den(?:y|ies|ied)|counts?\s+as",
+    r"no\s+statement|any\s+claim|den(?:y|ies|ied)|counts?\s+as|"
+    r"\b(?:say|state|claim|write)s?\s+otherwise\b|\bit\s+(?:is|was)\b",
     re.IGNORECASE)
+
+# A copula inside the gap that is NOT the marker's own auxiliary means the
+# marker has a different subject: "… is forbidden and image quality IS a second
+# objective" (the round-2 cross-line case).  In the legitimate AFTER shape
+# ("'X' and 'Y' ARE forbidden") the copula sits immediately before the marker,
+# so it does not count.
+_COPULA_NOT_GOVERNING_RX = re.compile(
+    r"\b(?:is|are|was|were|be|been|has|have|had)\b(?!\s*$)", re.IGNORECASE)
 
 # Ticket-50 discrimination probe, defect H5: a retrospective shell that KEEPS
 # the framing.  "The former two-objective formulation is retained as the core
 # framing of this paper" reports the old framing as former while asserting it
 # is the paper's framing; the retro word must not license a retention verb in
 # the same clause.
+#
+# The vocabulary is deliberately tied to a FRAMING object where the verb is
+# generic.  Round 2 showed both failure directions: a bare `\bstill\b` /
+# `\bremains?\b` vetoed the legitimate "… is retired and coverage still governs
+# the schedule" (phase 2 will write exactly that), while a narrow list let
+# "survives as the organising principle" / "is what this paper builds on" /
+# "is adopted throughout this paper" through.  So: retain/keep are retained as
+# bare markers (they have no other object in this manuscript), and the rest
+# need a framing complement.
 _RETENTION_RX = re.compile(
-    r"\bretain(?:s|ed|ing)?\b|\bwe\s+keep\b|\bkeeps?\b|\bkept\b|"
-    r"\bstill\s+defines?\b|\bstill\s+central\b|\bcore\s+framing\b|"
-    r"\bas\s+the\s+contribution\b|\bis\s+the\s+contribution\b|\bremains?\b|"
-    r"保留|仍是|仍为|核心框架",
+    r"\bretain(?:s|ed|ing)?\b|\bwe\s+keep\b|\bkeeps?\b|\bkept\b"
+    r"|\bis\s+still\b|\bwas\s+still\b"
+    r"|\bstays?\s+(?:central|the\s+(?:core|framing|principle)|what)\b"
+    r"|\bremains?\s+(?:the\s+)?(?:core|central|framing|first-class|what|our|"
+    r"organis\w*|organiz\w*)"
+    r"|\bremains?\s+(?:an?\s+)?(?:second|independent|primary)?\s*objectives?\b"
+    r"|\bstill\s+(?:defines?|central|the\s+(?:framing|core|organis\w*|"
+    r"organiz\w*|principle)|what\s+(?:this\s+)?paper)\b"
+    r"|\bsurviv(?:es|ed)\s+(?:as|the)\b|\bbuilds?\s+on\b"
+    r"|\badopt(?:s|ed)?\s+throughout\b"
+    r"|\bcore\s+framing\b|\bas\s+the\s+contribution\b|\bis\s+the\s+contribution\b"
+    r"|\borganis(?:es|ing)\s+principle|\borganiz(?:es|ing)\s+principle"
+    r"|保留|仍是|仍为|仍旧|核心框架|组织原则",
     re.IGNORECASE)
 
 # A falsified-verdict marker ("search artifact") licenses a hit only when it is
@@ -449,16 +496,34 @@ _RETENTION_RX = re.compile(
 _INDEPENDENT_PREDICATE_RX = re.compile(
     r"\b(?:is|are|was|were|remains?|becomes?|has|have|had)\b", re.IGNORECASE)
 
+# "neither axis is an objective", "the axes are not objectives" -- the retired
+# framing NEGATED in the hit's own clause.
+_NEGATED_OBJECTIVE_IN_CLAUSE_RX = re.compile(
+    r"\b(?:not|neither|nor|never|no)\b[^.\n]{0,40}\bobjectiv", re.IGNORECASE)
+
 
 def _clear_dual_objective(line: str, m) -> str:
     """W14: asserting the retired framing is banned; a retrospective or
     negated mention of it is licensed."""
+    token = (m.group(0) or "").lower()
+    clause, _start = _clause_around(line, m.start())
+    # The promotion verdict's axes are not objectives, and the manuscript is
+    # allowed to SAY so: "stated on two separated axes and neither axis is an
+    # objective" is the retired framing being negated, not asserted (round-2
+    # false positive).  Restricted to axis hits so it cannot launder a
+    # "second objective" claim that merely shares a clause with a negation.
+    if "ax" in token and clause and _NEGATED_OBJECTIVE_IN_CLAUSE_RX.search(clause):
+        return "the axes are negated as objectives in this sentence"
     mk = _clause_marker(line, m.start(), PROHIBITION_MARKERS)
     if mk:
         # The marker must govern THIS hit: a prohibition whose object is some
         # other proposition ("any statement to the contrary is forbidden") does
-        # not license the assertion it trails (H4).
-        if not _PROHIBITION_LAUNDER_RX.search(_marker_gap(line, m.start(), mk)):
+        # not license the assertion it trails (H4).  A copula in the gap that
+        # is not the marker's own auxiliary means the marker has another
+        # subject (round-2 cross-line case).
+        gap = _marker_gap(line, m.start(), mk, hit_end=m.end())
+        if not (_PROHIBITION_LAUNDER_RX.search(gap)
+                or _COPULA_NOT_GOVERNING_RX.search(gap)):
             return f"inside a prohibition ({mk!r})"
     mk = _clause_marker(line, m.start(), FALSIFIED_MARKERS)
     if mk:
@@ -539,8 +604,17 @@ _LABEL_CLAUSE_CUTS = (";", "；", ":", "：", ",", "，", "(", ")", "[", "]",
 # sits in the previous clause by construction, because the clause cut includes
 # ':' / '：'.  The listed phrases are exactly what it forbids, so the marker
 # must govern them (false-positive F3 in the ticket-50 discrimination probe).
+#
+# The colon form is NARROW: the marker must open the line (list style) or be
+# predicated of a meta-noun ("the phrase/label/term ... is forbidden:").
+# Otherwise "…is forbidden: <a full assertion>" became a free licence for
+# whatever followed the colon (round-2 audit finding).
 _COLON_PROHIBITION_RX = re.compile(
-    r"(?:forbidden|prohibited|banned|禁[止用]?|不得)\s*[:：]\s*$", re.IGNORECASE)
+    r"^\s*(?:[-*+]\s*)?(?:forbidden|prohibited|banned|禁[止用]?|不得)\s*[:：]"
+    r"|\b(?:phrases?|phrasings?|labels?|terms?|wordings?|statements?|claims?|"
+    r"words?|表述|措辞|声明|说法|措辞)\b[^.\n:：]{0,40}"
+    r"(?:forbidden|prohibited|banned|禁止|禁|不得)\s*[:：]",
+    re.IGNORECASE)
 
 
 def _clause_around(line: str, pos: int) -> tuple:
@@ -713,16 +787,21 @@ def _strip_markup(line: str) -> str:
         return ""
     # -- spacing, before any command rule can treat it as a command ----------
     line = line.replace("\\\\", " ")                     # TeX line break
-    line = re.sub(r"\\[,;:! ]", " ", line)               # \, \; \: \! "\ "
+    line = re.sub(r"\\[,;:!/ ]", " ", line)              # \, \; \: \! \/ "\ "
     line = line.replace("\\-", "-")                      # discretionary hyphen
     line = line.replace("~", " ")                        # non-breaking space
     line = re.sub(r"\\(?:thinspace|enspace|quad|qquad|hfill|hspace\*?"
                   r"\{[^{}]*\})", " ", line)
     # -- formatting wrappers keep their CONTENT and drop their name ----------
+    # The wrapper list is a whitelist and will always be missing one; the ones
+    # here are the forms a LaTeX draft actually uses to break a phrase
+    # (round-2 self-attack: \mbox{ }, \textup{ }, \mathit{objective},
+    # \operatorname{deliv} all survived the first cut).
     for _ in range(2):
-        line = re.sub(r"\\(?:emph|textbf|textit|textrm|textnormal|textsc|"
-                      r"textsuperscript|textsubscript|text)\s*\{([^{}]*)\}",
-                      r" \1 ", line)
+        line = re.sub(r"\\(?:emph|textbf|textit|textrm|textup|textsl|textmd|"
+                      r"textnormal|textsc|textsuperscript|textsubscript|text|"
+                      r"mathrm|mathit|mathbf|mathsf|mathtt|operatorname|mbox|"
+                      r"hbox|fbox)\s*\{([^{}]*)\}", r" \1 ", line)
     # \command[opt]_{arg} -> "command arg"  (name kept, argument kept).  The
     # subscript/superscript group is where the math symbols live: without it
     # ``\rho_{a,\mathrm{ach}}`` lost "rho" to the bare-command rule below and
@@ -944,7 +1023,16 @@ _W9_NO_JUDGEMENT_RX = re.compile(
 # bans: there, a bare "and" coordinates two phrases under one trailing marker
 # ("'X' and 'Y' are forbidden"); here the predicate is a full declarative, so a
 # conjunction means a second clause.
-_W9_CONJUNCTION_RX = re.compile(r"\b(?:and|or|which)\b", re.IGNORECASE)
+#
+# An ANAPHORIC subject is the same signal: ", so IT IS not a test" / "because
+# IT IS not a test" restate the hit, while the licensed "…, so a coverage axis
+# failed reading is not a result" predicates a different noun phrase.  Keying
+# on the pronoun keeps that licensed sentence (which the phase-1 suite already
+# carries) while closing the round-2 bypasses.
+_W9_CONJUNCTION_RX = re.compile(
+    r"\b(?:and|or|which)\b|"
+    r"\b(?:it|this|that|these|those|they)\s+(?:is|are|was|were|has|have)\b",
+    re.IGNORECASE)
 
 
 def _clear_coverage_reading(line: str, m) -> str:
@@ -1123,12 +1211,13 @@ WRITING_BANS = [
         # on/for/has/does/study) never matched the manuscript's own novelty
         # sentence.  That is why retiring the spec.md:82 licence alone left
         # the sentence green: W2 was not looking at it.
-        r"\bno\s+prior\s+work\b",
-        # "No previous work has addressed ..." -- a different noun phrase for
-        # the same claim, invisible to the "prior work" patterns.
-        r"\bno\s+previous\s+work\b",
+        #
+        # "No previous work / no prior study / no previous research" are the
+        # same noun phrase (round-2 self-attack finding A19), so the family is
+        # matched as a set; the bare "no prior work" literal is subsumed.
+        r"\bno\s+(?:previous|prior)\s+(?:work|study|studies|research|effort)\b",
         r"\bno\s+one\s+has\s+(?:yet\s+)?(?:studied|proposed|addressed)\b",
-        r"\bnobody\s+has\s+(?:yet\s+)?"
+        r"\bnobody\s+(?:has|had|have)\s+(?:yet\s+)?"
         r"(?:studied|proposed|addressed|considered|investigated|modelled|"
         r"modeled|explored)\b",
         # "the coupling HAS NEVER BEEN STUDIED" -- the passive is the form a
@@ -1305,9 +1394,9 @@ WRITING_BANS = [
         # The copula is a SET, not just "is": "Quality remains an objective of
         # the schedule, though not the second" asserted the framing while
         # slipping past the "is"-only pattern (defect H3).
-        r"\bquality\s+(?:is|are|was|were|remains?|stays?|becomes?|counts?\s+as)"
-        r"\s+(?:an?|one\s+of\s+the)\s+(?:independent\s+|second\s+|primary\s+|"
-        r"key\s+)?objectives?\b",
+        r"\bquality\s+(?:is|are|was|were|remains?|stays?|becomes?|counts?\s+as|"
+        r"continues?\s+to\s+be)\s+(?:still\s+)?(?:an?|the|one\s+of\s+the)\s+"
+        r"(?:independent\s+|second\s+|primary\s+|key\s+)?objectives?\b",
         r"\bquality\b[^.\n]{0,20}\bas\s+an?\s+(?:independent\s+)?objective\b",
         # Ticket-50 discrimination probe, defect H1: the retired framing said
         # without the word "objective".  Every pattern below was verified to
@@ -1316,11 +1405,18 @@ WRITING_BANS = [
         # reading) and the R1C "quality axis" (a scale, not an objective) --
         # both stay clear because the pattern demands an objective-family word
         # in the same clause.
-        r"\b(?:two|both)\s+(?:\w+\s+){0,2}axes\b[^.\n:]{0,40}?"
-        r"(?:objectiv|maximi[sz]|minimi[sz]|trade[-\s]?off|criteri)",
+        #
+        # Round-2 audit widened three of them: the singular "two-axis"
+        # formulation, the hyphenated "objective-vector", and a coordination
+        # verb ("optimi[sz]") after the axes, which is how the paper's own
+        # sentence is written.  A bare "criteri" after the axes was REMOVED: it
+        # is promotion prose ("two separated axes … separate criteria").
+        r"\b(?:two|both)[-\s]+(?:\w+[-\s]+){0,2}ax(?:is|es)\b[^.\n:]{0,40}?"
+        r"(?:objectiv|maximi[sz]|minimi[sz]|optimi[sz]|trade[-\s]?off)",
         r"(?:optimi[sz]|maximi[sz]|minimi[sz])\w*[^.\n:]{0,40}?"
-        r"\b(?:two|both)\s+(?:\w+\s+){0,2}axes\b",
-        r"\bobjective\s+(?:vector|space)\b",
+        r"\b(?:two|both)[-\s]+(?:\w+[-\s]+){0,2}ax(?:is|es)\b",
+        r"\bobjective[-\s]+(?:vector|space)\b",
+        r"\b(?:both|the\s+two)\s+objectives?\b",
         r"\b(?:secondary|second)\s+criteri(?:on|a)\b",
         r"\b(?:two|bi)[-\s]?criteri(?:on|a)\b",
         r"\bsecond\s+(?:\w+\s+){0,2}?axis\b",
@@ -1512,6 +1608,13 @@ def main(argv=None) -> int:
             print(f"SCAN SET: --path {str(root)!r} does not exist", file=sys.stderr)
             return 2
         if root.is_file():
+            # A .txt/extensionless draft scanned ZERO writing-ban hits (the W
+            # family only reads .md/.tex), so a mis-suffixed manuscript would
+            # pass silently.  Naming one explicitly is a usage error.
+            if root.suffix not in (".py", ".md", ".json", ".tex"):
+                print(f"SCAN SET: --path {str(root)!r} has an unsupported "
+                      f"suffix {root.suffix!r}", file=sys.stderr)
+                return 2
             files.append(root)
         elif root.is_dir():
             files.extend(
@@ -1529,6 +1632,12 @@ def main(argv=None) -> int:
 
     violations: list[str] = []
     cleared: list[tuple] = []
+
+    # An EMPTY scan set is the same false green as a nonexistent path: the gate
+    # would print "0 violations over 0 files" and exit clean (round-2 audit).
+    if not files:
+        print("SCAN SET: nothing to scan -- the path(s) yielded no file", file=sys.stderr)
+        return 2
 
     # Block C: name the files, not just their number, and refuse to pass when
     # a manuscript the caller named was not actually scanned.

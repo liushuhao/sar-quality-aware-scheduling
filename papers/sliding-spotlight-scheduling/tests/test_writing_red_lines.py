@@ -316,11 +316,17 @@ def test_mutation_w2_without_the_clause_final_pattern_the_new_claim_passes(
         tmp_path):
     """The clause-final extension is what catches the manuscript's own novelty
     sentence.  Remove that one pattern and the sentence must pass -- proving
-    the ban is driven by the extension, not by luck."""
+    the ban is driven by the extension, not by luck.
+
+    Phase 1.5 widened the extension into a noun-phrase FAMILY ("no prior work /
+    no previous study / no previous research"), so the mutation now drops the
+    whole family rather than one literal; the assertion direction is unchanged.
+    """
     saved = crl.WRITING_BANS
     try:
         crl.WRITING_BANS = [
-            (lbl, tuple(p for p in pats if p != r"\bno\s+prior\s+work\b")
+            (lbl, tuple(p for p in pats
+                        if "prior" not in p and "previous" not in p)
              if lbl == W2 else pats, g)
             for lbl, pats, g in saved]
         p = tmp_path / "c.md"
@@ -776,6 +782,12 @@ W14_CLEARS = [
      "旧的双目标形式已作废，改为单目标加逐任务硬约束。\n"),
     ("no longer an objective",
      "We no longer treat quality as an objective in the loop.\n"),
+    # Round-2 self-attack: the negated VERB form of the retirement.  The noun
+    # alternatives cover "is not a second objective"; this one is "does not
+    # carry ... as an objective", which the first cut reddened.
+    ("does not carry it as an objective",
+     "This paper does not carry an image-quality objective as an independent "
+     "objective dimension.\n"),
     ("prohibiting shape", "禁「第二目标」类表述。\n"),
 ]
 
@@ -992,9 +1004,9 @@ def test_mutation_w14_without_the_axis_patterns_the_own_sentence_passes(
     saved = crl.WRITING_BANS
     try:
         crl.WRITING_BANS = [
-            (lbl, tuple(p for p in pats if "axes" not in p and "space" not in p
-                        and "vector" not in p and "criteri" not in p
-                        and "axis" not in p)
+            (lbl, tuple(p for p in pats if "axes" not in p and "ax(" not in p
+                        and "space" not in p and "vector" not in p
+                        and "criteri" not in p and "axis" not in p)
              if lbl == W14 else pats, g)
             for lbl, pats, g in saved]
         p = tmp_path / "c.md"
@@ -1139,6 +1151,14 @@ W14_RETENTION_VIOLATES = [
     ("superseded ... retained as the core framing",
      "Superseded two-objective search is retained as the core framing of this "
      "paper.\n"),
+    # Round-2 self-attack: the retention vocabulary is a word list, so the
+    # near-synonyms have to be in it or the shell walks straight through.
+    ("former ... stays central",
+     "The former dual-objective framing stays central to the paper.\n"),
+    ("retired ... is still what the paper argues",
+     "The retired dual-objective framing is still what the paper argues.\n"),
+    ("superseded ... is kept as the contribution",
+     "The superseded two-objective trade-off is kept as the contribution.\n"),
 ]
 W14_RETROSPECTIVE_CLEARS = [
     ("no longer treat", "We no longer treat image quality as a second objective.\n"),
@@ -1172,7 +1192,11 @@ def test_mutation_w14_without_the_retention_veto_the_shell_licenses_the_claim(
     saved = crl._RETENTION_RX
     try:
         crl._RETENTION_RX = _never_match()
-        for name, body in W14_RETENTION_VIOLATES[:4]:
+        # Every sample except the one driven by the INDEPENDENT-PREDICATE rule
+        # (it is not a retention shape).
+        for name, body in W14_RETENTION_VIOLATES:
+            if "falsified marker" in name:
+                continue
             p = tmp_path / "c.md"
             p.write_text(body, encoding="utf-8", newline="")
             violations, _ = _scan_one(p)
@@ -1414,6 +1438,8 @@ def test_mutation_without_the_line_window_the_split_reading_passes(
 W2_VARIANTS = [
     ("no previous work", "No previous work has addressed this coupling.\n"),
     ("nobody has", "Nobody has studied the coupling between dwell and mode choice.\n"),
+    ("nobody had", "Nobody had studied this coupling before.\n"),
+    ("no prior study", "No prior study has considered the coupling.\n"),
     ("first to place",
      "This paper is the first to place the steering-coupling loop inside the "
      "scheduler.\n"),
@@ -1490,6 +1516,119 @@ def test_include_scratch_extends_the_writing_ban_scope(monkeypatch):
     assert not crl._is_manuscript_shaped(scratch_md)
     monkeypatch.setattr(crl, "_INCLUDE_SCRATCH", True)
     assert crl._is_manuscript_shaped(scratch_md)
+
+
+# --------------------------------------------------------------------------
+# Round 2 / 3: the samples produced by an INDEPENDENT fresh-context audit of
+# this repair (recorded in the phase-1.5 receipt).  They are paraphrases the
+# repair itself let through, plus the legitimate prose the fix must not kill.
+# --------------------------------------------------------------------------
+AUDIT_BANS = [
+    # H1 follow-ups
+    (W14, "We maximise both objectives: served fraction and image quality.\n", ".md"),
+    (W14, "The two axes of the optimisation are coverage and image quality.\n", ".md"),
+    (W14, "The two-axis formulation maximises coverage and quality.\n", ".md"),
+    (W14, "The objective-vector holds coverage and image quality.\n", ".md"),
+    # H4 follow-ups
+    (W14, "Image quality is a second objective and it is forbidden to say "
+           "otherwise.\n", ".md"),
+    (W14, "Calling the front a plateau is forbidden and\nimage quality is a "
+           "second objective.\n", ".md"),
+    # H5 follow-ups
+    (W14, "The former two-objective formulation survives as the organising "
+           "principle of this paper.\n", ".md"),
+    (W14, "The former two-objective formulation is what this paper builds "
+           "on.\n", ".md"),
+    (W14, "The former two-objective formulation is adopted throughout this "
+           "paper.\n", ".md"),
+    # H3 follow-ups
+    (W14, "Quality is still an objective of the schedule.\n", ".md"),
+    (W14, "Quality continues to be an objective of the schedule.\n", ".md"),
+    (W14, "Quality remains the objective of the schedule.\n", ".md"),
+    # W9 follow-ups: an anaphoric predicate restates the hit
+    (W9, "Coverage passed at the base budget, so it is not a test.\n", ".md"),
+    (W9, "Coverage passed at the base budget because it is not a test.\n", ".md"),
+    # the negated-verb licence must not span a bare "and"
+    (W14, "We do not model quality post hoc and the quality index is a second "
+           "objective of the schedule.\n", ".md"),
+    # H8 follow-ups: more wrappers / spacing escapes
+    (W14, "The quality headroom is a second\\mbox{ }objective of the "
+           "schedule.\n", ".tex"),
+    (W14, "The quality headroom is a second\\textup{ }objective of the "
+           "schedule.\n", ".tex"),
+    (W14, "The quality headroom is a second\\mathit{objective} of the "
+           "schedule.\n", ".tex"),
+    (W14, "The quality headroom is a second\\/objective of the schedule.\n", ".tex"),
+    # L2: the colon licence must not swallow a full assertion after it
+    (W14, "The plateau reading is forbidden: image quality is a second "
+           "objective of the schedule.\n", ".md"),
+    (W2, "The artifact reading is forbidden: no prior work exists on this "
+          "coupling.\n", ".md"),
+]
+AUDIT_CLEARS = [
+    # H5: a retirement that happens to name a live constraint in the same clause
+    (W14, "The two-objective formulation is retired and coverage still governs "
+           "the schedule.\n", ".md"),
+    (W14, "The two-objective formulation is retired and the hard constraint "
+           "remains.\n", ".md"),
+    # the negated VERB form of the retirement
+    (W14, "This paper does not carry an image-quality objective as an "
+           "independent objective dimension.\n", ".md"),
+    # promotion prose: the axes are not objectives, and the sentence SAYS so
+    (W14, "The promotion verdict is stated on two separated axes and neither "
+           "axis is an objective.\n", ".md"),
+    (W14, "The two axes are separate criteria and the separation is the "
+           "result.\n", ".md"),
+    # a colon-introduced LIST still governs every item in it
+    (W14, "Forbidden: a second objective, a dual-objective framing.\n", ".md"),
+]
+
+
+@pytest.mark.parametrize("label,body,sfx", AUDIT_BANS,
+                         ids=[f"audit-ban-{i}" for i in range(len(AUDIT_BANS))])
+def test_audit_round2_paraphrases_fire(label, body, sfx):
+    assert_bans(body, label, sfx)
+
+
+@pytest.mark.parametrize("label,body,sfx", AUDIT_CLEARS,
+                         ids=[f"audit-clear-{i}" for i in range(len(AUDIT_CLEARS))])
+def test_audit_round2_legitimate_prose_clears(label, body, sfx):
+    assert_clears(body, sfx)
+
+
+def test_audit_round2_the_negation_licence_matches_before_the_holder():
+    """The "axes are not objectives" licence is a REAL licence fixture: the
+    sentence hits a W14 pattern and is cleared by the negation guard (unlike
+    the negative controls above, which match no pattern at all)."""
+    p = _TMP / "negated_axes.md"
+    p.write_text(AUDIT_CLEARS[3][1], encoding="utf-8", newline="")
+    violations, cleared = _scan_one(p)
+    assert not violations, violations
+    assert any(c[0] == W14 and "negated" in c[4] for c in cleared), cleared
+
+
+def test_audit_round2_empty_scan_set_is_a_usage_error(tmp_path):
+    empty = tmp_path / "empty"
+    empty.mkdir()
+    env = dict(os.environ, PYTHONHASHSEED="0")
+    r = subprocess.run(
+        [sys.executable, "-B", str(CHECKER), "--path", str(empty)],
+        capture_output=True, text=True, encoding="utf-8", errors="replace", env=env)
+    assert r.returncode == 2, (r.returncode, r.stdout, r.stderr)
+    assert "nothing to scan" in r.stderr
+
+
+def test_audit_round2_unsupported_suffix_is_a_usage_error(tmp_path):
+    draft = tmp_path / "draft.txt"
+    draft.write_text("The second objective is retained.\n", encoding="utf-8",
+                     newline="")
+    env = dict(os.environ, PYTHONHASHSEED="0")
+    r = subprocess.run(
+        [sys.executable, "-B", str(CHECKER), "--path", str(draft)],
+        capture_output=True, text=True, encoding="utf-8", errors="replace", env=env)
+    assert r.returncode == 2, (r.returncode, r.stdout, r.stderr)
+    assert "unsupported suffix" in r.stderr
+
 
 
 # --------------------------------------------------------------------------
