@@ -407,5 +407,67 @@
     },
     "frozen_artifacts": "No v3 artifact, threshold, or verdict moves. Admission flips remain 0/3346 (R-family) + 0/2 (M-family analytic); promotion 90/90 no_promotion (max spread 3.9722 dB < 6.0).",
     "registration": "formulas/formula-spec.md v1.8 section 8.16; ADR 0001."
+  },
+  "amendment_20261021_ticket50_single_axis": {
+    "_doc": "Ticket 50 (2026-10-21): the contribution moves from 'a per-mode SAR metric as an independent objective dimension (bi-objective)' to 'the order resolution requirement as a per-task hard constraint, and the coverage cost of tightening it'. This block VACATES the quality-front derived readouts and REGISTERS the L8 main result and the fulfillment-ratio caliber. Append-only: no frozen field above is mutated or deleted; every vacated field keeps its original bytes and stays readable as history.",
+    "status": "APPENDED",
+    "timestamp": "2026-10-21",
+    "git_head_at_append": "fe0acb4",
+    "reason": "Ticket 50 is the positioning rewrite. The live experiment world is L8 (caliber v5, ticket 49): the order resolution enters every task as a hard constraint and the optimizer runs a SINGLE objective (coverage). The quality-front readouts registered above were produced by the two-objective world and no longer have a producer: every L8 sweep unit is vacuous_single_objective (260/260) and every front is a tie-set (unique f1 = 1 in 260/260), so a quality-headroom or promotion verdict has nothing to decide.",
+    "vacates": {
+      "_scope": "Vacated AS OPERATIVE READINGS, not deleted. Any later paper or audit may cite these as the two-objective world's historical readings, always with the caliber tag of their node (L1/L2/L3/L5/L6) and never as this paper's result.",
+      "dq_all": {
+        "locus": "tests.primary_comparison.estimand (with its test, power design and the P2 prediction below)",
+        "status": "VACATED AS THE OPERATIVE ESTIMAND",
+        "why": "dq_all measures quality headroom on a multi-point front. The L8 fronts are single-objective tie-sets, so the estimand's domain is empty in the live world; its v1/v3 values remain the historical record of the retired design."
+      },
+      "P1_front_richness": {
+        "locus": "predictions.P1_front_richness",
+        "status": "VACATED AS A PREDICTION OF THIS PAPER",
+        "why": "It predicts distinct-fq richness on a multi-objective front over a budget ladder. L8 has one budget and no quality axis to be rich in; richness/budget statements belong to the L6 record and are not re-derived here."
+      },
+      "P2_quality_headroom": {
+        "locus": "predictions.P2_quality_headroom",
+        "status": "VACATED (superseded by the coverage-demand curve)",
+        "why": "Its quantity is dq_all (vacated above)."
+      },
+      "P3_promotion": {
+        "locus": "predictions.P3_promotion",
+        "status": "VACATED AS A PREDICTION OF THIS PAPER",
+        "why": "Promotion is a two-axis (structural x convergence) verdict on a quality front; the single-objective world emits 'vacuous_single_objective' in every unit, so there is no decision to predict."
+      },
+      "promotion": {
+        "locus": "metrics.promotion_readout (and the 6.0 dB threshold's use as a paper-level verdict)",
+        "status": "VACATED AS A REPORTED VERDICT",
+        "why": "Same as P3. The 6.0 dB value itself is untouched; it simply has no paper-level consumer in the L8 world."
+      }
+    },
+    "registers": {
+      "world": "L8 / caliber v5: experiments/v5_results/ (sweep 260 artifacts + 10 recorded exit-11 units, matrix 50 units, 80 byte-identical scenario copies). B-full task-level mode parameters, formula-spec v1.9 section 8.17; frozen pattern assignments grandfathered (section 8.17-9).",
+      "main_result_form": "The coverage-demand curve: per family, the median served fraction at each point of the frozen grid s in {0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 2.0}, at the single budget 40/60. The C1/C2/C3 shape checks are the ticket-48 ones, inherited UNCHANGED (not re-tuned to the data); their L8 outcomes are reported as measured, including R2F's two failures.",
+      "coverage_definition": "per unit, max_f1_star_on_front (the served priority fraction of the best-covered front member); median over the ten seeds; an exit-11 seed (no feasible individual) enters as zero coverage, a recorded outcome rather than missing data.",
+      "fulfillment_ratio": {
+        "caliber": "LIBRARY f_q (the zero-squint library quantity, section 8.9-6), NOT the descriptive f_Q_deliv variant.",
+        "aggregation": "mean over ALL tie-set members -- per served task the achieved-window f_q over the task's best reachable window, then averaged across the served tasks of a member and across the members; producer scripts/build_sweep_results.py:75-88. It is NOT the anchor solution's reading.",
+        "status": "REPORTED READING, NOT AN OPTIMIZATION TARGET (the optimizer's n_obj is 1 and f_q carries no selection pressure).",
+        "domain": "STR has no f_Q_deliv domain: STR delivery is the library floor 2.4669 m and a task-level mode parameter request raises (sss_core/duration.py:216-219). The ratio above is defined for the library caliber on every family, including STR.",
+        "tag_obligation": "Any stated fulfillment-ratio number carries all three elements on the line: library caliber + tie-set member mean + reported reading (not a target). Red-gate label W15a."
+      },
+      "tie_set_reading": "Every L8 sweep front is single-objective: unique f1 = 1 in 260/260 units and the promotion decision is vacuous_single_objective in 260/260. Coverage therefore admits no pass/fail verdict -- it is a reported reading of a curve.",
+      "anchor_optimality": "The greedy anchor is coverage-optimal in 258/260 units; the two search wins are R1C at s=1.0 (seeds 100 and 105) and the search confers no coverage gain elsewhere. This is the L8 reading that replaces the v3 '90/90 coverage parity' statement.",
+      "str_floor": "STR delivery equals the library azimuth floor 2.4669 m: the order resolution enters STR as a hard constraint that a tighter order simply cannot satisfy (a floor step, not a continuous degradation).",
+      "mode_assignment_semantics": "The data are generated under GRANDFATHERED frozen mode assignments: the demand sweep scales rho_req only and never re-routes modes. The registered selection policy (feasibility test + scene-size two-key rule + STR at the coarse end) is for paper narrative and future families, not for these data. The paper must state which rule its data follow.",
+      "machine_anchor": "scripts/verify_paper_numbers_l8.py (recomputes the curve from the raw units, cross-checks sweep_results.json and enforces the fulfillment three-part tag)."
+    },
+    "not_registered": "No DIRECTIONAL claim about the coverage-fulfillment relation. The former gloss 'higher coverage, lower fulfillment' is NOT reproduced on L8: Pearson r = +0.3286 over the 26 family-s medians and +0.2495 over the 260 per-seed units (R1C +0.4879 / R2F +0.0148 / R3H +0.1473); the negative impression came from cross-family comparison, which the caliber registry forbids for the non-normalised R-family f_q. The paper may report the reading and must not register a direction.",
+    "writing_obligations_that_travel_with_this_amendment": [
+      "State that the conclusions are scoped to the FROZEN mode assignments ('order sensitivity under fixed mode assignment'), not a general routing/trade-off proposition.",
+      "Disclose the STR floor step (2.4669 m) wherever the STR family's response to a tighter order is described.",
+      "Name the three different rules and which one the data follow: the section-3.4 coarsest-sufficient routing sentence, the registered selection policy above, and the grandfather assignment used to generate L8.",
+      "Report the fulfillment ratio with its three-part caliber tag and never as an optimization target.",
+      "Any use of f_Q_deliv (if implemented later) carries the 'descriptive variant' label and is not compared with the library caliber; it has no STR domain."
+    ],
+    "frozen_artifacts": "No v1/v2/v3/v4 artifact, threshold or verdict moves. The frozen prefix above keeps its bytes; this block is the operative reading of the paper's result for the L8 world.",
+    "registration": "formulas/formula-spec.md v1.9 section 8.17 (unchanged); experiments/caliber_registry.json calibers.v5; experiments/RUN_LINEAGE.md section 6."
   }
 }

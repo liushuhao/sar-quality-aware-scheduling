@@ -61,3 +61,34 @@
   只要求这两个 results 目录**各有一行登记**，不要求其下每个子目录单独登记）。
 - ticket 19/20 的原始否决记录、audit2 的 scratch 层裁决 —— 按仓库策略 `.scratch` 已 gitignore，
   正文只保留 `338984e` 的 append 结果，不在此重复。
+
+## 六、票 50 阶段一：验证链与图的逐件处置（2026-10-21，B4/B3）
+
+> **世界切换**：写作取数自本日起以 **`L8`（`experiments/v5_results/`，caliber v5）** 为准。
+> 第四节「写作映射」的 `L6` 行保留为**冻结历史**（L6 的 verdict 仍可引，但其 promotion / R_fam /
+> dq_all 读数已被票 50 amendment vacate，见 `analysis_prereg_v2.json#amendment_20261021_ticket50_single_axis`）。
+> 本节逐件登记旧世界的验证链与图：**要么重指 L8，要么显式退役**，不留"旧世界仍绿"的沉默面。
+
+| 项 | 现指向 | 处置 | 留痕 |
+|---|---|---|---|
+| `scripts/verify_paper_numbers_l8.py` | **新建**，读 `experiments/v5_results/` | **ACTIVE —— 论文数字闸（L8）**：覆盖率–需求曲线、兑现率三要素标签、tie-set 事实（260/260 unique f1 = 1）、anchor-optimal 258/260、STR 库地板 2.4669 m；raw 单元与 `sweep_results.json` 交叉核对，不一致即 FAIL | 本行 + 预注册 amendment `machine_anchor` + `tests/test_verify_paper_numbers_l8.py` |
+| `scripts/verify_paper_numbers.py` | 钉 `experiments/v3_results/`，仅 `--paper` | **SUPERSEDED 作为论文数字闸**；保留为 v3/L6 世界验证器。每次运行打印 `WORLD: caliber v3 / node L6 -- SUPERSEDED…` 横幅，使其不能再被误当作现行闸（原"对 L8 恒绿"的失败模式） | 本行 + 脚本 docstring 的 WORLD SCOPE 段 |
+| `scripts/verify_v3_verdicts.py` | v3 verdicts（R_fam/ALIVE/DEAD/no_promotion） | **保留为 L6 机器锚**；不再作论文读数闸（promotion / R_fam 读数已 vacate） | 本行 + amendment |
+| `scripts/verify_prereg_v2.py` | v1 冻结件（`experiments/results/`） | **保留**：验证的是冻结前缀，amendment 为 append-only、前缀字节未动 | 本行 + amendment `_doc` |
+| `scripts/check_coverage_parity.py` | v3 90/90 覆盖parity | **退役（论文用途）**：v3 世界的 90 单元 parity 不再是主结果；L8 对应读法（anchor coverage-optimal 258/260）已并入 `verify_paper_numbers_l8.py` | 本行 |
+| `scripts/run_verify.py` | 显式传 `--pilot/--manifest` | **不变**：世界无关的通用 CLI，不钉任何 results 目录 | 本行 |
+| `scripts/plot_fig3_quality_vs_squint.py` | 平台冻结 fixture（无 results 依赖） | **保留**：降级为"平台能力读数"图，图注/角色在阶段二改写（不涉及 L8 取数） | 本行 + A6 清单 |
+| `scripts/plot_fig4_budget_ladder.py` | v3 三档预算阶梯 | **退役**：L8 扫需求轴只有单一预算 40/60，预算阶梯读数是 L6 的（richness 叙事亦已 vacate） | 本行 |
+| `scripts/plot_fig5_promotion_two_axis.py` | v3 promotion / R_fam | **退役**：promotion 读数已 vacate（单目标世界无 D12-3 决策） | 本行 |
+| `scripts/plot_fig6_per_mode_decomposition.py` | v3 manifests + 库常数 | **退役**：该图是"第二目标的解释器"；若阶段二需要模式贡献图，按 L8 覆盖读数新做 | 本行 |
+| `scripts/plot_fig7_power_curve.py` | v3 `dq_all` power | **退役**：`dq_all` 已 vacate，power 曲线无对象 | 本行 |
+
+> 图的 PDF/绘图脚本**本阶段不删**（正文零改动）；"退役"指不得作为论文读数来源，删除/替换归阶段二的图工作。
+> `verify_paper_numbers_l8.py` 当前对正文的实跑结果：**rc=2（NO L8 NUMBERS WERE EXTRACTED）**——正文仍是 v3 世界数字，
+> 这是"未就绪"的显式报告，不是 pass（readings-only 模式 rc=0）。
+
+
+> **红闸扫描域变更（主线程裁定，2026-10-21，票 50 阶段一遗留项）**：`check_red_lines.py` 的 `_is_manuscript_shaped` 把 `review/` 目录**移出**写作禁语扫描面。
+> 理由：`review/` 是审计与对账记录（provenance），按既有设计同 `experiments/`、`formulas/`、`scripts/`、`sss_core/`、`tests/` 一样属于"必须引用被禁措辞才能审计它"的登记面；不排除则正文改写完成后闸将永久为红（没人看的闸）。
+> 边界与守卫：①正文树 `paper/` 仍在扫描面内（阶段一实测 54 条 violation 未清零 ⇒ 闸未绿，不存在"为绿而扩面"）；②不变量测试 `test_violations_outside_the_manuscript_tree_are_empty` 钉住"paper/ 之外零违规"；③若日后要让审查记录也受禁语约束，须另建"审计引用豁免"机制，不得简单恢复扫描（会造死锁）。
+> 关联：`.scratch/sliding-spotlight-scheduling/t50/phase1-receipt.md` §3 末与 §9 暗卷自查 #1。

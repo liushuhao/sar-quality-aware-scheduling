@@ -23,6 +23,8 @@ files legitimately quote every forbidden phrase in order to forbid it:
   W8  E8 pre-registered effect size  W9  E9 coverage pass/fail
   W10 E10 point-target caliber      W11 A7 zero-violation caliber
   W12 A3 v2 real-window citation   W13 A4 f_q caliber tag
+  W14 single-axis positioning (no second / independent objective framing)
+  W15a A4 fulfillment-ratio caliber  W15b A4 f_Q_deliv descriptive tag
 
 Usage (repo root):
     PYTHONHASHSEED=0 "/d/Program Files/Python/python" -B \
@@ -278,16 +280,128 @@ def scan_texts(paths, patterns, label, violations, cleared):
 # (dir, file) components that are registration / provenance, not manuscript.
 _REGISTRATION_DIRS = ("experiments", "formulas", "scripts", "sss_core", "tests")
 
-# The one licensed sentence shape for the no-prior-work ban, quoted from
-# spec.md:82.  Both halves in one clause, no comma splitting them: the claim
-# is about the CONJUNCTION being undone, not about either half alone.
-_NOPRIOR_LEGAL_RX = re.compile(
-    r"二者同时做无人做"
-    r"|(?:coupling\s+loop\s+as\s+a\s+first-?class\s+constraint[^.]{0,120}and[^.]{0,120}"
-    r"per-?mode\s+SAR\s+metric[^.]{0,120}(?:simultaneously|together|both)"
-    r"[^.]{0,60}(?:has\s+never|remains\s+undone|no\s+prior\s+work))",
+# ---------------------------------------------------------------------------
+# Contexts that license a RETROSPECTIVE mention (ticket 50, W14 / W15).
+# ---------------------------------------------------------------------------
+# The single-axis positioning retires the dual-objective framing, so the
+# manuscript must stay free to say what it NO LONGER does: "we no longer treat
+# image quality as a second objective", "the former two-objective formulation".
+# Three shapes license a hit, each a REUSE of an existing classifier rather
+# than a third notion of context:
+#   * prohibition   -- PROHIBITION_MARKERS, CLAUSE-scoped (_clause_marker);
+#   * withdrawal    -- the FALSIFIED_MARKERS vocabulary, CLAUSE-scoped;
+#   * retrospective -- the regex below, BOUND to the banned phrase.
+#
+# A bare retro participle is not enough.  The phase-1 gate pass demonstrated
+# that a free-floating "replaced" clears "replacing the fixed dwell makes
+# quality a second objective", which ASSERTS the framing; so each alternative
+# below ties the retro word to the banned construction itself.
+_RETROSPECTIVE_RX = re.compile(
+    r"\bno\s+longer\s+(?:an?\s+)?(?:second|secondary|independent|dual|two)\b"
+    r"|\bno\s+longer\s+(?:treat|treats|carry|carries|use|uses|model|models|"
+    r"regard|regards|formulate|formulates|claim|claims)\w*\b"
+    r"|\b(?:former|formerly|retired|superseded|replaced|withdrawn)\s+"
+    r"(?:\w+\s+){0,4}(?:two|dual|bi)[-\s]?objective\b"
+    r"|\b(?:was|is|has\s+been)\s+withdrawn\b"
+    r"|\b(?:two|dual|bi)[-\s]?objective\s+(?:formulation|framing|problem)\b"
+    r"[^.\n]{0,40}\b(?:retired|superseded|withdrawn|replaced)\b"
+    r"|不再[^。\n]{0,12}(?:第二目标|双目标|独立目标)"
+    r"|(?:原|旧)(?:先|来|有)?的?(?:双目标|两目标|第二目标)[^。\n]{0,12}"
+    r"(?:作废|退役|取消|不再)"
+    r"|(?:双目标|第二目标)[^。\n]{0,12}(?:作废|退役|取消)",
     re.IGNORECASE,
 )
+
+# "not a second objective" is only a RETIREMENT when it negates OUR framing.
+# The same words appear in the banned gap sentence -- "the quality-aware line
+# supplies requirement-level mode selection but not a second objective" -- which
+# ASSERTS that the paper carries one (phase-1 review finding: a free-floating
+# negation cleared the assertion).  So the negation must sit next to a
+# first-person / this-paper subject.
+_NEGATED_IN_PAPER_RX = re.compile(
+    r"\b(?:we|our|this\s+(?:paper|work|study))\b[^.\n]{0,80}"
+    r"\bnot\s+(?:an?|the)\s+(?:second|secondary|independent)\s+"
+    r"(?:objective|target)\b"
+    r"|\bnot\s+(?:an?|the)\s+(?:second|secondary|independent)\s+"
+    r"(?:objective|target)\b[^.\n]{0,40}"
+    r"\b(?:in|for)\s+this\s+(?:paper|work|study)\b"
+    r"|\b(?:we|our|this\s+(?:paper|work|study))\b[^.\n]{0,80}"
+    r"\bnot\s+(?:an?|the)\s+objective\s+dimension\b"
+    r"|\bnot\s+(?:an?|the)\s+objective\s+dimension\b[^.\n]{0,40}"
+    r"\b(?:in|for)\s+this\s+(?:paper|work|study)\b",
+    re.IGNORECASE,
+)
+
+
+def _clause_marker(line: str, pos: int, markers) -> str:
+    """The first marker sitting in the hit's OWN clause, or ''.
+
+    Clause scope is the fix the phase-1 review asked for.  ``_is_prohibition``
+    deliberately does not treat a comma as a boundary (one prohibition can
+    govern "'X' and 'Y' are forbidden"), so on a long line a prohibition in a
+    LATER comma-clause cleared an assertion in an earlier one:
+
+        "The second objective is retained, and calling the schedule a physical
+         limit is forbidden."          <- cleared under line scope, must fire
+
+    Restricting the marker to ``_clause_around`` closes that shape without
+    narrowing the legitimate one-clause prohibition.
+    """
+    clause, _start = _clause_around(line, pos)
+    if clause is None:
+        return ""
+    low = clause.lower()
+    for mk in markers:
+        i = low.find(mk.lower())
+        if i != -1 and not _has_contrast(low[i:]):
+            return mk
+    return ""
+
+
+def _clear_dual_objective(line: str, m) -> str:
+    """W14: asserting the retired framing is banned; a retrospective or
+    negated mention of it is licensed."""
+    mk = _clause_marker(line, m.start(), PROHIBITION_MARKERS)
+    if mk:
+        return f"inside a prohibition ({mk!r})"
+    mk = _clause_marker(line, m.start(), FALSIFIED_MARKERS)
+    if mk:
+        # "is NOT withdrawn" negates the retraction and therefore ASSERTS the
+        # framing; the falsified vocabulary must not become a licence for it.
+        clause, _start = _clause_around(line, m.start())
+        if re.search(r"\bnot\s+(?:\w+\s+){0,2}(?:withdrawn|retired|superseded|"
+                     r"replaced|falsified|refuted)\b|未(?:作废|退役|取消|撤回)",
+                     clause or "", re.IGNORECASE):
+            return ""
+        return f"reports the framing as withdrawn ({mk!r})"
+    clause, _start = _clause_around(line, m.start())
+    if clause and (_RETROSPECTIVE_RX.search(clause)
+                   or _NEGATED_IN_PAPER_RX.search(clause)):
+        return "retrospective mention in the hit's own clause"
+    return ""
+
+
+def _clear_no_prior_work(line: str, m) -> str:
+    """W2 after ticket 50 retired the spec.md:82 conjunction licence.
+
+    The retired licence was a WHITELIST for the dual-objective conjunction.
+    With the second objective gone, that conjunction is no longer the paper's
+    claim, so W2 takes the sentence over.  The guard therefore licenses only
+    the quote-to-forbid and explicit-retraction shapes -- deliberately NOT
+    ``_is_reporting_falsification``: its "search artifact" / "budget artifact"
+    markers share long manuscript lines with the no-prior-work sentence
+    (main.tex:59, full.md:40), which laundered exactly the claim this ban must
+    catch (phase-1 review finding).
+    """
+    mk = _clause_marker(line, m.start(), PROHIBITION_MARKERS)
+    if mk:
+        return f"inside a prohibition ({mk!r})"
+    clause, _start = _clause_around(line, m.start())
+    if clause and re.search(
+            r"\bno\s+longer\s+(?:claim|claims|make|makes)\b|\bnot\s+claimed\b"
+            r"|\bwithdrawn\b|不再声称|不作宣称", clause, re.IGNORECASE):
+        return "explicitly retired claim"
+    return ""
 
 # A frontier-richness VERDICT label used as a qualifier/annotation is licensed:
 # "carrying the NOT-PLATEAUED caveat", "NOT-PLATEAUED at 160/240".  The same
@@ -417,6 +531,15 @@ def _is_manuscript_shaped(p: Path) -> bool:
         return False
     if rel.as_posix().startswith(".scratch/"):
         return False
+    # Review records (review/) are audit artifacts, not manuscript prose: a
+    # reconciliation report MUST quote the retired framing in order to audit
+    # it, exactly like the registration layer it audits.  Scoping them out is
+    # not a weakening -- the manuscript stays in scope -- it prevents a
+    # permanently red gate after the manuscript is rewritten, which is the
+    # "nobody reads it" failure mode (ticket-50 phase-1 decision; the receipt
+    # records the measured before/after counts).
+    if any(part == "review" for part in rel.parts):
+        return False
     return p.resolve() != Path(__file__).resolve()
 
 
@@ -505,6 +628,40 @@ def _line_index(text: str, offset: int) -> int:
     return text.count("\n", 0, offset) + 1
 
 
+def _line_start(text: str, pos: int) -> int:
+    """Offset of the first character of the line containing ``pos``."""
+    return text.rfind("\n", 0, pos) + 1
+
+
+class _RelMatch:
+    """A match proxy whose offsets are relative to the LINE a guard receives.
+
+    ``guard(line, m)`` is documented as operating on ONE line, but the match
+    object came from the WHOLE document: for any hit below line 1,
+    ``m.start()`` exceeded the line length, so ``line[:m.start()]`` was the
+    whole line and ``line[m.start():]`` was empty.  Every positional guard
+    (W1's qualifier, W13's reading detector, the W14/W15 additions) silently
+    judged the wrong text -- the phase-1 review demonstrated the same sentence
+    clearing on line 1 and firing on line 2.  Offsets are rebased here, once,
+    instead of patching each guard.
+    """
+
+    __slots__ = ("_m", "_off")
+
+    def __init__(self, m, off: int):
+        self._m, self._off = m, off
+
+    def start(self) -> int:
+        return self._m.start() - self._off
+
+    def end(self) -> int:
+        return self._m.end() - self._off
+
+    def group(self, *args):
+        return self._m.group(*args)
+
+
+
 def _guard(clear_if):
     """Adapt a clearance predicate into the guard signature."""
     def _guard(line: str, m) -> "str | None":
@@ -523,10 +680,35 @@ def _clear_by_regex(*rxs):
     return _f
 
 
-def _clear_noprior(line: str, m) -> str:
-    """The ONE licensed no-prior sentence (spec.md:82)."""
-    return ("the single licensed conjunction claim (spec.md:82)"
-            if _NOPRIOR_LEGAL_RX.search(line) else "")
+# A caliber obligation applies to a READING, and a reading is a number BOUND to
+# the symbol -- "f_q reached 84.5", "f_q = 84.5", "f_q ranges 1.35", "f_q
+# 中位数为 84.5".  A digit that merely follows within a window is not one, and
+# the phase-1 review (with the offset rebased) showed why the window test is
+# too loose: "f_q domains over all 90 promotion units", an image link
+# "![fig-3 Per-mode f_q versus squint](figures/fig3_...)" and the definition
+# "f_{q,i}=\frac{1}{...}" all carry a digit without stating a reading.
+_READING_BINDING = (
+    r"(?:=|＝|≈|:|：|of|is|are|was|were|reached|reaches|reads?|reading|"
+    r"ranges?|values?|equals?|median|中位数\s*为|中位数|为|达|是|约|范围)"
+)
+_READING_AFTER_RX = re.compile(
+    r"\s*" + _READING_BINDING + r"\s*(?:of\s*)?[-+]?\d+(?:\.\d+)?",
+    re.IGNORECASE,
+)
+
+
+def _states_a_reading(line: str, m) -> bool:
+    """True when the hit's token is actually BOUND to a number on this line.
+
+    Shared by W13 (f_q) and W15 (fulfillment ratio / f_Q_deliv): a formula
+    mention is not a reading, so a digit that belongs to a cross-reference
+    ("f_q is defined in Eq.(9)", "see Table 4") must not trip the obligation.
+    """
+    tail = line[m.end(): m.end() + 40]
+    xref = _XREF_RX.search(tail)
+    if xref:
+        tail = tail[:xref.start()]
+    return bool(_READING_AFTER_RX.match(tail))
 
 
 def _clear_plateau_qualifier(line: str, m) -> str:
@@ -568,16 +750,7 @@ def _clear_fq_caliber(line: str, m) -> str:
     a reading, so a bare has-digit test both cleared nothing and fired on
     every formula mention.
     """
-    tail = line[m.end(): m.end() + 60]
-    xref = _XREF_RX.search(tail)
-    if xref:
-        tail = tail[:xref.start()]
-    lead = line[max(0, m.start() - 60): m.start()]
-    lead = lead[:_XREF_RX.search(lead).start()] if _XREF_RX.search(lead) else lead
-    reads = bool(re.search(r"[-+]?\d+(?:\.\d+)?", tail)) or bool(
-        re.search(r"(?:of|=|＝|为|达|reaches?|is)\s*$", lead.rstrip())
-        and re.search(r"[-+]?\d+(?:\.\d+)?\s*$", lead))
-    if not reads:
+    if not _states_a_reading(line, m):
         return "no f_q reading on the line"
     if _CALIBER_TAG_RX.search(line):
         return "caliber tag present"
@@ -586,9 +759,105 @@ def _clear_fq_caliber(line: str, m) -> str:
     return ""
 
 
-# A caliber marker that satisfies A4.  Deliberately broad on the tag NAMES and
-# narrow on the requirement: the tag may be written many ways, but SOME
-# qualifier must be present on the line that states the number.
+# W9 (ticket 50): the no-judgement predicate that replaced the retired
+# "degenerate by construction" premise.  Coverage is the ONLY axis now, so the
+# clearance has to come from what the reading IS -- a reported reading on the
+# demand curve -- not from a claim that the axis degenerates.  Bare topic words
+# ("single-objective", "tie-set", "reading") are deliberately NOT clearances:
+# the new text uses them everywhere, so they would saturate the whitelist
+# (phase-1 review finding).  Registration anchors:
+#   * analysis_prereg_v2.json tests.coverage_parity_as_result -- "Reported as a
+#     construction and a count, in the results, as a result";
+#   * the ticket-50 amendment (coverage-demand curve = the main result);
+#   * L8 data -- every sweep unit carries a single-objective tie-set
+#     (unique f1 on the front = 1), so no pass/fail verdict exists to report.
+_W9_NO_JUDGEMENT_RX = re.compile(
+    r"reported?\s+as\s+(?:a\s+)?(?:result|reading|count)"
+    r"|not\s+(?:a|an|the)\s+(?:test|verdict|judgement|judgment|"
+    r"hypothesis\s+test|pass[/\s-]?fail\s+test)"
+    r"|no\s+pass[/\s-]?fail|neither\s+passed\s+nor\s+failed"
+    r"|no\s+claim\s+of\s+the\s+form|make\s+no\s+claim"
+    r"|no\s+power|无功效|不作检验|非检验|非判词|无判词|不计通过|非通过",
+    re.IGNORECASE,
+)
+
+
+def _clear_coverage_reading(line: str, m) -> str:
+    """W9: only a no-judgement PREDICATE clears a pass/fail-shaped sentence.
+
+    The predicate is line-scoped, but a contrast or a spaced dash between it
+    and the hit blocks the clearance -- otherwise "coverage is reported as a
+    reading; yet coverage passed at the base budget" would launder the claim
+    the ban exists to catch.
+    """
+    mk = _clause_marker(line, m.start(), PROHIBITION_MARKERS)
+    if mk:
+        return f"inside a prohibition ({mk!r})"
+    for pm in _W9_NO_JUDGEMENT_RX.finditer(line):
+        seg = (line[pm.end():m.start()] if pm.start() < m.start()
+               else line[m.start():pm.start()])
+        # A sentence terminator blocks as well as a contrast: "Coverage has no
+        # power as a test. Coverage passed at the base budget." is two claims
+        # on one line, and the first must not licence the second.
+        if not _has_clause_boundary(seg):
+            return "no-judgement predicate governs the hit"
+    return ""
+
+
+# W15a (ticket 50 A4): a FULFILLMENT-RATIO reading carries a three-part tag.
+_FULFILLMENT_LIB_RX = re.compile(
+    r"library[-\s]?caliber|库口径|zero[-\s]?squint\s+library|library\s+f_?q|"
+    r"f_?q[^.\n]{0,25}library", re.IGNORECASE)
+_FULFILLMENT_TIESET_RX = re.compile(
+    r"tie[-\s]?set|tie\s+set|全体成员|all\s+(?:front|tie)|mean\s+over|"
+    r"averaged\s+over\s+(?:the\s+)?(?:tie|front|members)", re.IGNORECASE)
+_FULFILLMENT_NONTARGET_RX = re.compile(
+    r"not\s+an?\s+(?:optimization|optimisation)\s+target|not\s+an?\s+objective|"
+    r"reported?\s+(?:reading|only)|reporting\s+reading|reading,?\s+not|"
+    r"报告读数|非优化目标|不进目标|只读数|仅作读数|非目标", re.IGNORECASE)
+
+
+def _clear_fulfillment_caliber(line: str, m) -> str:
+    """A fulfillment-ratio number must carry all three caliber elements.
+
+    Registration (ticket-50 amendment, formulas/formula-spec.md 8.17-10):
+    the ratio is (i) computed on the LIBRARY f_q, (ii) averaged over ALL
+    tie-set members -- not the anchor solution's reading, whose producer is
+    scripts/build_sweep_results.py:75-88 -- and (iii) a REPORTED READING, not
+    an optimization target.  A line that states a number and misses any one of
+    the three is a violation; a mention with no number is not a reading.
+    """
+    if not _states_a_reading(line, m):
+        return "no fulfillment reading on the line"
+    mk = _clause_marker(line, m.start(), PROHIBITION_MARKERS)
+    if mk:
+        return f"inside a prohibition ({mk!r})"
+    missing = [name for name, rx in (
+        ("library caliber", _FULFILLMENT_LIB_RX),
+        ("tie-set mean", _FULFILLMENT_TIESET_RX),
+        ("reading, not a target", _FULFILLMENT_NONTARGET_RX)) if not rx.search(line)]
+    if missing:
+        return ""
+    return "three-part caliber tag present"
+
+
+def _clear_fq_deliv(line: str, m) -> str:
+    """W15b: the descriptive f_Q_deliv variant must carry its label and the
+    non-comparability clause (formula-spec 8.17-10: the two calibers must not
+    be mixed)."""
+    if not _states_a_reading(line, m):
+        return "no f_Q_deliv reading on the line"
+    mk = _clause_marker(line, m.start(), PROHIBITION_MARKERS)
+    if mk:
+        return f"inside a prohibition ({mk!r})"
+    if (re.search(r"descriptive|描述性", line, re.IGNORECASE)
+            and re.search(r"not\s+comparab|incomparab|不可混比|不得混比|"
+                          r"不与[^.\n]{0,10}混比", line, re.IGNORECASE)):
+        return "descriptive-variant label + non-comparability present"
+    return ""
+
+
+# A caliber marker that satisfies A4.
 _CALIBER_TAG_RX = re.compile(
     r"caliber|口径|v1\b|v2\b|v3\b|M\s*族|R\s*族|真实窗|真窗|合成族|"
     r"real-?window|synthetic|normalis?z|归一化?|非归一化?|不可比|incomparable|"
@@ -667,7 +936,13 @@ WRITING_BANS = [
         r"(?:studied|addressed|explored|considered|investigated|modelled|modeled)\b",
         r"\bfirst\s+to\s+(?:study|propose|introduce|establish|show)\b",
         r"首次(?:提出|研究|报道|将)",
-    ], _clear_noprior),
+        # Ticket 50: the clause-final form.  "…has no prior work;" ends the
+        # clause, so the registered patterns above (which require a following
+        # on/for/has/does/study) never matched the manuscript's own novelty
+        # sentence.  That is why retiring the spec.md:82 licence alone left
+        # the sentence green: W2 was not looking at it.
+        r"\bno\s+prior\s+work\b",
+    ], _clear_no_prior_work),
 
     # W3a / E3 + spec D15 red line 1: the per-orbit capacity caliber.  The
     # registered caliber is per-PASS; naming a per-orbit capacity is the
@@ -767,13 +1042,15 @@ WRITING_BANS = [
                        r"registered\s+after\s+calibration|"
                        r"标定后注册|作废|forbidden", r"ALIVE|DEAD|structur")),
 
-    # W9 / E9 + A6: coverage is degenerate BY CONSTRUCTION, so "coverage
-    # passed / did not pass" is not a test result in either direction.
+    # W9 / E9 + A6.  Ticket 50 rewrote the LICENSE, not the ban: coverage is
+    # the single axis now, so "degenerate by construction" is semantically
+    # reversed and no longer clears anything.  What clears is the paired
+    # no-judgement predicate (reported as a reading / not a test) -- see
+    # _clear_coverage_reading.
     ("W9 E9 coverage pass/fail", [
         r"coverage[^.\n]{0,30}\b(?:passed|failed|did\s+not\s+pass|passes|fails)\b",
         r"覆盖(?:轴)?[^。.\n]{0,12}(?:通过|未通过|不通过)",
-    ], _clear_by_regex(r"degenerate\s+by\s+construction|构造性打平|构造产物|"
-                       r"禁|不得|forbidden|no\s+power|无功效|not\s+a\s+test")),
+    ], _clear_coverage_reading),
 
     # W10 / E10 + B9: the optimizer consumes duration_scene_s, so the
     # point-target-caliber sentence is stale (formula-spec 8.13-1).
@@ -800,7 +1077,65 @@ WRITING_BANS = [
     ("W13 A4 f_q caliber tag", [
         r"\bf_?[qQ]\b", r"\bf\s*[_\\{]?\s*[qQ]\b",
     ], _clear_fq_caliber),
+
+    # W14 (ticket 50 A1): the single-axis positioning.  The paper's
+    # contribution is no longer "a per-mode SAR metric as an independent
+    # objective dimension"; the only objective is coverage and the order
+    # resolution is a per-task hard constraint.  Every shape below has to go
+    # red in the CURRENT text, which is the expected phase-1 state; the
+    # rewrite list is .scratch/sliding-spotlight-scheduling/t50/
+    # ban-ledger-phase1.md.
+    #
+    # The title / keyword line is included on purpose: "…and an Image-Quality
+    # Objective" is the same retired framing in the place a reader sees first
+    # (phase-1 review finding).  "two-objective" is the singular form the old
+    # licence text used; "biobjective"/"bi objective" are the spellings the
+    # bibliography-style prose produces.
+    ("W14 single-axis positioning", [
+        r"\bsecond[-\s]?objectives?\b",
+        r"\bsecond,\s+(?:independent\s+)?objectives?\b",
+        r"\b2nd[-\s]?objective\b",
+        r"\bsecondary\s+objectives?\b",
+        r"\bbi[-\s]?objectives?\b",
+        r"\bdual[-\s]?objectives?\b",
+        r"\btwo[-\s]?objectives?\b",
+        r"\b(?:independent\s+)?objective\s+dimensions?\b",
+        r"\bimage[-\s]?quality\s+objectives?\b",
+        # the same claim without the word "second": "quality is an objective"
+        r"\bquality\s+is\s+an?\s+(?:independent\s+)?objective\b",
+        r"\bquality\b[^.\n]{0,20}\bas\s+an?\s+(?:independent\s+)?objective\b",
+        r"第二目标", r"第[二2]\s*个?\s*目标", r"双目标", r"两(?:个)?目标",
+        r"独立目标维", r"第二优化目标", r"次要目标",
+    ], _clear_dual_objective),
+
+    # W15a (ticket 50 A4): a fulfillment-ratio number must carry its
+    # three-part caliber tag -- library f_q, tie-set mean, reported reading
+    # (not an optimization target).  Kept as its own label rather than folded
+    # into W13 because W13 is anchored on the f_q TOKEN: one merged guard would
+    # have to dispatch on the matched text, and the ledger's per-line label
+    # would stop naming which obligation failed.
+    ("W15a A4 fulfillment-ratio caliber", [
+        r"fulfill?ment[-\s]?ratio", r"兑现率", r"\bf_q_fulfillment\b",
+    ], _clear_fulfillment_caliber),
+
+    # W15b (ticket 50 A4): the descriptive variant f_Q_deliv, once implemented
+    # (formula-spec 8.17-10), must be labelled descriptive and declared
+    # incomparable with the library caliber.  Two patterns because the .tex
+    # form survives _strip_markup as "f Q, text deliv".
+    ("W15b A4 f_Q_deliv descriptive tag", [
+        r"f[_ ]?q[_ ]?deliv\b",
+        r"\bf\s+q\s*,\s*(?:text\s+)?deliv\b",
+    ], _clear_fq_deliv),
 ]
+
+
+# The bans whose phrases are multi-word and can therefore be split by a hard
+# line wrap.  See the wrap-junction pass in scan_writing_bans.
+_WRAP_SCAN_LABELS = frozenset({
+    "W14 single-axis positioning",
+    "W15a A4 fulfillment-ratio caliber",
+    "W15b A4 f_Q_deliv descriptive tag",
+})
 
 
 def scan_writing_bans(paths, violations, cleared):
@@ -826,17 +1161,47 @@ def scan_writing_bans(paths, violations, cleared):
             continue
         stripped = "\n".join(
             _strip_markup(ln) for ln in _drop_fences(text).splitlines())
+        lines = stripped.splitlines()
+        fired: set[tuple[str, int]] = set()
         for label, rx, guard in compiled:
             for m in rx.finditer(stripped):
                 line_no = _line_index(stripped, m.start())
-                line = stripped.splitlines()[line_no - 1]
-                reason = guard(line, m)
+                line = lines[line_no - 1]
+                rel = _RelMatch(m, _line_start(stripped, m.start()))
+                reason = guard(line, rel)
                 if reason:
                     cleared.append((label, p, line_no, m.group(0), reason))
                 else:
                     violations.append(
                         f"{label}: {_rel(p)}:{line_no} -> {m.group(0)!r}"
                     )
+                    fired.add((label, line_no))
+        # Hard-wrapped prose: a banned phrase split across a newline
+        # ("second\nobjective" in cover_letter.md:15) is invisible to a
+        # per-line scan.  Joining each adjacent pair restores it; only matches
+        # that CROSS the junction are reported, so nothing is double-counted.
+        # Scoped to the ban labels whose phrases are multi-word.
+        for i in range(len(lines) - 1):
+            left, right = lines[i], lines[i + 1]
+            if not left.strip() or not right.strip():
+                continue
+            joined = left + " " + right
+            for label, rx, guard in compiled:
+                if label not in _WRAP_SCAN_LABELS:
+                    continue
+                for m in rx.finditer(joined):
+                    if m.end() <= len(left) or m.start() >= len(left):
+                        continue          # does not cross the junction
+                    line_no = i + 1
+                    if (label, line_no) in fired:
+                        continue
+                    reason = guard(joined, m)
+                    if reason:
+                        cleared.append((label, p, line_no, m.group(0), reason))
+                    else:
+                        violations.append(
+                            f"{label}: {_rel(p)}:{line_no} -> {m.group(0)!r}")
+                        fired.add((label, line_no))
 
 
 def main(argv=None) -> int:
@@ -958,7 +1323,7 @@ def main(argv=None) -> int:
     else:
         violations.append("R5: analysis_prereg_v2.json missing")
 
-    print("=== W1-W13: writing-obligation bans (manuscript-shaped files) ===")
+    print("=== W1-W15: writing-obligation bans (manuscript-shaped files) ===")
     scan_writing_bans(files, violations, cleared)
 
     if cleared:

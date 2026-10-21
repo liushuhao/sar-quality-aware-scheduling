@@ -1,0 +1,334 @@
+{
+  "generated_by": "ticket 50 phase 1, 2026-10-21 — the EXPECTED red state after the W14/W2/W9 patch and BEFORE the manuscript rewrite",
+  "how_to_update": "Regenerate after a deliberate manuscript edit (phase 2). The phase-2 goal is an empty 'violations' list; keep the labels list in sync with WRITING_BANS.",
+  "labels": [
+    "W14 single-axis positioning",
+    "W2 E1 no-prior-work claim"
+  ],
+  "violations": [
+    {
+      "file": "papers/sliding-spotlight-scheduling/paper/SUBMISSION_CHECKLIST.md",
+      "line": 21,
+      "label": "W14 single-axis positioning",
+      "trigger": "Image-Quality Objective"
+    },
+    {
+      "file": "papers/sliding-spotlight-scheduling/paper/cover_letter.md",
+      "line": 7,
+      "label": "W14 single-axis positioning",
+      "trigger": "Image-Quality Objective"
+    },
+    {
+      "file": "papers/sliding-spotlight-scheduling/paper/cover_letter.md",
+      "line": 15,
+      "label": "W14 single-axis positioning",
+      "trigger": "second\\nobjective"
+    },
+    {
+      "file": "papers/sliding-spotlight-scheduling/paper/credit.md",
+      "line": 4,
+      "label": "W14 single-axis positioning",
+      "trigger": "Image-Quality Objective"
+    },
+    {
+      "file": "papers/sliding-spotlight-scheduling/paper/declaration.md",
+      "line": 4,
+      "label": "W14 single-axis positioning",
+      "trigger": "Image-Quality Objective"
+    },
+    {
+      "file": "papers/sliding-spotlight-scheduling/paper/full.md",
+      "line": 30,
+      "label": "W14 single-axis positioning",
+      "trigger": "second objective"
+    },
+    {
+      "file": "papers/sliding-spotlight-scheduling/paper/full.md",
+      "line": 40,
+      "label": "W2 E1 no-prior-work claim",
+      "trigger": "no prior work"
+    },
+    {
+      "file": "papers/sliding-spotlight-scheduling/paper/full.md",
+      "line": 80,
+      "label": "W14 single-axis positioning",
+      "trigger": "second objective"
+    },
+    {
+      "file": "papers/sliding-spotlight-scheduling/paper/full.md",
+      "line": 80,
+      "label": "W14 single-axis positioning",
+      "trigger": "second objective"
+    },
+    {
+      "file": "papers/sliding-spotlight-scheduling/paper/full.md",
+      "line": 86,
+      "label": "W14 single-axis positioning",
+      "trigger": "independent objective dimension"
+    },
+    {
+      "file": "papers/sliding-spotlight-scheduling/paper/full.md",
+      "line": 86,
+      "label": "W14 single-axis positioning",
+      "trigger": "second objective"
+    },
+    {
+      "file": "papers/sliding-spotlight-scheduling/paper/full.md",
+      "line": 86,
+      "label": "W2 E1 no-prior-work claim",
+      "trigger": "no prior work"
+    },
+    {
+      "file": "papers/sliding-spotlight-scheduling/paper/full.md",
+      "line": 174,
+      "label": "W14 single-axis positioning",
+      "trigger": "bi-objective"
+    },
+    {
+      "file": "papers/sliding-spotlight-scheduling/paper/full.md",
+      "line": 184,
+      "label": "W14 single-axis positioning",
+      "trigger": "dual-objective"
+    },
+    {
+      "file": "papers/sliding-spotlight-scheduling/paper/full.md",
+      "line": 319,
+      "label": "W14 single-axis positioning",
+      "trigger": "second objective"
+    },
+    {
+      "file": "papers/sliding-spotlight-scheduling/paper/full.md",
+      "line": 319,
+      "label": "W14 single-axis positioning",
+      "trigger": "second objective"
+    },
+    {
+      "file": "papers/sliding-spotlight-scheduling/paper/full.md",
+      "line": 325,
+      "label": "W14 single-axis positioning",
+      "trigger": "second objective"
+    },
+    {
+      "file": "papers/sliding-spotlight-scheduling/paper/full.md",
+      "line": 334,
+      "label": "W14 single-axis positioning",
+      "trigger": "second objective"
+    },
+    {
+      "file": "papers/sliding-spotlight-scheduling/paper/full.md",
+      "line": 337,
+      "label": "W14 single-axis positioning",
+      "trigger": "second objective"
+    },
+    {
+      "file": "papers/sliding-spotlight-scheduling/paper/full.md",
+      "line": 383,
+      "label": "W14 single-axis positioning",
+      "trigger": "second objective"
+    },
+    {
+      "file": "papers/sliding-spotlight-scheduling/paper/highlights.md",
+      "line": 4,
+      "label": "W14 single-axis positioning",
+      "trigger": "Image-Quality Objective"
+    },
+    {
+      "file": "papers/sliding-spotlight-scheduling/paper/main.tex",
+      "line": 19,
+      "label": "W14 single-axis positioning",
+      "trigger": "Image-Quality Objective"
+    },
+    {
+      "file": "papers/sliding-spotlight-scheduling/paper/main.tex",
+      "line": 29,
+      "label": "W14 single-axis positioning",
+      "trigger": "second objective"
+    },
+    {
+      "file": "papers/sliding-spotlight-scheduling/paper/main.tex",
+      "line": 33,
+      "label": "W14 single-axis positioning",
+      "trigger": "image-quality objective"
+    },
+    {
+      "file": "papers/sliding-spotlight-scheduling/paper/main.tex",
+      "line": 52,
+      "label": "W14 single-axis positioning",
+      "trigger": "second objective"
+    },
+    {
+      "file": "papers/sliding-spotlight-scheduling/paper/main.tex",
+      "line": 59,
+      "label": "W2 E1 no-prior-work claim",
+      "trigger": "no prior work"
+    },
+    {
+      "file": "papers/sliding-spotlight-scheduling/paper/main.tex",
+      "line": 85,
+      "label": "W14 single-axis positioning",
+      "trigger": "second objective"
+    },
+    {
+      "file": "papers/sliding-spotlight-scheduling/paper/main.tex",
+      "line": 85,
+      "label": "W14 single-axis positioning",
+      "trigger": "second objective"
+    },
+    {
+      "file": "papers/sliding-spotlight-scheduling/paper/main.tex",
+      "line": 89,
+      "label": "W14 single-axis positioning",
+      "trigger": "independent objective dimension"
+    },
+    {
+      "file": "papers/sliding-spotlight-scheduling/paper/main.tex",
+      "line": 89,
+      "label": "W14 single-axis positioning",
+      "trigger": "second objective"
+    },
+    {
+      "file": "papers/sliding-spotlight-scheduling/paper/main.tex",
+      "line": 89,
+      "label": "W2 E1 no-prior-work claim",
+      "trigger": "no prior work"
+    },
+    {
+      "file": "papers/sliding-spotlight-scheduling/paper/main.tex",
+      "line": 162,
+      "label": "W14 single-axis positioning",
+      "trigger": "bi-objective"
+    },
+    {
+      "file": "papers/sliding-spotlight-scheduling/paper/main.tex",
+      "line": 168,
+      "label": "W14 single-axis positioning",
+      "trigger": "dual-objective"
+    },
+    {
+      "file": "papers/sliding-spotlight-scheduling/paper/main.tex",
+      "line": 284,
+      "label": "W14 single-axis positioning",
+      "trigger": "second objective"
+    },
+    {
+      "file": "papers/sliding-spotlight-scheduling/paper/main.tex",
+      "line": 284,
+      "label": "W14 single-axis positioning",
+      "trigger": "second objective"
+    },
+    {
+      "file": "papers/sliding-spotlight-scheduling/paper/main.tex",
+      "line": 289,
+      "label": "W14 single-axis positioning",
+      "trigger": "second objective"
+    },
+    {
+      "file": "papers/sliding-spotlight-scheduling/paper/main.tex",
+      "line": 298,
+      "label": "W14 single-axis positioning",
+      "trigger": "second objective"
+    },
+    {
+      "file": "papers/sliding-spotlight-scheduling/paper/main.tex",
+      "line": 302,
+      "label": "W14 single-axis positioning",
+      "trigger": "second objective"
+    },
+    {
+      "file": "papers/sliding-spotlight-scheduling/paper/main.tex",
+      "line": 328,
+      "label": "W14 single-axis positioning",
+      "trigger": "second objective"
+    },
+    {
+      "file": "papers/sliding-spotlight-scheduling/paper/main.tex",
+      "line": 330,
+      "label": "W14 single-axis positioning",
+      "trigger": "second objective"
+    },
+    {
+      "file": "papers/sliding-spotlight-scheduling/paper/sections/sec1_introduction.md",
+      "line": 15,
+      "label": "W14 single-axis positioning",
+      "trigger": "second objective"
+    },
+    {
+      "file": "papers/sliding-spotlight-scheduling/paper/sections/sec1_introduction.md",
+      "line": 23,
+      "label": "W2 E1 no-prior-work claim",
+      "trigger": "no prior work"
+    },
+    {
+      "file": "papers/sliding-spotlight-scheduling/paper/sections/sec2_related_work.md",
+      "line": 21,
+      "label": "W14 single-axis positioning",
+      "trigger": "second objective"
+    },
+    {
+      "file": "papers/sliding-spotlight-scheduling/paper/sections/sec2_related_work.md",
+      "line": 25,
+      "label": "W14 single-axis positioning",
+      "trigger": "independent objective dimension"
+    },
+    {
+      "file": "papers/sliding-spotlight-scheduling/paper/sections/sec2_related_work.md",
+      "line": 25,
+      "label": "W14 single-axis positioning",
+      "trigger": "second objective"
+    },
+    {
+      "file": "papers/sliding-spotlight-scheduling/paper/sections/sec2_related_work.md",
+      "line": 25,
+      "label": "W2 E1 no-prior-work claim",
+      "trigger": "no prior work"
+    },
+    {
+      "file": "papers/sliding-spotlight-scheduling/paper/sections/sec3_problem_formulation.md",
+      "line": 60,
+      "label": "W14 single-axis positioning",
+      "trigger": "bi-objective"
+    },
+    {
+      "file": "papers/sliding-spotlight-scheduling/paper/sections/sec4_solving_approach.md",
+      "line": 5,
+      "label": "W14 single-axis positioning",
+      "trigger": "dual-objective"
+    },
+    {
+      "file": "papers/sliding-spotlight-scheduling/paper/sections/sec6_results.md",
+      "line": 33,
+      "label": "W14 single-axis positioning",
+      "trigger": "second objective"
+    },
+    {
+      "file": "papers/sliding-spotlight-scheduling/paper/sections/sec6_results.md",
+      "line": 33,
+      "label": "W14 single-axis positioning",
+      "trigger": "second objective"
+    },
+    {
+      "file": "papers/sliding-spotlight-scheduling/paper/sections/sec6_results.md",
+      "line": 37,
+      "label": "W14 single-axis positioning",
+      "trigger": "second objective"
+    },
+    {
+      "file": "papers/sliding-spotlight-scheduling/paper/sections/sec6_results.md",
+      "line": 43,
+      "label": "W14 single-axis positioning",
+      "trigger": "second objective"
+    },
+    {
+      "file": "papers/sliding-spotlight-scheduling/paper/sections/sec6_results.md",
+      "line": 45,
+      "label": "W14 single-axis positioning",
+      "trigger": "second objective"
+    },
+    {
+      "file": "papers/sliding-spotlight-scheduling/paper/sections/sec7_discussion.md",
+      "line": 21,
+      "label": "W14 single-axis positioning",
+      "trigger": "second objective"
+    }
+  ]
+}

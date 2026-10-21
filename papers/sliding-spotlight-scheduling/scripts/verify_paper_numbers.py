@@ -17,6 +17,15 @@ that catches an artifact drifting from its registration).  Here the
 registration IS the source, so a manuscript number is checked against the
 artifact that produced it and against the caliber it was produced under.
 
+WORLD SCOPE (ticket 50 B4, 2026-10-21).  This script reads
+``experiments/v3_results`` ONLY.  The live paper world is now L8 / caliber v5
+(``experiments/v5_results``), and pointing this script at the paper therefore
+checks the wrong world -- it returns 0 mismatches without opening a single L8
+artifact ("green but irrelevant").  It is kept as the v3-world verifier for
+the frozen L6 record; the paper-number gate is
+``verify_paper_numbers_l8.py``.  The banner below states the world on every
+run so this can no longer be mistaken for the live gate.
+
 Paired trap numbers (the ticket names these explicitly):
   * 0.499 dB knife-edge is the SYNTHETIC P8WH family's margin-to-threshold,
     NOT R1C's;
@@ -555,6 +564,9 @@ def main(argv=None) -> int:
         return 2
 
     print("=== recomputed from experiments/v3_results + the freeze ===")
+    print("WORLD: caliber v3 / node L6 -- SUPERSEDED as the paper-number gate "
+          "by verify_paper_numbers_l8.py (ticket 50 B4). A pass here says "
+          "nothing about the L8 manuscript.")
     for k in sorted(exp):
         v = exp[k]
         if isinstance(v, dict):

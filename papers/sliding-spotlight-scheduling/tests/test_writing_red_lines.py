@@ -28,7 +28,9 @@ Usage (repo root):
 from __future__ import annotations
 
 import importlib
+import json
 import os
+import re
 import subprocess
 import sys
 from pathlib import Path
@@ -50,7 +52,7 @@ def run_gate(tmp_path: Path, body: str, suffix: str = ".md",
     env = dict(os.environ, PYTHONHASHSEED="0")
     return subprocess.run(
         [sys.executable, "-B", str(CHECKER), "--path", str(p), *extra],
-        capture_output=True, text=True, env=env,
+        capture_output=True, text=True, encoding="utf-8", errors="replace", env=env,
     )
 
 
@@ -238,34 +240,29 @@ def test_mutation_w11_drop_the_evaluator_qualifier_makes_the_obligation_red(tmp_
             assert any(v.startswith(W11) for v in violations), name
 
 
-def test_mutation_w13_drop_the_caliber_tag_makes_the_bare_reading_red(tmp_path):
-    """A4: the caliber tag is the licence.  Remove it and the bare reading
-    fires -- proving the check is driven by the tag and not by luck."""
+def test_mutation_w13_drop_the_caliber_tag_makes_the_tagged_reading_red(tmp_path):
+    """A4: the caliber tag is the licence.  Remove the tag recogniser and a
+    TAGGED reading must fire -- the bare form fires either way, so using it
+    here would prove nothing about the tag."""
     saved = crl._CALIBER_TAG_RX
     try:
         crl._CALIBER_TAG_RX = _never_match()
         p = tmp_path / "c.md"
-        p.write_text("The median f_q reached 84.5 at the top budget.\n",
-                     encoding="utf-8", newline="")
+        p.write_text("The median f_q reached 84.5 (v3 real-window caliber, "
+                     "non-normalised).\n", encoding="utf-8", newline="")
         violations, _ = _scan_one(p)
         assert any(v.startswith(W13) for v in violations)
     finally:
         crl._CALIBER_TAG_RX = saved
 
 
-def test_mutation_w2_drop_the_spec82_whitelist_makes_the_legal_sentence_red(tmp_path):
-    """W2's whitelist is one registered sentence, not an exemption class."""
-    with _patch_guard(W2, _no_clear):
-        name, body = W2_CLEARS[0]
-        p = tmp_path / "c.md"
-        p.write_text(body, encoding="utf-8", newline="")
-        violations, _ = _scan_one(p)
-        assert any(v.startswith(W2) for v in violations), name
-
-
 # --------------------------------------------------------------------------
-# W2 / E1 -- the no-prior-work ban, with the single licensed sentence
-# (spec.md:82).
+# W2 / E1 -- the no-prior-work ban.  Ticket 50 RETIRED the spec.md:82
+# licence: the conjunction it licensed ("coupling loop as a first-class
+# constraint AND a per-mode SAR metric as an independent objective,
+# simultaneously") is no longer the paper's claim, so the sentence it
+# licensed must now FIRE.  The guard licenses only quote-to-forbid and
+# explicit-retraction shapes.
 # --------------------------------------------------------------------------
 W2 = "W2 E1 no-prior-work claim"
 
@@ -274,15 +271,27 @@ W2_VIOLATES = [
     ("zh 尚无人", "质量感知卫星调度尚无人研究。\n"),
     ("zh 首次提出", "本文首次提出该耦合框架。\n"),
     ("EN no prior work", "No prior work has addressed the squint-duration coupling.\n"),
+    # The clause-final form the manuscript actually uses (main.tex:59).  The
+    # registered patterns above require a following on/for/has/does/study, so
+    # without the extension this shape was invisible to W2 -- which is why
+    # retiring the licence alone left the sentence green.
+    ("EN clause-final no prior work",
+     "Treating the steering-coupling loop as a first-class constraint and "
+     "carrying a per-mode SAR metric as an independent objective has no "
+     "prior work.\n"),
     ("EN first to", "We are the first to study the coupled metric.\n"),
     ("EN has never been", "The squint-duration coupling has never been studied.\n"),
+    # The RETIRED licence, verbatim from spec.md:82.  It must be red now.
+    ("retired spec82 conjunction",
+     "正确表述 = 耦合闭环一等约束 + 逐模式 SAR 指标进 MOEA 独立目标维，二者同时做无人做。\n"),
 ]
 W2_CLEARS = [
-    # The ONE licensed shape, verbatim from spec.md:82.
-    ("spec.md:82 conjunction",
-     "正确表述 = 耦合闭环一等约束 + 逐模式 SAR 指标进 MOEA 独立目标维，二者同时做无人做。\n"),
     ("plain related-work phrasing",
      "Prior work treats squint and dwell as independent design variables.\n"),
+    ("prohibiting shape",
+     "禁「无人做」类声明；先例必须逐条列文献。\n"),
+    ("explicitly retired claim",
+     "We no longer claim that no prior work couples the loop and the metric.\n"),
 ]
 
 
@@ -292,18 +301,36 @@ def test_w2_no_prior_work_ban_fires(name, body):
 
 
 @pytest.mark.parametrize("name,body", W2_CLEARS, ids=[n for n, _ in W2_CLEARS])
-def test_w2_licensed_conjunction_claim_clears(name, body):
+def test_w2_licensed_shapes_clear(name, body):
     assert_clears(body)
 
 
-def test_w2_whitelist_is_the_single_registered_sentence_not_a_general_exemption():
-    """The whitelist is a SPECIFIC conjunction, not 'any use of 无人做'.
-
-    A reviewer reading "无人做" anywhere must still be caught; only the one
-    registered two-part claim is licensed.
-    """
+def test_w2_ban_is_not_a_general_exemption():
+    """The retired whitelist licensed exactly one sentence.  With it gone,
+    '无人做' must be caught wherever it appears, with no licensed conjunction."""
     r = run_gate(_TMP, "The squint-duration coupling 无人做.\n")
     assert r.returncode == 1
+
+
+def test_mutation_w2_without_the_clause_final_pattern_the_new_claim_passes(
+        tmp_path):
+    """The clause-final extension is what catches the manuscript's own novelty
+    sentence.  Remove that one pattern and the sentence must pass -- proving
+    the ban is driven by the extension, not by luck."""
+    saved = crl.WRITING_BANS
+    try:
+        crl.WRITING_BANS = [
+            (lbl, tuple(p for p in pats if p != r"\bno\s+prior\s+work\b")
+             if lbl == W2 else pats, g)
+            for lbl, pats, g in saved]
+        p = tmp_path / "c.md"
+        p.write_text("Treating the loop as a constraint and the metric as an "
+                     "objective has no prior work.\n",
+                     encoding="utf-8", newline="")
+        violations, _ = _scan_one(p)
+        assert not any(v.startswith(W2) for v in violations), violations
+    finally:
+        crl.WRITING_BANS = saved
 
 
 # --------------------------------------------------------------------------
@@ -485,8 +512,11 @@ def test_w8_licensed_shapes_clear(name, body):
 
 
 # --------------------------------------------------------------------------
-# W9 / E9 -- coverage is degenerate by construction, so "passed / did not
-# pass" is not a result in EITHER direction.
+# W9 / E9 -- coverage pass/fail.  Ticket 50 rewrote the LICENCE, not the ban:
+# coverage is the only axis now, so "degenerate by construction" is
+# semantically reversed and clears nothing.  What clears is the paired
+# no-judgement predicate (reported as a reading / not a test / has no power),
+# with a contrast between predicate and hit blocking the clearance.
 # --------------------------------------------------------------------------
 W9 = "W9 E9 coverage pass/fail"
 
@@ -496,13 +526,32 @@ W9_VIOLATES = [
     ("EN failed", "Coverage failed, so the parity hypothesis is rejected.\n"),
     ("zh 通过", "覆盖轴检验通过。\n"),
     ("zh 未通过", "覆盖轴检验未通过。\n"),
+    # The RETIRED premise must no longer licence a pass/fail sentence: under
+    # the single-axis positioning coverage is not a degenerate second axis.
+    ("retired degenerate-by-construction premise",
+     "Coverage parity is degenerate by construction, so the coverage test passed.\n"),
+    # Laundering: a no-judgement predicate in an EARLIER clause does not clear
+    # an assertion after a contrast.
+    ("predicate then contrastive assertion",
+     "Coverage is reported as a reading; yet coverage passed at the base budget.\n"),
+    # A sentence terminator separates claims on the same line.
+    ("predicate then new sentence",
+     "Coverage has no power as a test. Coverage passed at the base budget.\n"),
 ]
 W9_CLEARS = [
-    ("degenerate by construction",
-     "Coverage parity is degenerate by construction, so no pass/fail is reported.\n"),
-    ("prohibiting shape", "禁称 coverage 通过/未通过（构造性打平）。\n"),
-    ("reporting the number as a result",
-     "Coverage reads 49/50 under the constructed parity and is reported as a result, not a test.\n"),
+    # Each fixture MUST contain a hit W9 actually matches, or it proves nothing
+    # about the licence (the first cut's prose did not, so the guard was never
+    # exercised).
+    ("reported as a reading, not a test",
+     "Coverage is reported as a reading, not a test: coverage passed is not a "
+     "claim this paper makes.\n"),
+    ("no power as a test",
+     "Coverage has no power as a test, so a coverage axis failed reading is "
+     "not a result.\n"),
+    ("single-objective tie-set reading",
+     "All 260 units carry a single-objective tie-set (unique f1 = 1), and there "
+     "is no pass/fail: coverage passed is not a statement.\n"),
+    ("prohibiting shape", "禁「coverage 通过」类判词；覆盖只报读数。\n"),
 ]
 
 
@@ -514,6 +563,24 @@ def test_w9_coverage_pass_fail_fires(name, body):
 @pytest.mark.parametrize("name,body", W9_CLEARS, ids=[n for n, _ in W9_CLEARS])
 def test_w9_licensed_shapes_clear(name, body):
     assert_clears(body)
+
+
+def test_mutation_w9_reverting_to_the_retired_premise_reds_the_reading_fixtures(
+        tmp_path):
+    """Put the retired 'degenerate by construction' licence back and the NEW
+    licensed fixtures must stop clearing -- proving the exemption is carried by
+    the new anchor, not by the old premise."""
+    old = crl._clear_by_regex(r"degenerate\s+by\s+construction|构造性打平|构造产物")
+    with _patch_guard(W9, old):
+        # The prohibiting fixture is deliberately excluded: its clearance is
+        # the prohibition marker, not the retired premise, so it stays clear
+        # under the old guard too.
+        for name, body in W9_CLEARS[:3]:
+            p = tmp_path / "c.md"
+            p.write_text(body, encoding="utf-8", newline="")
+            violations, _ = _scan_one(p)
+            assert any(v.startswith(W9) for v in violations), (
+                f"the retired licence still clears the new fixture: {name}")
 
 
 # --------------------------------------------------------------------------
@@ -634,6 +701,210 @@ def test_w13_tagged_or_non_reading_lines_clear(name, body, sfx):
     assert_clears(body, sfx)
 
 
+def test_guard_offsets_are_line_local_not_document_offsets(tmp_path):
+    """Positional guards must judge the LINE they are handed.
+
+    The match object came from the whole document, so before the rebase a hit
+    on line 2+ saw ``line[:m.start()]`` == the whole line and an empty tail:
+    the same sentence cleared on line 1 and fired on line 2 (phase-1 review
+    finding, CRITICAL).  This pins the rebase via W13's reading detector, the
+    guard that was demonstrably wrong.
+    """
+    body = ("A clean opening line.\n"
+            "The median f_q reached 84.5 at the top budget.\n")
+    p = tmp_path / "c.md"
+    p.write_text(body, encoding="utf-8", newline="")
+    violations, _ = _scan_one(p)
+    assert any(v.startswith(W13) and ":2 " in v for v in violations), violations
+
+
+# --------------------------------------------------------------------------
+# W14 (ticket 50 A1) -- the single-axis positioning.
+# The paper no longer carries "a per-mode SAR metric as an independent
+# objective dimension".  Asserting the old framing is banned; a retrospective
+# or negated mention is licensed (the manuscript must be able to say what it
+# no longer does).
+# --------------------------------------------------------------------------
+W14 = "W14 single-axis positioning"
+
+W14_VIOLATES = [
+    ("EN second objective",
+     "The quality headroom is a second objective rather than a post-hoc check.\n"),
+    ("EN hyphen", "We solve a second-objective formulation.\n"),
+    ("EN bi-objective",
+     "The bi-objective problem maximises served priority and quality.\n"),
+    ("EN dual-objective",
+     "The solver is a dual-objective evolutionary search.\n"),
+    ("EN two objectives", "The search optimises two objectives at once.\n"),
+    ("EN independent objective dimension",
+     "Carrying a per-mode SAR metric as an independent objective dimension is new.\n"),
+    ("EN title", "Scheduling with Mode-Determined Dwell and an Image-Quality "
+                 "Objective\n"),
+    ("EN plural", "The solver optimises second objectives at once.\n"),
+    ("EN ordinal", "The 2nd objective is the quality index.\n"),
+    ("EN quality-is-an-objective",
+     "We treat image quality as an objective in the loop.\n"),
+    ("zh 第二目标", "本文将图像质量作为第二目标。\n"),
+    ("zh 第二个目标", "把图像质量作为第二个目标参与优化。\n"),
+    ("zh 双目标", "双目标优化问题在覆盖与质量之间权衡。\n"),
+    ("zh 独立目标维", "把逐模式 SAR 指标作为独立目标维。\n"),
+    # The prohibition sits in a LATER comma-clause and must not clear.
+    ("prohibition in a later clause",
+     "The second objective is retained, and calling the schedule a physical "
+     "limit is forbidden.\n"),
+    # A retirement word in an earlier clause does not clear an assertion after
+    # a contrast.
+    ("laundering after contrast",
+     "The former framing is retired; yet quality is a second objective.\n"),
+    # Negating the retraction asserts the framing.
+    ("negated retraction",
+     "The second objective is not withdrawn from the formulation.\n"),
+]
+W14_CLEARS = [
+    ("no longer treat", "We no longer treat image quality as a second objective.\n"),
+    ("former formulation",
+     "The former two-objective formulation is replaced by a per-task hard "
+     "constraint.\n"),
+    ("not a second objective",
+     "Image quality is not a second objective in this paper.\n"),
+    ("not an objective dimension",
+     "The metric is not an objective dimension in this paper.\n"),
+    ("withdrawn framing",
+     "The second objective was withdrawn from the formulation.\n"),
+    ("zh 不再", "本文不再把图像质量作为第二目标。\n"),
+    ("zh 旧双目标作废",
+     "旧的双目标形式已作废，改为单目标加逐任务硬约束。\n"),
+    ("no longer an objective",
+     "We no longer treat quality as an objective in the loop.\n"),
+    ("prohibiting shape", "禁「第二目标」类表述。\n"),
+]
+
+
+@pytest.mark.parametrize("name,body", W14_VIOLATES, ids=[n for n, _ in W14_VIOLATES])
+def test_w14_second_objective_framing_fires(name, body):
+    assert_bans(body, W14)
+
+
+@pytest.mark.parametrize("name,body", W14_CLEARS, ids=[n for n, _ in W14_CLEARS])
+def test_w14_retrospective_mentions_clear(name, body):
+    assert_clears(body)
+
+
+def test_mutation_w14_drop_the_guard_reds_the_retrospective_fixtures(tmp_path):
+    """Remove the clearance and the licensed retrospective forms must fire --
+    proving the guard, not the pattern, separates the two shapes."""
+    with _patch_guard(W14, _no_clear):
+        for name, body in W14_CLEARS:
+            p = tmp_path / "c.md"
+            p.write_text(body, encoding="utf-8", newline="")
+            violations, _ = _scan_one(p)
+            assert any(v.startswith(W14) for v in violations), name
+
+
+def test_mutation_w14_drop_the_ban_makes_the_old_framing_pass(tmp_path):
+    """Remove the pattern and the banned assertions must stop firing."""
+    saved = crl.WRITING_BANS
+    try:
+        crl.WRITING_BANS = [(lbl, ([r"(?!x)x"] if lbl == W14 else pats), g)
+                            for lbl, pats, g in saved]
+        for name, body in W14_VIOLATES:
+            p = tmp_path / "c.md"
+            p.write_text(body, encoding="utf-8", newline="")
+            violations, _ = _scan_one(p)
+            assert not any(v.startswith(W14) for v in violations), name
+    finally:
+        crl.WRITING_BANS = saved
+
+
+# --------------------------------------------------------------------------
+# W15a (ticket 50 A4) -- the fulfillment-ratio reading carries a three-part
+# caliber tag: library f_q + tie-set member mean + reported reading, not a
+# target.  The producer is scripts/build_sweep_results.py:75-88.
+# --------------------------------------------------------------------------
+W15A = "W15a A4 fulfillment-ratio caliber"
+
+W15A_VIOLATES = [
+    ("bare ratio", "The fulfillment ratio reaches 0.62 at the order point.\n"),
+    ("two of the three tags",
+     "The median fulfillment ratio is 0.62 (library caliber f_q, mean over the "
+     "tie-set members).\n"),
+    ("zh bare", "兑现率中位数为 0.62。\n"),
+    ("partially tagged zh", "兑现率中位数为 0.62（库口径 f_q）。\n"),
+]
+W15A_CLEARS = [
+    ("three-part tag",
+     "The median fulfillment ratio is 0.62 (library caliber f_q, mean over the "
+     "tie-set members; reported reading, not an optimization target).\n"),
+    ("zh three-part tag",
+     "兑现率中位数为 0.62（库口径 f_q、tie-set 全体成员均值、报告读数非优化目标）。\n"),
+    ("mention without a number",
+     "We define the fulfillment ratio in Section 5.\n"),
+    ("prohibiting shape", "禁「兑现率 = 0.62」不带三要素口径标签。\n"),
+]
+
+
+@pytest.mark.parametrize("name,body", W15A_VIOLATES, ids=[n for n, _ in W15A_VIOLATES])
+def test_w15a_untagged_fulfillment_reading_fires(name, body):
+    assert_bans(body, W15A)
+
+
+@pytest.mark.parametrize("name,body", W15A_CLEARS, ids=[n for n, _ in W15A_CLEARS])
+def test_w15a_three_part_tag_clears(name, body):
+    assert_clears(body)
+
+
+def test_mutation_w15a_drop_the_tie_set_tag_makes_the_tagged_reading_red(
+        tmp_path):
+    """The tie-set element is load-bearing: remove its recogniser and the fully
+    tagged fixture must fire (the ratio would otherwise be read as the anchor
+    solution's reading, which is the error the tag exists to prevent)."""
+    saved = crl._FULFILLMENT_TIESET_RX
+    try:
+        crl._FULFILLMENT_TIESET_RX = _never_match()
+        p = tmp_path / "c.md"
+        p.write_text(W15A_CLEARS[0][1], encoding="utf-8", newline="")
+        violations, _ = _scan_one(p)
+        assert any(v.startswith(W15A) for v in violations), violations
+    finally:
+        crl._FULFILLMENT_TIESET_RX = saved
+
+
+# --------------------------------------------------------------------------
+# W15b (ticket 50 A4) -- the descriptive f_Q_deliv variant must be labelled
+# and declared incomparable with the library caliber (formula-spec 8.17-10).
+# --------------------------------------------------------------------------
+W15B = "W15b A4 f_Q_deliv descriptive tag"
+
+W15B_VIOLATES = [
+    ("bare variant",
+     "The variant f_Q_deliv reaches 0.71 in the same units.\n", ".md"),
+    ("labelled but no non-comparability",
+     "The descriptive variant f_Q_deliv reaches 0.71.\n", ".md"),
+]
+W15B_CLEARS = [
+    ("labelled and incomparable",
+     "The descriptive variant f_Q_deliv reaches 0.71 (not comparable with the "
+     "library-caliber f_q).\n", ".md"),
+    ("mention without a number",
+     "We define f_Q_deliv in Eq.(12).\n", ".md"),
+    ("tex labelled and incomparable",
+     "The descriptive variant $f_{Q,\\text{deliv}}$ reaches 0.71 and is not "
+     "comparable with the library caliber.\n", ".tex"),
+]
+
+
+@pytest.mark.parametrize("name,body,sfx", W15B_VIOLATES,
+                         ids=[n for n, _, _ in W15B_VIOLATES])
+def test_w15b_untagged_fq_deliv_reading_fires(name, body, sfx):
+    assert_bans(body, W15B, sfx)
+
+
+@pytest.mark.parametrize("name,body,sfx", W15B_CLEARS,
+                         ids=[n for n, _, _ in W15B_CLEARS])
+def test_w15b_labelled_incomparable_reading_clears(name, body, sfx):
+    assert_clears(body, sfx)
+
+
 # --------------------------------------------------------------------------
 # English falsified markers (ticket 37, review-fable D block).
 # Without them the COLLAPSE pattern fires on the sentence that WITHDRAWS the
@@ -688,7 +959,7 @@ def test_must_include_scanned_file_passes(tmp_path):
     r = subprocess.run(
         [sys.executable, "-B", str(CHECKER), "--path", str(tmp_path),
          "--must-include", str(p)],
-        capture_output=True, text=True, env=env)
+        capture_output=True, text=True, encoding="utf-8", errors="replace", env=env)
     assert r.returncode == 0, r.stdout
 
 
@@ -707,7 +978,7 @@ def test_must_include_existing_but_unscanned_file_fails(tmp_path):
     r = subprocess.run(
         [sys.executable, "-B", str(CHECKER), "--path", str(scanned),
          "--must-include", str(draft)],
-        capture_output=True, text=True, env=env)
+        capture_output=True, text=True, encoding="utf-8", errors="replace", env=env)
     assert r.returncode == 1
     assert "was NOT scanned" in r.stdout
 
@@ -719,7 +990,7 @@ def test_scan_set_lists_filenames_not_only_a_count(tmp_path):
     env = dict(os.environ, PYTHONHASHSEED="0")
     r = subprocess.run(
         [sys.executable, "-B", str(CHECKER), "--path", str(p)],
-        capture_output=True, text=True, env=env)
+        capture_output=True, text=True, encoding="utf-8", errors="replace", env=env)
     assert r.returncode == 0
     assert "chapter.md" in r.stdout, "the scan set was not printed by name"
 
@@ -745,19 +1016,63 @@ def test_registration_files_are_exempt_from_the_writing_bans():
             f"{p} is registration, not manuscript -- the bans must skip it")
 
 
-def test_repo_is_green_with_the_new_bans():
-    """The full repository scan: the bans must not redden the existing tree.
+# The ticket-50 phase-1 ledger: the EXPECTED red state of the manuscript after
+# the W14/W2/W9 patch and BEFORE the phase-2 rewrite.  It is a machine-checked
+# artifact so the rewrite list cannot drift from the gate.
+LEDGER = Path(__file__).resolve().parent / "data" / "t50_phase1_expected_bans.json"
+_VIOLATION_RX = re.compile(
+    r"^VIOLATION\s+(?P<label>.+?): (?P<file>[^:]+):(?P<line>\d+) -> ")
 
-    This is the load-bearing regression: a ban whose whitelist is too narrow
-    turns the whole gate red on files nobody is editing, which trains everyone
-    to ignore it.
-    """
+
+def _repo_violations() -> "tuple[int, set]":
     env = dict(os.environ, PYTHONHASHSEED="0")
     r = subprocess.run(
         [sys.executable, "-B", str(CHECKER)],
-        capture_output=True, text=True, env=env, cwd=FORK.parent.parent)
-    assert r.returncode == 0, "\n".join(
-        l for l in r.stdout.splitlines() if l.startswith("VIOLATION"))
+        capture_output=True, text=True, encoding="utf-8", errors="replace",
+        env=env, cwd=FORK.parent.parent)
+    got = set()
+    for ln in r.stdout.splitlines():
+        m = _VIOLATION_RX.match(ln.strip())
+        if m:
+            got.add((m.group("file"), int(m.group("line")), m.group("label")))
+    return r.returncode, got
+
+
+def test_repo_violation_set_equals_the_registered_phase1_ledger():
+    """Ticket 50 phase 1: the manuscript is EXPECTED red until phase 2.
+
+    Equality against a machine-readable ledger, not "no violations": a ban
+    whose whitelist is too narrow reddens lines nobody is rewriting (the
+    failure this test used to guard), while a ban that never fires silently
+    passes.  Pinning the exact expected-red set gives phase 2 its checklist and
+    forces an explicit update whenever that list moves; phase 2 shrinks it to
+    an empty list and re-runs the gate green.
+    """
+    ledger = json.loads(LEDGER.read_text(encoding="utf-8"))
+    want = {(v["file"], int(v["line"]), v["label"]) for v in ledger["violations"]}
+    assert want, "the phase-1 ledger is empty -- the new bans are not firing"
+    registered = {lbl for lbl, _pats, _g in crl.WRITING_BANS}
+    assert set(ledger["labels"]) <= registered, "ledger names an unregistered ban"
+    rc, got = _repo_violations()
+    assert rc == 1 and got, "the manuscript must be red until phase 2 rewrites it"
+    assert got == want, (
+        "expected-red set drifted from the ledger\n"
+        f"  new: {sorted(got - want)}\n  gone: {sorted(want - got)}")
+
+
+def test_violations_outside_the_manuscript_tree_are_empty():
+    """The writing bans govern the manuscript.  Audit records under review/ are
+    registered out of scope (a reconciliation report MUST quote the retired
+    framing in order to audit it); anything else here is a scope leak."""
+    _rc, got = _repo_violations()
+    stray = {(f, l, lab) for f, l, lab in got if "/paper/" not in f}
+    assert stray == set(), f"violations outside paper/: {sorted(stray)}"
+
+
+def test_review_records_are_not_manuscript_shaped():
+    p = FORK / "review" / "retro-project-20261020.md"
+    assert p.exists()
+    assert not crl._is_manuscript_shaped(p)
 
 
 # A module-level tmp dir so the helper signatures stay readable.  pytest's

@@ -32,6 +32,24 @@
       "family_scope": "real-window R1C (N=20) / R2F (N=50) / R3H (N=100) only. R4H (N=500) is retired by AD-5 and has no v3 artifacts. The synthetic M/P families are not re-run in v3 and remain caliber v2.",
       "budget_scope": "the three-tier ladder 40/60, 80/120, 160/240. The base tier is an UNDER-CONVERGED baseline: both R2F and R3H were judged SEARCH-ARTIFACT there and their collapse narratives are withdrawn. Richness or quality readings must be taken at 160/240 and must carry the NOT-PLATEAUED caveat -- the ladders are still rising, so a richness bound is forbidden in both directions."
     },
+    "v5": {
+      "artifacts": "experiments/v5_results/ (sweep/, matrix/, scenarios/, sweep_results.json, platform.json)",
+      "comparable_to_v1": false,
+      "comparable_to_v2": false,
+      "comparable_to_v3": false,
+      "meaning": "caliber v3 geometry (real transit enumeration, per-window t_ca/r0, per-task slant range) + the Kim Eq.(22)/(24) dwell chain + B-full TASK-LEVEL mode parameters (formula-spec v1.9 section 8.17): for SLS/SPT the design parameters follow the order resolution and are solved at the selected start squint, so the delivered azimuth resolution equals the order by construction (rho_a,ach(psi_sel) = rho_req, round-trip tolerance 1e-12); STR keeps the library floor (no task-level parameter -- a task-level request there raises). The frozen mode ASSIGNMENTS are grandfathered (section 8.17-9): the demand sweep scales the order rho_req only, it does not re-route modes.",
+      "produced_after": "ticket 49 (B-full task-level parameter law), formula-spec v1.9 section 8.17 blocking gate",
+      "code_head": "50795ca (matrix leg; sweep leg self-reports a3a7122 + launch worktree, RUN_LINEAGE L8 row)",
+      "date": "2026-10-20",
+      "why": "The distance between v3 and v5 is a DATA-level change, not a reading-level one: changing admission/dwell changes which schedules exist, so the frozen families were re-run (ticket 49 item 9) rather than re-read. Mixing v3 and v5 readings is therefore forbidden.",
+      "demand_grid": [0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 2.0],
+      "sweep_scope": "9 s-points x 3 families (R1C/R2F/R3H) x 10 seeds = 270 units at the single budget 40/60; 260 artifacts + 10 recorded exit-11 units (R1C at s=0.8: every task's feasible set is empty), exit-11 entering the curve as zero coverage. There is NO budget ladder in v5 -- richness/budget readings stay with v3 (L6) and are not re-derived here.",
+      "matrix_scope": "the synthetic M/P families re-run (5 families x 10 seeds = 50 units) to re-pin the frozen front; same platform.json md5 as L7.",
+      "f_q_unit_note": "The optimizer and the aggregator KEEP the library caliber (formula-spec 8.17-10): f_q is the zero-squint library quantity, NOT the descriptive f_Q_deliv variant (which has no STR domain -- STR delivery is the library floor 2.4669 m and a task-level parameter request raises). The registered fulfillment ratio is a DIFFERENT reading: per served task, the ACHIEVED-window f_q over the task's best REACHABLE window (each window at its zero-squint best), a <=1 ratio averaged over the served tasks of a tie-set member and then over ALL tie-set members (scripts/build_sweep_results.py:75-88) -- not the anchor solution's reading. Raw f_q is an absolute, non-normalised quantity; cross-family and cross-caliber mixing is forbidden. Any fulfillment-ratio reading must carry the three-part tag (library caliber + tie-set member mean + reported reading, not an optimization target).",
+      "family_scope": "real-window R1C (N=20) / R2F (N=50) / R3H (N=100) over the demand grid, plus the re-pinned synthetic M/P matrix; R4H remains retired.",
+      "reading_status": "the MAIN RESULT FORM of this caliber is the coverage-demand curve (per family, median served fraction per s point) plus the fulfillment ratio as a reported reading. No directional claim about the coverage-fulfillment relation is registered: the measured Pearson r on this world is +0.33 (26 family-s medians) / +0.25 (260 units), so the earlier 'higher coverage, lower fulfillment' gloss is not reproduced (ticket-50 amendment).",
+      "registration": "analysis_prereg_v2.json#amendment_20261021_ticket50_single_axis; RUN_LINEAGE.md L8 row and section 6 (verification-chain disposition)"
+    },
     "v2": {
       "artifacts": "experiments/v2_results/, .scratch/sliding-spotlight-scheduling/v2-run/",
       "comparable_to_v1": false,
