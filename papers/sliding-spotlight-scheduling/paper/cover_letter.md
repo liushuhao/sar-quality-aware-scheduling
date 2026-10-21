@@ -30,7 +30,7 @@ Three features distinguish the submission:
 3. Auditable results: every manuscript number is recomputed from the promoted
    artifacts by a verification script, and the coverage–demand curve, its
    order-point costs, the demand-satisfaction count and the retention readings
-   each carry their caliber on the line that states them.
+   each carry their caliber where it is stated.
 
 The manuscript has not been published previously and is not under
 consideration elsewhere. All authors approve the submission and declare no

@@ -10,7 +10,7 @@ Two discipline risks shape the methodology as much as the physics does. First, a
 
 ## 1.2 Contributions
 
-Following the registered narrative frame, the paper's contributions are three: the platform that carries the order into the physics, the measured coverage cost of tightening that order, and the discipline that keeps both claims testable:
+Following the registered narrative frame --- registered here meaning fixed in the project's preregistration before drafting began --- the paper's contributions are three: the platform that carries the order into the physics, the measured coverage cost of tightening that order, and the discipline that keeps both claims testable:
 
 1. **An enabling physics-to-scheduler platform** (the platform leg). A three-mode continuum formalisation (Section 3) that carries the mode choice, the scene-level dwell closures, the order resolution as a per-task hard constraint, and the maneuver-coupled feasibility predicates into one scheduling loop: the imaging mode is resolved from the product order, the mode parameters follow the order where the mode has them so that the delivered resolution equals the order at the selected start, and the dwell duration is a consequence of the order rather than a constant.
 
@@ -20,7 +20,7 @@ Following the registered narrative frame, the paper's contributions are three: t
 
 Throughout, the trade-off the study claims is the resolution-versus-dwell-time axis of the mode continuum; the antenna-design question of resolution against swath is a sensor-layer consequence that this simulation does not model, and it is treated as a limitation with future work (Section 7.1). The serial-bound reading of how many dwell-coupled tasks a pass carries is stated with a per-pass caliber and without a number, because its serial bound has not been recomputed in this scenario world; it is carried as a scope statement (Section 7.1) rather than as a result.
 
-The move this paper makes is to take the resolution off the request and put it into the constraint set: the order is what the scheduler must satisfy task by task, the mode parameters are what carry it into the physics, and the coverage loss is what the paper measures.
+The move this paper makes is to take the resolution off the request and put it into the constraint set: the order is what the scheduler must satisfy task by task, the mode parameters are what carry it into the physics, and the coverage loss is what the paper measures. The claim is scoped to the literature surveyed below: the survey rests on the project's curated literature pool --- a converted and catalogued bibliography of the field plus an incremental paper-search sweep over the months preceding writing, whose nearest neighbours Section 2 engages directly. What the tested coupling in fact produced in this scenario world is reported in Section 6: the coverage--demand curves of the three families, the floor step and the two anchor-carried dips, the order-point costs against each family's own saturation, and the demand-satisfaction count --- the platform's value is that each of these readings is registered and reproducible.
 
 ## 1.3 Paper organisation
 

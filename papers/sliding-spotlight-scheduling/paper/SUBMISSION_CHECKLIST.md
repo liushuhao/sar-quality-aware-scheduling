@@ -1,6 +1,6 @@
 # paper2 投稿操作清单 — Acta Astronautica
 
-**状态**：阶段三·B 改写后待重跑终闸；本文件随稿同步更新（旧定位条目已清）。
+**状态**：票 50 全链完成（阶段三·A/B 改写 + 阶段四终检），2026-10-21 全量门禁绿（红闸 0/1076、L8 数字闸 36 项 0 mismatch、预注册闸 28 项 0 失败、版式闸 0 FAIL、编译两遍 45 页 0 error 0 未定义引用、域套件 papers 664p/1s + src 154p rc=0）；本文件随稿同步（旧定位条目已清）。
 **投稿动作由你本人在 Editorial Manager 完成。**
 
 ## 一、投稿文件（全部在 `papers/sliding-spotlight-scheduling/paper/`）

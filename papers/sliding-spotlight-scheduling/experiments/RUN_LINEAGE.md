@@ -107,3 +107,11 @@
 > 理由：`review/` 是审计与对账记录（provenance），按既有设计同 `experiments/`、`formulas/`、`scripts/`、`sss_core/`、`tests/` 一样属于"必须引用被禁措辞才能审计它"的登记面；不排除则正文改写完成后闸将永久为红（没人看的闸）。
 > 边界与守卫：①正文树 `paper/` 仍在扫描面内（阶段一实测 54 条 violation 未清零 ⇒ 闸未绿，不存在"为绿而扩面"）；②不变量测试 `test_violations_outside_the_manuscript_tree_are_empty` 钉住"paper/ 之外零违规"；③若日后要让审查记录也受禁语约束，须另建"审计引用豁免"机制，不得简单恢复扫描（会造死锁）。
 > 关联：`.scratch/sliding-spotlight-scheduling/t50/phase1-receipt.md` §3 末与 §9 暗卷自查 #1。
+
+
+
+## 八、票 50 收口（阶段三·B + 阶段四合并波，2026-10-21）
+
+| 项 | 处置 | 留痕 |
+|---|---|---|
+| 正文三面（main.tex / full.md / sections/*.md）+ 投稿包 | 定位改写完成（阶段三·A/B）+ 阶段四波一致性修复（sec1-3 自 full.md 机械再生、main.tex 富披露吸收进 full.md 17 处、ARS 审稿 4 修 + 三轮自查 1 修）；门禁全绿：红闸 0/1076、L8 数字闸 36 项 0 mismatch、预注册闸 28 项 0 失败、版式闸 0 FAIL（3 advisory 基线既有）、旧 v3 闸报 SUPERSEDED 横幅（预期）；编译两遍 45 页 0 error 0 未定义引用；域套件 papers 664 passed/1 skipped + src 154 passed（rc 均 0） | .scratch/sliding-spotlight-scheduling/t50/phase3-parity.md + phase3-parity-machine.json + phase3-receipt.md + phase4-ars-review.md + phase4-three-round-check.md + phase4-receipt.md |

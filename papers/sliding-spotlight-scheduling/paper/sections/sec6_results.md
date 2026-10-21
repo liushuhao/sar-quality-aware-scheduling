@@ -28,7 +28,7 @@ The control family's tightest grid point is a different kind of fact and is sepa
 
 ## 6.3 The frozen criteria and their verdicts
 
-Table 1 reports the three criteria of Section 5.3 as measured. The control family and the large family meet all three. The 50-task family meets the saturation arm and fails the other two: its medians are not monotone across the grid (C1), and its tight arm does not fall (C3). Both failures are reported as results about this world.
+Table 1 reports the three criteria of Section 5.3 as measured. The control family and the large family meet all three; the control family's infeasible tight point enters the criteria as the zero-coverage outcome registered in Section 5.3. The 50-task family meets the saturation arm and fails the other two: its medians are not monotone across the grid (C1), and its tight arm does not fall (C3). Both failures are reported as results about this world.
 
 | family (drawn / served) | C1 monotone | C2 saturation | C3 tight arm |
 |---|---|---|---|
@@ -58,7 +58,7 @@ This is a different object from the search-artifact verdict of the earlier line,
 
 The curve says how much priority mass is served; a second reading says what that service amounts to. Over the nine demand points the tie set serves 477,308 task instances, distributed over 9,430 tie-set records: a served task instance is one tie-set member's selection of one task, not a distinct task, and the count is the sum over every record of the tasks that record selects. The delivery identity that constraint C5 enforces --- delivered resolution equal to the order at the selected start --- holds by construction and is checked by a raise rather than by a score, so no artifact stores a per-record verdict; the observable is the constraint violation, whose maximum over every record is 0.0, and no violation is recorded relative to the evaluator for any unit of the sweep. Ten of the 270 launched units exited with no feasible individual (the control family at $s=0.8$) and are excluded from the served count by the driver ledger rather than folded into it as zeros.
 
-The retention reading measures the same service from the schedule's side, and it travels with a caliber that must travel with it. On the STR-clip-only caliber --- the feasible measure retained after the stripmap clip, computed on the pinned differential arm of the verification gate --- retention reads 51.14% for the control family, 100.00% for the 50-task family and 71.00% for the 100-task family. The earlier line's retention figures, which were computed under the retired SLS/SPT narrowing, are superseded and are not quoted here.
+The retention reading measures the same service from the schedule's side, and it travels with a caliber that must travel with it. On the STR-clip-only caliber --- the feasible measure retained after the stripmap clip --- retention reads 51.14% for the control family, 100.00% for the 50-task family and 71.00% for the 100-task family. The earlier line's retention figures, which were computed under the retired SLS/SPT narrowing, are superseded and are not quoted here.
 
 ## 6.6 Reported readings: fulfillment, its relation to coverage, and the delivered variant
 
