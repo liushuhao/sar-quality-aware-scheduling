@@ -1039,19 +1039,28 @@ def test_w14_first_class_objective_fires(name, body, sfx):
     assert_bans(body, W14, sfx)
 
 
-def test_the_conclusion_chapter_is_in_the_expected_red_ledger():
+def test_the_conclusion_chapter_is_covered_by_the_gate():
     """H2 at the ARTIFACT level, not just at the pattern level.
 
     The phase-1 ledger listed 13 files and sec8_conclusion.md was not one of
     them: phase 2 would have rewritten everything else, gone green, and left
-    the conclusion asserting the retired framing.  The machine-readable ledger
-    is the artifact that drives phase 2, so the conclusion must be IN it.
+    the conclusion asserting the retired framing.  Phase 3B has now rewritten
+    the conclusion and the ledger is closed, so the property that must hold is
+    the one the ledger was standing in for: the conclusion file is INSIDE the
+    gate's manuscript scope and carries no W14 hit today.  A conclusion that
+    silently fell out of scope (renamed, moved under a registration directory,
+    excluded from the scan) would fail here even while the gate stayed green.
     """
-    ledger = json.loads(LEDGER.read_text(encoding="utf-8"))
-    files = {v["file"] for v in ledger["violations"]}
-    assert any(f.endswith("paper/sections/sec8_conclusion.md") for f in files), (
-        "the conclusion chapter is not in the expected-red ledger: phase 2 "
-        f"would go green with the old framing still asserted. files={sorted(files)}")
+    sec8 = FORK / "paper" / "sections" / "sec8_conclusion.md"
+    assert sec8.is_file(), "the conclusion chapter is missing"
+    assert crl._is_manuscript_shaped(sec8), (
+        "the conclusion left the manuscript scope: the gate would never read it")
+    text = "\n".join(crl._strip_markup(ln)
+                     for ln in sec8.read_text(encoding="utf-8").splitlines())
+    rx = re.compile("|".join(p for lbl, pats, _g in crl.WRITING_BANS
+                             if lbl == W14 for p in pats), re.IGNORECASE)
+    hits = [m.group(0) for m in rx.finditer(text)]
+    assert hits == [], f"the conclusion still carries the retired framing: {hits}"
 
 
 # H3 -- the copula was fixed to "is".
@@ -1765,25 +1774,31 @@ def _repo_violations() -> "tuple[int, set]":
 
 
 def test_repo_violation_set_equals_the_registered_phase1_ledger():
-    """Ticket 50 phase 1: the manuscript is EXPECTED red until phase 2.
+    """Ticket 50: the expected-red set is CLOSED (phase 3B).
 
-    Equality against a machine-readable ledger, not "no violations": a ban
-    whose whitelist is too narrow reddens lines nobody is rewriting (the
-    failure this test used to guard), while a ban that never fires silently
-    passes.  Pinning the exact expected-red set gives phase 2 its checklist and
-    forces an explicit update whenever that list moves; phase 2 shrinks it to
-    an empty list and re-runs the gate green.
+    Phase 1 pinned the exact expected-red set so that the bans could not pass
+    silently while the retired framing was still in the manuscript.  Phase 3B
+    rewrote that framing, so the registered set is now EMPTY and this test
+    pins that instead: the repository must be green, and any future violation
+    has to be registered here (or the text fixed) rather than appear
+    unannounced.
+
+    That the bans still FIRE is deliberately not tested here -- a
+    never-firing ban and a clean manuscript are indistinguishable through this
+    equality.  That direction is covered by the per-ban fixture tests below,
+    each of which feeds the checker a draft that must go red.
     """
     ledger = json.loads(LEDGER.read_text(encoding="utf-8"))
     want = {(v["file"], int(v["line"]), v["label"]) for v in ledger["violations"]}
-    assert want, "the phase-1 ledger is empty -- the new bans are not firing"
     registered = {lbl for lbl, _pats, _g in crl.WRITING_BANS}
     assert set(ledger["labels"]) <= registered, "ledger names an unregistered ban"
     rc, got = _repo_violations()
-    assert rc == 1 and got, "the manuscript must be red until phase 2 rewrites it"
     assert got == want, (
         "expected-red set drifted from the ledger\n"
         f"  new: {sorted(got - want)}\n  gone: {sorted(want - got)}")
+    assert rc == (1 if want else 0), (
+        f"gate rc={rc} disagrees with the registered ledger "
+        f"({len(want)} expected violation(s))")
 
 
 def test_violations_outside_the_manuscript_tree_are_empty():

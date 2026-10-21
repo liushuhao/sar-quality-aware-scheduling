@@ -1,13 +1,13 @@
 Highlights
 ==========
 
-Paper: Agile Sliding-Spotlight SAR Satellite Scheduling with Mode-Determined Dwell Duration and an Image-Quality Objective
+Paper: Agile Sliding-Spotlight SAR Satellite Scheduling with Per-Task Resolution Requirements: The Coverage Cost of Tightening the Order
 Target: Acta Astronautica (Elsevier; 3-5 bullets, <=85 characters each)
 
-- Dwell, maneuver, and image quality become endogenous scheduling quantities.
-- A preregistered budget ladder retracts a front-collapse reading as artifact.
-- No unit promotes in 90 units; treatments stay structurally alive at model level.
-- Pooled quality headroom over the greedy anchor rejects decisively (t = 24.78).
-- Every reported claim is registered, budget-bounded, and falsifiable.
+- Dwell becomes endogenous: mode parameters follow the per-task order.
+- Order resolution is a hard constraint; coverage is the only objective.
+- Tightening the order costs 4.15 percentage points on the 100-task family.
+- The 50-task family is nearly flat; its tight-arm penalty is withdrawn.
+- Every number is recomputed from registered artifacts; criteria report failures.
 
-Character counts: 76 / 78 / 83 / 78 / 66 (all <= 85).
+Character counts: 68 / 70 / 73 / 70 / 79 (all <= 85).
