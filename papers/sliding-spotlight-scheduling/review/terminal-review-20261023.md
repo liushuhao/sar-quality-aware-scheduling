@@ -83,6 +83,10 @@ R-23（cloud-cover 删/改降雨电离层）、R-24（no intermediate regime 措
 8. 数字闸联动更新（退役 delivered/Pearson 旧锚、纳入新表/区间/反事实数字）+ pdflatex ×2 编译 0 error + 域套件双面回归（`PYTHONPATH=src python -m pytest src/tests/` + paper2 域套件，独占跑）。
 9. 全文一致性 grep（`saturat`、`single-orbit`、`squint-loss`、裸 order 术语残留、双句点）+ verify_paper_numbers_l8 rc=0。
 
+**执行票必带的补充裁决与禁令（2026-10-23 收工复盘补）**：
+- **P1-7 贡献声明三选二显式裁决**：保留平台腿与纪律性贡献，主结果贡献降格为「模式依赖的订单敏感性」叙事（由 R-01 双向报告 + R-06 时序披露 + R-04 机制段重写组合兑现）；EA 选「测量工具」侧（§4 现状即此，仅 L54 一词改），不补预算梯。贡献列表 §1.2 重写时按此对齐。
+- **审查报告附录 C 六条「不建议做」禁令**（roadmap 搬运时整节丢失，此处补回）：①不要重调 K1–K3 救 R2F；②不要删 R1C 不可行结果（改叙述为解析推论）；③路由实验不做前标题必须带固定模式分配限定语义（K″ 已含 mode composition 主张——修回信需说明「decides」为现象层概括、观察合法，分解表与三族共变为证）；④不要为保 EA 方法叙事而保留 SBX 细节叙事（按测量工具定位）；⑤不要把 registered/caliber 全局换同义词当修完 R-06（须时间线+pre-specified vs post hoc 清单）；⑥不要新增跨族 pooled 统计（R-12 删除后不回填）。
+
 ## 残余风险（终审自审）
 
 - Table 1 判读精化与「criteria 不再编辑」自我纪律的表面冲突——已用第二次 amendment + 双行呈现化解，但正文行文必须把「判定未动、判读精化」写死，否则给审稿人留新靶。

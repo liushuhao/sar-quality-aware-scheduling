@@ -27,7 +27,7 @@
 | R-14 | ✅ | 场景种子=求解器种子；「10 seed=10 场景非 10 次重复」 | will_address | 应改档（正文层）：明示 seed=场景抽样 + one-world 限定单 seed；3 solver-seed 补算缓（anchor 258/260 已压搜索噪声） |
 | R-15 | ✅ | 「46/99/342/753」是单 seed 取值 | will_address | 应改档：族规模改区间（46–50/99–100/窗 145–162 等） |
 | R-16 | ✅ | K1–K3 无容差；R2F 两次下降<一个优先级单位 | will_address | 必修档：配对 per-seed delta + 容差（1 优先级单位）；与 R-07 同一 amendment |
-| R-17 | ✅ | EA 贡献被自数据否定（anchor 258/260） | will_address | 应改档（一词）：L54 coverage-optimal → attains the best-found coverage；§4 结构不动 |
+| R-17 | ✅ | EA 贡献被自数据否定（anchor 258/260） | will_address | 应改档（一词）：L54 coverage-optimal → attains the best-found coverage；§4 结构不动；EA 裁「测量工具」侧不补预算梯；P1-7 贡献声明三选二=保留平台+纪律、主结果降格为模式依赖敏感性叙事（R-01/04/06 组合兑现，2026-10-23 收工复盘显式补裁） |
 | R-18 | ✅ | R2F 2.36pp 配对中位仅 0.93pp、CI 重叠；R3H 4.15pp 稳健 | will_address | 应改档：摘要 pp 数带配对统计量；R2F 并报 pairwise 0.93 |
 | R-19 | 🟡 | 7578.05 是惯性速度（已披露）；真缺口=无敏感性 | will_address | 应改档：一行敏感性（与 R-11 合并做） |
 | R-20 | ✅ | AASR 门槛从未绑定（30 manifest removals aasr=0） | will_address | 必修档：§2.1/§5 披露移除 0 |
