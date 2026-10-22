@@ -28,8 +28,9 @@ Three features distinguish the submission:
    capability and a reported reading, not an optimization target; and the
    conclusions are scoped to order sensitivity under a fixed mode assignment.
 3. Auditable results: every headline reading is recomputed from the promoted
-   artifacts by a verification script --- all nine curve points per family,
-   the order-point costs, the demand-satisfaction count, the retention, dip
+   artifacts by a verification script --- all nine grid points per family
+   (curve values and the infeasibility status alike), the order-point costs,
+   the demand-satisfaction count, the retention, dip
    and per-seed displacement readings --- and each reading carries its
    caliber where it is stated.
 

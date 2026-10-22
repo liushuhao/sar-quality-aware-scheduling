@@ -10,54 +10,73 @@
   % Panel A: stripmap -- rotation centre at infinity, parallel rays
   % ------------------------------------------------------------------
   \begin{scope}[shift={(0,0)}]
-    \node[anchor=north,font=\small\bfseries,align=center] at (17,-1) {(a) Stripmap\\($k\to 0$)};
+    % panel titles sit above the SAT label: below the ground line they descend
+  % into the scene-box band (y in [-6,2]) and the box edges cut the title words
+  \node[anchor=south,font=\small\bfseries,align=center] at (17,31) {(a) Stripmap\\($k\to 0$)};
     % ground track
     \draw[thick,->] (0,0) -- (24,0) node[above,font=\footnotesize]{$v_s$};
-    % satellite
+    % satellite: current position (labelled) + two past positions along track
+    \fill (4,26) circle (1.2);
+    \fill (7,26) circle (1.2);
     \fill (10,26) circle (1.2) node[above,font=\footnotesize]{SAT};
-    % parallel beams (rotation centre at infinity)
-    \draw[->] (10,26) -- (7,4);
-    \draw[->] (10,26) -- (10,3);
+    % parallel beams at successive positions, common direction (3,-22):
+    % rotation centre at infinity, no finite convergence point
+    \draw[->] (4,26) -- (7,4);
+    \draw[->] (7,26) -- (10,4);
     \draw[->] (10,26) -- (13,4);
     % scene
     \draw (5,-6) rectangle (15,2);
     \node[font=\footnotesize] at (10,-2) {scene};
-    \node[font=\footnotesize,align=center] at (17,14) {rotation centre\\at infinity\\($r_0\to\infty$)};
+    % x=23 keeps the note clear of the beam fan (rightmost beam reaches
+    % x~12.5 at the note's lowest line); at x=17 its left edge sat inside the fan
+    \node[font=\footnotesize,align=center] at (23,14) {rotation centre\\at infinity\\($r_0\to\infty$)};
     \node[font=\footnotesize,align=center,anchor=north] at (10,-10) {uniform\\antenna axis\\$\rho_{a,\mathrm{STR}}=D/2$};
   \end{scope}
   % ------------------------------------------------------------------
   % Panel B: sliding spotlight -- rotation centre beyond the scene
   % ------------------------------------------------------------------
   \begin{scope}[shift={(34,0)}]
-    \node[anchor=north,font=\small\bfseries,align=center] at (17,-1) {(b) Sliding spotlight\\($0<k<1$)};
+    \node[anchor=south,font=\small\bfseries,align=center] at (17,31) {(b) Sliding spotlight\\($0<k<1$)};
     \draw[thick,->] (0,0) -- (34,0) node[above,font=\footnotesize]{$v_s$};
+    \fill (4,26) circle (1.2);
+    \fill (7,26) circle (1.2);
     \fill (10,26) circle (1.2) node[above,font=\footnotesize]{SAT};
     % rotation centre below the surface, beyond scene centre (k = 0.7973)
     \fill[red!70!black] (20,-16) circle (1.2);
     \node[font=\footnotesize,red!70!black,anchor=south west,align=center] at (21,-16) {};
-    % beams through the rotation centre
-    \draw[->] (10,26) -- (17.2,3);
-    \draw[->] (10,26) -- (19,0);
-    \draw[->] (10,26) -- (20.8,-3);
+    % beams at successive satellite positions; every line runs exactly through
+    % the rotation centre (20,-16), stops are points on the three rays
+    \draw[->] (4,26) -- (14.857,-2.5);
+    \draw[->] (7,26) -- (15.357,-1);
+    \draw[->] (10,26) -- (16.071,0.5);
     % scene
     \draw (14,-6) rectangle (24,2);
-    \node[font=\footnotesize] at (19,-2) {scene};
-    % r0: rotation centre -> scene centre
-    \draw[dashed,|<->|] (19,-7.5) -- (20,-15) node[near end,left,font=\footnotesize]{$r_0\approx 197~\mathrm{km}$};
-    % R0: aperture-centre slant range (zero-squint reference)
-    \draw[dashed,|<->|] (11.5,14) -- (15.2,-4) node[midway,left,font=\footnotesize]{$R_0\approx 775.4~\mathrm{km}$};
+    % x=10 keeps the label clear of the beam bundle: the deepest beam shaft
+    % lands at x in [14.1,14.9] at the label's height (box interior is too
+    % narrow for both a beam and the 6.8mm-wide word)
+    \node[font=\footnotesize] at (10,-2) {scene};
+    % r0: rotation centre -> scene centre (endpoints exact: scene centre
+    % (19,-2), rotation-centre dot (20,-16))
+    \draw[dashed,|<->|] (19,-2) -- (20,-16) node[near end,left,font=\footnotesize]{$r_0\approx 197~\mathrm{km}$};
+    % R0: aperture-centre slant range (zero-squint reference), SAT -> scene
+    % centre; label right of the arrow (the beam bundle descends left of it,
+    % a left-side label would sit on the beams)
+    \draw[dashed,|<->|] (10,26) -- (19,-2) node[midway,right=1.5mm,font=\footnotesize]{$R_0\approx 775.4~\mathrm{km}$};
     \node[font=\footnotesize,align=center] at (17,-24) {$r_0/R_0=0.254207$;\; $\rho_{a,\mathrm{SLS}}=A\,D/2$\\ SLS cap $26.9^{\circ}$ = registered\\ conservative value (design choice)};
   % ------------------------------------------------------------------
   % Panel C: spotlight -- rotation centre at the target
   % ------------------------------------------------------------------
   \begin{scope}[shift={(34,0)}]
-    \node[anchor=north,font=\small\bfseries,align=center] at (17,-1) {(c) Spotlight\\($k\to 1$)};
+    \node[anchor=south,font=\small\bfseries,align=center] at (17,31) {(c) Spotlight\\($k\to 1$)};
     \draw[thick,->] (0,0) -- (34,0) node[above,font=\footnotesize]{$v_s$};
     \fill (10,26) circle (1.2) node[above,font=\footnotesize]{SAT};
     \fill[red!70!black] (19,-2) circle (1.2);
-    \draw[->] (10,26) -- (17.5,0);
-    \draw[->] (10,26) -- (19,-1);
-    \draw[->] (10,26) -- (20.5,-2);
+    % every beam lies exactly on the (10,26)->(19,-2) axis (k->1: all energy
+    % steered to the one target); stops are that ray's points at the beams'
+    % registered depths (y = 0, -1, -2)
+    \draw[->] (10,26) -- (18.3571,0);
+    \draw[->] (10,26) -- (18.6786,-1);
+    \draw[->] (10,26) -- (19,-2);
     \node[font=\footnotesize] at (20,-2) {};
     \draw (14,-6) rectangle (24,2);
     \node[font=\footnotesize] at (19,-2.5) {};

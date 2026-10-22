@@ -119,7 +119,11 @@ def main() -> int:
                 print(f"# {fam} s={x}: infeasible")
 
     ax.set_ylabel("median served fraction $\eta$")
-    ax.set_ylim(0.0, 1.03)
+    # headroom below zero keeps the infeasibility X at its true y=0 position
+    # while fully inside the axes rect; without it the lower half of the X is
+    # clipped by the bottom spine (clip_on=False would instead draw that half
+    # over the x tick labels, and half outside the panel)
+    ax.set_ylim(-0.028, 1.03)
     ax.set_yticks([0.0, 0.25, 0.5, 0.75, 1.0])
     ax.legend(frameon=False, loc="lower right", ncol=1,
               handlelength=2.4, borderaxespad=0.3)
@@ -146,6 +150,10 @@ def main() -> int:
              va="bottom", ha="left")
     axz.text(0.40, 0.10, "dips: anchor construction, unsmoothed",
              transform=axz.transAxes, fontsize=6.4, color="0.32", va="bottom")
+    # the zoom carries only the two upper families; without this note a reader
+    # can mistake the missing third family for an omission
+    axz.text(0.985, 0.83, "(R1C, R2F only)", transform=axz.transAxes,
+             fontsize=6.4, color="0.32", va="top", ha="right")
     axz.axvline(1.0, color="0.55", lw=0.7, ls=":")
     axz.annotate("order point", xy=(1.0, 0.9586), xytext=(1.04, 0.9592),
                  fontsize=6.2, color="0.35", va="bottom", ha="left")

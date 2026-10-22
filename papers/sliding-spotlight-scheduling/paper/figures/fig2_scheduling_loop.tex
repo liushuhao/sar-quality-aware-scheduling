@@ -6,7 +6,8 @@
 % the decode arrow is labelled as a measure projection (tau is a fraction of the
 % feasible measure, not wall-clock time); the C2 pad is labelled (1+0.25) on the
 % dwell; the anchor-seed arrow into the initial population is present; the sort
-% node sits between decode and the C2/conflict chain.
+% node sits between decode and the C2/conflict chain; the evaluator box names
+% the single objective -f_1 (f_q is a reported reading, no selection pressure).
 \resizebox{\textwidth}{!}{%
 \begin{tikzpicture}[x=1mm,y=1mm,>=stealth,
   box/.style={draw,rounded corners=1.5,align=center,font=\footnotesize,
@@ -44,14 +45,21 @@
   \node[box,dashed] (c34) at (74,0) {C3/C4: budgets normalised\\
     against the library envelope\\ --- slack by construction ---};
   \node[box] (conf) at (74,-46) {conflict check: imaging intervals\\ (bare dwell) pairwise disjoint};
-  \node[box,fill=green!6] (eval) at (0,-28) {evaluator\\ objectives $(-f_1,-f_q)$\\
+  \node[box,fill=green!6] (eval) at (0,-28) {evaluator\\ objective $-f_1$\\
     violation count from the chains at left};
+  % f_q is a reported reading only (no selection pressure): side note beside
+  % the box keeps the box itself single-objective
+  \node[font=\footnotesize,align=left,anchor=east] at (-16.5,-28)
+    {$f_q$: reported reading,\\no selection pressure};
   \draw[->] (dec) -- (sort);
   \draw[->] (sort) -- (c2);
   \draw[->] (c2) -- (conf);
   \draw[->,dashed] (c34) -- (c2);
   \draw[->] (adm) -- (18.5,24) -- (18.5,-28) -- (eval);
-  \draw[->] (c2) |- (eval);
+  % elbow exits c2 low on its west side: a plain (c2) |- (eval) starts at c2's
+  % south border and runs back up through the box (eval's centre y=-28 is above
+  % c2's south border), crossing the pad/dwell/maneuver lines of box text
+  \draw[->] ([yshift=-8mm]c2.west) -- ++(-2,0) |- ([yshift=-3mm]eval.east);
   \draw[->] (conf) -- (0,-46) -- (eval);
   \node[lab,anchor=north,text width=44mm] at (-28,-36)
     {admitted windows only; the evaluator performs no AASR recheck};
