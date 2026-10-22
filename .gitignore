@@ -143,3 +143,6 @@ papers/single-sat-quality/backup/
 
 # tool-local gate marker (hook state)
 .gates/
+
+# Trae IDE 本地目录
+.trae/
