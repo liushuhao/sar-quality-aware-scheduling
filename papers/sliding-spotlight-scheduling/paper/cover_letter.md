@@ -5,7 +5,7 @@ Dear Editor-in-Chief,
 
 We are pleased to submit our manuscript, "Agile Sliding-Spotlight SAR Satellite
 Scheduling with Per-Task Resolution Requirements: The Coverage Cost of
-Tightening the Order," for consideration in Acta Astronautica.
+Tightening the Order," for consideration in Aerospace Science and Technology.
 
 Satellite schedulers conventionally treat a task's imaging duration as a
 fixed constant known before planning. For a sliding-spotlight SAR platform
@@ -36,7 +36,7 @@ Three features distinguish the submission:
 
 The manuscript has not been published previously and is not under
 consideration elsewhere. All authors approve the submission and declare no
-competing interests. We believe the paper fits Acta Astronautica's scope in
+competing interests. We believe the paper fits Aerospace Science and Technology's scope in
 space-systems engineering and mission planning, and we thank you for your
 consideration.
 

@@ -2,7 +2,7 @@ Highlights
 ==========
 
 Paper: Agile Sliding-Spotlight SAR Satellite Scheduling with Per-Task Resolution Requirements: The Coverage Cost of Tightening the Order
-Target: Acta Astronautica (Elsevier; 3-5 bullets, <=85 characters each)
+Target: Aerospace Science and Technology (Elsevier; 3-5 bullets, <=85 characters each)
 
 - Dwell becomes endogenous: mode parameters follow the per-task order.
 - Order resolution is a hard constraint; coverage is the only objective.

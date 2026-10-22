@@ -1,4 +1,4 @@
-# paper2 投稿操作清单 — Acta Astronautica
+# paper2 投稿操作清单 — Aerospace Science and Technology (AST)
 
 **状态**：票 50 全链完成（阶段三·A/B 改写 + 阶段四终检 + 阶段五终审处置），2026-10-21 全量门禁绿（红闸 0/1076、L8 数字闸 136 项 0 mismatch【两稿面各 68，阶段五扩至逐句全数】、预注册闸 28 项 0 失败、版式闸 0 FAIL、编译两遍 48 页 0 error 0 未定义引用、域套件 papers + src rc=0）；本文件随稿同步（旧定位条目已清）。
 **投稿动作由你本人在 Editorial Manager 完成。**

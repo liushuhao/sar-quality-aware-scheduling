@@ -2,7 +2,7 @@ CRediT authorship contribution statement
 ========================================
 
 Paper: Agile Sliding-Spotlight SAR Satellite Scheduling with Per-Task Resolution Requirements: The Coverage Cost of Tightening the Order
-Journal: Acta Astronautica (Elsevier; submission target)
+Journal: Aerospace Science and Technology (Elsevier; submission target)
 Author: LIU Shuhao
 
 Liu Shuhao: Conceptualization, Methodology, Software, Validation,
