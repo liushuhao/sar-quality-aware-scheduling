@@ -1,0 +1,30 @@
+{
+ "comparison": "kim_checker_scene_sls (production, symmetric span) vs kim_eq23_theta_s1 exact chain, matched psi/rho/geo",
+ "platform": "library fixture (Wa=5 km, R0=775.4 km)",
+ "n_points": 378,
+ "worst": {
+  "psi_deg": 26.9,
+  "rho_m": 0.3,
+  "prod_sat_s": 13.317736929843838,
+  "exact_sat_s": 13.073074263953794,
+  "rel_dev": 0.018715006199012306,
+  "identity_rel_gap": 2.937748125471035e-16
+ },
+ "max_abs_rel_dev": 0.018715006199012306,
+ "dev_at_12deg": {
+  "psi_deg": 12.0,
+  "rho_m": 0.5,
+  "prod_sat_s": 6.6897980536095405,
+  "exact_sat_s": 6.669105424582181,
+  "rel_dev": 0.0031027593222753497,
+  "identity_rel_gap": 4.175059892117838e-15
+ },
+ "dev_at_cap": {
+  "psi_deg": 26.9,
+  "rho_m": 0.5,
+  "prod_sat_s": 7.915288848765346,
+  "exact_sat_s": 7.959920097125698,
+  "rel_dev": -0.005606997032101856,
+  "identity_rel_gap": 1.0855906544918636e-15
+ }
+}
