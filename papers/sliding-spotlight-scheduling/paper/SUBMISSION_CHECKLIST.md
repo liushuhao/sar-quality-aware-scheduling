@@ -18,7 +18,7 @@
 
 ## 二、EM 表单元数据（照抄即可）
 
-- **Title**：`Agile Sliding-Spotlight SAR Satellite Scheduling with Per-Task Resolution Requirements: The Coverage Cost of Tightening the Order`
+- **Title**：`Resolution-Driven Dwells in SAR Task Scheduling: Mode Composition Decides What Tighter Requirements Cost`
 - **Authors**：`Liu Shuhao`
 - **Corresponding email**：`liushuhao@hrbeu.edu.cn`
 - **Affiliation**：`College of Intelligent Systems Science and Engineering, Harbin Engineering University`

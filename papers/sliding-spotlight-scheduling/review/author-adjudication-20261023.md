@@ -41,7 +41,7 @@
 | R-28 | ✅ | 147/275 journal 字段含 Scholar 残留 | will_address | 格式批：与 R-27 同一脚本批 |
 | R-29 | ✅ | 280/307 bib 条目未被引用 | will_address | 与 R-13 合并：保留将引条目，清洗覆盖将引集 |
 | R-30 | ✅ | 摘要 305 词 > 250 上限 | will_address | 必修档：随 R-01 重写 ≤250 词（新术语 requirement 已入） |
-| R-31 | ⓘ | 图 1 标签用 `\footnotesize`（非「6 pt」） | will_address | 视觉验收时判读实际渲染尺寸，必要时 ≥8pt |
+| R-31 | ⓘ | 图 1 标签用 `\footnotesize`（非「6 pt」） | will_address | **已闭合（t54 收尾量测）**：PyMuPDF 实测图 1 页——主标签 8pt（\footnotesize）达标 ≥8pt；6pt 的 44 字符全为数学下标/度数符号（\footnotesize 数学的正常缩放），外审所咬「6 pt」实为下标，无需改图 |
 | R-32 | ✅ | 图 3 caption ~200 词；y 轴缩放放大噪声且排除 R3H | will_address | 应改档：caption 砍半 + 图注带 46.6pp；(b) 保留（dip 归因需要） |
 | R-33 | ✅ | 图 4 三条平线是构造必然 | will_address | **随 R-08 删除**（用户拍板 C 吸收） |
 | R-34 | ✅ | Data availability「from the corresponding author」 | will_address | **用户拍板 upon acceptance**：改「接收后 Zenodo 公开（含 DOI）+ 审稿期可索取」；真 DOI 接收后与代码公开一并做（老债 R42 后置） |
