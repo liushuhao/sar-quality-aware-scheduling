@@ -6,6 +6,14 @@
 
 ## 当前活跃批次
 
+### 2026-10-23 t54 后全量面板复审（ARS 五席 fresh + 编辑裁决）→ Major Revision
+
+- **面板产物**: [panel-full-20261023/](panel-full-20261023/) — 五席报告（seat1-eic / seat2-methodology / seat3-domain / seat4-perspective / seat5-devils-advocate）+ [editorial-decision.md](panel-full-20261023/editorial-decision.md)（含 T1–T19 + Tier-3 路线图、DA 两条 CRITICAL 裁决、六轴 provenance）。审查对象 = t54 八步修订后的 main.tex（commit 479eda5），五席全部 fresh 上下文、互不可见、不读旧批次。
+- **裁决**: Major Revision（四席一致 + DA 2 CRITICAL 均判 validated）。两条 CRITICAL = 反事实 18–30pp 换修理规则即变（缺口≈被丢任务优先质量，主线程算术核实）/ 标题因果主张撞家族混杂设计（§6.1 自认共变、无交叉单元）。
+- **核验**: 领域席独立重算 §3/§7.2 全部物理常数链逐位复现（含 AASR 序列、SLS≡STR 退化、f_dc=345.7kHz、oracle 偏差）；方法论席复算全部统计量零内部不一致；主线程复核重复段(2/2)、摘要 0.27 vs 0.359、§3.1(L117)↔§7.3(L405) 矛盾、formula-spec §8.17-13（L594）C3/C4 参考值同日重定义未披露。
+- **与 2026-10-22 批次关系**: 独立新批次，非取代；重叠项=佐证残留未清（如双句点仍在文中）。triage 时应做 T1–T19 × R-01…R-36 交叉映射后并批执行。
+- **状态**: pending（待用户裁决 T1–T19；T2 标题与 T5 存储时机涉及用户已拍板项，呈报时注明）。
+
 ### 2026-10-22 独立外审（五席 + 编辑裁决）→ Major Revision
 
 - **审查报告**: [paper2-independent-review-20261022.md](paper2-independent-review-20261022.md)

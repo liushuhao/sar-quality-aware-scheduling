@@ -1,0 +1,76 @@
+# Review Report — Seat 1: Journal-Fit Reviewer
+
+## 1. Persona card
+
+I am an editor at a top Elsevier aerospace journal (Aerospace Science and Technology class) handling mission-planning and SAR systems manuscripts, with a background in aerospace systems and mission analysis. In this review I own journal fit, originality, significance, readership relevance, and overall presentation quality; I deliberately do not deep-dive the scheduling methodology or the SAR physics, which other reviewers cover. I read the full manuscript, the bibliography, the cover letter, the highlights, the submission checklist, and the two TikZ figure sources.
+
+## 2. Manuscript summary
+
+The manuscript studies single-satellite SAR scheduling when the imaging dwell is not a planner input but a consequence of the imaging physics. The required azimuth resolution enters as a per-task hard constraint: sliding-spotlight and spotlight parameters are derived from it, so the delivered resolution equals the requirement and the dwell becomes endogenous to mode, squint, and start time. Three scenario families (20/50/100 tasks, real ground-track windows) are swept over a nine-point requirement-tightening grid under a frozen mode assignment, with served priority as the sole objective. A fixed-dwell counterfactual quantifies the classical assumption's cost: 20–29% transfer-constraint violations and an 18–30-point coverage shortfall on dense families. The thesis: the mode composition of demand decides what a tighter requirement costs — a floor step, a plateau, or a 46-point fall. A preregistered analysis design reports three frozen shape criteria, failures included.
+
+## 3. Assessment
+
+**Journal fit.** Good. The coupling of instrument physics to mission planning is squarely in this journal's scope; the paper itself cites prior scheduling work in this venue (kim2020optimal, "Aerospace Science and Technology", refs.bib). The demand-sensitivity framing — what a tighter product requirement costs in delivered coverage — is the kind of trade-study question our mission-analysis readership asks. Article type (full-length research paper) and format (elsarticle, review+authoryear) are appropriate.
+
+**Originality and significance.** The claimed seam is real but narrow, and the paper says so itself: "The three lines meet at a seam rather than a gap" (Section 2.4). Against the cited agile-EO literature, which treats duration as exogenous ("the observation duration is a task attribute fixed in advance", Section 2.1), the delta is genuine: no cited SAR-scheduling neighbour derives the dwell per task and per selected start inside the scheduling loop. However, kim2020optimal already computes synthetic-aperture time from required resolution at mission level, so the novelty is one of placement (inside the constraint set, start-time-dependent) rather than of physics. Significance rests mainly on two findings an operator can use: the fixed-dwell counterfactual ("violates the transfer constraint in 20--29\% of consecutive pairs", Abstract/Section 6.6) and the three-regime coverage–demand response. A caveat for significance: the search itself is inert — "the greedy anchor already attains the family maximum in 258 of the 260 sweep units" (Section 1.1) — so this is a model-and-sensitivity study, not a scheduling-algorithm advance. That is acceptable scope for this venue if framed as such, and the paper mostly does frame it so; the framing needs to reach the abstract (see E2).
+
+**Readership relevance.** Relevant to the mission-planning readership; less so to readers seeking planner advances, who will find Section 4 describes a measurement instrument. The limitation set (single satellite, "a registered synthetic template parameter, not a measured campaign profile", Section 5.1; uniform random priorities) bounds operational transfer and is disclosed with unusual candour. Section 7.2's ambiguity-direction contrast is physics-specialist material whose relevance to the scheduling thesis is thin, and the paper concedes "no experiment in this paper discriminates the two steering semantics" (Section 7.2) — a compression candidate.
+
+**Presentation.** This is where the manuscript is weakest. Front matter is complete (title, affiliation, email, keywords, CRediT, funding, competing interest, data availability). The title is accurate and the claims are carefully bounded — no overclaim found. But the prose carries a private governance dialect that external readers cannot decode, two verbatim duplicated blocks survive in the core sections, and the abstract contains a summary phrase that contradicts a reported result. Details in Section 4.
+
+## 4. Issues
+
+### CRITICAL
+
+None. Scope fits the journal, claims are bounded, and no reject-level defect lies in my remit.
+
+### MAJOR
+
+**[E1] Abstract — Section "Abstract": "the 50-task family is nearly flat, within 0.27 points throughout" — contradiction with reported results.** Section 6.4 reports a 0.359-percentage-point local decline "between $s=1.3$ and $s=1.4$" on this family, and the family's full-grid median range is 2.63 points (0.9737–1.0000, Section 6.1). "Within 0.27 points throughout" is therefore false under its natural reading; the correct statement — which the Conclusion already carries — is "within 0.27 points of its as-placed coverage at every tighter point". Why it matters: the abstract is the most-read text and this is a checkable internal inconsistency a referee will find in minutes; it also undersells the honest dips the paper elsewhere defends. Related, smaller abstract imprecision: "lands 18--30 points below the endogenous dwell" conflates the dwell with the schedule produced under it (points of coverage). Fix: rewrite the sentence with the Conclusion's wording; state points are of served-priority coverage; at 240 words the abstract is near the length limit — trimming these compressions helps density too.
+
+**[E2] Section 3.5 / 4.4 / 5.2 — non-self-contained references to private project artifacts.** Examples: "the project's frozen formula registry, formula-spec \S8.17-9" (Section 3.5, twice), "(review note of architecture decision AD-3)" (Section 4.4), "the project's run-lineage register records the L8 node" / "run-lineage node L8 (caliber v5)" (Section 5.2), "the ten exit-11 units" (Section 4.5), and internal review dates ("registered 2026-10-23 after the 2026-10-22 external review", Section 5.3). None of these are resolvable by a reader or reviewer. Why it matters: a journal manuscript must stand on its own; citations to inaccessible registries undermine the very auditability the paper sells, and the dated-amendment narrative (main result form registered 2026-10-21, sweep run 2026-10-20 — honestly disclosed) reads as exploratory analysis told in preregistration language. Fix: either deposit the registry chain as submitted supplementary material at submission time (the Data availability section currently promises Zenodo only "upon acceptance") or strip in-text registry pointers down to a single reproducibility statement, and translate the timeline admissions into standard terms.
+
+**[E3] Whole manuscript — private governance dialect alienates the readership.** The text leans on an internal vocabulary at high frequency: "caliber" (33 occurrences), "registered" (~50), "scenario world"/"this world", "the earlier line", "the retired v4 world". Phrases like "Its label travels with every number it states" (Section 6.7) or "a reading, not an optimization target" are house style, not field English. Why it matters: this is the single largest obstacle between the paper's genuine content and the AST readership; the manuscript currently reads like an internal lab report on which a title page was mounted, and reviewers will react to prose friction as much as to substance. Fix: a dedicated de-jargonizing pass — define the three or four measurement conventions once in standard terminology (measurement convention, scoring rule, admission threshold, reporting rule), then use those; move the discipline narrative into a short reproducibility subsection. Rebalance emphasis while at it: the operationally decisive counterfactual of Section 6.6 should surface earlier than page-level caveats, and Section 7.2 should be compressed to a paragraph.
+
+### MINOR
+
+**[E4] Sections 3.4 and 5.1 — verbatim duplicated blocks.** "the set that actually binds in this scenario world is exactly two ... not a claim that five mechanisms bind" (Section 3.4) and "zero tasks removed by the AASR threshold ... without ever binding in this scenario world" (Section 5.1) each appear twice back-to-back (verified by string count). Purely editorial, trivially fixed by deleting the duplicates, but visible in the compiled PDF and inconsistent with the manuscript's copy-discipline claims.
+
+**[E5] No nomenclature list.** Symbol load is heavy ($D$, $R_0$, $r_0$, $A$, $k$, $v_s$, $\rho_a$, $\rho_{req}$, $\rho_{rg}$, $g_T$, $f_q$, AASR, PRF, C1–C5, $s$, $\tau$). An AST-class paper of this density normally opens with a nomenclature; adding one would also relieve the repeated inline re-definitions.
+
+**[E6] Reference apparatus.** Only 31 unique keys are cited for a ~48-page manuscript, thin for the surveyed field; uncited survey entries exist in the project pool (e.g., zhang2021mission, xhafa2018optimisation in refs.bib). The submitted refs.bib also carries ~270 uncited auto-converted entries including junk placeholders (e.g., `sowise2024a`, `terms2023optimizing`, `anon20162016`); harmless to the compiled bibliography, but the source should be pruned before upload.
+
+**[E7] Highlights and keywords.** Highlight 3, "coverage is 4.15 pp below the 100-task family's saturation", has an awkward antecedent (whose coverage?). Keywords "coverage cost of a tighter requirement" and "demand sensitivity" are non-standard index terms; consider standard ones (e.g., "mission planning", "image quality").
+
+**[E8] Family naming inconsistency.** The same family is "the 100-drawn / 99-admitted family" (Section 6.1), "the dense 100-task family" (Abstract), and "the 100-task family" (Fig. 3 caption); likewise 50-task vs "50 drawn, 46--50 admitted". One consistent label per family would help.
+
+**[E9] Submission-package inconsistencies.** SUBMISSION_CHECKLIST.md item IV.3 says caleiras2026a lacks pages, but refs.bib line 1344 has `pages = {110--121}` (checklist stale); figures/ contains fig3_quality_vs_squint.pdf which main.tex never includes, while the checklist claims "4 figures all in place" (the manuscript uses three); the single-author cover letter alternates "We are pleased" with "The author approves". None affects the science; all should be reconciled before upload.
+
+**[E10] Figure-caption density.** Fig. 1 and Fig. 3 captions carry multi-sentence registered-value digressions ("a hollow marker sits on a family's own maximum"). Captions are readable but overweight; move invariant method detail to the text.
+
+## 5. Strengths
+
+- **Epistemic honesty unusual for the field.** Frozen criteria are "reported with their failures rather than re-tuned" (Abstract); the tight-arm penalty of the previous world is explicitly "withdrawn rather than quietly carried forward" (Conclusion); two of three criteria fail on the 50-task family and stand as results (Table 3).
+- **The infeasibility/zero-coverage discipline.** "an infeasible grid point is not a point on the curve" (Section 3.5), executed consistently in Fig. 3 (cross marker) and the served-count exclusion (Section 6.5). This is exemplary reporting practice.
+- **An operationally meaningful headline.** The fixed-dwell counterfactual (Section 6.6) quantifies precisely what the classical assumption costs — 20–29% transfer violations and an 18–30-point shortfall on dense families, with the sparse control untouched. This is the finding a mission planner will remember.
+- **Fair positioning.** Table 1 and Section 2.4 engage the nearest neighbours (Liu 2025, Xin 2024, Shen 2024, Li 2026) on stated axes rather than caricaturing them.
+- **Reproducibility posture.** Bit-reproducible runs, a manuscript-number checker recomputing every reading (Section 6 opening), and a concrete data-availability plan.
+- **Real geometry under the experiment.** Windows come from "real ground-track transit enumeration" (Section 5.1), not arbitrary phase points — the scenario substrate is stronger than typical synthetic-template studies.
+
+## 6. Questions to authors
+
+1. The mode assignment is frozen ("grandfathered", Section 3.5). Would the coverage–demand shapes survive the run-time coarsest-sufficient router your registry already defines, and what direction of change do you expect at the stripmap floor?
+2. Given the anchor attains the unit maximum in 258/260 units, what does the evolutionary search add that a constructive-only presentation would not? Would dropping Section 4's search machinery sharpen the contribution?
+3. Please confirm the intended scope of "within 0.27 points throughout" in the abstract relative to the 0.359-point dip of Section 6.4.
+4. The main result form was registered on 2026-10-21, one day after the sweep ran. Why retain the preregistration framing for the headline curve rather than presenting it (as your own text concedes) as a post hoc descriptive reading under pre-registered criteria?
+5. All magnitudes come from one platform (Kim et al. 2021 X-band, 570 km, 45° inclination). Which of the three reported cost magnitudes do you expect to transfer across platforms, and on what grounds?
+
+## 7. Recommendation: Major Revision — confidence: high
+
+The manuscript fits the journal's scope and addresses a genuine, narrow seam between SAR imaging design and agile-satellite scheduling that the cited literature does not occupy; the fixed-dwell counterfactual alone is a publishable, operationally relevant finding, and the reporting discipline (infeasibility versus zero, criteria failures standing) is exemplary. What blocks acceptance in present form is delivery, not substance: a private governance dialect and citations to inaccessible internal registries that make the paper non-self-contained for our readership; an abstract carrying one checkable numerical contradiction; an emphasis structure that buries the operational headline under caveat apparatus; and residual editing defects (two verbatim duplicated blocks). All are fixable without new experiments, but they require a genuine rewriting pass, not spot edits — hence Major Revision rather than Minor. My confidence is high because the judgements here rest on presentation-level evidence I could verify directly; methodology- and physics-laden caveats are left to the specialist reviewers.
+
+## 8. Provenance
+
+Fresh subagent context; no visibility of other seats' outputs or any prior review artifacts under ../review/; role separation is prompt-level (same model family as other seats, so seats are not independent error processes); no human reviewer was involved. Read-only except this one report file. Evidence anchors were verified against main.tex (duplication counts, abstract word count 240, 31 unique cited keys) and the submission package (refs.bib, cover_letter.md, highlights.md, SUBMISSION_CHECKLIST.md, both TikZ sources).
+
+VERDICT: Major Revision | CRITICAL: 0 | MAJOR: 3 | MINOR: 7
