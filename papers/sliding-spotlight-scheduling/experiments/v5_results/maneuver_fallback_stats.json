@@ -1,0 +1,15 @@
+{
+ "n_pairs": 1577,
+ "fallback_armed": true,
+ "fallback_bound_s": 4.07,
+ "model_below_bound": 1325,
+ "model_below_bound_frac": 0.8402,
+ "model_median_s": 2.409,
+ "model_min_s": 0.021,
+ "model_max_s": 6.88,
+ "req_requirement_s_median": 10.432,
+ "req_padded_dwell_s_median": 5.643,
+ "req_maneuver_s_median": 2.784,
+ "req_settle_s_median": 2.0,
+ "req_pad_fraction_median": 0.25
+}
