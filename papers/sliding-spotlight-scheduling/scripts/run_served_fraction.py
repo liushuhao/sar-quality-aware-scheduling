@@ -74,16 +74,20 @@ def main() -> int:
                 "median_priority_fraction": med_prio,
                 "n_seeds_feasible": len(feasible),
                 "n_seeds_infeasible": n_missing,
-                "n_selected_min_max": [min(r["n_selected"] for r in feasible),
-                                       max(r["n_selected"] for r in feasible)],
-                "n_admitted_min_max": [min(r["n_admitted"] for r in feasible),
-                                       max(r["n_admitted"] for r in feasible)],
+                "n_selected_min_max": ([min(r["n_selected"] for r in feasible),
+                                        max(r["n_selected"] for r in feasible)]
+                                       if feasible else None),
+                "n_admitted_min_max": ([min(r["n_admitted"] for r in feasible),
+                                        max(r["n_admitted"] for r in feasible)]
+                                       if feasible else None),
             }
     path = V5 / "served_fraction.json"
     path.write_text(json.dumps(out, indent=1), encoding="utf-8")
     for family in FAMILIES:
         line = " ".join(
-            f"{s}:{out[family][str(s)]['median_task_fraction']:.3f}" for s in GRID)
+            f"{s}:{out[family][str(s)]['median_task_fraction']:.3f}"
+            if out[family][str(s)]["median_task_fraction"] is not None else f"{s}:infeasible"
+            for s in GRID)
         print(f"# {family} median served-task fraction: {line}")
     return 0
 

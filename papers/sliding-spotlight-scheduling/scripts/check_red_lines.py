@@ -1071,7 +1071,7 @@ def _clear_coverage_reading(line: str, m) -> str:
 
 # W15a (ticket 50 A4): a FULFILLMENT-RATIO reading carries a three-part tag.
 _FULFILLMENT_LIB_RX = re.compile(
-    r"library[-\s]?caliber|库口径|zero[-\s]?squint\s+library|library\s+f_?q|"
+    r"library[-\s]?(?:caliber|convention)|库口径|zero[-\s]?squint\s+library|library\s+f_?q|"
     r"f_?q[^.\n]{0,25}library", re.IGNORECASE)
 _FULFILLMENT_TIESET_RX = re.compile(
     r"tie[-\s]?set|tie\s+set|全体成员|all\s+(?:front|tie)|mean\s+over|"

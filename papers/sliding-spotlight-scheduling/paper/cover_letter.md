@@ -3,14 +3,14 @@ Cover Letter
 
 Dear Editor-in-Chief,
 
-We are pleased to submit our manuscript, "Resolution-Driven Dwells in SAR Task Scheduling: Mode
+I am pleased to submit my manuscript, "Resolution-Driven Dwells in SAR Task Scheduling: Mode
 Composition Decides What Tighter Requirements Cost," for consideration in Aerospace Science and Technology.
 
 Satellite schedulers conventionally treat a task's imaging duration as a
 fixed constant known before planning. For a sliding-spotlight SAR platform
 this assumption is quantifiably false: the dwell is produced by the imaging
 mode and the selected start time, and it feeds the inter-task transfer
-constraint that decides what a single pass can carry. Our manuscript makes
+constraint that decides what a single pass can carry. My manuscript makes
 the dwell endogenous, carries the customer's resolution requirement into the
 scheduler as a per-task hard constraint, and measures what tightening that
 requirement costs in coverage.
@@ -34,9 +34,9 @@ Three features distinguish the submission:
    caliber where it is stated.
 
 The manuscript has not been published previously and is not under
-consideration elsewhere. The author approves the submission and declares
-no competing interests. We believe the paper fits Aerospace Science and Technology's scope in
-space-systems engineering and mission planning, and we thank you for your
+consideration elsewhere. I approve the submission and declares
+no competing interests. I believe the paper fits Aerospace Science and Technology's scope in
+space-systems engineering and mission planning, and I thank you for your
 consideration.
 
 Sincerely,

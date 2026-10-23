@@ -684,7 +684,7 @@ def check_paper(text: str, label: str, exp: dict) -> "tuple[list, list, list, in
                                prov, m.group(0))
                 if scored_any:
                     missing = [n for n, rx in (
-                        ("library caliber", r"library[-\s]?caliber|库口径"),
+                        ("library convention", r"library[-\s]?(?:convention|caliber)|库口径"),
                         ("tie-set mean", r"tie[-\s]?set|全体成员"),
                         ("reading, not a target",
                          r"not\s+an?\s+(?:optimization|optimisation)\s+target|"
@@ -976,12 +976,18 @@ def main(argv=None) -> int:
         fails += f54
         passes += p54
         seen += seen54
+        from verify_t55_group import check_t55, t55_expectations as _t55_exp
+        t55 = _t55_exp()
+        f55, p55, seen55 = check_t55(text, p.name, t55)
+        fails += f55
+        passes += p55
+        seen += seen55
         rev, _ = reverse_check(text, p.name)
         all_fail += fails
         all_pass += passes
         reverse += rev
         total += seen
-        print(f"  {p.name}: {seen} L8 number(s) checked ({seen54} T54), "
+        print(f"  {p.name}: {seen} L8 number(s) checked ({seen54} T54, {seen55} T55), "
               f"{len(fails)} mismatch(es), {len(rev)} retired-world token(s)")
 
     print(f"\n=== RESULT: {len(all_fail)} mismatch(es) over {total} checked ===")
@@ -1049,6 +1055,11 @@ def t54_expectations(served_instances: int | None = None,
         exp[("cf_vp", fam)] = cf[fam]["violating_pairs_total"]
         exp[("cf_ap", fam)] = cf[fam]["adjacent_pairs_total"]
         exp[("cf_rate", fam)] = cf[fam]["violation_rate_median"]
+    repagg = _load(V5 / "counterfactual_fd" / "counterfactual_repairs_agg.json")
+    _meds = [repagg[f]["median_gap_pp"][r] for f in ("R2F", "R3H")
+             for r in ("drop_later", "priority_aware", "retime")]
+    exp["cf_gap_span_lo"] = round(min(_meds))
+    exp["cf_gap_span_hi"] = round(max(_meds))
     # fallback replay
     fb = _load(V5 / "maneuver_fallback_stats.json")
     exp["fb_pairs"] = fb["n_pairs"]
@@ -1158,11 +1169,11 @@ _T54_CHECKS = [
      lambda m, e: [(int(m.group(1)), round(min(e[("cf_rate", f)] * 100 for f in ("R3H", "R2F"))), 0.5, "cf rate band lo"),
                    (int(m.group(2)), round(max(e[("cf_rate", f)] * 100 for f in ("R3H", "R2F"))), 0.5, "cf rate band hi")]),
     (re.compile(r"lands?\s+(\d+)--(\d+)\s+points\s+below"),
-     lambda m, e: [(int(m.group(1)), round(e[("cf_gap", "R3H")]), 0.5, "cf gap band lo"),
-                   (int(m.group(2)), round(e[("cf_gap", "R2F")]), 0.5, "cf gap band hi")]),
+     lambda m, e: [(int(m.group(1)), e["cf_gap_span_lo"], 0.5, "cf gap band lo"),
+                   (int(m.group(2)), e["cf_gap_span_hi"], 0.5, "cf gap band hi")]),
     (re.compile(r"land\s+(\d+)--(\d+)\s+percentage\s+points\s+short"),
-     lambda m, e: [(int(m.group(1)), round(e[("cf_gap", "R3H")]), 0.5, "cf gap band lo"),
-                   (int(m.group(2)), round(e[("cf_gap", "R2F")]), 0.5, "cf gap band hi")]),
+     lambda m, e: [(int(m.group(1)), e["cf_gap_span_lo"], 0.5, "cf gap band lo"),
+                   (int(m.group(2)), e["cf_gap_span_hi"], 0.5, "cf gap band hi")]),
     (re.compile(r"recovers?\s+(\d+(?:\.\d+)?)\s+percentage\s+points\s+for\s+the\s+100-task\s+family"),
      lambda m, e: [(float(m.group(1)), abs(e["_cost_r3h"]), 0.055, "R3H as-placed cost (abstract/conclusion)")]),
     (re.compile(r"(\d+(?:\.\d+)?)\s+points\s+for\s+the\s+50-task\s+family"),

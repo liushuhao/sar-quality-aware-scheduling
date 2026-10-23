@@ -1,12 +1,12 @@
 Highlights
 ==========
 
-Paper: Resolution-Driven Dwells in SAR Task Scheduling: Mode Composition Decides What Tighter Requirements Cost
+Paper: Resolution-Driven Dwells in SAR Task Scheduling: What Tighter Requirements Cost under a Frozen Mode Assignment
 Target: Aerospace Science and Technology (Elsevier; 3-5 bullets, <=85 characters each)
 
 - Dwell becomes endogenous: mode parameters follow the per-task requirement.
-- Required resolution is a hard constraint; coverage is the only objective.
-- At the as-placed point, coverage is 4.15 pp below the 100-task family's saturation.
+- Delivered resolution equals the requirement by construction; the floor excludes.
+- The 100-task family pays 4.15 pp at the as-placed point against its saturation.
 - The 50-task family is nearly flat; its tight-arm penalty is withdrawn.
 - Every headline reading is recomputed from the artifacts; criteria report failures.
 

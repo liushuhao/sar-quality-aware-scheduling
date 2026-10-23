@@ -29,6 +29,19 @@ FULL = FORK / "paper" / "full.md"
 sys.path.insert(0, str(FORK / "scripts"))
 
 import verify_paper_numbers_l8 as v8  # noqa: E402
+from verify_t55_group import (  # noqa: E402
+    check_t55 as _check_t55,
+    t55_expectations as _t55_exp,
+)
+
+_T55_CACHE = None
+
+
+def t55():
+    global _T55_CACHE
+    if _T55_CACHE is None:
+        _T55_CACHE = _t55_exp()
+    return _T55_CACHE
 
 MAIN_TEXT = MAIN.read_text(encoding="utf-8")
 FULL_TEXT = FULL.read_text(encoding="utf-8")
@@ -120,6 +133,22 @@ PROBES = [
      "$99.9\\times$ (SPT over STR)"),
     (MAIN, MAIN_TEXT, "$2.8\\times$ (SPT over SLS)",
      "$99.9\\times$ (SPT over SLS)"),
+    # --- T55 reanalysis numbers (2026-10-24 panel fixes) -----------------
+    (MAIN, MAIN_TEXT, "only to 17.06 and 30.11", "only to 9.99 and 30.11"),
+    (MAIN, MAIN_TEXT, "50-task gap to 7.08", "50-task gap to 9.99"),
+    (MAIN, MAIN_TEXT, "100-task gap to 25.33", "100-task gap to 9.99"),
+    (MAIN, MAIN_TEXT, "0.9766 to 0.9833 at $s=1.1$",
+     "0.9766 to 0.9999 at $s=1.1$"),
+    (MAIN, MAIN_TEXT, "reads a median of 0.568", "reads a median of 0.999"),
+    (MAIN, MAIN_TEXT, "reads a partial 0.469", "reads a partial 0.999"),
+    (MAIN, MAIN_TEXT, "move the medians only", "move the medians onlyly"),
+    (MAIN, MAIN_TEXT, "measured to exceed the library reference by up to $1.2008",
+     "measured to exceed the library reference by up to $9.9999"),
+    (MAIN, MAIN_TEXT, "s^{*}=2.4669/(3.0/1.1)=0.905",
+     "s^{*}=2.4669/(3.0/1.1)=0.999"),
+    (FULL, FULL_TEXT, "only to 17.06 and 30.11", "only to 9.99 and 30.11"),
+    (FULL, FULL_TEXT, "0.9766 to 0.9833 at $s=1.1$",
+     "0.9766 to 0.9999 at $s=1.1$"),
     (FULL, FULL_TEXT, "0.8107$ (STR)", "0.1111$ (STR)"),
 ]
 
@@ -136,7 +165,8 @@ def test_each_probe_mutation_is_caught_and_restore_is_clean(exp, paper, text,
 
     fails, _passes, _notes, _seen = v8.check_paper(mutated, paper.name, exp)
     f54, _p54, _s54 = v8.check_t54(mutated, paper.name, t54())
-    fails = list(fails) + list(f54)
+    f55, _p55, _s55 = _check_t55(mutated, paper.name, t55())
+    fails = list(fails) + list(f54) + list(f55)
     assert fails, f"mutating {anchor!r} was NOT caught"
 
     fails0, passes0, _notes0, seen0 = v8.check_paper(text, paper.name, exp)

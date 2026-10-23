@@ -14,7 +14,7 @@
 | CRediT authorship | `credit.md` | 单作者全角色 |
 | Suggested reviewers | **需你填** | 见下方第三节 |
 
-`figures/` 需随源文件一并上传：`fig3_coverage_vs_requirement.pdf`、`fig3_quality_vs_squint.pdf`（2 张数据图）+ `fig1_modes_geometry.tex`、`fig2_scheduling_loop.tex`（2 张 TikZ，靠 `\input` 引入，缺了编译不过）。
+`figures/` 需随源文件一并上传：`fig3_coverage_vs_requirement.pdf`（1 张数据图，正文实际引用）+ `fig1_modes_geometry.tex`、`fig2_scheduling_loop.tex`（2 张 TikZ，靠 `\input` 引入，缺了编译不过）；`fig3_quality_vs_squint.pdf` 已不被正文引用，不需上传（2026-10-24 复核）。
 
 ## 二、EM 表单元数据（照抄即可）
 
@@ -36,7 +36,7 @@
 
 1. **pdf 页数与图表**：48 页、4 图全部在位；编译零 error、零未定义引用（本次重编译实测）。
 2. **标题五处一致**：`main.tex` / `highlights.md` / `cover_letter.md` / `credit.md` / `declaration.md`。
-3. **refs.bib 一条缺页码**：`caleiras2026a` 无 page 字段，bibtex 报 1 个 `empty pages` warning（阶段五实测：`mittermayer2003sliding` 有 `pages = {1462-1464}`、`wang2024research` 有 `pages = {328--332}`）。不影响审稿，但编辑部排版时会来找你补。建议投稿前顺手补上。
+3. **[2026-10-24 已失效]** `caleiras2026a` 现有 `pages = {110--121}`，此条不再适用，bibtex 报 1 个 `empty pages` warning（阶段五实测：`mittermayer2003sliding` 有 `pages = {1462-1464}`、`wang2024research` 有 `pages = {328--332}`）。不影响审稿，但编辑部排版时会来找你补。建议投稿前顺手补上。
 
 ## 五、本版已裁决、勿在投稿前临时改
 
