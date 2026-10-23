@@ -189,7 +189,7 @@ def test_demand_and_retention_readings_are_checked(tmp_path):
 
 def test_a_coverage_cost_is_not_scored_against_the_coverage_curve(tmp_path):
     """A cost sentence contains 'coverage' and a number; it is a DIFFERENCE."""
-    body = ("R3H coverage cost at the order point is 4.15 pp relative to its "
+    body = ("R3H coverage cost at the as-placed point is 4.15 pp relative to its "
             "own saturation at s = 2.0.\n")
     r = run_tool(_write(tmp_path, "cost.md", body))
     assert r.returncode == 0, r.stdout

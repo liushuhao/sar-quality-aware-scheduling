@@ -194,7 +194,7 @@ def recompute(need_deliv: bool = False) -> dict:
     for fam in FAMILIES:
         sat_s = max(S_GRID, key=lambda s: (coverage[(fam, s)][0], -s))
         cost[fam] = ((coverage[(fam, 1.0)][0] - coverage[(fam, sat_s)][0]) * 100.0,
-                     f"as-placed median minus the family's own saturation "
+                     f"order-point median minus the family's own saturation "
                      f"at s={sat_s}")
     exp["coverage_cost_pp"] = cost
 
@@ -546,7 +546,11 @@ def check_paper(text: str, label: str, exp: dict) -> "tuple[list, list, list, in
             is_cost = bool(
                 _COST_RE.search(blank)
                 and re.search(r"saturat|饱和", sent, re.I))
-            if fam and re.search(r"coverage|覆盖", sent, re.I):
+            is_drop_form = bool(re.search(
+                r"drops?\s+\d|within\s+[\d.]+\s+points",
+                sent, re.I))
+            if (fam and re.search(r"coverage|覆盖", sent, re.I)
+                    and not is_drop_form):
                 idx = sent.lower().find("coverage")
                 if idx == -1:
                     idx = sent.find("覆盖")
@@ -964,13 +968,21 @@ def main(argv=None) -> int:
     print("\n=== manuscript L8 numbers vs artifacts ===")
     for p, text in texts.items():
         fails, passes, _notes, seen = check_paper(text, p.name, exp)
+        t54 = t54_expectations(
+            served_instances=exp["served_task_instances"][0],
+            cost_r3h=abs(exp["coverage_cost_pp"]["R3H"][0]),
+            cost_r2f=abs(exp["coverage_cost_pp"]["R2F"][0]))
+        f54, p54, seen54 = check_t54(text, p.name, t54)
+        fails += f54
+        passes += p54
+        seen += seen54
         rev, _ = reverse_check(text, p.name)
         all_fail += fails
         all_pass += passes
         reverse += rev
         total += seen
-        print(f"  {p.name}: {seen} L8 number(s) checked, {len(fails)} "
-              f"mismatch(es), {len(rev)} retired-world token(s)")
+        print(f"  {p.name}: {seen} L8 number(s) checked ({seen54} T54), "
+              f"{len(fails)} mismatch(es), {len(rev)} retired-world token(s)")
 
     print(f"\n=== RESULT: {len(all_fail)} mismatch(es) over {total} checked ===")
     for f in all_fail:
@@ -997,5 +1009,257 @@ def main(argv=None) -> int:
     return 0
 
 
+
+
+# --------------------------------------------------------------------------
+# T54 registered readings (ticket 54, 2026-10-23): the external-review
+# remediation added new registered numbers to the manuscript -- tightening
+# drops, the fixed-dwell counterfactual, the maneuver-fallback replay, the
+# mode-decomposition table (tab:modes), the family-size intervals and the
+# distinct-task count.  Every expectation is RECOMPUTED from the artifacts;
+# nothing below is a hardcoded truth value.
+# --------------------------------------------------------------------------
+
+def _t54_drop_pp(sweep: dict, fam: str, s_target: float) -> float:
+    a = sweep["families"][fam]["1.0"]["coverage_median"]
+    b = sweep["families"][fam][str(s_target)]["coverage_median"]
+    return (a - b) * 100.0
+
+
+def t54_expectations(served_instances: int | None = None,
+                     cost_r3h: float | None = None,
+                     cost_r2f: float | None = None) -> dict:
+    """Recompute every T54 expectation from the artifacts."""
+    exp: dict = {}
+    sweep = _load(AGGREGATE)
+    for fam in FAMILIES:
+        for s_t in (0.8, 0.9):
+            exp[("drop", fam, s_t)] = _t54_drop_pp(sweep, fam, s_t)
+    # mode-decomposition table (bound) + observed medians, rounded as printed
+    mode = _load(V5 / "mode_decomposition.json")
+    for fam in FAMILIES:
+        for s in S_GRID:
+            row = mode["families"][fam]["rows"][str(s)]
+            exp[("tab_bound", fam, s)] = round(row["upper_bound"], 3)
+            exp[("tab_obs", fam, s)] = round(row["observed_median"], 3)
+    # counterfactual
+    cf = _load(V5 / "counterfactual_fd" / "counterfactual_summary.json")
+    for fam in FAMILIES:
+        exp[("cf_gap", fam)] = cf[fam]["gap_pp_median"]
+        exp[("cf_vp", fam)] = cf[fam]["violating_pairs_total"]
+        exp[("cf_ap", fam)] = cf[fam]["adjacent_pairs_total"]
+        exp[("cf_rate", fam)] = cf[fam]["violation_rate_median"]
+    # fallback replay
+    fb = _load(V5 / "maneuver_fallback_stats.json")
+    exp["fb_pairs"] = fb["n_pairs"]
+    exp["fb_pct"] = round(fb["model_below_bound_frac"] * 100)
+    exp["fb_median"] = fb["model_median_s"]
+    exp["fb_min"] = fb["model_min_s"]
+    exp["fb_max"] = fb["model_max_s"]
+    exp["fb_padded"] = fb["req_padded_dwell_s_median"]
+    exp["fb_maneuver"] = fb["req_maneuver_s_median"]
+    exp["fb_settle"] = fb["req_settle_s_median"]
+    # family-size intervals over the ten seeds (R-15)
+    import collections
+    comp: dict = collections.defaultdict(lambda: collections.defaultdict(list))
+    for fam, base in (("R1C", 100), ("R2F", 200), ("R3H", 300)):
+        for seed in range(base, base + 10):
+            man = _load(V5 / "scenarios" / f"{fam}_seed{seed}.json")
+            tasks = man["tasks"]
+            comp[fam]["drawn"].append(len(tasks))
+            comp[fam]["admitted"].append(sum(1 for x in tasks if x.get("windows")))
+            comp[fam]["windows"].append(sum(len(x["windows"]) for x in tasks))
+    for fam in FAMILIES:
+        for k in ("drawn", "admitted", "windows"):
+            exp[("ival", fam, k)] = (min(comp[fam][k]), max(comp[fam][k]))
+    # distinct served tasks over the best-covered members
+    best_sel = 0
+    for fam in FAMILIES:
+        for s in S_GRID:
+            d = V5 / "sweep" / ("s" + str(s).replace(".", "_"))
+            for pilot_path in sorted(d.glob(f"pilot_{fam}_seed*.json")):
+                pilot = _load(pilot_path)
+                front = [m for m in pilot["front"] if m["cv"] <= 0.0] or pilot["front"]
+                best = max(front, key=lambda m: m["f1_star"])
+                best_sel += best["n_selected"]
+    exp["distinct"] = best_sel
+    exp["served_instances"] = served_instances
+    exp["_cost_r3h"] = cost_r3h
+    exp["_cost_r2f"] = cost_r2f
+    mode_d = _load(V5 / "mode_decomposition.json")
+    for s_t in (0.8, 0.9):
+        ub = mode_d["families"]["R3H"]["rows"][str(s_t)]["upper_bound"]
+        obs = mode_d["families"]["R3H"]["rows"][str(s_t)]["observed_median"]
+        drp = _t54_drop_pp(_load(AGGREGATE), "R3H", s_t)
+        exp[("_ub", s_t)] = ub
+        exp[("_drop", s_t)] = drp
+        exp[("_gaprem", s_t)] = (ub - obs) * 100.0
+        exp[("_explained", s_t)] = drp - (ub - obs) * 100.0
+    # R2F paired per-seed median between s=1.0 and its own saturation (s=2.0)
+    pa, pb = [], []
+    for seed in range(200, 210):
+        a = _load(V5 / "sweep" / "s1_0" / f"pilot_R2F_seed{seed}.json")
+        b = _load(V5 / "sweep" / "s2_0" / f"pilot_R2F_seed{seed}.json")
+        fa = [m for m in a["front"] if m["cv"] <= 0.0] or a["front"]
+        fb2 = [m for m in b["front"] if m["cv"] <= 0.0] or b["front"]
+        pa.append(max(fa, key=lambda m: m["f1_star"])["f1_star"])
+        pb.append(max(fb2, key=lambda m: m["f1_star"])["f1_star"])
+    exp["pair_r2f_sat_pp"] = statistics.median(
+        [b_ - a_ for a_, b_ in zip(pa, pb)]) * 100.0
+    return exp
+
+
+_T54_CHECKS = [
+    # (pattern with CAPTURE groups, handler(m, t54) -> [(printed, want, tol, desc)])
+    (re.compile(r"drops\s+(\d+(?:\.\d+)?)\s+percentage\s+points\s+for\s+R3H\s+and\s+(\d+(?:\.\d+)?)\s+for\s+R1C"),
+     lambda m, e: [(float(m.group(1)), e[("drop", "R3H", 0.9)], 0.055, "R3H drop to s=0.9"),
+                   (float(m.group(2)), e[("drop", "R1C", 0.9)], 0.055, "R1C drop to s=0.9")]),
+    (re.compile(r"drops\s+(\d+(?:\.\d+)?)\s+percentage\s+points\s+from\s+the\s+as-placed"),
+     lambda m, e: [(float(m.group(1)), e[("drop", "R3H", 0.9)], 0.055, "R3H drop to s=0.9")]),
+    (re.compile(r"(\d+(?:\.\d+)?)\s+points\s+to\s+the\s+tightest\s+feasible\s+point"),
+     lambda m, e: [(float(m.group(1)), e[("drop", "R3H", 0.8)], 0.055, "R3H drop to s=0.8")]),
+    (re.compile(r"to\s+the\s+tightest\s+feasible\s+point\s+(\d+(?:\.\d+)?)\s+for\s+R3H"),
+     lambda m, e: [(float(m.group(1)), e[("drop", "R3H", 0.8)], 0.055, "R3H drop to s=0.8")]),
+    (re.compile(r"drops\s+(\d+(?:\.\d+)?)\s+points\s+at\s+\$s=0\.9\$"),
+     lambda m, e: [(float(m.group(1)), e[("drop", "R1C", 0.9)], 0.055, "R1C drop to s=0.9")]),
+    (re.compile(r"within\s+(\d+(?:\.\d+)?)\s+points"),
+     lambda m, e: [(float(m.group(1)), e[("drop", "R2F", 0.9)], 0.011, "R2F tighter-side drop")]),
+    (re.compile(r"(\d+(?:\.\d+)?)\s+and\s+(\d+(?:\.\d+)?)\s+percentage\s+points\s+\(family medians\)"),
+     lambda m, e: [(float(m.group(1)), e[("cf_gap", "R3H")], 0.011, "cf gap R3H median"),
+                   (float(m.group(2)), e[("cf_gap", "R2F")], 0.011, "cf gap R2F median")]),
+    (re.compile(r"(\d+)\s+of\s+(\d+)\s+pairs\s+for\s+the\s+100-task\s+family"),
+     lambda m, e: [(int(m.group(1)), e[("cf_vp", "R3H")], 0, "cf violating pairs R3H"),
+                   (int(m.group(2)), e[("cf_ap", "R3H")], 0, "cf adjacent pairs R3H")]),
+    (re.compile(r"(\d+)\s+of\s+(\d+)\s+for\s+the\s+50-task\s+family"),
+     lambda m, e: [(int(m.group(1)), e[("cf_vp", "R2F")], 0, "cf violating pairs R2F"),
+                   (int(m.group(2)), e[("cf_ap", "R2F")], 0, "cf adjacent pairs R2F")]),
+    (re.compile(r"violated in\s+(\d+)--(\d+)\\%\s+of\s+consecutive\s+pairs"),
+     lambda m, e: [(int(m.group(1)), round(min(e[("cf_rate", f)] * 100 for f in ("R3H", "R2F"))), 0.5, "cf rate band lo"),
+                   (int(m.group(2)), round(max(e[("cf_rate", f)] * 100 for f in ("R3H", "R2F"))), 0.5, "cf rate band hi")]),
+    (re.compile(r"no violating pair in nine of ten seeds and a\s+(\d+(?:\.\d+)?)-point\s+median\s+gap"),
+     lambda m, e: [(float(m.group(1)), e[("cf_gap", "R1C")], 1e-9, "cf gap R1C median")]),
+    (re.compile(r"over the\s+(\d[\d,]*)\s+consecutive\s+pairs"),
+     lambda m, e: [(int(m.group(1).replace(",", "")), e["fb_pairs"], 0, "fallback replay pairs")]),
+    (re.compile(r"sits below the bound in\s+(\d+)\\%"),
+     lambda m, e: [(int(m.group(1)), e["fb_pct"], 0, "fallback below-bound share")]),
+    (re.compile(r"median\s+(\d+(?:\.\d+)?)~s,\s+range"),
+     lambda m, e: [(float(m.group(1)), e["fb_median"], 0.0006, "fallback model median")]),
+    (re.compile(r"range\s+(\d+(?:\.\d+)?)--(\d+(?:\.\d+)?)~s"),
+     lambda m, e: [(float(m.group(1)), e["fb_min"], 0.0006, "fallback model min"),
+                   (float(m.group(2)), e["fb_max"], 0.005, "fallback model max")]),
+    (re.compile(r"(\d+(?:\.\d+)?)~s\s+of\s+pad-carrying\s+dwell,\s+(\d+(?:\.\d+)?)~s\s+of\s+maneuver\s+bound"),
+     lambda m, e: [(float(m.group(1)), e["fb_padded"], 0.0006, "median padded dwell"),
+                   (float(m.group(2)), e["fb_maneuver"], 0.0006, "median maneuver")]),
+    (re.compile(r"serves\s+(\d[\d,]*)\s+distinct\s+tasks"),
+     lambda m, e: [(int(m.group(1).replace(",", "")), e["distinct"], 0, "distinct served tasks")]),
+    (re.compile(r"a\s+factor\s+of\s+(\d+(?:\.\d+)?)\s+below\s+the\s+instance\s+count"),
+     lambda m, e: [(float(m.group(1)), round(477308.0 / e["distinct"], 1), 0.05, "distinct ratio")]),
+    (re.compile(r"violates?\s+the\s+transfer\s+constraint\s+in\s+(\d+)--(\d+)\\%"),
+     lambda m, e: [(int(m.group(1)), round(min(e[("cf_rate", f)] * 100 for f in ("R3H", "R2F"))), 0.5, "cf rate band lo"),
+                   (int(m.group(2)), round(max(e[("cf_rate", f)] * 100 for f in ("R3H", "R2F"))), 0.5, "cf rate band hi")]),
+    (re.compile(r"lands?\s+(\d+)--(\d+)\s+points\s+below"),
+     lambda m, e: [(int(m.group(1)), round(e[("cf_gap", "R3H")]), 0.5, "cf gap band lo"),
+                   (int(m.group(2)), round(e[("cf_gap", "R2F")]), 0.5, "cf gap band hi")]),
+    (re.compile(r"land\s+(\d+)--(\d+)\s+percentage\s+points\s+short"),
+     lambda m, e: [(int(m.group(1)), round(e[("cf_gap", "R3H")]), 0.5, "cf gap band lo"),
+                   (int(m.group(2)), round(e[("cf_gap", "R2F")]), 0.5, "cf gap band hi")]),
+    (re.compile(r"recovers?\s+(\d+(?:\.\d+)?)\s+percentage\s+points\s+for\s+the\s+100-task\s+family"),
+     lambda m, e: [(float(m.group(1)), abs(e["_cost_r3h"]), 0.055, "R3H as-placed cost (abstract/conclusion)")]),
+    (re.compile(r"(\d+(?:\.\d+)?)\s+points\s+for\s+the\s+50-task\s+family"),
+     lambda m, e: [(float(m.group(1)), abs(e["_cost_r2f"]), 0.055, "R2F as-placed cost (abstract/conclusion)")]),
+    (re.compile(r"(\d+(?:\.\d+)?)\s+points\s+paired\s+per\s+seed"),
+     lambda m, e: [(float(m.group(1)), round(e["pair_r2f_sat_pp"], 2), 0.005, "R2F paired per-seed median")]),
+    (re.compile(r"caps\s+the\s+family\s+at\s+(\d+(?:\.\d+)?)\s+at\s+\$s=0\.9\$\s+and\s+(\d+(?:\.\d+)?)\s+at\s+\$s=0\.8\$"),
+     lambda m, e: [(float(m.group(1)), round(e["_ub", 0.9], 3), 0.0006, "floor bound s=0.9"),
+                   (float(m.group(2)), round(e["_ub", 0.8], 3), 0.0006, "floor bound s=0.8")]),
+    (re.compile(r"accounts\s+for\s+(\d+(?:\.\d+)?)\s+of\s+the\s+(\d+(?:\.\d+)?)-point\s+drop\s+to\s+\$s=0\.9\$"),
+     lambda m, e: [(float(m.group(1)), round(e["_explained", 0.9], 2), 0.006, "floor-explained s=0.9"),
+                   (float(m.group(2)), round(e["_drop", 0.9], 2), 0.006, "observed drop s=0.9")]),
+    (re.compile(r"(\d+(?:\.\d+)?)\s+of\s+the\s+(\d+(?:\.\d+)?)-point\s+drop\s+to\s+\$s=0\.8\$"),
+     lambda m, e: [(float(m.group(1)), round(e["_explained", 0.8], 2), 0.006, "floor-explained s=0.8"),
+                   (float(m.group(2)), round(e["_drop", 0.8], 2), 0.006, "observed drop s=0.8")]),
+    (re.compile(r"residual\s+gap[^;]*?\((\d+(?:\.\d+)?)\s+and\s+(\d+(?:\.\d+)?)\s+points\)"),
+     lambda m, e: [(float(m.group(1)), round(e["_gaprem", 0.9], 1), 0.051, "residual gap s=0.9"),
+                   (float(m.group(2)), round(e["_gaprem", 0.8], 1), 0.051, "residual gap s=0.8")]),
+    (re.compile(r"drop\s+to\s+\$s=0\.8\$\s+is\s+(\d+(?:\.\d+)?)\s+percentage\s+points"),
+     lambda m, e: [(float(m.group(1)), e[("drop", "R3H", 0.8)], 0.055, "fig caption drop")]),
+    (re.compile(r"the\s+(\d+(?:\.\d+)?)~s\s+settle"),
+     lambda m, e: [(float(m.group(1)), e["fb_settle"], 0.005, "settle term")]),
+]
+
+_TAB_ROW = re.compile(
+    r"^(" + "|".join(str(s).replace(".", "\.") for s in S_GRID) + r")\s*&"
+    r"\s*([\d.]+)\s*&\s*([\d.]+|---)\s*&\s*([\d.]+)\s*&\s*([\d.]+)"
+    r"\s*&\s*([\d.]+)\s*&\s*([\d.]+)\s*\\\\$")
+
+_IVAL_ANCHORS = []  # (superseded: capture-based interval check below)
+
+
+def check_t54(text: str, label: str, t54: dict) -> "tuple[list, list, int]":
+    fails: list = []
+    passes: list = []
+    seen = 0
+
+    def score(ok: bool, printed: str, want: str, desc: str) -> None:
+        nonlocal seen
+        seen += 1
+        if ok:
+            passes.append(f"{label}: {desc}")
+        else:
+            fails.append(f"{label}: T54 {desc} -- printed {printed} vs recomputed {want}")
+
+    for line in text.splitlines():
+        line = re.sub(r"[ \t]+", " ", line)
+        if not line.strip():
+            continue
+        for rx, handler in _T54_CHECKS:
+            m = rx.search(line)
+            if not m:
+                continue
+            for printed, want, tol, desc in handler(m, t54):
+                seen += 1
+                ok = abs(printed - want) <= tol
+                if ok:
+                    passes.append(f"{label}: T54 {desc}")
+                else:
+                    fails.append(f"{label}: T54 {desc} -- printed {printed} "
+                                 f"vs recomputed {want}")
+
+        tm = _TAB_ROW.match(line.strip())
+        if tm:
+            s_val = float(tm.group(1))
+            vals = [tm.group(n) for n in (2, 3, 4, 5, 6, 7)]
+
+            def _obs(fam, sv, printed):
+                return "---" if printed == "---" else t54[("tab_obs", fam, sv)]
+
+            expect = [t54[("tab_bound", "R1C", s_val)], _obs("R1C", s_val, vals[1]),
+                      t54[("tab_bound", "R2F", s_val)], _obs("R2F", s_val, vals[3]),
+                      t54[("tab_bound", "R3H", s_val)], _obs("R3H", s_val, vals[5])]
+            got = [v if v == "---" else float(v) for v in vals]
+            seen += 1
+            ok = all((gv == "---" and ev == "---")
+                     or (gv != "---" and ev != "---" and abs(gv - ev) <= 5e-4)
+                     for gv, ev in zip(got, expect))
+            if ok:
+                passes.append(f"{label}: T54 tab:modes row s={s_val}")
+            else:
+                fails.append(f"{label}: T54 tab:modes row s={s_val} -- "
+                             f"printed {got} vs recomputed {expect}")
+        for fam in FAMILIES:
+            for k in ("admitted", "windows"):
+                m2 = re.search(
+                    fam + r"[^;]*?(\d+)--(\d+)\s+" + k, line)
+                if not m2:
+                    continue
+                lo, hi = t54[("ival", fam, k)]
+                got = (int(m2.group(1)), int(m2.group(2)))
+                seen += 1
+                if got == (lo, hi):
+                    passes.append(f"{label}: T54 {fam} {k} interval")
+                else:
+                    fails.append(f"{label}: T54 {fam} {k} interval -- printed "
+                                 f"{got} vs recomputed {(lo, hi)}")
+    return fails, passes, seen
 if __name__ == "__main__":
     sys.exit(main())

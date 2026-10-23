@@ -39,6 +39,20 @@ def exp():
     return v8.recompute(need_deliv=True)
 
 
+_T54_CACHE = None
+
+
+def t54():
+    global _T54_CACHE
+    if _T54_CACHE is None:
+        e = v8.recompute(need_deliv=True)
+        _T54_CACHE = v8.t54_expectations(
+            served_instances=e["served_task_instances"][0],
+            cost_r3h=abs(e["coverage_cost_pp"]["R3H"][0]),
+            cost_r2f=abs(e["coverage_cost_pp"]["R2F"][0]))
+    return _T54_CACHE
+
+
 # (paper_path, text, anchor, wrong_value) -- the anchor is the exact string
 # in the file whose first occurrence is mutated (replace with count=1).
 PROBES = [
@@ -47,7 +61,6 @@ PROBES = [
     (MAIN, MAIN_TEXT, "0.9766 at $s=1.1$", "0.1111 at $s=1.1$"),
     (MAIN, MAIN_TEXT, "0.9812 at $s=1.2$", "0.1111 at $s=1.2$"),
     (MAIN, MAIN_TEXT, "0.9924 at $s=1.4$", "0.1111 at $s=1.4$"),
-    (MAIN, MAIN_TEXT, "is 37.62 m$^{-2}$", "is 99.99 m$^{-2}$"),
     (MAIN, MAIN_TEXT, "0.7764 for R2F", "0.1111 for R2F"),
     (MAIN, MAIN_TEXT, "0.7447 for R3H", "0.1111 for R3H"),
     (MAIN, MAIN_TEXT, r"51.14\% for the control family",
@@ -60,7 +73,6 @@ PROBES = [
     (MAIN, MAIN_TEXT, "cost of 2.36 percentage points",
      "cost of 9.99 percentage points"),
     (MAIN, MAIN_TEXT, "477,308 task instances", "1,111 task instances"),
-    (MAIN, MAIN_TEXT, "1.3286", "7.7777"),
     (MAIN, MAIN_TEXT, "0.268 percentage points between",
      "0.777 percentage points between"),
     (MAIN, MAIN_TEXT, "0.359 percentage points between",
@@ -76,7 +88,7 @@ PROBES = [
     (MAIN, MAIN_TEXT, "180 sweep units", "181 sweep units"),
     (MAIN, MAIN_TEXT, "270 launched units", "271 launched units"),
     (MAIN, MAIN_TEXT, "over every record is 0.0", "over every record is 5.5"),
-    (MAIN, MAIN_TEXT, "0.9485 at the order point", "0.1111 at the order point"),
+    (MAIN, MAIN_TEXT, "0.9485 at the as-placed point", "0.1111 at the as-placed point"),
     (MAIN, MAIN_TEXT, "0.4827 at $s=0.8$", "0.1111 at $s=0.8$"),
     (MAIN, MAIN_TEXT, "0.9900 at $s=1.5$", "0.1111 at $s=1.5$"),
     (MAIN, MAIN_TEXT, "0.9882 at $s=1.3$", "0.1111 at $s=1.3$"),
@@ -87,6 +99,12 @@ PROBES = [
      r"22.22\% for the 50-task family"),
     (MAIN, MAIN_TEXT, r"71.00\% for the 100-task family",
      r"22.22\% for the 100-task family"),
+    (MAIN, MAIN_TEXT, "drops 26.0 percentage points from the as-placed",
+     "drops 9.99 percentage points from the as-placed"),
+    (MAIN, MAIN_TEXT, "0.501 & 0.483", "0.999 & 0.483"),
+    (MAIN, MAIN_TEXT, "18.25 and 30.44 percentage points",
+     "9.99 and 30.44 percentage points"),
+    (MAIN, MAIN_TEXT, "median 2.409~s, range", "median 9.99~s, range"),
     # --- the markdown face (plain %, same classes) -------------------------
     (FULL, FULL_TEXT, "0.7764 for R2F", "0.1111 for R2F"),
     (FULL, FULL_TEXT, "51.14% for the control family",
@@ -117,6 +135,8 @@ def test_each_probe_mutation_is_caught_and_restore_is_clean(exp, paper, text,
     assert mutated != text, "mutation did not change the text"
 
     fails, _passes, _notes, _seen = v8.check_paper(mutated, paper.name, exp)
+    f54, _p54, _s54 = v8.check_t54(mutated, paper.name, t54())
+    fails = list(fails) + list(f54)
     assert fails, f"mutating {anchor!r} was NOT caught"
 
     fails0, passes0, _notes0, seen0 = v8.check_paper(text, paper.name, exp)

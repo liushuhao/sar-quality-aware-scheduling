@@ -58,7 +58,7 @@
 
 ## 执行记录（修复后填）
 
-- 修复 commits：
-- 编译验证（pdflatex ×2，0 error / 0 undefined）：
-- 数字闸 `verify_paper_numbers_l8.py --paper main.tex`：
-- 受影响数字是否需重跑实验（本批预期：全部为再分析+重写，除 R-11/R-14 可能需小量补算、R-18 为统计口径改法）：
+- 修复 commits：t54 九步全链——2a01111（步骤1 机械批）/1ccb581（步骤2 术语批）/e11348d（步骤7a 反事实出数）/392c514（步骤3 摘要结论）/f5e13cf（步骤4 三值化+amendment）/196c0e0（步骤5 模式分解表）/df8fce0+081b3c2（步骤6 披露批）/ca6defb（步骤7b 小节图件文献）/步骤8 数字闸联动 commit（见 git log）
+- 编译验证（pdflatex ×2，0 error / 0 undefined）：52 页 0 err / 0 undefined（步骤 7 终态；每步 commit 前均验证）
+- 数字闸 `verify_paper_numbers_l8.py --paper main.tex`：rc=0，135 checked（68 既有+67 T54），0 mismatch；变异探针 49/49 全过（全管线 check_paper+check_t54）
+- 受影响数字是否需重跑实验（本批预期：全部为再分析+重写，除 R-11/R-14 可能需小量补算、R-18 为统计口径改法）：无实验重跑；新增两类再分析出数（P1-8 反事实 30 单元重放、fallback 重放 1577 对）与模式分解表（纯工件复算），全部 L8 口径现算、零求解重跑
