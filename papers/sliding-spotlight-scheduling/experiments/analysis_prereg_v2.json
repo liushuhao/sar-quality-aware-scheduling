@@ -477,4 +477,21 @@
     "paper_wording": "The manuscript states 'divided by the best f_q the task could reach over all of its windows at zero squint' (sections 3.3 and 6.6) -- that wording matches the implementation and is the operative one.",
     "registration": "caliber_registry.json calibers.v5.f_q_unit_note reworded to match (2026-10-21)."
   }
+,
+  "amendment_20261023_t54_reading_refinement": {
+    "_doc": "2026-10-23 reading refinement appended after the 2026-10-22 independent external review (ticket 54). The frozen criteria text above is NOT edited: C1/C2/C3 stay exactly as registered. This amendment refines only the READING protocol of the C3 tight-arm verdict and the infeasible-cell convention, both registered here post hoc and reported in the manuscript as a refined reading beside the frozen verdicts.",
+    "criteria_bytes_unchanged": true,
+    "refines": "tests.C3 (tight arm) reading protocol; Table 1 infeasible-cell convention",
+    "reading_protocol": {
+      "c3_tight_arm": "pairwise per-seed delta: for each seed, coverage(s=1.0) minus coverage(s=0.8); the tight arm 'falls' iff the median of the paired deltas exceeds one priority unit (the smallest nonzero served-priority increment, ~0.38 pp at 256-266 total priority). The marginal-median comparison remains the frozen C3 text; the paired reading is the refined one and both are reported.",
+      "infeasible_cell": "a grid point whose ten seeds all exit without a feasible individual is UNDEFINED for every criterion that reads it (C1, C3) in the refined reading; it is never a zero-coverage median. The frozen texts that scored it as zero remain on record and are superseded for reporting by this refinement (2026-10-23, post hoc, after the 2026-10-22 review)."
+    },
+    "refined_verdicts": {
+      "R1C": {"C1": "met (undefined cell skipped; remaining sequence monotone under both readings)", "C2": "met", "C3": "undefined -- s=0.8 cell undefined; the frozen verdict 'met' relied on the zero-coverage scoring convention and is retired from the table"},
+      "R2F": {"C1": "not met", "C2": "met", "C3": "not met (refined: median paired delta 0.0 < 1 priority unit; the two 0.268/0.359 pp dips are sub-unit and do not constitute a falling tight arm)"},
+      "R3H": {"C1": "met", "C2": "met", "C3": "met"}
+    },
+    "manuscript_targets": "main.tex Table tab:criteria (three-valued); sec:hypotheses criteria paragraph (registration timeline, R-06); sec:asplaced criteria paragraph (dual-row presentation + analytic infeasibility)",
+    "registered_by": "ticket 54 (external-review remediation), 2026-10-23"
+  }
 }
