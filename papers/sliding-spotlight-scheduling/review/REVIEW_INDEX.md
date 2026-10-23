@@ -6,13 +6,14 @@
 
 ## 当前活跃批次
 
-### 2026-10-23 t54 后全量面板复审（ARS 五席 fresh + 编辑裁决）→ Major Revision
+### 2026-10-23 t54 后全量面板复审（ARS 五席 fresh + 编辑裁决 + 三层链闭合 2026-10-24）→ Major Revision
 
-- **面板产物**: [panel-full-20261023/](panel-full-20261023/) — 五席报告（seat1-eic / seat2-methodology / seat3-domain / seat4-perspective / seat5-devils-advocate）+ [editorial-decision.md](panel-full-20261023/editorial-decision.md)（含 T1–T19 + Tier-3 路线图、DA 两条 CRITICAL 裁决、六轴 provenance）。审查对象 = t54 八步修订后的 main.tex（commit 479eda5），五席全部 fresh 上下文、互不可见、不读旧批次。
-- **裁决**: Major Revision（四席一致 + DA 2 CRITICAL 均判 validated）。两条 CRITICAL = 反事实 18–30pp 换修理规则即变（缺口≈被丢任务优先质量，主线程算术核实）/ 标题因果主张撞家族混杂设计（§6.1 自认共变、无交叉单元）。
-- **核验**: 领域席独立重算 §3/§7.2 全部物理常数链逐位复现（含 AASR 序列、SLS≡STR 退化、f_dc=345.7kHz、oracle 偏差）；方法论席复算全部统计量零内部不一致；主线程复核重复段(2/2)、摘要 0.27 vs 0.359、§3.1(L117)↔§7.3(L405) 矛盾、formula-spec §8.17-13（L594）C3/C4 参考值同日重定义未披露。
-- **与 2026-10-22 批次关系**: 独立新批次，非取代；重叠项=佐证残留未清（如双句点仍在文中）。triage 时应做 T1–T19 × R-01…R-36 交叉映射后并批执行。
-- **状态**: pending（待用户裁决 T1–T19；T2 标题与 T5 存储时机涉及用户已拍板项，呈报时注明）。
+- **面板产物**: [panel-full-20261023/](panel-full-20261023/) — 五席报告（seat1-eic / seat2-methodology / seat3-domain / seat4-perspective / seat5-devils-advocate）+ [editorial-decision.md](panel-full-20261023/editorial-decision.md)（含 T1–T22 路线图、DA 两条 CRITICAL 裁决、§8 复审整合、§9 终裁整合、六轴 provenance）。审查对象 = t54 八步修订后的 main.tex（commit 479eda5），五席全部 fresh 上下文、互不可见、不读旧批次。
+- **三层链（2026-10-24 闭合）**: ② Claude Code 复审（ark 后端，[rr1-claudecode-rereview.md](panel-full-20261023/rr1-claudecode-rereview.md)）= 综合裁决 SOUND-WITH-CORRECTIONS（0 伪造、算术全复现、两 CRITICAL 维持、3 综合小缺陷 + 3 稿件新发现 N1–N3）；③ opencode 终裁（deepseek-v4.1-flash-free，[adjudication-opencode-20261024.md](panel-full-20261023/adjudication-opencode-20261024.md)）= **Major Revision 维持，置信 high，链 SOUND-WITH-CORRECTIONS**；四处修正已并入（T20–T22 入表/T5 日期护栏/R4H 归正/T1 重定价 E[min]/E[p]=0.7）。终裁 J4 残余风险：全部限定后残余贡献可能被判增量性——无路线图项可测，唯一「合规修订仍被拒」路径。
+- **裁决**: Major Revision（四席一致 + DA 2 CRITICAL 均判 validated + 复审维持 + 终裁维持）。两条 CRITICAL = 反事实 18–30pp 换修理规则即变（缺口≈被丢任务优先质量，主线程算术核实；优先级感知修理仍保留 ≈70% 缺口）/ 标题因果主张撞家族混杂设计（§6.1 自认共变、无交叉单元）。
+- **核验**: 领域席独立重算 §3/§7.2 全部物理常数链逐位复现（含 AASR 序列、SLS≡STR 退化、f_dc=345.7kHz、oracle 偏差）；方法论席复算全部统计量零内部不一致；主线程+复审+终裁三方独立复算地板核算/掉任务质量/速度比 1.0493/垫减半 5.4% 全部命中。
+- **与 2026-10-22 批次关系**: 独立新批次，非取代；重叠项=佐证残留未清（如双句点仍在文中）。triage 时应做 T1–T22 × R-01…R-36 交叉映射后并批执行。
+- **状态**: pending（待用户裁决 T1–T22；T2 标题与 T5 存储时机涉及用户已拍板项，呈报时注明）。
 
 ### 2026-10-22 独立外审（五席 + 编辑裁决）→ Major Revision
 
