@@ -1,7 +1,7 @@
 Highlights
 ==========
 
-Paper: Agile Sliding-Spotlight SAR Satellite Scheduling with Per-Task Resolution Requirements: The Coverage Cost of Tightening the Order
+Paper: Resolution-Driven Dwells in SAR Task Scheduling: Mode Composition Decides What Tighter Requirements Cost
 Target: Aerospace Science and Technology (Elsevier; 3-5 bullets, <=85 characters each)
 
 - Dwell becomes endogenous: mode parameters follow the per-task order.
