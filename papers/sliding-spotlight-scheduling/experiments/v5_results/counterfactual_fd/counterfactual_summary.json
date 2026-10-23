@@ -1,0 +1,38 @@
+{
+ "R1C": {
+  "n_units": 10,
+  "gap_pp_median": 0.0,
+  "gap_pp_min": 0.0,
+  "gap_pp_max": 6.31,
+  "violation_rate_median": 0.0,
+  "violation_rate_min": 0.0,
+  "violation_rate_max": 0.0526,
+  "violating_pairs_total": 1,
+  "adjacent_pairs_total": 186,
+  "units_with_zero_violation": 9
+ },
+ "R2F": {
+  "n_units": 10,
+  "gap_pp_median": 30.44,
+  "gap_pp_min": 24.54,
+  "gap_pp_max": 35.18,
+  "violation_rate_median": 0.289,
+  "violation_rate_min": 0.25,
+  "violation_rate_max": 0.3478,
+  "violating_pairs_total": 135,
+  "adjacent_pairs_total": 458,
+  "units_with_zero_violation": 0
+ },
+ "R3H": {
+  "n_units": 10,
+  "gap_pp_median": 18.25,
+  "gap_pp_min": 11.99,
+  "gap_pp_max": 25.56,
+  "violation_rate_median": 0.2022,
+  "violation_rate_min": 0.1304,
+  "violation_rate_max": 0.2473,
+  "violating_pairs_total": 184,
+  "adjacent_pairs_total": 926,
+  "units_with_zero_violation": 0
+ }
+}
