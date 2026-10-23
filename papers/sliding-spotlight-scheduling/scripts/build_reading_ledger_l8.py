@@ -332,7 +332,7 @@ def coverage_cost_section(med: dict) -> list:
             f"coverage_cost.{fam}", cost, "fraction",
             "experiments/v5_results/sweep_results.json",
             f"families.{fam}.coverage_median (s=1.0 minus saturation)",
-            note=(f"order-point median minus the family's OWN saturation value "
+            note=(f"as-placed median minus the family's OWN saturation value "
                   f"{sat!r} at s={sat_s}; measured on the same curve, not "
                   f"against another family"),
             producer=GEN))

@@ -25,10 +25,10 @@ Three features distinguish the submission:
    registered caliber but no number, because the serial bound has not been
    recomputed in the present scenario world; image quality is a platform
    capability and a reported reading, not an optimization target; and the
-   conclusions are scoped to order sensitivity under a fixed mode assignment.
+   conclusions are scoped to requirement sensitivity under a fixed mode assignment.
 3. Auditable results: every headline reading is recomputed from the promoted
    artifacts by a verification script --- all nine grid points per family
-   (curve values and the infeasibility status alike), the order-point costs,
+   (curve values and the infeasibility status alike), the as-placed costs,
    the demand-satisfaction count, the retention, dip
    and per-seed displacement readings --- and each reading carries its
    caliber where it is stated.

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """fig-3 (ticket 50 phase 2): coverage versus the demand-tightening factor.
 
-The paper's main result after the repositioning: the order resolution is a
+The paper's main result after the repositioning: the required resolution is a
 per-task hard constraint, so the question is what tightening it costs in
 coverage. The curve is the L8 world (caliber v5): three real-window families x
 the nine-point demand grid, single budget 40/60.
@@ -101,7 +101,7 @@ def main() -> int:
                     markerfacecolor="none", markeredgecolor=COLORS[fam],
                     markeredgewidth=1.0, zorder=2)
             print(f"# {fam}: saturation {sat:.6f} first reached at s={sat_x}; "
-                  f"order-point median {agg['families'][fam]['1.0']['coverage_median']:.6f}")
+                  f"as-placed median {agg['families'][fam]['1.0']['coverage_median']:.6f}")
         if any(infeas):
             x = xs[infeas.index(True)]
             ax.plot([x], [0.0], marker="x", markersize=6.0, mew=1.3,
@@ -142,7 +142,7 @@ def main() -> int:
     # the y-range is declared in the axis label: a truncated axis that does not
     # say it is truncated is the trap this panel would otherwise set
     axz.set_ylabel("upper-band zoom\n($y\\in[0.958,1.004]$)", fontsize=7.6)
-    axz.set_xlabel("demand-tightening factor $s$ (order resolution $\\times s$)")
+    axz.set_xlabel("demand-tightening factor $s$ (required resolution $\\times s$)")
     axz.set_xticks(list(S_GRID))
     axz.set_xticklabels([f"{s:g}" for s in S_GRID])
     axz.set_yticks([0.96, 0.97, 0.98, 0.99, 1.0])
@@ -155,7 +155,7 @@ def main() -> int:
     axz.text(0.985, 0.83, "(R1C, R2F only)", transform=axz.transAxes,
              fontsize=6.4, color="0.32", va="top", ha="right")
     axz.axvline(1.0, color="0.55", lw=0.7, ls=":")
-    axz.annotate("order point", xy=(1.0, 0.9586), xytext=(1.04, 0.9592),
+    axz.annotate("as-placed point", xy=(1.0, 0.9586), xytext=(1.04, 0.9592),
                  fontsize=6.2, color="0.35", va="bottom", ha="left")
 
     OUT.parent.mkdir(parents=True, exist_ok=True)

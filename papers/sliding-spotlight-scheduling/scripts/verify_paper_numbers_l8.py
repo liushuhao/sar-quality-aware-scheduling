@@ -194,7 +194,7 @@ def recompute(need_deliv: bool = False) -> dict:
     for fam in FAMILIES:
         sat_s = max(S_GRID, key=lambda s: (coverage[(fam, s)][0], -s))
         cost[fam] = ((coverage[(fam, 1.0)][0] - coverage[(fam, sat_s)][0]) * 100.0,
-                     f"order-point median minus the family's own saturation "
+                     f"as-placed median minus the family's own saturation "
                      f"at s={sat_s}")
     exp["coverage_cost_pp"] = cost
 
@@ -379,7 +379,7 @@ def _deliv_stats() -> dict:
 # Extraction from the manuscript
 # --------------------------------------------------------------------------
 _SENT_SPLIT = re.compile(r"(?<=[.;。；])\s+")
-_S_TAG = re.compile(r"\bs\s*=\s*(\d(?:\.\d)?)\b|订单原要求|order\s+point",
+_S_TAG = re.compile(r"\bs\s*=\s*(\d(?:\.\d)?)\b|订单原要求|as-placed\s+point",
                     re.IGNORECASE)
 _S_TAG_ANY = re.compile(r"\bs\s*=\s*\d(?:\.\d)?", re.IGNORECASE)
 # Family codes R1C/R2F/R3H and world tags L7/L8/v5 contain digits; a bare
@@ -455,7 +455,7 @@ def _s_in(sent: str):
             return float(m.group(1))
         except ValueError:
             return None
-    return 1.0                      # "订单原要求" / "order point" == s=1.0
+    return 1.0                      # "订单原要求" / "as-placed point" == s=1.0
 
 
 def _s_in_ctx(ctx: str):
@@ -599,7 +599,7 @@ def check_paper(text: str, label: str, exp: dict) -> "tuple[list, list, list, in
             # ---- coverage cost against the family's own saturation ---------
             cm = _COST_RE.search(blank)
             if cm and fam and re.search(r"saturat|饱和", sent, re.I) and (
-                    s == 1.0 or re.search(r"order\s+point|订单", sent, re.I)):
+                    s == 1.0 or re.search(r"as-placed\s+point|订单", sent, re.I)):
                 printed = abs(float(cm.group(1)))
                 want, prov = exp["coverage_cost_pp"][fam]
                 seen += 1
