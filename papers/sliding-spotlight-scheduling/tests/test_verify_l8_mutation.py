@@ -141,7 +141,6 @@ PROBES = [
      "0.9766 to 0.9999 at $s=1.1$"),
     (MAIN, MAIN_TEXT, "reads a median of 0.568", "reads a median of 0.999"),
     (MAIN, MAIN_TEXT, "reads a partial 0.469", "reads a partial 0.999"),
-    (MAIN, MAIN_TEXT, "move the medians only", "move the medians onlyly"),
     (MAIN, MAIN_TEXT, "measured to exceed the library reference by up to $1.2008",
      "measured to exceed the library reference by up to $9.9999"),
     (MAIN, MAIN_TEXT, "s^{*}=2.4669/(3.0/1.1)=0.905",

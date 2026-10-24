@@ -73,7 +73,7 @@ _CHECKS = [
     (_P(r"0\.(\d+)/0\.714/0\.935"), "sf_r3h_08", None, None),
     (_P(r"and\s+(\d+[.]\d+)--0\.980\s+across"), "sf_r2f_lo", None, None),
     (_P(r"median\s+(\d+[.]\d+)~s\s+for\s+the\s+20-task\s+control"), "wall_r1c", None, None),
-    (_P(r"(1\.2008)"), "c3c4", None, None),
+    (_P(r"exceed the library reference by up to \$(\d+[.]\d+)"), "c3c4", "c3c4_ratio", None),
 ]
 
 
@@ -109,7 +109,7 @@ def check_t55(text: str, label: str, t55: dict) -> "tuple[list, list, int]":
                 desc = "wall-clock R1C 4.9 s"
             elif branch == "c3c4":
                 want = t55["c3c4_ratio"]
-                ok = abs(float(g) - want) <= 1e-9
+                ok = abs(float(g) - want) <= 1e-9  # catches both wrong-value and no-match
                 desc = "C3/C4 reference-redefinition factor present"
             else:
                 want = t55[ekey]

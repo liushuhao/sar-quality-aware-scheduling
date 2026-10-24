@@ -1135,7 +1135,7 @@ _T54_CHECKS = [
      lambda m, e: [(float(m.group(1)), e[("drop", "R1C", 0.9)], 0.055, "R1C drop to s=0.9")]),
     (re.compile(r"within\s+(\d+(?:\.\d+)?)\s+points"),
      lambda m, e: [(float(m.group(1)), e[("drop", "R2F", 0.9)], 0.011, "R2F tighter-side drop")]),
-    (re.compile(r"(\d+(?:\.\d+)?)\s+and\s+(\d+(?:\.\d+)?)\s+percentage\s+points\s+\(family medians\)"),
+    (re.compile(r"(\d+(?:\.\d+)?)\s+and\s+(\d+(?:\.\d+)?)\s+percentage\s+points\s+\(family medians[^)]*\)"),
      lambda m, e: [(float(m.group(1)), e[("cf_gap", "R3H")], 0.011, "cf gap R3H median"),
                    (float(m.group(2)), e[("cf_gap", "R2F")], 0.011, "cf gap R2F median")]),
     (re.compile(r"(\d+)\s+of\s+(\d+)\s+pairs\s+for\s+the\s+100-task\s+family"),
