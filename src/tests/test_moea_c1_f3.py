@@ -72,7 +72,6 @@ def _build_2task_instance(seed: int = 42) -> AgileSARInstance:
             duration=30.0,
             energy=50000.0,
             memory=5e8,
-            phi_min_res=0.0,
             time_span=t_latest - 30.0 - t_earliest,  # precomputed
         ))
 

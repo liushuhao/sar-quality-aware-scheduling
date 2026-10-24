@@ -137,7 +137,6 @@ def test_b3_energy_budget_enforced():
             windows=[], phi_min=0.3, phi_max=0.8,
             t_earliest=t_earliest, t_latest=t_earliest + 300,
             duration=30.0, energy=50_000.0, memory=5e8,
-            phi_min_res=0.0,
         ))
     instance = AgileSARInstance(
         tasks=instance_tasks, N=len(instance_tasks),

@@ -483,7 +483,6 @@ def moea_solver(
     seed: Optional[int] = None,
     n_ref_dirs: int = 12,
     n_obj: int = 3,
-    resolution_reqs: Optional[List[float]] = None,
     hotstart_individual: Optional[np.ndarray] = None,
     hotstart_sigma: float = 0.5,
     n_sats: int = 1,
@@ -506,7 +505,6 @@ def moea_solver(
         seed: random seed
         n_ref_dirs: number of reference directions for NSGA-III (Das-Dennis partitions)
         n_obj: number of objectives (2 = f1+f2 geometric resolution, 3 = f1+f2+f3)
-        resolution_reqs: per-target resolution requirements
         hotstart_individual: optional 2N (or 3N for multi-sat) chromosome to seed initial population
         hotstart_sigma: std of Gaussian noise added to hot-start seed (default 0.5)
         n_sats: number of satellites (1 = single-sat, >1 = multi-sat constellation with 3N encoding)
@@ -532,7 +530,7 @@ def moea_solver(
     if prebuilt is not None:
         instance = prebuilt
     else:
-        instance = build_agile_instance(windows, targets, resolution_reqs=resolution_reqs, **kwargs)
+        instance = build_agile_instance(windows, targets, **kwargs)
         precompute_geometry(instance, step_s=10.0)
 
     if instance.N == 0:

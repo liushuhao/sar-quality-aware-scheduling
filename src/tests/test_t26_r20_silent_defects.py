@@ -84,7 +84,7 @@ def _fixture():
         task_id=0, target_id="T000", priority=10.0,
         windows=[], phi_min=0.3, phi_max=0.8,
         t_earliest=T_EARLIEST, t_latest=T_EARLIEST + 200.0,
-        duration=30.0, energy=50000.0, memory=5e8, phi_min_res=0.0,
+        duration=30.0, energy=50000.0, memory=5e8,
     )
     instance = AgileSARInstance(
         tasks=[task], N=1,

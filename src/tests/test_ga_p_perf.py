@@ -38,23 +38,6 @@ def _make_instance(targets, windows):
     return inst
 
 
-# ── O1: theta_min_res precomputation ───────────────────────────────────
-
-def test_o1_theta_min_res_precomputed():
-    """AgileTask.theta_min_res must equal off_nadir_to_incidence(phi_min_res, alt)."""
-    from sar_sim.metrics.nesz import off_nadir_to_incidence
-
-    targets, windows = _load_s1()
-    inst = _make_instance(targets, windows)
-
-    for task in inst.tasks:
-        expected = off_nadir_to_incidence(task.phi_min_res, inst.altitude_m)
-        assert hasattr(task, 'theta_min_res'), \
-            f"Task {task.task_id} missing theta_min_res"
-        assert np.isclose(task.theta_min_res, expected, rtol=1e-12), \
-            f"Task {task.task_id}: theta_min_res={task.theta_min_res}, expected={expected}"
-
-
 # ── O2: time_span precomputation ───────────────────────────────────────
 
 def test_o2_time_span_precomputed():

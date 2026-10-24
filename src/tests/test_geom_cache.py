@@ -40,7 +40,6 @@ def test_precompute_basic():
         windows=[], phi_min=0.3, phi_max=0.8,
         t_earliest=t_start, t_latest=t_start + 200.0,
         duration=30.0, energy=50000.0, memory=5e8,
-        phi_min_res=0.0,
     )
     instance = AgileSARInstance(
         tasks=[task], N=1,
@@ -89,7 +88,6 @@ def test_lookup_accuracy():
         windows=[], phi_min=0.3, phi_max=0.8,
         t_earliest=t_start, t_latest=t_start + 300.0,
         duration=30.0, energy=50000.0, memory=5e8,
-        phi_min_res=0.0,
     )
     instance = AgileSARInstance(
         tasks=[task], N=1,
@@ -159,7 +157,6 @@ def test_interpolation_monotonic():
         windows=[], phi_min=0.3, phi_max=0.8,
         t_earliest=t_start, t_latest=t_start + 300.0,
         duration=30.0, energy=50000.0, memory=5e8,
-        phi_min_res=0.0,
     )
     instance = AgileSARInstance(
         tasks=[task], N=1,
@@ -225,7 +222,6 @@ def test_boundary_clamp():
         windows=[], phi_min=0.3, phi_max=0.8,
         t_earliest=t_start, t_latest=t_start + 200.0,
         duration=30.0, energy=50000.0, memory=5e8,
-        phi_min_res=0.0,
     )
     instance = AgileSARInstance(
         tasks=[task], N=1,

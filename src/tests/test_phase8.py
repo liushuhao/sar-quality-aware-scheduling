@@ -39,7 +39,6 @@ def test_a_moea_encoding_is_2n():
             windows=[], phi_min=0.3, phi_max=0.8,
             t_earliest=100.0 + i * 50, t_latest=300.0 + i * 50,
             duration=30.0, energy=50000.0, memory=5e8,
-            phi_min_res=0.0,
         ))
     target_map = {
         f"T{i:03d}": GroundTarget(

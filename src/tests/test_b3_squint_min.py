@@ -71,7 +71,6 @@ def test_b3_selects_min_squint():
         windows=[], phi_min=0.3, phi_max=0.8,
         t_earliest=t_ref, t_latest=t_ref + 300.0,
         duration=30.0, energy=50000.0, memory=5e8,
-        phi_min_res=0.0,
     )
     instance = AgileSARInstance(
         tasks=[task], N=1,
@@ -126,7 +125,6 @@ def test_b3_does_not_jump_windows():
         windows=[], phi_min=0.3, phi_max=0.8,
         t_earliest=t_ref, t_latest=t_ref + 300.0,
         duration=30.0, energy=50000.0, memory=5e8,
-        phi_min_res=0.0,
     )
     instance = AgileSARInstance(
         tasks=[task], N=1,
@@ -175,7 +173,6 @@ def test_b3_window_boundary():
         windows=[], phi_min=0.3, phi_max=0.8,
         t_earliest=t_ref, t_latest=t_ref + 300.0,
         duration=30.0, energy=50000.0, memory=5e8,
-        phi_min_res=0.0,
     )
     instance = AgileSARInstance(
         tasks=[task], N=1,

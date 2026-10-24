@@ -36,7 +36,6 @@ def test_b2_2n_encoding_shape():
             windows=[], phi_min=0.3, phi_max=0.8,
             t_earliest=100.0 + i * 50, t_latest=300.0 + i * 50,
             duration=30.0, energy=50000.0, memory=5e8,
-            phi_min_res=0.0,
         ))
 
     target_map = {
@@ -88,7 +87,6 @@ def test_b2_tau_decoding():
             windows=[], phi_min=0.3, phi_max=0.8,
             t_earliest=t_early, t_latest=t_late,
             duration=30.0, energy=50000.0, memory=5e8,
-            phi_min_res=0.0,
         ))
 
     target_map = {
@@ -140,7 +138,6 @@ def test_b2_selected_only_f1():
             windows=[], phi_min=0.3, phi_max=0.8,
             t_earliest=100.0 + i * 100, t_latest=250.0 + i * 100,
             duration=30.0, energy=50000.0, memory=5e8,
-            phi_min_res=0.0,
         ))
 
     target_map = {
@@ -186,7 +183,7 @@ def test_b2_f2_not_computed():
     tasks = [AgileTask(task_id=i, target_id=f"T{i:03d}", priority=float(i + 1),
                        windows=[], phi_min=0.3, phi_max=0.8,
                        t_earliest=100.0 + i * 100, t_latest=250.0 + i * 100,
-                       duration=30.0, energy=50000.0, memory=5e8, phi_min_res=0.0)
+                       duration=30.0, energy=50000.0, memory=5e8)
              for i in range(N)]
     target_map = {f"T{i:03d}": GroundTarget(target_id=f"T{i:03d}", lat=float(30+i), lon=float(100+i), priority=i+1)
                   for i in range(N)}
@@ -218,7 +215,7 @@ def test_b2_penalty_coeff_matches_moea():
     tasks = [AgileTask(task_id=i, target_id=f"T{i:03d}", priority=float(i + 1),
                        windows=[], phi_min=0.3, phi_max=0.8,
                        t_earliest=100.0 + i * 100, t_latest=250.0 + i * 100,
-                       duration=30.0, energy=50000.0, memory=5e8, phi_min_res=0.0)
+                       duration=30.0, energy=50000.0, memory=5e8)
              for i in range(N)]
     target_map = {f"T{i:03d}": GroundTarget(target_id=f"T{i:03d}", lat=float(30+i), lon=float(100+i), priority=i+1)
                   for i in range(N)}
@@ -244,11 +241,11 @@ def test_b2_constraint_aggregation():
         AgileTask(task_id=0, target_id="T000", priority=10.0,
                   windows=[], phi_min=0.3, phi_max=0.8,
                   t_earliest=100.0, t_latest=300.0,
-                  duration=30.0, energy=50000.0, memory=5e8, phi_min_res=0.0),
+                  duration=30.0, energy=50000.0, memory=5e8),
         AgileTask(task_id=1, target_id="T001", priority=9.0,
                   windows=[], phi_min=0.3, phi_max=0.8,
                   t_earliest=500.0, t_latest=700.0,
-                  duration=30.0, energy=50000.0, memory=5e8, phi_min_res=0.0),
+                  duration=30.0, energy=50000.0, memory=5e8),
     ]
     target_map = {
         "T000": GroundTarget(target_id="T000", lat=30.0, lon=100.0, priority=10),
@@ -445,7 +442,6 @@ def test_b2_energy_budget_enforced():
             windows=[], phi_min=0.3, phi_max=0.8,
             t_earliest=100.0 + i * 100, t_latest=250.0 + i * 100,
             duration=30.0, energy=60_000.0, memory=5e8,
-            phi_min_res=0.0,
         ))
 
     target_map = {
@@ -499,7 +495,6 @@ def test_b2_geom_cache_fallback():
             windows=[], phi_min=0.3, phi_max=0.8,
             t_earliest=100.0 + i * 100, t_latest=250.0 + i * 100,
             duration=30.0, energy=50000.0, memory=5e8,
-            phi_min_res=0.0,
         ))
 
     target_map = {

@@ -84,7 +84,6 @@ def _build_multisat_instance(
             duration=duration,
             energy=50000.0,
             memory=5e8,
-            phi_min_res=0.0,
             time_span=t_latest - duration - t_earliest,
             window_times=[(t_earliest, t_latest)],
         ))
@@ -216,7 +215,6 @@ def test_c6_removed_no_duplication_penalty():
             duration=duration,
             energy=50000.0,
             memory=5e8,
-            phi_min_res=0.0,
             time_span=t_latest - duration - t_earliest,
             window_times=[(t_earliest, t_latest)],
         ))
@@ -349,7 +347,6 @@ def test_c6_no_duplication_pass():
             duration=duration,
             energy=50000.0,
             memory=5e8,
-            phi_min_res=0.0,
             time_span=t_latest - duration - t_earliest,
         ))
 
@@ -551,7 +548,6 @@ def test_per_sat_c3c4_budget():
             duration=duration,
             energy=60000.0,     # per-task energy
             memory=5e8,
-            phi_min_res=0.0,
             time_span=t_latest - duration - t_earliest,
         ))
 

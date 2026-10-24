@@ -55,9 +55,7 @@ class AgileTask:
     duration: float             # observation duration (seconds)
     energy: float      # energy consumption per observation
     memory: float      # memory consumption per observation
-    phi_min_res: float = 0.0  # minimum phi required by resolution constraint (MOEA-3)
     # ── Precomputed fields (populated by build_agile_instance) ─────────
-    theta_min_res: float = 0.0    # off_nadir_to_incidence(phi_min_res, alt) — constant per task
     time_span: float = 0.0        # t_latest - duration - t_earliest — constant per task
     window_times: List[Tuple[float, float]] = field(default_factory=list)
     # list of (w_start_float, w_end_float) for each window — avoids hasattr+timestamp in hot loop
@@ -138,7 +136,6 @@ def build_agile_instance(
     duration: float = 30.0,
     energy_per_obs: float = 50000.0,
     memory_per_obs: float = 5e8,
-    resolution_reqs: Optional[List[float]] = None,
     altitude_m: float = 693_000.0,  # orbital altitude for phi->theta conversion
     orbit_inclination_rad: float = DEFAULT_INCLINATION_RAD,
     orbit_raan_rad: float = 0.0,
@@ -158,7 +155,6 @@ def build_agile_instance(
         energy_budget, memory_budget: resource limits
         duration: fixed observation duration per task (s)
         energy_per_obs, memory_per_obs: per-observation resource consumption
-        resolution_reqs: per-task resolution constraint minima (off-nadir, rad)
         altitude_m: satellite orbital altitude for phi->theta conversion
         orbit_inclination_rad: orbit inclination (radians)
         orbit_raan_rad: RAAN (radians) — needed for correct ECI→ECEF geometry
@@ -219,7 +215,6 @@ def build_agile_instance(
             if task_phi_min >= task_phi_max:
                 task_phi_max = task_phi_min + 0.01
 
-        phi_min_res_val = resolution_reqs[task_idx] if resolution_reqs else 0.0
         tasks.append(AgileTask(
             task_id=task_idx,
             target_id=target_id,
@@ -232,8 +227,6 @@ def build_agile_instance(
             duration=duration,
             energy=energy_per_obs,
             memory=memory_per_obs,
-            phi_min_res=phi_min_res_val,
-            theta_min_res=off_nadir_to_incidence(phi_min_res_val, altitude_m),
             time_span=t_latest - duration - t_earliest,
             window_times=[(
                 w.t_start.timestamp() if hasattr(w.t_start, 'timestamp') else w.t_start,

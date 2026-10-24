@@ -148,8 +148,7 @@ def verify_c1_incidence_squint(
           it.  Per task; does not add to ``total_checks``.
 
     Note: the per-task resolution sub-constraint is retired from the paper
-    (the current tex states no per-task resolution constraint; phi_min_res /
-    theta_min_res are unused legacy defaults, always 0.0).  The theta^min
+    (the current tex states no per-task resolution constraint).  The theta^min
     bound is the platform incidence envelope, not a resolution-derived one.
 
     Args:
