@@ -7,7 +7,7 @@
 % feasible measure, not wall-clock time); the C2 pad is labelled (1+0.25) on the
 % dwell; the anchor-seed arrow into the initial population is present; the sort
 % node sits between decode and the C2/conflict chain; the evaluator box names
-% the single objective -f_1 (f_q is a reported reading, no selection pressure).
+% the single objective -f_1 (f_q is a reported reading).
 \resizebox{\textwidth}{!}{%
 \begin{tikzpicture}[x=1mm,y=1mm,>=stealth,
   box/.style={draw,rounded corners=1.5,align=center,font=\footnotesize,
@@ -47,10 +47,10 @@
   \node[box] (conf) at (74,-46) {conflict check: imaging intervals\\ (bare dwell) pairwise disjoint};
   \node[box,fill=green!6] (eval) at (0,-28) {evaluator\\ objective $-f_1$\\
     violation count from the chains at left};
-  % f_q is a reported reading only (no selection pressure): side note beside
+  % f_q is a reported reading only: side note beside
   % the box keeps the box itself single-objective
   \node[font=\footnotesize,align=left,anchor=east] at (-16.5,-28)
-    {$f_q$: reported reading,\\no selection pressure};
+    {$f_q$: reported reading,\\coverage the only objective};
   \draw[->] (dec) -- (sort);
   \draw[->] (sort) -- (c2);
   \draw[->] (c2) -- (conf);
