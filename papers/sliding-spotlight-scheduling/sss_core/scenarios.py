@@ -151,6 +151,33 @@ def load_rho_bands() -> dict:
     }
 
 
+def _dwell_order_kwargs(
+    duration_caliber: str, mode: Mode, rho_req: float, l_az_m: float
+) -> dict:
+    """Ticket 61 dwell-site keyword override (both dwell sites consume it).
+
+    ``"library"`` -> ``{}``: the pre-ticket-61 call, bit-identical, so every
+    frozen world keeps its byte-regeneration guarantee (the ticket-35
+    dead-branch guard pins this).  ``"task-law"`` -> the dwell consumes the
+    task's OWN order at MANIFEST rounding (``round(rho_req, 9)`` /
+    ``round(l_az_m, 6)``, so the evaluator reads back the identical float
+    from the shipped manifest), mirroring the evaluator contract
+    (evaluator.py:263/:291-301/:423-429): STR never receives the order
+    (``duration_scene_s`` raises on STR+rho, duration.py:333-339 -- there
+    the order is carried by the ticket-48 clip) and ``l_az_m`` is passed
+    unconditionally.  Any NEW world regeneration MUST select ``"task-law"``
+    explicitly and register it in ``experiments/RUN_LINEAGE.md`` -- the
+    anti-split mechanism is the explicit, registered choice, not a silent
+    default.
+    """
+    if duration_caliber == "library":
+        return {}
+    return {
+        "rho_req_m": (None if mode is Mode.STR else round(rho_req, 9)),
+        "l_az_m": round(l_az_m, 6),
+    }
+
+
 def generate_scenario(
     family_code: str,
     density_n: int,
@@ -159,6 +186,7 @@ def generate_scenario(
     seed: int,
     variant_index: int | None = None,
     lib: ModeLibrary | None = None,
+    duration_caliber: str = "library",
 ) -> dict:
     """Generate one scenario instance and return its manifest (dict).
 
@@ -166,9 +194,18 @@ def generate_scenario(
     consumed in a fixed per-target order (demand -> size -> t_ca ->
     priority; the H Bernoulli draw precedes the demand draw), so the same
     seed reproduces the manifest byte-identically (spec 确定性).
+
+    ``duration_caliber`` (ticket 61): ``"library"`` (default) keeps every
+    dwell at the library design point -- the frozen v3/v5 worlds regenerate
+    byte-identically.  ``"task-law"`` makes the dwell sites consume the
+    task's own order (see :func:`_dwell_order_kwargs`); any NEW world
+    regeneration MUST pass it explicitly and register the choice in
+    ``experiments/RUN_LINEAGE.md``.
     """
     if demand_tier not in ("C", "F", "H"):
         raise ValueError(f"invalid demand tier {demand_tier!r}")
+    if duration_caliber not in ("library", "task-law"):
+        raise ValueError(f"invalid duration caliber {duration_caliber!r}")
     if interval not in INTERVAL_HALF_WIDTH_S:
         raise ValueError(f"invalid interval {interval!r}")
     if density_n not in DENSITY_BY_INDEX.values():
@@ -233,7 +270,15 @@ def generate_scenario(
         # window dwell dispersion (anchor property; sampled edges+centre)
         if anchor:
             ts = [t0, t_ca, t1]
-            durs = [duration_scene_s(mode, _squint_at(t, t_ca, lib.geo), lib) for t in ts]
+            dwell_kw = _dwell_order_kwargs(
+                duration_caliber, mode, rho_req, l_az_m
+            )
+            durs = [
+                duration_scene_s(
+                    mode, _squint_at(t, t_ca, lib.geo), lib, **dwell_kw
+                )
+                for t in ts
+            ]
             dispersion = max(dispersion, max(durs) / min(durs))
         tasks.append(
             {
@@ -455,6 +500,7 @@ def generate_real_scenario(
     variant_index: int | None = None,
     lib: ModeLibrary | None = None,
     platform=None,
+    duration_caliber: str = "library",
 ) -> dict:
     """Generate one R<density><requirement> real-window scenario manifest.
 
@@ -470,6 +516,13 @@ def generate_real_scenario(
     consumed in a fixed per-target order (scatter -> demand -> size ->
     priority), and the platform orbit is passed in rather than drawn, so
     the same seed reproduces the manifest byte-identically.
+
+    ``duration_caliber`` (ticket 61): ``"library"`` (default) keeps the
+    end-check dwell at the library design point -- the frozen v3/v5 worlds
+    regenerate byte-identically.  ``"task-law"`` makes the end-check
+    consume the task's own order (see :func:`_dwell_order_kwargs`); any
+    NEW world regeneration MUST pass it explicitly and register the choice
+    in ``experiments/RUN_LINEAGE.md``.
     """
     import math as _math
     from datetime import timedelta
@@ -486,11 +539,14 @@ def generate_real_scenario(
         feasible_subintervals,
         intersect_intervals,
         mask_intervals,
+        spt_task_start_domain,
     )
     from .aasr import aasr_direct as _aasr
 
     if demand_tier not in ("C", "F", "H"):
         raise ValueError(f"invalid demand tier {demand_tier!r}")
+    if duration_caliber not in ("library", "task-law"):
+        raise ValueError(f"invalid duration caliber {duration_caliber!r}")
     if density_n not in R_DENSITY_BY_INDEX.values():
         raise ValueError(f"invalid density {density_n}")
     lib = lib or ModeLibrary.from_fixture()
@@ -561,6 +617,10 @@ def generate_real_scenario(
 
         target = GroundTarget(target_id=f"R{idx}", lat=lat, lon=lon)
         mode = route_mode(rho_req, lib)
+        # ticket 61: task-law end-check consumes the task's own order at
+        # manifest rounding (STR excluded); library caliber is {} -- the
+        # pre-ticket-61 lambda, bit-identical
+        dwell_kw = _dwell_order_kwargs(duration_caliber, mode, rho_req, l_az_m)
 
         track_vsq = _vector_squint_deg_array(track_pos, track_vel, target)
         passes = _ground_track_passes(
@@ -602,11 +662,24 @@ def generate_real_scenario(
             )
             if not env_iv:
                 continue
-            dur = lambda x, _t=t_ca, _r0=r0_pass: duration_scene_s(
-                mode, squint_at(x, _t, lib.geo, r0_m=_r0), lib, r0_m=_r0
+            dur = lambda x, _t=t_ca, _r0=r0_pass, _kw=dwell_kw: (
+                duration_scene_s(
+                    mode, squint_at(x, _t, lib.geo, r0_m=_r0), lib,
+                    r0_m=_r0, **_kw
+                )
             )
             end_iv = []
-            for lo, hi in env_iv:
+            # ticket 61: the task-law SPT span makes the §8.17-11 envelope a
+            # property of the TASK, so the admissible start domain is clamped
+            # BEFORE the end-check -- mirroring evaluator.py:310-314 exactly;
+            # without it one out-of-envelope grid sample raises inside the
+            # duration lambda and the whole transit window is discarded
+            scan_iv = env_iv
+            if duration_caliber == "task-law" and mode is Mode.SPT:
+                scan_iv = spt_task_start_domain(
+                    tuple(env_iv), dwell_kw["rho_req_m"], t_ca, r0_pass, lib
+                )
+            for lo, hi in scan_iv:
                 fw = feasible_subintervals(
                     effective_duration_fn(dur, pads), lo, hi, n_scan=240
                 )

@@ -117,3 +117,9 @@
 | 项 | 处置 | 留痕 |
 |---|---|---|
 | 正文三面（main.tex / full.md / sections/*.md）+ 投稿包 | 定位改写完成（阶段三·A/B）+ 阶段四波一致性修复（sec1-3 自 full.md 机械再生、main.tex 富披露吸收进 full.md 17 处、ARS 审稿 4 修 + 三轮自查 1 修）；门禁全绿：红闸 0/1076、L8 数字闸 36 项 0 mismatch、预注册闸 28 项 0 失败、版式闸 0 FAIL（3 advisory 基线既有）、旧 v3 闸报 SUPERSEDED 横幅（预期）；编译两遍 45 页 0 error 0 未定义引用；域套件 papers 664 passed/1 skipped + src 154 passed（rc 均 0） | .scratch/sliding-spotlight-scheduling/t50/phase3-parity.md + phase3-parity-machine.json + phase3-receipt.md + phase4-ars-review.md + phase4-three-round-check.md + phase4-receipt.md |
+
+## 九、票 61：生成端驻留口径参数化（2026-10-24，R61 债兑付）
+
+> **重生成前置登记（append-only）**：`sss_core/scenarios.py` 的 `generate_scenario` / `generate_real_scenario` 自票 61 起带 `duration_caliber` 参数——默认 `"library"` 与改动前**位级一致**（冻结 v3/v5 世界的字节再生保证不变，票 35 dead-branch 守卫钉住）；`"task-law"` 使两处驻留点位（anchor 窗驻留分散度 + 真窗族发射 end-check）按评估端约定消费任务自身订单（`round(rho_req,9)`/`round(l_az_m,6)` 与 manifest 落盘值一致；STR 不传 rho 由票 48 clip 承载；SPT 先经 `spt_task_start_domain` 钳位镜像 evaluator.py:310-314）。
+> **任何新世界 manifest 重生成必须显式 `duration_caliber="task-law"` 并在本文件登记**——防「发射窗集与任务律可行集口径分裂」（R61 原风险）的机制是显式登记的选择，不是静默默认。
+> 判别测试：`tests/test_generator_task_law_caliber.py`（同订单生成端==evaluator `_dwell` 位精确 + library 对比例 + 双点位生成级红证）。定向审查：`.scratch/sliding-spotlight-scheduling/t61-exec/review.md`。
