@@ -1,7 +1,7 @@
 Highlights
 ==========
 
-Paper: Resolution-Driven Dwells in SAR Task Scheduling: The Coverage Cost of Tightening the Resolution Requirement
+Paper: Resolution-Driven Scheduling of Agile SAR Satellites: From Fixed to Endogenous Imaging Dwells
 Target: Aerospace Science and Technology (Elsevier; 3-5 bullets, <=85 characters each)
 
 - Dwell becomes endogenous: mode parameters follow the per-task requirement.
