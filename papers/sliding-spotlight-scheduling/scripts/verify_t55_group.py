@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import json
 import re
+import statistics
 from pathlib import Path
 
 V5 = Path(__file__).resolve().parent.parent / "experiments" / "v5_results"
@@ -31,6 +32,10 @@ def t55_expectations() -> dict:
     curve = mar["median_curve"]
     exp["mar_both_11"] = curve["1.1"]["both"]
     exp["mar_floor_09"] = curve["0.9"]["prod"]
+    # R83 F-01: combined-relaxation movement at the floor-dominated cells.
+    exp["mar_floor_both_move_pp"] = round(max(
+        abs(curve["0.8"]["both"] - curve["0.8"]["prod"]),
+        abs(curve["0.9"]["both"] - curve["0.9"]["prod"])) * 100, 2)
     exp["mar_reg_fail"] = mar["regression_failures"]
     exp["mar_max_move_pp"] = round(max(
         abs(curve[str(g)][c] - curve[str(g)]["prod"])
@@ -51,6 +56,26 @@ def t55_expectations() -> dict:
     exp["sf_r2f_lo"] = round(min(
         sf["R2F"][k]["median_task_fraction"]
         for k in ("0.8", "0.9", "1.0", "1.1", "1.2", "1.3", "1.4")), 3)
+    # R83 F-03: wall-clock range parsed from the released sweep launcher log
+    # (experiments/v5_results/_sweep.log unit lines "[FAM_seed] exit=N wall=Xs").
+    walls = [float(m.group(1)) for m in re.finditer(
+        r"^\[(?:R1C|R2F|R3H)_\d+\]\s+exit=\d+\s+wall=([\d.]+)s",
+        (V5 / "_sweep.log").read_text(encoding="utf-8"), re.M)]
+    assert len(walls) == 270, f"sweep log census changed: {len(walls)}"
+    exp["wall_range_s"] = (min(walls), max(walls))
+    # R83 F-04: one-priority-unit tolerance = 100/sum(priority) per seed,
+    # median over each family's ten frozen scenario manifests.
+    tol_med: dict = {}
+    for fam in ("R1C", "R2F", "R3H"):
+        ratios = []
+        for p in sorted((V5 / "scenarios").glob(fam + "_seed*.json")):
+            man = _load(p)
+            ratios.append(100.0 / sum(t["priority"] for t in man["tasks"]))
+        assert len(ratios) == 10, f"{fam}: manifest census changed: {len(ratios)}"
+        tol_med[fam] = round(statistics.median(ratios), 2)
+        if fam == "R1C":
+            exp["tol_r1c_range"] = (round(min(ratios), 2), round(max(ratios), 2))
+    exp["tol_unit_median"] = tol_med
     return exp
 
 
@@ -62,7 +87,8 @@ _CHECKS = [
     (_P(r"gap\s+to\s+(\d+[.]\d+),\s+because"), "gap", ("rep_gap", "R3H", "retime"), 0.01),
     (_P(r"ranges\s+(\d+[.]\d+)--25\.56\s+and\s+24\.54--(\d+[.]\d+)"), "rep_range", None, None),
     (_P(r"0\.9766\s+to\s+(\d+[.]\d+)\s+at\s+\$s=1\.1\$"), "gap", "mar_both_11", 0.0001),
-    (_P(r"\(0\.4827\s+and\s+(\d+[.]\d+)\s+under\s+every\s+policy"), "gap", "mar_floor_09", 0.0001),
+    (_P(r"\(0\.4827\s+and\s+(\d+[.]\d+),\s+the\s+registered\s+readings"), "gap", "mar_floor_09", 0.0001),
+    (_P(r"moves\s+each\s+by\s+(\d+[.]\d+)\s+points"), "gap", "mar_floor_both_move_pp", 0.01),
     (_P(r"at\s+most\s+(\d+[.]\d+)\s+percentage\s+points\s+anywhere"), "gap", "mar_max_move_pp", 0.05),
     (_P(r"s\^\{\*\}=2\.4669/\(3\.0/1\.1\)=(\d+[.]\d+)"), "gap", "tier11_pred", 0.001),
     (_P(r"reads\s+a\s+median\s+of\s+(\d+[.]\d+)\s+---"), "gap", "tier11_med10", 0.001),
@@ -73,6 +99,9 @@ _CHECKS = [
     (_P(r"0\.(\d+)/0\.714/0\.935"), "sf_r3h_08", None, None),
     (_P(r"and\s+(\d+[.]\d+)--0\.980\s+across"), "sf_r2f_lo", None, None),
     (_P(r"median\s+(\d+[.]\d+)~s\s+for\s+the\s+20-task\s+control"), "wall_r1c", None, None),
+    (_P(r"ranges\s+from\s+(\d+[.]\d+)\s+to\s+(\d+[.]\d+)~s\s+across"), "wall_range", None, None),
+    (_P(r"is\s+(\d+[.]\d+)\s+\(R1C\),\s+(\d+[.]\d+)\s+\(R2F\)\s+and\s+(\d+[.]\d+)\s+\(R3H\)\s+points"), "tol_med", None, None),
+    (_P(r"the\s+unit\s+ranges\s+(\d+[.]\d+)--(\d+[.]\d+)"), "tol_range", None, None),
     (_P(r"exceed the library reference by up to \$(\d+[.]\d+)"), "c3c4", "c3c4_ratio", None),
 ]
 
@@ -104,9 +133,29 @@ def check_t55(text: str, label: str, t55: dict) -> "tuple[list, list, int]":
                 ok = abs(float(g) - want) <= 0.001
                 desc = f"served fraction R2F-lo {want}"
             elif branch == "wall_r1c":
-                ok = float(g) == 4.9
-                want = 4.9
-                desc = "wall-clock R1C 4.9 s"
+                ok = float(g) == 5.6
+                want = 5.6
+                desc = "wall-clock R1C 5.6 s"
+            elif branch == "wall_range":
+                want_lo, want_hi = t55["wall_range_s"]
+                ok = (abs(float(g) - want_lo) <= 0.051 and
+                      abs(float(m.group(2)) - want_hi) <= 0.051)
+                desc = f"wall-clock sweep range {want_lo}/{want_hi} s (_sweep.log)"
+                want = f"{want_lo}/{want_hi}"
+            elif branch == "tol_med":
+                meds = t55["tol_unit_median"]
+                wants = (meds["R1C"], meds["R2F"], meds["R3H"])
+                ok = all(abs(float(m.group(k + 1)) - w) <= 0.005
+                         for k, w in enumerate(wants))
+                desc = (f"one-priority-unit tolerance medians R1C/R2F/R3H "
+                        f"{wants[0]}/{wants[1]}/{wants[2]}")
+                want = f"{wants[0]}/{wants[1]}/{wants[2]}"
+            elif branch == "tol_range":
+                want_lo, want_hi = t55["tol_r1c_range"]
+                ok = (abs(float(g) - want_lo) <= 0.005 and
+                      abs(float(m.group(2)) - want_hi) <= 0.005)
+                desc = f"one-priority-unit R1C seed range {want_lo}/{want_hi}"
+                want = f"{want_lo}/{want_hi}"
             elif branch == "c3c4":
                 want = t55["c3c4_ratio"]
                 ok = abs(float(g) - want) <= 1e-9  # catches both wrong-value and no-match
