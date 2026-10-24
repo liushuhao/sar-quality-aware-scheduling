@@ -1,7 +1,7 @@
 Highlights
 ==========
 
-Paper: Resolution-Driven Dwells in SAR Task Scheduling: What Tighter Requirements Cost under a Frozen Mode Assignment
+Paper: Resolution-Driven Dwells in SAR Task Scheduling: The Coverage Cost of Tightening the Resolution Requirement
 Target: Aerospace Science and Technology (Elsevier; 3-5 bullets, <=85 characters each)
 
 - Dwell becomes endogenous: mode parameters follow the per-task requirement.

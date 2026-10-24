@@ -3,8 +3,8 @@ Cover Letter
 
 Dear Editor-in-Chief,
 
-I am pleased to submit my manuscript, "Resolution-Driven Dwells in SAR Task Scheduling: Mode
-Composition Decides What Tighter Requirements Cost," for consideration in Aerospace Science and Technology.
+I am pleased to submit my manuscript, "Resolution-Driven Dwells in SAR Task Scheduling: The Coverage Cost of Tightening
+the Resolution Requirement," for consideration in Aerospace Science and Technology.
 
 Satellite schedulers conventionally treat a task's imaging duration as a
 fixed constant known before planning. For a sliding-spotlight SAR platform
