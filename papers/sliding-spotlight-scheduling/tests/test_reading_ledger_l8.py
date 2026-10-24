@@ -188,7 +188,12 @@ def test_the_ban_list_has_both_halves(doc):
     soft = {b["id"] for b in bans["allowed_with_label"]}
     assert hard == {"old_world_90_units", "pooled_quality_position_3_9722",
                     "pooled_quality_t_24_78", "dq_all_66_872",
-                    "promotion_two_axis"}
+                    "promotion_two_axis",
+                    "fallback_every_transition_carries",
+                    "fallback_bound_as_measurement",
+                    "floor_inside_coarse_tier", "dip_different_seeds",
+                    "fig3b_two_families_at_issue",
+                    "abstract_self_limiting_close", "solver_not_contribution"}
     assert soft == {"l7_tight_arm_0_446", "l7_coverage_cost_5_5pp",
                     "l7_cost_misattributed_1_61pp", "old_retention_84_4",
                     "old_retention_63_7"}

@@ -5099,6 +5099,41 @@
         "id": "promotion_two_axis",
         "regex": "promotion[^.\\n]{0,40}two[-\\s]axis|two\\s+separated\\s+axes",
         "why": "the promotion two-axis reading; in a single-objective world promotion is a vacuous marker, not a result"
+      },
+      {
+        "id": "fallback_every_transition_carries",
+        "regex": "every\\s+inter-task\\s+transition\\s+carries",
+        "why": "the retired global-fallback wording; production is a per-pair hybrid (model stands alone at >= half the 1.84 s anchor)"
+      },
+      {
+        "id": "fallback_bound_as_measurement",
+        "regex": "against\\s+a\\s+4\\.07~s\\s+measurement",
+        "why": "caliber mix: 4.07 s is the fallback bound (Kim scenario 2), the calibration measurement is 1.84 s (Kim scenario 1)"
+      },
+      {
+        "id": "floor_inside_coarse_tier",
+        "regex": "sits\\s+inside\\s+the\\s+coarse\\s+tier",
+        "why": "the floor 2.4669 m lies below the coarse tier's 2.5 m lower edge, not inside it"
+      },
+      {
+        "id": "dip_different_seeds",
+        "regex": "shape\\s+recurs\\s+with\\s+different\\s+seeds",
+        "why": "the gaining seed (209) is the same in both dips; only the losing seed differs"
+      },
+      {
+        "id": "fig3b_two_families_at_issue",
+        "regex": "two\\s+families\\s+whose\\s+local\\s+declines\\s+are\\s+at\\s+issue",
+        "why": "panel (b) shows R1C (no in-band declines) + R2F; the declines at issue are R2F-only"
+      },
+      {
+        "id": "abstract_self_limiting_close",
+        "regex": "an\\s+observation,\\s+not\\s+an\\s+attribution",
+        "why": "the abstract ends on the result; the fixed-assignment scope note lives in Sections 5.3 and 6.1"
+      },
+      {
+        "id": "solver_not_contribution",
+        "regex": "not\\s+as\\s+a\\s+contribution\\s+to\\s+scheduling\\s+theory",
+        "why": "unforced self-attack removed; the search is stated as the measurement instrument, positively"
       }
     ],
     "required_label_regex": "superseded|retracted|withdrawn|no\\s+longer|historical|for\\s+comparison|已作废|作废|历史对照|已被推翻|已撤回"

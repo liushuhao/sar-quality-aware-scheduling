@@ -53,6 +53,7 @@ from __future__ import annotations
 import argparse
 import json
 import math
+import os
 import re
 import statistics
 import sys
@@ -994,6 +995,20 @@ def main(argv=None) -> int:
     for f in all_fail:
         print(f"FAIL   {f}")
 
+    # A regex that no longer matches silently drops its checks (seen never
+    # increments), so a manuscript regression could turn the gate green by
+    # shrinking the check surface.  Floor the check count at the last
+    # registered level; bump alongside every gate extension (R83: 145,
+    # fullreview fix round: 150).  The unit tests override this via
+    # L8_MIN_CHECKED=0 because their synthetic manuscripts legitimately
+    # exercise single-check surfaces.
+    MIN_CHECKED = int(os.environ.get("L8_MIN_CHECKED", "150"))
+    if total < MIN_CHECKED:
+        print(f"ABORT: check surface shrank to {total} < {MIN_CHECKED} -- "
+              "a gate regex stopped matching the manuscript (silent-drop "
+              "guard, fullreview 2026-10-24)")
+        return 2
+
     if total == 0:
         print("\n=== retired-world tokens (expected until the phase-3 rewrite) ===")
         for r in reverse:
@@ -1158,9 +1173,15 @@ _T54_CHECKS = [
     (re.compile(r"range\s+(\d+(?:\.\d+)?)--(\d+(?:\.\d+)?)~s"),
      lambda m, e: [(float(m.group(1)), e["fb_min"], 0.0006, "fallback model min"),
                    (float(m.group(2)), e["fb_max"], 0.005, "fallback model max")]),
-    (re.compile(r"(\d+(?:\.\d+)?)~s\s+of\s+pad-carrying\s+dwell,\s+(\d+(?:\.\d+)?)~s\s+of\s+maneuver\s+bound"),
+    (re.compile(r"(\d+(?:\.\d+)?)~s\s+of\s+pad-carrying\s+dwell,\s+(\d+(?:\.\d+)?)~s\s+of\s+charged\s+maneuver\s+time"),
      lambda m, e: [(float(m.group(1)), e["fb_padded"], 0.0006, "median padded dwell"),
-                   (float(m.group(2)), e["fb_maneuver"], 0.0006, "median maneuver")]),
+                   (float(m.group(2)), e["fb_maneuver"], 0.0006, "median charged maneuver")]),
+    (re.compile(r"against a \$([0-9.]+)\$~s measurement"),
+     lambda m, e: [(float(m.group(1)), 1.84, 0, "fallback calibration anchor (sec7)")]),
+    (re.compile(r"calibration anchor \(\$([0-9.]+)\$~s, Kim scenario~1\)"),
+     lambda m, e: [(float(m.group(1)), 1.84, 0, "fallback calibration anchor (C2)")]),
+    (re.compile(r"is charged the measured ([0-9.]+)~s fallback bound"),
+     lambda m, e: [(float(m.group(1)), 4.07, 0, "fallback bound charge")]),
     (re.compile(r"serves\s+(\d[\d,]*)\s+distinct\s+tasks"),
      lambda m, e: [(int(m.group(1).replace(",", "")), e["distinct"], 0, "distinct served tasks")]),
     (re.compile(r"a\s+factor\s+of\s+(\d+(?:\.\d+)?)\s+below\s+the\s+instance\s+count"),

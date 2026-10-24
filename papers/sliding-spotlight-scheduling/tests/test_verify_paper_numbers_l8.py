@@ -40,7 +40,7 @@ NO_L8 = ("The R3H median front size at 160/240 is 140 and the distinct-fq "
 
 
 def run_tool(*papers: Path) -> subprocess.CompletedProcess:
-    env = dict(os.environ, PYTHONHASHSEED="0")
+    env = dict(os.environ, PYTHONHASHSEED="0", L8_MIN_CHECKED="0")
     argv = [sys.executable, "-B", str(SCRIPT)]
     for p in papers:
         argv += ["--paper", str(p)]

@@ -77,7 +77,7 @@
 | `scripts/verify_prereg_v2.py` | v1 冻结件（`experiments/results/`） | **保留**：验证的是冻结前缀，amendment 为 append-only、前缀字节未动 | 本行 + amendment `_doc` |
 | `scripts/check_coverage_parity.py` | v3 90/90 覆盖parity | **退役（论文用途）**：v3 世界的 90 单元 parity 不再是主结果；L8 对应读法（anchor coverage-optimal 258/260）已并入 `verify_paper_numbers_l8.py` | 本行 |
 | `scripts/run_verify.py` | 显式传 `--pilot/--manifest` | **不变**：世界无关的通用 CLI，不钉任何 results 目录 | 本行 |
-| `scripts/plot_fig3_quality_vs_squint.py` | 平台冻结 fixture（无 results 依赖） | **保留（阶段二已执行降级）**：平台模型图——逐模式 f_q 的量级与斜视不敏感性，是"质量模型存在"的平台证据；图内注记与 docstring 已去掉目标语义，PDF 已按新注记重绘；不读任何 results 目录，故不会随重跑过期 | 本行 + `paper/figures/fig3_quality_vs_squint.pdf`（已重绘） |
+| `scripts/plot_fig3_quality_vs_squint.py` | 平台冻结 fixture（无 results 依赖） | **保留（阶段二已执行降级）**：平台模型图——逐模式 f_q 的量级与斜视不敏感性，是"质量模型存在"的平台证据；图内注记与 docstring 已去掉目标语义，PDF 已按新注记重绘；不读任何 results 目录，故不会随重跑过期 | 本行（`paper/figures/fig3_quality_vs_squint.pdf` 已于 2026-10-24 用户拍板删除：正文零引用；脚本保留，需要时可重绘） |
 | `scripts/plot_fig3_coverage_vs_requirement.py` | `experiments/v5_results/sweep_results.json` | **新建 = 新主图**：覆盖率–需求曲线（9 点、三族、种子散布）；不可行点画成"无可行解"而非 0 覆盖；两处 dip 原样画出不平滑；输出 `paper/figures/fig3_coverage_vs_requirement.pdf` | 本行 + 该 PDF + `reading_ledger_l8.json` |
 | `scripts/plot_fig4_budget_ladder.py` | v3 三档预算阶梯 | **退役（阶段二已执行：脚本与 PDF 一并删除）**：L8 扫需求轴只有单一预算 40/60；"搜索相对锚点的增益分布"不作为替代件——258/260 单元锚点已最优，增益分布近乎全零，画出来会被读成前沿丰富度读数（同样已 vacate），而该事实以标量在台账 `demand.anchor_optimal_units` 报出 | 本行 + 删除记录 |
 | `scripts/plot_fig5_promotion_two_axis.py` | v3 promotion / R_fam | **退役（阶段二已执行：脚本与 PDF 一并删除）**：单目标世界 promotion 为 vacuous 标记；需求满足面证据（477,308 服务实例 / cv 恒 0 / 不可行语义分列）是计数不是图，落 `reading_ledger_l8.json` 的 `demand.*` 条目，不另造图 | 本行 + 删除记录 |
