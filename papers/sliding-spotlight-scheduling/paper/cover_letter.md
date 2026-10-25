@@ -3,7 +3,7 @@ Cover Letter
 
 Dear Editor-in-Chief,
 
-I am pleased to submit my manuscript, "Resolution-Driven Scheduling of Agile SAR Satellites: From Fixed to Endogenous
+I am pleased to submit my manuscript, "Resolution-Driven Scheduling of Agile SAR Satellite: From Fixed to Endogenous
 Imaging Dwells," for consideration in Aerospace Science and Technology.
 
 Satellite schedulers conventionally treat a task's imaging duration as a

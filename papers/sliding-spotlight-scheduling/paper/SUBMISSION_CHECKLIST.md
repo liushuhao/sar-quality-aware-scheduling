@@ -18,7 +18,7 @@
 
 ## 二、EM 表单元数据（照抄即可）
 
-- **Title**：`Resolution-Driven Scheduling of Agile SAR Satellites: From Fixed to Endogenous Imaging Dwells`
+- **Title**：`Resolution-Driven Scheduling of Agile SAR Satellite: From Fixed to Endogenous Imaging Dwells`
 - **Authors**：`Liu Shuhao`
 - **Corresponding email**：`liushuhao@hrbeu.edu.cn`
 - **Affiliation**：`College of Intelligent Systems Science and Engineering, Harbin Engineering University`

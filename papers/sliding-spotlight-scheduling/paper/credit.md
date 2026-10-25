@@ -1,7 +1,7 @@
 CRediT authorship contribution statement
 ========================================
 
-Paper: Resolution-Driven Scheduling of Agile SAR Satellites: From Fixed to Endogenous Imaging Dwells
+Paper: Resolution-Driven Scheduling of Agile SAR Satellite: From Fixed to Endogenous Imaging Dwells
 Journal: Aerospace Science and Technology (Elsevier; submission target)
 Author: LIU Shuhao
 
