@@ -66,13 +66,16 @@ def test_m1_double_check_passes_on_clean_repo():
 
 
 def test_shared_lib_n0_constant():
-    """The N0 baseline is the ticket-02 frozen count.
+    """The N0 baseline is the pinned exact shared-library test count.
 
     145 -> 154 on 2026-10-05: ticket 26 added 9 shared-library tests
     (src/tests/test_t26_r20_silent_defects.py, the R20 C1 out-of-window
     guard and the so_f1 fail-loud fallback).
+    154 -> 188 on 2026-10-25: ticket 62 -- natural growth across the
+    tickets-48..61 era, observed as "188 passed, 0 failed" in two
+    independent runs on 2026-10-25.
     """
-    assert SHARED_LIB_N0 == 154
+    assert SHARED_LIB_N0 == 188
 
 
 # ── grid halving (preregistered program) ─────────────────────────────────

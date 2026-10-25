@@ -17,7 +17,7 @@
 |---|---|
 | M1 基线 tag | `paper2-m1-baseline`（annotated） |
 | 指向 commit | `60ee1e8655dee96c1fc9aaa00c5d7982a7958069` |
-| 共享库测试基线 N₀ | **154**（`PYTHONPATH=src python -m pytest src/tests/ --collect-only`，2026-10-05 票 26 增补 9 个 R20 测试，145 → 154） |
+| 共享库测试基线 N₀ | **188**（2026-10-25 票 62 复核：票 48-61 时期自然增长，实测 `188 passed, 0 failed`；旧值 154 = 2026-10-05 票 26 增补 9 个 R20 测试后钉值，145 → 154 → 188） |
 | 零字节断言 | `git diff paper2-m1-baseline..HEAD -- src/sar_sim` 为空 + `git status --porcelain src/sar_sim` 为空 |
 | 零字节断言最近实证 | 2026-10-05（票 24 落地后，commit `03bdad5` 留档）：diff 空 + status 空，exit 0；连带 Paper1 生成器最小单元新旧对比——HEAD 内存生成 `S1-A_seed00` 与已提交产物结构相等、归一化哈希一致（`d40ff961b01e2bbf`，20/20 visible / 28 windows），Paper1 链路完好 |
 | 零字节断言（superseded） | 2026-10-05 起该断言按票 26 例外**必然为非空**：票 26 是 spec-amendment-v06 §7 用户裁决预授权的「共享库只增不改红线」例外，C1 窗外守卫（`verification/constraints.py`）+ so_f1 fail-loud（`solver/so_f1.py:414/:566`）两处行为变更已落地。**行为级 fork 守卫（七元组逐位 + fork 范围 AST）不受影响，仍是权威口径且必须仍绿**——被取代的只是「`git diff` 零字节」这一形式断言，`m1_double_check` 门本体同步收窄为「四复制源文件对 M1 tag 字节一致」（FORK_SOURCE_FILES），constraints/so_f1 自由演化；Paper1 回归改由最小单元新旧对比 + `verify_paper_numbers.py` rc=0 承担 |

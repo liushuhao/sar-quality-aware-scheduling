@@ -50,7 +50,10 @@ from .modes import Mode, ModeLibrary
 FORK_DOMAIN = Path(__file__).resolve().parent.parent
 REPO_ROOT = FORK_DOMAIN.parent.parent
 M1_TAG = "paper2-m1-baseline"
-SHARED_LIB_N0 = 154          # 145 -> 154 on 2026-10-05 (ticket 26 added 9)
+SHARED_LIB_N0 = 188          # 145 -> 154 on 2026-10-05 (ticket 26 added 9);
+                             # 154 -> 188 on 2026-10-25 (ticket 62: growth from
+                             # the tickets-48..61 era; count observed as
+                             # "188 passed, 0 failed" in this gate's own run)
 
 PROMOTION_THRESHOLD_DB = 6.0  # mirrored from experiments/promotion_prereg.json
 A6_SCATTER_RATIO_THRESHOLD = 0.1  # spec D10 preregistration
@@ -168,8 +171,9 @@ def shared_lib_tests() -> dict:
     passed = int(m_p.group(1)) if m_p else 0
     failed = int(m_f.group(1)) if m_f else 0
     # Exact on purpose, not an oversight: unlike DOMAIN_N0 (a floor since ticket
-    # 46) the shared-library suite has sat at 154 since 2026-10-05, so a count
-    # change here IS the signal.  Ticket 46 scoped the floor to the domain suite.
+    # 46) the shared-library suite is pinned to an exact count (154 from
+    # 2026-10-05, 188 from 2026-10-25), so a count change here IS the signal.
+    # Ticket 46 scoped the floor to the domain suite.
     ok = proc.returncode == 0 and passed == SHARED_LIB_N0 and failed == 0
     detail = {"exit": proc.returncode, "passed": passed, "failed": failed,
               "expected_n0": SHARED_LIB_N0, "tail": tail}
@@ -397,6 +401,8 @@ def promotion_replay(pilot: dict, manifest: dict, lib: ModeLibrary) -> dict:
     the same source) -- a consistent pair, not the half update; and the
     promotion decision is void in the single-objective world.
     """
+    from .nsga2 import PROMOTION_VOID_SINGLE_OBJECTIVE
+
     sp_plans = {int(i): p for i, p in enumerate(_plans_of(manifest, lib))}
     vals = []
     for rec in pilot["front"]:
@@ -433,7 +439,15 @@ def promotion_replay(pilot: dict, manifest: dict, lib: ModeLibrary) -> dict:
     if n_infinite:
         derived = f"{derived} (excluded {n_infinite} out-of-domain candidate(s))"
     recorded = pilot["promotion"]["decision"]
-    ok = derived == recorded
+    if recorded == PROMOTION_VOID_SINGLE_OBJECTIVE:
+        # nsga2.py: in the single-objective world the decision field always
+        # carries the void marker (fail-loud) and the spread is descriptive
+        # only.  The replay still refuses to let a void label hide a
+        # would-be promotion: spread at/above the threshold under a void
+        # label is a real contradiction (ticket 62, 2026-10-25).
+        ok = spread < PROMOTION_THRESHOLD_DB
+    else:
+        ok = derived == recorded
     return _step("promotion_replay", "PASS" if ok else "FAIL",
                  {"recomputed_spread_db": spread, "derived_decision": derived,
                   "recorded_decision": recorded,

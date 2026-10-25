@@ -4,7 +4,7 @@
   "n_fail": 0,
   "n_pass": 12,
   "n_report": 1,
-  "pilot": ".scratch\\sliding-spotlight-scheduling\\v2-run\\syn_p40g60\\pilot_M1NC_seed100.json",
+  "pilot": ".scratch\\sliding-spotlight-scheduling\\v2-run\\syn_p40g60-head20261025\\pilot_M1NC_seed100.json",
   "schema": "verify-report/1.0",
   "steps": [
     {
@@ -15,10 +15,10 @@
     {
       "detail": {
         "exit": 0,
-        "expected_n0": 154,
+        "expected_n0": 188,
         "failed": 0,
-        "passed": 154,
-        "tail": "154 passed, 1 warning in 182.00s (0:03:01)"
+        "passed": 188,
+        "tail": "188 passed, 1 warning in 158.58s (0:02:38)"
       },
       "status": "PASS",
       "step": "shared_lib_tests"
@@ -28,9 +28,9 @@
         "exit": 0,
         "expected_n0": 376,
         "failed": 0,
-        "passed": 385,
+        "passed": 735,
         "skipped": 1,
-        "tail": "385 passed, 1 skipped, 1 warning in 1202.89s (0:20:02)",
+        "tail": "735 passed, 1 skipped, 1 warning in 1760.00s (0:29:19)",
         "xfailed": 0
       },
       "status": "PASS",
@@ -61,7 +61,8 @@
         "calibers": [
           "v1",
           "v2",
-          "v3"
+          "v3",
+          "v5"
         ],
         "cross_comparable": false
       },
@@ -97,8 +98,8 @@
     {
       "detail": {
         "derived_decision": "no_promotion",
-        "recomputed_spread_db": 0.0015175829323119672,
-        "recorded_decision": "no_promotion",
+        "recomputed_spread_db": 0.00041086063352580027,
+        "recorded_decision": "vacuous_single_objective",
         "threshold_db": 6.0
       },
       "status": "PASS",

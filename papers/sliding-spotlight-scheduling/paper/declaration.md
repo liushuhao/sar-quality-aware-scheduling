@@ -1,7 +1,7 @@
 Declaration of Competing Interest
 ===================================
 
-Paper: Resolution-Driven Dwells in SAR Task Scheduling: Mode Composition Decides What Tighter Requirements Cost
+Paper: Resolution-Driven Scheduling of Agile SAR Satellites: From Fixed to Endogenous Imaging Dwells
 Author: LIU Shuhao
 
 The author declares that he has no known competing financial interests

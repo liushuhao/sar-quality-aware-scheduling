@@ -450,6 +450,16 @@ def check_paper(text: str, label: str, exp: dict) -> "tuple[list, list, int]":
     if "promotion_units" in exp:
         want, prov = exp["promotion_units"]
         for sent in _sentences(body):
+            # 2026-10-25 R87 (ticket 62): require a promotion context word.
+            # The bare "N units/cells/runs" pattern matched the sweep-size
+            # sentences ("258 of the 260 sweep units", R84) and reported a
+            # coverage-axis count against the 90-unit promotion ladder -- a
+            # caliber mix.  The L8 gate (verify_paper_numbers_l8.py) still
+            # checks those sentences under the correct sweep-unit caliber.
+            # Mutation-probed: "The promotion ladder spans 95 units." fails,
+            # "spans 90 units" passes, the 260 sweep sentences pass.
+            if not re.search(r"promot", sent, re.I):
+                continue
             m = re.search(r"(\d+)\s*(?:units?|cells?|runs?)", sent, re.I)
             if m:
                 near(want, 0.0, "promotion unit count", prov, m.group(1))
