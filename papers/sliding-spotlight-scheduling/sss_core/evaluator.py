@@ -59,7 +59,12 @@ from __future__ import annotations
 import math
 from dataclasses import dataclass
 
-from .duration import MarginPads, duration_scene_s, pad_window_tail
+from .duration import (
+    MarginPads,
+    duration_scene_s,
+    pad_window_tail,
+    spt_start_squint_limit,
+)
 from .geometry import squint_at
 from .maneuver import boundary_rate
 from .modes import Mode, ModeLibrary
@@ -91,6 +96,28 @@ EMPTY_SELECTION_FQ_PLACEHOLDER = 1.0  # worst normalized-quality stand-in
 # fits 1e-12 (this constant) / encode round-trip 1e-9 / nsga2 consumer
 # belt CV_DUST_TOL 1e-9.
 C2_TOL_S = 1e-12
+
+
+def conservative_freeze_squint(mode, lo, hi, t_ca_s, r0_m, rho_req_m, lib):
+    """Ignition arm R87-03b: conservative fixed-dwell squint.
+
+    The transit-window endpoint with the larger |psi|, clamped to the SPT
+    start-envelope limit (§8.17-11, spt_start_squint_limit) so the fixed
+    value stays inside the admissible start domain -- without the clamp the
+    endpoint sample raises inside duration_scene_s (measured 128/252 SPT
+    windows on R2F_seed200 carry a guard-violating endpoint).  SLS/STR have
+    no such envelope (probe: 0 endpoint raises), so only SPT is clamped.
+    """
+    psi = max(
+        (squint_at(lo, t_ca_s, lib.geo, r0_m=r0_m),
+         squint_at(hi, t_ca_s, lib.geo, r0_m=r0_m)),
+        key=abs,
+    )
+    if mode is Mode.SPT and rho_req_m is not None:
+        limit = spt_start_squint_limit(rho_req_m, lib.geo)
+        if abs(psi) > limit:
+            psi = math.copysign(limit, psi)
+    return psi
 
 
 def decode_tau(tau: float, intervals) -> float:
@@ -289,11 +316,14 @@ def precompile_tasks(
         for lo, hi, t_ca, w_r0, w_inc in specs:
 
             def duration(t, _mode=mode, _tca=t_ca, _r0=w_r0, _rho=task_rho,
-                         _laz=az_t):
-                _squint = (
-                    0.0 if freeze_durations
-                    else squint_at(t, _tca, lib.geo, r0_m=_r0)
-                )
+                         _laz=az_t, _lo=lo, _hi=hi):
+                if freeze_durations == "conservative":
+                    _squint = conservative_freeze_squint(
+                        _mode, _lo, _hi, _tca, _r0, _rho, lib)
+                elif freeze_durations:
+                    _squint = 0.0
+                else:
+                    _squint = squint_at(t, _tca, lib.geo, r0_m=_r0)
                 return pad_window_tail(
                     duration_scene_s(
                         _mode, _squint, lib, r0_m=_r0,
@@ -413,19 +443,28 @@ class SchedulingProblem:
     def _dwell(self, i: int, start: float) -> float:
         plan = self.plans[i]
         w = plan.window_at(start)
-        squint = (
-            0.0 if self.freeze_durations
-            else squint_at(start, w.t_ca_s, self.lib.geo, r0_m=w.r0_m)
-        )
+        rho = plan.rho_req_m if plan.mode is not Mode.STR else None
+        if self.freeze_durations is True:
+            return duration_scene_s(
+                plan.mode, 0.0, self.lib, r0_m=w.r0_m,
+                rho_req_m=rho, l_az_m=plan.azimuth_size_m,
+            )
+        if self.freeze_durations == "conservative":
+            _psi = conservative_freeze_squint(
+                plan.mode, w.lo, w.hi, w.t_ca_s, w.r0_m, rho, self.lib)
+            return duration_scene_s(
+                plan.mode, _psi, self.lib, r0_m=w.r0_m,
+                rho_req_m=rho, l_az_m=plan.azimuth_size_m,
+            )
         # ticket 49 (§8.17-4/12): the dwell consumes the task's own order and
         # scene size; duration_scene_s re-derives the consumed parameter and
         # raises on any delivery-identity break.  STR never receives the order.
         return duration_scene_s(
             plan.mode,
-            squint,
+            squint_at(start, w.t_ca_s, self.lib.geo, r0_m=w.r0_m),
             self.lib,
             r0_m=w.r0_m,
-            rho_req_m=(plan.rho_req_m if plan.mode is not Mode.STR else None),
+            rho_req_m=rho,
             l_az_m=plan.azimuth_size_m,
         )
 

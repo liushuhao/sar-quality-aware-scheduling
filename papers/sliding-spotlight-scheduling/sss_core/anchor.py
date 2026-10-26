@@ -57,7 +57,13 @@ import math
 from dataclasses import dataclass
 
 from .duration import MarginPads, duration_scene_s
-from .evaluator import C2_TOL_S, TaskPlan, TaskWindow, precompile_tasks
+from .evaluator import (
+    C2_TOL_S,
+    TaskPlan,
+    TaskWindow,
+    conservative_freeze_squint,
+    precompile_tasks,
+)
 from .geometry import squint_at
 from .maneuver import FALLBACK_MANEUVER_S, calibrate_against_kim
 from .modes import Mode, ModeLibrary
@@ -93,7 +99,7 @@ def greedy_anchor(
     manifest: dict,
     lib: ModeLibrary,
     repair: bool = True,
-    freeze_durations: bool = False,
+    freeze_durations: bool | str = False,
 ) -> AnchorResult:
     """Priority-descending earliest-feasible insertion anchor.
 
@@ -120,9 +126,17 @@ def greedy_anchor(
         # mode parameters and the scene term, exactly as in the evaluator.
         w = plan.window_at(t)
         rho = plan.rho_req_m if plan.mode is not Mode.STR else None
-        if freeze_durations:
+        if freeze_durations is True:
             return duration_scene_s(
                 plan.mode, 0.0, lib, r0_m=w.r0_m,
+                rho_req_m=rho, l_az_m=plan.azimuth_size_m,
+            )
+        if freeze_durations == "conservative":
+            return duration_scene_s(
+                plan.mode,
+                conservative_freeze_squint(
+                    plan.mode, w.lo, w.hi, w.t_ca_s, w.r0_m, rho, lib),
+                lib, r0_m=w.r0_m,
                 rho_req_m=rho, l_az_m=plan.azimuth_size_m,
             )
         return duration_scene_s(
@@ -134,7 +148,8 @@ def greedy_anchor(
 
     # precompile with the SAME frozen-dwell wrapper (D11-8 scope)
     if freeze_durations:
-        plans = _precompile_frozen(manifest, lib, pads)
+        plans = _precompile_frozen(
+            manifest, lib, pads, freeze_durations=freeze_durations)
     else:
         plans = precompile_tasks(manifest, lib)
 
@@ -249,7 +264,9 @@ def boundary_rate_of(
     return _br(mode, psi_bar_rad, lib, r0_m=r0_m)
 
 
-def _precompile_frozen(manifest: dict, lib: ModeLibrary, pads: MarginPads):
+def _precompile_frozen(
+    manifest: dict, lib: ModeLibrary, pads: MarginPads, freeze_durations=True
+):
     """Precompile with the zero-squint dwell (D11-8 frozen wrapper).
 
     Ticket 25: dual-schema like ``precompile_tasks`` -- a ``windows`` list
@@ -258,10 +275,18 @@ def _precompile_frozen(manifest: dict, lib: ModeLibrary, pads: MarginPads):
     fields are read straight from the manifest.
     """
 
-    def duration(t, mode: Mode, _tca: float, r0=None, rho=None, laz=None):
+    def duration(t, mode: Mode, _tca: float, r0=None, rho=None, laz=None,
+                 _lo=None, _hi=None):
+        if freeze_durations == "conservative":
+            _squint = (
+                conservative_freeze_squint(mode, _lo, _hi, _tca, r0, rho, lib)
+                if (_lo is not None and _hi is not None) else 0.0
+            )
+        else:
+            _squint = 0.0
         return pad_window_tail_(
             duration_scene_s(
-                mode, 0.0, lib, r0_m=r0, rho_req_m=rho, l_az_m=laz
+                mode, _squint, lib, r0_m=r0, rho_req_m=rho, l_az_m=laz
             ),
             pads,
         )
@@ -317,7 +342,8 @@ def _precompile_frozen(manifest: dict, lib: ModeLibrary, pads: MarginPads):
                 try:
                     fw = feasible_subintervals(
                         lambda tt, m=mode, _r0=w_r0, _rho=task_rho,
-                        _laz=az_t: duration(tt, m, 0.0, _r0, _rho, _laz),
+                        _laz=az_t: duration(tt, m, 0.0, _r0, _rho, _laz,
+                                            _lo=lo, _hi=hi),
                         d_lo, d_hi,
                     )
                     ivs += tuple(fw.intervals) if fw else ()

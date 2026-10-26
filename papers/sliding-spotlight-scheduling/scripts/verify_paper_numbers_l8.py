@@ -983,6 +983,21 @@ def main(argv=None) -> int:
         fails += f55
         passes += p55
         seen += seen55
+        fb, pb, seenb = check_budget16x(
+            text, p.name, V5 / "budget_check" / "budget_check.json")
+        fails += fb
+        passes += pb
+        seen += seenb
+        fi, pi, seeni = check_ignition_sentences(
+            text, p.name,
+            _load(V5 / "counterfactual_fd" / "counterfactual_summary.json"
+                  )["conservative"],
+            V5 / "anchor_free" / "anchor_free.json",
+            _load(V5 / "anchor_free" / "probe16x" / "pilot_R3H_seed302.json"),
+            _load(V5 / "budget_check" / "budget_check.json"))
+        fails += fi
+        passes += pi
+        seen += seeni
         rev, _ = reverse_check(text, p.name)
         all_fail += fails
         all_pass += passes
@@ -999,10 +1014,10 @@ def main(argv=None) -> int:
     # increments), so a manuscript regression could turn the gate green by
     # shrinking the check surface.  Floor the check count at the last
     # registered level; bump alongside every gate extension (R83: 145,
-    # fullreview fix round: 150).  The unit tests override this via
+    # ignition sentences 2026-10-25: 155).  The unit tests override this via
     # L8_MIN_CHECKED=0 because their synthetic manuscripts legitimately
     # exercise single-check surfaces.
-    MIN_CHECKED = int(os.environ.get("L8_MIN_CHECKED", "150"))
+    MIN_CHECKED = int(os.environ.get("L8_MIN_CHECKED", "155"))
     if total < MIN_CHECKED:
         print(f"ABORT: check surface shrank to {total} < {MIN_CHECKED} -- "
               "a gate regex stopped matching the manuscript (silent-drop "
@@ -1063,13 +1078,15 @@ def t54_expectations(served_instances: int | None = None,
             row = mode["families"][fam]["rows"][str(s)]
             exp[("tab_bound", fam, s)] = round(row["upper_bound"], 3)
             exp[("tab_obs", fam, s)] = round(row["observed_median"], 3)
-    # counterfactual
+    # counterfactual (2026-10-25 user ruling: switched to the pure-plan
+    # caliber -- before any repair; the old fields were the repair-traversal
+    # caliber and under-read, since dropped tasks mask violating pairs)
     cf = _load(V5 / "counterfactual_fd" / "counterfactual_summary.json")
     for fam in FAMILIES:
         exp[("cf_gap", fam)] = cf[fam]["gap_pp_median"]
-        exp[("cf_vp", fam)] = cf[fam]["violating_pairs_total"]
-        exp[("cf_ap", fam)] = cf[fam]["adjacent_pairs_total"]
-        exp[("cf_rate", fam)] = cf[fam]["violation_rate_median"]
+        exp[("cf_vp", fam)] = cf[fam]["violating_pairs_pure_total"]
+        exp[("cf_ap", fam)] = cf[fam]["adjacent_pairs_pure_total"]
+        exp[("cf_rate", fam)] = cf[fam]["violation_rate_pure_median"]
     repagg = _load(V5 / "counterfactual_fd" / "counterfactual_repairs_agg.json")
     _meds = [repagg[f]["median_gap_pp"][r] for f in ("R2F", "R3H")
              for r in ("drop_later", "priority_aware", "retime")]
@@ -1189,6 +1206,9 @@ _T54_CHECKS = [
     (re.compile(r"violates?\s+the\s+transfer\s+constraint\s+in\s+(\d+)--(\d+)\\%"),
      lambda m, e: [(int(m.group(1)), round(min(e[("cf_rate", f)] * 100 for f in ("R3H", "R2F"))), 0.5, "cf rate band lo"),
                    (int(m.group(2)), round(max(e[("cf_rate", f)] * 100 for f in ("R3H", "R2F"))), 0.5, "cf rate band hi")]),
+    (re.compile(r"median\s+per-seed\s+rates\s+(\d+(?:\.\d+)?)\s+and\s+(\d+(?:\.\d+)?)"),
+     lambda m, e: [(float(m.group(1)), round(min(e[("cf_rate", f)] * 100 for f in ("R3H", "R2F")), 1), 0.05, "cf per-seed median R3H-side"),
+                   (float(m.group(2)), round(max(e[("cf_rate", f)] * 100 for f in ("R3H", "R2F")), 1), 0.05, "cf per-seed median R2F-side")]),
     (re.compile(r"lands?\s+(\d+)--(\d+)\s+points\s+below"),
      lambda m, e: [(int(m.group(1)), e["cf_gap_span_lo"], 0.5, "cf gap band lo"),
                    (int(m.group(2)), e["cf_gap_span_hi"], 0.5, "cf gap band hi")]),
@@ -1293,5 +1313,136 @@ def check_t54(text: str, label: str, t54: dict) -> "tuple[list, list, int]":
                     fails.append(f"{label}: T54 {fam} {k} interval -- printed "
                                  f"{got} vs recomputed {(lo, hi)}")
     return fails, passes, seen
+
+
+# --- ticket 62 ignition arm 3.2 (R87-04): the 16x budget-check sentences ----
+# The s=0.9 sentence predates this check and its 0.6884 was NOT covered by
+# any gate surface (mutation 0.6884->0.6885 stayed green, 2026-10-25); the
+# as-placed sentence is new in the same wave.  Both medians are recomputed
+# from experiments/v5_results/budget_check/budget_check.json -- a MISSING
+# sentence is a FAIL (the reading is registered, it may not silently
+# disappear), and a beats-anchor artifact invalidates both sentences.
+def check_budget16x(text: str, label: str, budget_path: Path):
+    fails: list = []
+    passes: list = []
+    seen = 0
+    rows = json.loads(budget_path.read_text(encoding="utf-8"))
+    ok = [r for r in rows if "rc" not in r]
+    for s, rx, desc in (
+        (0.9, re.compile(r"at \$s=0\.9\$ the mixed family's ten re-run units "
+                         r"keep the median exactly at ([0-9.]+)"),
+         "16x median s=0.9 (R3H)"),
+        (1.0, re.compile(r"ten re-run units at \$s=1\.0\$ hold the median at "
+                         r"exactly ([0-9.]+)"),
+         "16x median s=1.0 (R3H, as-placed)"),
+    ):
+        units = [r for r in ok if r["family"] == "R3H" and r["s"] == s]
+        want = statistics.median(r["max_f1_star_on_front"] for r in units)
+        beats = [r for r in units if r.get("search_beats_anchor")]
+        if beats:
+            fails.append(f"{label}: B16X artifact invalid for s={s} -- "
+                         f"{len(beats)}/{len(units)} units beat the anchor; "
+                         "both manuscript sentences are falsified")
+            continue
+        m = rx.search(text)
+        # synthetic unit-test manuscripts legitimately carry no 16x sentence;
+        # they opt out via L8_B16X_OPTIONAL=1 (same pattern as L8_MIN_CHECKED)
+        # -- absent then skips the check entirely (no seen, no pass) so the
+        # zero-extraction exit-2 contract of those fixtures is untouched.
+        # The real manuscript never sets it, so a dropped sentence stays a FAIL.
+        if not m and os.environ.get("L8_B16X_OPTIONAL") == "1":
+            continue
+        seen += 1
+        if not m:
+            fails.append(f"{label}: B16X {desc} -- sentence MISSING from "
+                         "manuscript (registered reading, silent drop)")
+        elif m.group(1) != f"{want:.4f}":
+            # string equality on the 4-decimal print: a 5e-4 numeric
+            # tolerance swallowed the last-digit mutation probe (2026-10-25)
+            fails.append(f"{label}: B16X {desc} -- printed {m.group(1)} "
+                         f"vs recomputed {want:.4f}")
+        else:
+            passes.append(f"{label}: B16X {desc}")
+    return fails, passes, seen
+
+
+# --- ticket 62 ignition sentences (user-approved 2026-10-25): the
+# conservative fixed-dwell sentence (sec:counterfactual) and the anchor-free
+# sentence (sec:dip).  Every number is recomputed from the artifacts; a
+# missing sentence is a FAIL, same silent-drop semantics as B16X.
+def check_ignition_sentences(text: str, label: str, cons_summary: dict,
+                             anchor_free_path: Path, probe_pilot: dict,
+                             budget_rows: list):
+    fails: list = []
+    passes: list = []
+    seen = 0
+
+    def need(m, desc, ok, printed, want):
+        nonlocal seen
+        # Synthetic unit-test fixtures carry no ignition sentences; they opt
+        # out via L8_B16X_OPTIONAL=1 exactly like B16X (absent then skips the
+        # check entirely -- no seen, no pass).  The real manuscript never sets
+        # it, so a dropped sentence stays a FAIL.
+        if not m and os.environ.get("L8_B16X_OPTIONAL") == "1":
+            return
+        seen += 1
+        if not m:
+            fails.append(f"{label}: IGN {desc} -- sentence fragment MISSING")
+        elif not ok:
+            fails.append(f"{label}: IGN {desc} -- printed {printed} "
+                         f"vs recomputed {want}")
+        else:
+            passes.append(f"{label}: IGN {desc}")
+
+    # conservative sentence: medians, pairs, per-seed ranges
+    r2f, r3h = cons_summary["R2F"], cons_summary["R3H"]
+    m = re.search(r"serves\s+a\s+median\s+(\d+)\s+and\s+(\d+)\s+points\s+less",
+                  text)
+    want_lo, want_hi = round(r2f["gap_pp_median"]), round(r3h["gap_pp_median"])
+    need(m, "conservative gap medians", bool(m) and
+         (int(m.group(1)), int(m.group(2))) == (want_lo, want_hi),
+         (m.group(1), m.group(2)) if m else None, (want_lo, want_hi))
+    m = re.search(r"among\s+the\s+(\d+)\s+and\s+(\d+)\s+consecutive\s+pairs",
+                  text)
+    want_pairs = (r2f["adjacent_pairs_pure_total"],
+                  r3h["adjacent_pairs_pure_total"])
+    pure_zero = (r2f["violating_pairs_pure_total"] == 0
+                 and r3h["violating_pairs_pure_total"] == 0)
+    need(m, "conservative pair counts (zero-violation precondition)",
+         bool(m) and pure_zero
+         and (int(m.group(1)), int(m.group(2))) == want_pairs,
+         (m.group(1), m.group(2)) if m else None, want_pairs)
+
+    # anchor-free sentence: rc cells, feasible cells, 16x probe gap
+    af = json.loads(anchor_free_path.read_text(encoding="utf-8"))
+    rc_cells = [r for r in af if "rc" in r]
+    ok_cells = [r for r in af if "rc" not in r]
+    m = re.search(r"no\s+feasible\s+individual\s+on\s+(\d+)\s+of\s+the\s+(\d+)\s+re-run\s+cells",
+                  text)
+    need(m, "anchor-free rc-cell count", bool(m)
+         and int(m.group(1)) == len(rc_cells)
+         and int(m.group(2)) == len(rc_cells) + len(ok_cells)
+         and all(r["family"] == "R3H" for r in rc_cells),
+         (m.group(1), m.group(2)) if m else None,
+         (len(rc_cells), len(rc_cells) + len(ok_cells)))
+    m = re.search(r"any\s+of\s+the\s+(\d+)\s+feasible\s+cells", text)
+    need(m, "anchor-free feasible-cell count", bool(m)
+         and int(m.group(1)) == len(ok_cells),
+         m.group(1) if m else None, len(ok_cells))
+    m = re.search(r"recovers\s+a\s+front\s+still\s+(\d+(?:\.\d+)?)\s+points\s+below\s+the\s+anchor",
+                  text)
+    anchor_arm = [r for r in budget_rows
+                  if r["family"] == "R3H" and r["seed"] == 302
+                  and r["s"] == 0.9][0]
+    # like-for-like: the probe runs at s=0.9, so the comparison anchor is the
+    # anchor arm's s=0.9 seed-302 construction (0.5936), NOT the s=1.0 one
+    want_gap = round((anchor_arm["anchor_f1_star"]
+                      - probe_pilot["max_f1_star_on_front"]) * 100, 1)
+    need(m, "anchor-free 16x probe gap", bool(m)
+         and float(m.group(1)) == want_gap,
+         m.group(1) if m else None, want_gap)
+    return fails, passes, seen
+
+
 if __name__ == "__main__":
     sys.exit(main())

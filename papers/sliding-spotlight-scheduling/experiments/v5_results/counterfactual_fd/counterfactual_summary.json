@@ -9,7 +9,13 @@
   "violation_rate_max": 0.0526,
   "violating_pairs_total": 1,
   "adjacent_pairs_total": 186,
-  "units_with_zero_violation": 9
+  "units_with_zero_violation": 9,
+  "violation_rate_pure_median": 0.0,
+  "violation_rate_pure_min": 0.0,
+  "violation_rate_pure_max": 0.0526,
+  "violating_pairs_pure_total": 1,
+  "adjacent_pairs_pure_total": 186,
+  "units_with_zero_violation_pure": 9
  },
  "R2F": {
   "n_units": 10,
@@ -21,7 +27,13 @@
   "violation_rate_max": 0.3478,
   "violating_pairs_total": 135,
   "adjacent_pairs_total": 458,
-  "units_with_zero_violation": 0
+  "units_with_zero_violation": 0,
+  "violation_rate_pure_median": 0.4239,
+  "violation_rate_pure_min": 0.383,
+  "violation_rate_pure_max": 0.5,
+  "violating_pairs_pure_total": 199,
+  "adjacent_pairs_pure_total": 458,
+  "units_with_zero_violation_pure": 0
  },
  "R3H": {
   "n_units": 10,
@@ -33,6 +45,68 @@
   "violation_rate_max": 0.2473,
   "violating_pairs_total": 184,
   "adjacent_pairs_total": 926,
-  "units_with_zero_violation": 0
+  "units_with_zero_violation": 0,
+  "violation_rate_pure_median": 0.2742,
+  "violation_rate_pure_min": 0.1739,
+  "violation_rate_pure_max": 0.3441,
+  "violating_pairs_pure_total": 253,
+  "adjacent_pairs_pure_total": 926,
+  "units_with_zero_violation_pure": 0
+ },
+ "conservative": {
+  "R1C": {
+   "n_units": 10,
+   "gap_pp_median": 0.0,
+   "gap_pp_min": 0.0,
+   "gap_pp_max": 0.0,
+   "violation_rate_median": 0.0,
+   "violation_rate_min": 0.0,
+   "violation_rate_max": 0.0,
+   "violating_pairs_total": 0,
+   "adjacent_pairs_total": 186,
+   "units_with_zero_violation": 10,
+   "violation_rate_pure_median": 0.0,
+   "violation_rate_pure_min": 0.0,
+   "violation_rate_pure_max": 0.0,
+   "violating_pairs_pure_total": 0,
+   "adjacent_pairs_pure_total": 186,
+   "units_with_zero_violation_pure": 10
+  },
+  "R2F": {
+   "n_units": 10,
+   "gap_pp_median": 28.3,
+   "gap_pp_min": 15.15,
+   "gap_pp_max": 33.46,
+   "violation_rate_median": 0.0,
+   "violation_rate_min": 0.0,
+   "violation_rate_max": 0.0,
+   "violating_pairs_total": 0,
+   "adjacent_pairs_total": 324,
+   "units_with_zero_violation": 10,
+   "violation_rate_pure_median": 0.0,
+   "violation_rate_pure_min": 0.0,
+   "violation_rate_pure_max": 0.0,
+   "violating_pairs_pure_total": 0,
+   "adjacent_pairs_pure_total": 324,
+   "units_with_zero_violation_pure": 10
+  },
+  "R3H": {
+   "n_units": 10,
+   "gap_pp_median": 55.52,
+   "gap_pp_min": 51.98,
+   "gap_pp_max": 69.1,
+   "violation_rate_median": 0.0,
+   "violation_rate_min": 0.0,
+   "violation_rate_max": 0.0,
+   "violating_pairs_total": 0,
+   "adjacent_pairs_total": 354,
+   "units_with_zero_violation": 10,
+   "violation_rate_pure_median": 0.0,
+   "violation_rate_pure_min": 0.0,
+   "violation_rate_pure_max": 0.0,
+   "violating_pairs_pure_total": 0,
+   "adjacent_pairs_pure_total": 354,
+   "units_with_zero_violation_pure": 10
+  }
  }
 }

@@ -123,3 +123,35 @@
 > **重生成前置登记（append-only）**：`sss_core/scenarios.py` 的 `generate_scenario` / `generate_real_scenario` 自票 61 起带 `duration_caliber` 参数——默认 `"library"` 与改动前**位级一致**（冻结 v3/v5 世界的字节再生保证不变，票 35 dead-branch 守卫钉住）；`"task-law"` 使两处驻留点位（anchor 窗驻留分散度 + 真窗族发射 end-check）按评估端约定消费任务自身订单（`round(rho_req,9)`/`round(l_az_m,6)` 与 manifest 落盘值一致；STR 不传 rho 由票 48 clip 承载；SPT 先经 `spt_task_start_domain` 钳位镜像 evaluator.py:310-314）。
 > **任何新世界 manifest 重生成必须显式 `duration_caliber="task-law"` 并在本文件登记**——防「发射窗集与任务律可行集口径分裂」（R61 原风险）的机制是显式登记的选择，不是静默默认。
 > 判别测试：`tests/test_generator_task_law_caliber.py`（同订单生成端==evaluator `_dwell` 位精确 + library 对比例 + 双点位生成级红证）。定向审查：`.scratch/sliding-spotlight-scheduling/t61-exec/review.md`。
+
+## 十、票 62 点火臂波次（2026-10-25，R87-03b/R87-04 用户拍板三项）
+
+> **再分析专用登记（append-only）**：本波次全部产物为「冻结场景群上的再分析」，无任何 manifest 重生成（`duration_caliber` 前置条款不触发）。三臂登记：
+
+| 臂 | 产物 | 口径与边界 |
+|---|---|---|
+| 3.1 保守固定值 | `v5_results/counterfactual_fd/conservative/counterfactual_units.json`（30 单元）+ raw pilots 落 `v5_results/counterfactual_fd/raw/conservative/<family>_seed*/`（与零斜视 raw/ 同级隔离、零覆盖） | `freeze_durations="conservative"`：每窗取较大\|ψ\| 端点、SPT 钳 `spt_start_squint_limit` 包络（R2F_seed200 实测 128/252 SPT 窗端点越界须钳）；replay 恒真实 dwell（`freeze_durations=False`，与零斜视臂同）。写取禁与零斜视版混表（viol 0% vs 20-29% 是同取值的两面） |
+| 3.2 16×@s=1.0 | 正文 §6.5 补句（三面）+ `verify_paper_numbers_l8.py` 新增 `check_budget16x` | 16×=160/240 相对 40/60 评估预算 16 倍；两 medians 从 `budget_check/budget_check.json` 重算、缺句=FAIL、字符串级 4 位比对（5e-4 数值容差曾吞变异）；顺带清零既有缺口：s=0.9 句 0.6884 自 T11/T12 起从未入闸 |
+| 3.3 anchor-free | `v5_results/anchor_free/`（28 ok + 12 rc=11，40 单元） | `--no-anchor-seed`：锚与 encoded row 全跳过（`anchor_seeded` 以 seed_vec 为准，与 nsga2.py:323 同源）；rc=11=D11 注册出口非崩溃，是注册预算 40/60 下随机初始化的可达性读数（160/240 补跑单 seed 可部分找回、仍低锚 48pp，非绝对不可达）；判读=锚不可替代（0/28 beats），非「锚伪象排除」 |
+
+> **上游代码改动（本波次，域套件零回归前提）**：`sss_core/evaluator.py`（`conservative_freeze_squint` helper + precompile 闭包/_dwell 三态）、`sss_core/anchor.py`（greedy_anchor/_precompile_frozen 三态透传）、`scripts/run_pilot.py`（`--no-anchor-seed`/`--freeze-caliber` 互斥组 + `dwell_caliber` payload 字段）、`scripts/run_counterfactual_fd.py`（`--caliber` 分流 conservative/ 子树）、`scripts/run_anchor_free.py`（新增）。`freeze_durations=True` 零斜视口径逐位不变（scoped 96P+1S 双跑验证）。
+> **三席判读（Flash/DeepSeek/MiMo，ARK 断供 410 由 MiMo 顶替）**：无停呈板级发现（0/68 beats、方向不反转）；呈板项=viol 口径缺陷（存档 20-29% 为 drop-later 遍历口径、纯计划相邻对重算 27-43%，主线程独立核验证实）+ 保守臂/anchor-free 句落笔。判读全文 `.scratch/sliding-spotlight-scheduling/t62-verdict-{deepseek,mimo}-20261025.txt`。
+
+## 十一、票 62 追加波：viol 统计口径修正 + 点火两臂入文（2026-10-25 晚，用户逐项拍板）
+
+> **呈板裁决（用户拍板，非 agent 代决）**：①viol 口径走方案 (a)——改实现补纯计划
+> 相邻对统计（修复前），正文三面换新数；②保守臂句落 §6.6 段末；③anchor-free
+> 句落降级版（sec:dip 段）。判读席（DeepSeek/MiMo）修正全部并入。
+
+| 项 | 内容 | 留痕 |
+|---|---|---|
+| 纯计划口径实现 | `run_counterfactual_fd.py` 抽 `_pair_c2_check` 单源谓词（pure 与 traversal 两口径共用，禁漂移）；`recount_counterfactual_pure.py` 新增（重放 raw pilots 补 `*_pure` 三字段+重建 summary，幂等）；`verify_paper_numbers_l8.py` 期望换 `*_pure` | 新数：R2F 199/458（中位 42.4%）、R3H 253/926（中位 27.4%）、R1C 1/186 不变；conservative 两族 0/324、0/354；**旧字段全保留**（traversal 口径，legacy） |
+| 正文口径带 | 「20--29%」→「27--42%」五文件八处（摘要/§6.6/结论）；§6.6 per-seed 句 27.4/42.4 + 253/926 + 199/458；"measured before any repair" 语义现与实现一致 | L8 闸 cf 系断言自动随 summary 重算 |
+| 保守臂句 | §6.6 反事实段末（三面镜像）：0% 违反对（324/354 对）+ median 28/56 点 + per-seed 15.15--33.46/51.98--69.10 + 「符号不依赖基线、幅度与族排序随基线」 | L8 闸 `check_ignition_sentences` 覆盖 |
+| anchor-free 句 | sec:dip 段末（三面镜像）：12/40 rc 单元（dense）+ 0/28 可行单元击败 + 16× 探针 15.5 点低锚 + 「dips are not reproducible without the construction」 | 16× 探针工件 `anchor_free/probe16x/pilot_R3H_seed302.json`（0.4382 @160/240，vs 同 s=0.9 锚 0.5936——同可比口径） |
+| 闸面 | B16X 之上加 IGN 断言（两臂句逐数）；下限 150→155；293 checked/0 mismatch + 双变异红证（median 28→29 红、12→13 红） | `verify_paper_numbers_l8.py` |
+
+> **边界披露**：rc=11 = 注册预算 40/60 下随机初始化的可达性读数（16× 补跑可部分
+> 找回、仍低锚——非绝对不可达）；正文表述为「不可替代」而非「伪象排除」。
+> 编译 59→60 页（两新增句所致，用户批准落句的合理结果）；红闸 0/1417；
+> 版式 0 FAIL。

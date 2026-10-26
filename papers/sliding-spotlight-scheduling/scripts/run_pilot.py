@@ -47,10 +47,27 @@ def main(argv=None) -> int:
     ap.add_argument("--pop", type=int, default=40)
     ap.add_argument("--gen", type=int, default=60)
     ap.add_argument("--out", default=None)
-    ap.add_argument(
+    freeze_group = ap.add_mutually_exclusive_group()
+    freeze_group.add_argument(
         "--freeze-dwell", action="store_true",
         help="fixed-dwell ablation: hold dwell at its zero-squint value "
-             "at every consumption point (panel R1 comparison arm)",
+             "at every consumption point (panel R1 comparison arm; the "
+             "registered caliber)",
+    )
+    freeze_group.add_argument(
+        "--freeze-caliber", choices=["zero", "conservative"], default=None,
+        help="ignition arm R87-03b: frozen-dwell caliber.  'zero' = the "
+             "registered zero-squint value (same as --freeze-dwell); "
+             "'conservative' = the longer of the two window-endpoint dwells "
+             "clamped to the admissible start domain, derived from the same "
+             "registered constants.",
+    )
+    ap.add_argument(
+        "--no-anchor-seed", action="store_true",
+        help="ignition arm R87-04: skip the greedy anchor and its encoded "
+             "population row 0 -- the NSGA-II initial population is purely "
+             "random (anchor-free control).  anchor_f1_star stays null and "
+             "search_only stays null.",
     )
     ap.add_argument(
         "--s-factor", type=float, default=1.0,
@@ -61,6 +78,16 @@ def main(argv=None) -> int:
              "placed.  Recorded in the payload as s_factor when != 1.0.",
     )
     args = ap.parse_args(argv)
+
+    # ignition arm R87-03b: normalize the frozen-dwell caliber to one local.
+    # "conservative" is threaded as the string; True/False keep the
+    # registered zero-squint / endogenous semantics bit-for-bit.
+    if args.freeze_caliber == "conservative":
+        freeze = "conservative"
+    elif args.freeze_caliber == "zero":
+        freeze = True
+    else:
+        freeze = args.freeze_dwell
 
     import pymoo
 
@@ -97,7 +124,7 @@ def main(argv=None) -> int:
     # task unschedulable the greedy anchor serves nothing, so the seed
     # row would carry cv=1.0 and the seed-CV assertion would turn the
     # distinguishing exit 11 into a crash (exit 1).
-    sp = SchedulingProblem(manifest, lib, freeze_durations=args.freeze_dwell)
+    sp = SchedulingProblem(manifest, lib, freeze_durations=freeze)
     if not any(p.schedulable for p in sp.plans):
         print(
             "D11 EXIT 11: no feasible individual can exist "
@@ -107,16 +134,22 @@ def main(argv=None) -> int:
         return EXIT_EMPTY_FRONT
 
     # anchor seed (D12-1/2): encode the greedy anchor solution as population
-    # row 0, with the fail-loud CV/f1 dual check inside run_nsga2
-    anchor = anchor_on_manifest(manifest, lib, freeze_durations=args.freeze_dwell)
+    # row 0, with the fail-loud CV/f1 dual check inside run_nsga2.
+    # ignition arm R87-04: --no-anchor-seed skips the anchor entirely (the
+    # initial population is purely random); anchor_f1_star stays null.
+    anchor = (
+        None if args.no_anchor_seed
+        else anchor_on_manifest(manifest, lib, freeze_durations=freeze)
+    )
     seed_vec = (
-        encode_seed_individual(sp, anchor.starts) if anchor.starts else None
+        encode_seed_individual(sp, anchor.starts)
+        if anchor is not None and anchor.starts else None
     )
     result = run_nsga2(
         manifest, lib, seed=args.seed, pop_size=args.pop,
         generations=args.gen, seed_individual=seed_vec,
-        anchor_f1_star=anchor.f1_star,
-        freeze_durations=args.freeze_dwell,
+        anchor_f1_star=anchor.f1_star if anchor is not None else None,
+        freeze_durations=freeze,
     )
     feasible = [r for r in result.front if r["cv"] <= CV_DUST_TOL]
     if not feasible:
@@ -130,9 +163,13 @@ def main(argv=None) -> int:
         "pop_size": args.pop,
         "generations": args.gen,
         "pymoo": PYMOO_PINNED,
-        "anchor_seeded": True,
-        "anchor_f1_star": anchor.f1_star,
-        "anchor_served": len(anchor.starts),
+        "anchor_seeded": seed_vec is not None,
+        "anchor_f1_star": anchor.f1_star if anchor is not None else None,
+        "anchor_served": len(anchor.starts) if anchor is not None else 0,
+        "dwell_caliber": (
+            "conservative" if freeze == "conservative"
+            else ("zero" if freeze else "endogenous")
+        ),
         "front_size": len(feasible),
         "front": feasible,
         "max_f1_star_on_front": max(r["f1_star"] for r in feasible),
@@ -164,9 +201,12 @@ def main(argv=None) -> int:
             encoding="utf-8",
         )
         print(f"pilot front written: {outpath}")
+    anchor_txt = (
+        "no-anchor-seed" if anchor is None else f"anchor {anchor.f1_star:.4f}"
+    )
     print(f"front_size={len(feasible)} "
           f"max_f1_star={max(r['f1_star'] for r in feasible):.4f} "
-          f"(anchor {anchor.f1_star:.4f}, search-only "
+          f"({anchor_txt}, search-only "
           f"{result.search_only_max_f1_star if result.search_only_max_f1_star is not None else float('nan'):.4f}) "
           f"promotion={result.promotion_decision}")
     return EXIT_OK

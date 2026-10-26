@@ -46,15 +46,54 @@ SEED_BASE = {"R1C": 100, "R2F": 200, "R3H": 300}  # registered naming: family-co
 
 
 def lib_and_problem(manifest_path: Path) -> SchedulingProblem:
+    # replay world is ALWAYS the real endogenous dwell (freeze_durations
+    # stays False) -- the counterfactual contrast is planned-world vs
+    # replayed-world; do not thread the caliber through here.
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
     lib = ModeLibrary.from_fixture()
     return SchedulingProblem(manifest, lib, freeze_durations=False)
+
+
+def _pair_c2_check(
+    problem: SchedulingProblem, ip: int, tp: float, i: int, t: float
+) -> tuple[bool, float, float]:
+    """C2 transfer verdict for ONE planned adjacent pair (ip@tp -> i@t).
+
+    Single source of truth for the violation predicate: both the pure-plan
+    (before any repair) caliber and the drop-later traversal below call this,
+    so the two calibers cannot drift.  Returns (violated, requirement_s,
+    excess_s) with excess_s = max(0, requirement - gap - C2_TOL_S).
+    """
+    pa, pb = problem.plans[ip], problem.plans[i]
+    wa = pa.window_at(tp)
+    wb = pb.window_at(t)
+    psi_a = squint_at(tp, wa.t_ca_s, problem.lib.geo, r0_m=wa.r0_m)
+    psi_b = squint_at(t, wb.t_ca_s, problem.lib.geo, r0_m=wb.r0_m)
+    req = c2_transfer_requirement_s(
+        problem._dwell(ip, tp),
+        problem.lib,
+        problem.pads,
+        d_psi_rad=abs(psi_b - psi_a),
+        omega_start=boundary_rate(pa.mode, psi_a, problem.lib, r0_m=wa.r0_m),
+        omega_end=boundary_rate(pb.mode, psi_b, problem.lib, r0_m=wb.r0_m),
+    )
+    gap = t - tp
+    violated = req["requirement_s"] - gap - C2_TOL_S > 0.0 or schedule_conflict(
+        tp, problem._dwell(ip, tp), t, problem._dwell(i, t)
+    )
+    return violated, req["requirement_s"], max(0.0, req["requirement_s"] - gap - C2_TOL_S)
 
 
 def replay_real(problem: SchedulingProblem, starts: dict) -> dict:
     """Time-order greedy repair of a planned schedule under the real dwell.
 
     Returns violation stats BEFORE repair and the repaired coverage.
+
+    Calibers (2026-10-25 ticket 62 wave): ``*_pure`` = before any repair,
+    over the planned adjacent pairs -- the honest pre-repair reading; the
+    legacy ``violating_pairs`` / ``adjacent_pairs`` / ``violation_rate``
+    fields are counted inside the drop-later traversal (dropped tasks mask
+    violating pairs, so they under-read) and are kept as legacy.
     """
     sel = []
     for k, t in starts.items():
@@ -66,6 +105,16 @@ def replay_real(problem: SchedulingProblem, starts: dict) -> dict:
         sel.append((float(t), int(k)))
     sel.sort()
 
+    # pure-plan caliber: every adjacent pair of the SORTED planned sequence,
+    # before any repair, decoupled from the traversal below.
+    vp_pure = 0
+    adj_pairs_pure = 0
+    for (tp, ip), (t, i) in zip(sel, sel[1:]):
+        adj_pairs_pure += 1
+        violated, _req_s, _excess_s = _pair_c2_check(problem, ip, tp, i, t)
+        if violated:
+            vp_pure += 1
+
     viol_pairs = 0
     viol_total_s = 0.0
     adj_pairs = 0
@@ -73,26 +122,11 @@ def replay_real(problem: SchedulingProblem, starts: dict) -> dict:
     for t, i in sel:
         if kept:
             tp, ip = kept[-1]
-            pa, pb = problem.plans[ip], problem.plans[i]
-            wa = pa.window_at(tp)
-            wb = pb.window_at(t)
-            psi_a = squint_at(tp, wa.t_ca_s, problem.lib.geo, r0_m=wa.r0_m)
-            psi_b = squint_at(t, wb.t_ca_s, problem.lib.geo, r0_m=wb.r0_m)
-            req = c2_transfer_requirement_s(
-                problem._dwell(ip, tp),
-                problem.lib,
-                problem.pads,
-                d_psi_rad=abs(psi_b - psi_a),
-                omega_start=boundary_rate(pa.mode, psi_a, problem.lib, r0_m=wa.r0_m),
-                omega_end=boundary_rate(pb.mode, psi_b, problem.lib, r0_m=wb.r0_m),
-            )
-            gap = t - tp
+            violated, _req_s, excess_s = _pair_c2_check(problem, ip, tp, i, t)
             adj_pairs += 1
-            if req["requirement_s"] - gap - C2_TOL_S > 0.0 or schedule_conflict(
-                tp, problem._dwell(ip, tp), t, problem._dwell(i, t)
-            ):
+            if violated:
                 viol_pairs += 1
-                viol_total_s += max(0.0, req["requirement_s"] - gap - C2_TOL_S)
+                viol_total_s += excess_s
                 continue  # greedy repair: drop the later task
         kept.append((t, i))
 
@@ -101,6 +135,9 @@ def replay_real(problem: SchedulingProblem, starts: dict) -> dict:
         "adjacent_pairs": adj_pairs,
         "violating_pairs": viol_pairs,
         "violation_rate": (viol_pairs / adj_pairs) if adj_pairs else 0.0,
+        "violating_pairs_pure": vp_pure,
+        "adjacent_pairs_pure": adj_pairs_pure,
+        "violation_rate_pure": (vp_pure / adj_pairs_pure) if adj_pairs_pure else 0.0,
         "violation_total_s": viol_total_s,
         "repaired_coverage": served / max(problem.total_priority, 1e-12),
         "n_selected_planned": len(sel),
@@ -115,18 +152,22 @@ def best_front_member(pilot_json: dict) -> dict:
     return max(front, key=lambda m: (m["f1_star"], -m["cv"]))
 
 
-def run_unit(family: str, seed: int, pop: int, gen: int) -> dict:
+def run_unit(family: str, seed: int, pop: int, gen: int, caliber: str) -> dict:
     manifest = V5 / "scenarios" / f"{family}_seed{seed}.json"
     baseline_json = V5 / "sweep" / "s1_0" / f"pilot_{family}_seed{seed}.json"
     raw_dir = RAW / f"{family}_seed{seed}"
     raw_dir.mkdir(parents=True, exist_ok=True)
 
     t0 = time.time()
+    freeze_args = (
+        ["--freeze-dwell"] if caliber == "zero"
+        else ["--freeze-caliber", "conservative"]
+    )
     cmd = [
         sys.executable, str(FORK / "scripts" / "run_pilot.py"),
         "--manifest", str(manifest),
         "--seed", str(seed), "--pop", str(pop), "--gen", str(gen),
-        "--s-factor", "1.0", "--freeze-dwell",
+        "--s-factor", "1.0", *freeze_args,
         "--out", str(raw_dir),
     ]
     env_py = {"PYTHONHASHSEED": "0"}
@@ -155,9 +196,15 @@ def run_unit(family: str, seed: int, pop: int, gen: int) -> dict:
         "adjacent_pairs": replay["adjacent_pairs"],
         "violating_pairs": replay["violating_pairs"],
         "violation_rate": replay["violation_rate"],
+        "violating_pairs_pure": replay["violating_pairs_pure"],
+        "adjacent_pairs_pure": replay["adjacent_pairs_pure"],
+        "violation_rate_pure": replay["violation_rate_pure"],
         "violation_total_s": replay["violation_total_s"],
         "n_selected_planned": replay["n_selected_planned"],
         "n_kept_real": replay["n_kept_real"],
+        "dwell_caliber": caliber,
+        "schedule_world": f"frozen-{caliber}",
+        "replay_world": "endogenous",
         "wall_s": wall_s,
     }
 
@@ -168,6 +215,10 @@ def main() -> int:
     ap.add_argument("--seeds", default="auto")
     ap.add_argument("--pop", type=int, default=40)
     ap.add_argument("--gen", type=int, default=60)
+    ap.add_argument("--caliber", choices=["zero", "conservative"], default="zero",
+                    help="frozen-dwell caliber passed to run_pilot "
+                         "(zero = --freeze-dwell, the registered zero-squint "
+                         "arm; conservative = --freeze-caliber conservative)")
     args = ap.parse_args()
 
     fams = [f.strip() for f in args.families.split(",")]
@@ -179,6 +230,14 @@ def main() -> int:
     else:
         seeds = [int(s) for s in args.seeds.split(",")]
 
+    # caliber-scoped artifact routing: the conservative arm writes its own
+    # tree (counterfactual_fd/conservative/...), never touching the
+    # registered zero-arm files.  MUST run before results_path is computed,
+    # or the resume set would be read from the wrong arm (0-unit fake-green).
+    global OUT, RAW
+    if args.caliber == "conservative":
+        OUT = OUT / "conservative"
+        RAW = RAW / "conservative"
     OUT.mkdir(parents=True, exist_ok=True)
     RAW.mkdir(parents=True, exist_ok=True)
     results_path = OUT / "counterfactual_units.json"
@@ -194,7 +253,7 @@ def main() -> int:
             if (fam, seed) in done:
                 print(f"# skip {fam} seed{seed} (done)")
                 continue
-            r = run_unit(fam, seed, args.pop, args.gen)
+            r = run_unit(fam, seed, args.pop, args.gen, args.caliber)
             results.append(r)
             results_path.write_text(
                 json.dumps(results, indent=1), encoding="utf-8")
