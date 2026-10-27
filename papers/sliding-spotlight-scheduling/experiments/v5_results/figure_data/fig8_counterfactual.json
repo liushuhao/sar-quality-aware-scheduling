@@ -1,0 +1,494 @@
+{
+ "figure": "fig8_counterfactual",
+ "entries": [
+  {
+   "id": "fig8.viol_median_pp.R1C",
+   "value": 0.0,
+   "unit": "%",
+   "caliber_tag": "figure receipt / counterfactual pure-plan caliber / frozen v5 artifacts, s=1.0, budget 40/60, ten seeds",
+   "produced_by": "PYTHONHASHSEED=0 \"/d/Program Files/Python/python\" -B papers/sliding-spotlight-scheduling/scripts/plot_fig8_counterfactual.py",
+   "source": {
+    "file": "counterfactual_fd/counterfactual_summary.json",
+    "path": "R1C.violation_rate_pure_median"
+   },
+   "note": "pure-plan caliber, counted before any repair"
+  },
+  {
+   "id": "fig8.viol_pairs.R1C",
+   "value": "1/186",
+   "unit": "pairs",
+   "caliber_tag": "figure receipt / counterfactual pure-plan caliber / frozen v5 artifacts, s=1.0, budget 40/60, ten seeds",
+   "produced_by": "PYTHONHASHSEED=0 \"/d/Program Files/Python/python\" -B papers/sliding-spotlight-scheduling/scripts/plot_fig8_counterfactual.py",
+   "source": {
+    "file": "counterfactual_fd/counterfactual_summary.json",
+    "path": "R1C.violating_pairs_pure_total"
+   }
+  },
+  {
+   "id": "fig8.viol_median_pp.R2F",
+   "value": 42.39,
+   "unit": "%",
+   "caliber_tag": "figure receipt / counterfactual pure-plan caliber / frozen v5 artifacts, s=1.0, budget 40/60, ten seeds",
+   "produced_by": "PYTHONHASHSEED=0 \"/d/Program Files/Python/python\" -B papers/sliding-spotlight-scheduling/scripts/plot_fig8_counterfactual.py",
+   "source": {
+    "file": "counterfactual_fd/counterfactual_summary.json",
+    "path": "R2F.violation_rate_pure_median"
+   },
+   "note": "pure-plan caliber, counted before any repair"
+  },
+  {
+   "id": "fig8.viol_pairs.R2F",
+   "value": "199/458",
+   "unit": "pairs",
+   "caliber_tag": "figure receipt / counterfactual pure-plan caliber / frozen v5 artifacts, s=1.0, budget 40/60, ten seeds",
+   "produced_by": "PYTHONHASHSEED=0 \"/d/Program Files/Python/python\" -B papers/sliding-spotlight-scheduling/scripts/plot_fig8_counterfactual.py",
+   "source": {
+    "file": "counterfactual_fd/counterfactual_summary.json",
+    "path": "R2F.violating_pairs_pure_total"
+   }
+  },
+  {
+   "id": "fig8.viol_median_pp.R3H",
+   "value": 27.42,
+   "unit": "%",
+   "caliber_tag": "figure receipt / counterfactual pure-plan caliber / frozen v5 artifacts, s=1.0, budget 40/60, ten seeds",
+   "produced_by": "PYTHONHASHSEED=0 \"/d/Program Files/Python/python\" -B papers/sliding-spotlight-scheduling/scripts/plot_fig8_counterfactual.py",
+   "source": {
+    "file": "counterfactual_fd/counterfactual_summary.json",
+    "path": "R3H.violation_rate_pure_median"
+   },
+   "note": "pure-plan caliber, counted before any repair"
+  },
+  {
+   "id": "fig8.viol_pairs.R3H",
+   "value": "253/926",
+   "unit": "pairs",
+   "caliber_tag": "figure receipt / counterfactual pure-plan caliber / frozen v5 artifacts, s=1.0, budget 40/60, ten seeds",
+   "produced_by": "PYTHONHASHSEED=0 \"/d/Program Files/Python/python\" -B papers/sliding-spotlight-scheduling/scripts/plot_fig8_counterfactual.py",
+   "source": {
+    "file": "counterfactual_fd/counterfactual_summary.json",
+    "path": "R3H.violating_pairs_pure_total"
+   }
+  },
+  {
+   "id": "fig8.gap_median_pp.drop_later.R1C",
+   "value": 0.0,
+   "unit": "pp",
+   "caliber_tag": "figure receipt / counterfactual pure-plan caliber / frozen v5 artifacts, s=1.0, budget 40/60, ten seeds",
+   "produced_by": "PYTHONHASHSEED=0 \"/d/Program Files/Python/python\" -B papers/sliding-spotlight-scheduling/scripts/plot_fig8_counterfactual.py",
+   "source": {
+    "file": "counterfactual_fd/counterfactual_repairs_agg.json",
+    "path": "R1C.median_gap_pp.drop_later"
+   }
+  },
+  {
+   "id": "fig8.gap_per_seed.drop_later.R1C",
+   "value": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    6.3063,
+    0.0,
+    0.0
+   ],
+   "unit": "pp",
+   "caliber_tag": "figure receipt / counterfactual pure-plan caliber / frozen v5 artifacts, s=1.0, budget 40/60, ten seeds",
+   "produced_by": "PYTHONHASHSEED=0 \"/d/Program Files/Python/python\" -B papers/sliding-spotlight-scheduling/scripts/plot_fig8_counterfactual.py",
+   "source": {
+    "file": "counterfactual_fd/counterfactual_repairs_agg.json",
+    "path": "R1C.per_seed_gap_pp.drop_later"
+   }
+  },
+  {
+   "id": "fig8.gap_median_pp.drop_later.R2F",
+   "value": 30.445,
+   "unit": "pp",
+   "caliber_tag": "figure receipt / counterfactual pure-plan caliber / frozen v5 artifacts, s=1.0, budget 40/60, ten seeds",
+   "produced_by": "PYTHONHASHSEED=0 \"/d/Program Files/Python/python\" -B papers/sliding-spotlight-scheduling/scripts/plot_fig8_counterfactual.py",
+   "source": {
+    "file": "counterfactual_fd/counterfactual_repairs_agg.json",
+    "path": "R2F.median_gap_pp.drop_later"
+   }
+  },
+  {
+   "id": "fig8.gap_per_seed.drop_later.R2F",
+   "value": [
+    28.5714,
+    32.7338,
+    32.1705,
+    24.5421,
+    31.1828,
+    29.2969,
+    32.197,
+    29.5455,
+    35.1779,
+    29.7071
+   ],
+   "unit": "pp",
+   "caliber_tag": "figure receipt / counterfactual pure-plan caliber / frozen v5 artifacts, s=1.0, budget 40/60, ten seeds",
+   "produced_by": "PYTHONHASHSEED=0 \"/d/Program Files/Python/python\" -B papers/sliding-spotlight-scheduling/scripts/plot_fig8_counterfactual.py",
+   "source": {
+    "file": "counterfactual_fd/counterfactual_repairs_agg.json",
+    "path": "R2F.per_seed_gap_pp.drop_later"
+   }
+  },
+  {
+   "id": "fig8.gap_median_pp.drop_later.R3H",
+   "value": 18.2474,
+   "unit": "pp",
+   "caliber_tag": "figure receipt / counterfactual pure-plan caliber / frozen v5 artifacts, s=1.0, budget 40/60, ten seeds",
+   "produced_by": "PYTHONHASHSEED=0 \"/d/Program Files/Python/python\" -B papers/sliding-spotlight-scheduling/scripts/plot_fig8_counterfactual.py",
+   "source": {
+    "file": "counterfactual_fd/counterfactual_repairs_agg.json",
+    "path": "R3H.median_gap_pp.drop_later"
+   }
+  },
+  {
+   "id": "fig8.gap_per_seed.drop_later.R3H",
+   "value": [
+    13.3087,
+    20.8556,
+    11.985,
+    17.8368,
+    20.4,
+    21.4689,
+    18.4801,
+    25.5639,
+    17.5439,
+    18.0147
+   ],
+   "unit": "pp",
+   "caliber_tag": "figure receipt / counterfactual pure-plan caliber / frozen v5 artifacts, s=1.0, budget 40/60, ten seeds",
+   "produced_by": "PYTHONHASHSEED=0 \"/d/Program Files/Python/python\" -B papers/sliding-spotlight-scheduling/scripts/plot_fig8_counterfactual.py",
+   "source": {
+    "file": "counterfactual_fd/counterfactual_repairs_agg.json",
+    "path": "R3H.per_seed_gap_pp.drop_later"
+   }
+  },
+  {
+   "id": "fig8.gap_median_pp.priority_aware.R1C",
+   "value": 0.0,
+   "unit": "pp",
+   "caliber_tag": "figure receipt / counterfactual pure-plan caliber / frozen v5 artifacts, s=1.0, budget 40/60, ten seeds",
+   "produced_by": "PYTHONHASHSEED=0 \"/d/Program Files/Python/python\" -B papers/sliding-spotlight-scheduling/scripts/plot_fig8_counterfactual.py",
+   "source": {
+    "file": "counterfactual_fd/counterfactual_repairs_agg.json",
+    "path": "R1C.median_gap_pp.priority_aware"
+   }
+  },
+  {
+   "id": "fig8.gap_per_seed.priority_aware.R1C",
+   "value": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    6.3063,
+    0.0,
+    0.0
+   ],
+   "unit": "pp",
+   "caliber_tag": "figure receipt / counterfactual pure-plan caliber / frozen v5 artifacts, s=1.0, budget 40/60, ten seeds",
+   "produced_by": "PYTHONHASHSEED=0 \"/d/Program Files/Python/python\" -B papers/sliding-spotlight-scheduling/scripts/plot_fig8_counterfactual.py",
+   "source": {
+    "file": "counterfactual_fd/counterfactual_repairs_agg.json",
+    "path": "R1C.per_seed_gap_pp.priority_aware"
+   }
+  },
+  {
+   "id": "fig8.gap_median_pp.priority_aware.R2F",
+   "value": 30.1136,
+   "unit": "pp",
+   "caliber_tag": "figure receipt / counterfactual pure-plan caliber / frozen v5 artifacts, s=1.0, budget 40/60, ten seeds",
+   "produced_by": "PYTHONHASHSEED=0 \"/d/Program Files/Python/python\" -B papers/sliding-spotlight-scheduling/scripts/plot_fig8_counterfactual.py",
+   "source": {
+    "file": "counterfactual_fd/counterfactual_repairs_agg.json",
+    "path": "R2F.median_gap_pp.priority_aware"
+   }
+  },
+  {
+   "id": "fig8.gap_per_seed.priority_aware.R2F",
+   "value": [
+    31.203,
+    32.0144,
+    29.0698,
+    24.1758,
+    29.3907,
+    31.6406,
+    29.9242,
+    30.303,
+    33.9921,
+    25.9414
+   ],
+   "unit": "pp",
+   "caliber_tag": "figure receipt / counterfactual pure-plan caliber / frozen v5 artifacts, s=1.0, budget 40/60, ten seeds",
+   "produced_by": "PYTHONHASHSEED=0 \"/d/Program Files/Python/python\" -B papers/sliding-spotlight-scheduling/scripts/plot_fig8_counterfactual.py",
+   "source": {
+    "file": "counterfactual_fd/counterfactual_repairs_agg.json",
+    "path": "R2F.per_seed_gap_pp.priority_aware"
+   }
+  },
+  {
+   "id": "fig8.gap_median_pp.priority_aware.R3H",
+   "value": 17.0594,
+   "unit": "pp",
+   "caliber_tag": "figure receipt / counterfactual pure-plan caliber / frozen v5 artifacts, s=1.0, budget 40/60, ten seeds",
+   "produced_by": "PYTHONHASHSEED=0 \"/d/Program Files/Python/python\" -B papers/sliding-spotlight-scheduling/scripts/plot_fig8_counterfactual.py",
+   "source": {
+    "file": "counterfactual_fd/counterfactual_repairs_agg.json",
+    "path": "R3H.median_gap_pp.priority_aware"
+   }
+  },
+  {
+   "id": "fig8.gap_per_seed.priority_aware.R3H",
+   "value": [
+    12.939,
+    16.5775,
+    11.985,
+    18.2163,
+    19.6,
+    22.4105,
+    16.9257,
+    24.4361,
+    17.193,
+    16.3603
+   ],
+   "unit": "pp",
+   "caliber_tag": "figure receipt / counterfactual pure-plan caliber / frozen v5 artifacts, s=1.0, budget 40/60, ten seeds",
+   "produced_by": "PYTHONHASHSEED=0 \"/d/Program Files/Python/python\" -B papers/sliding-spotlight-scheduling/scripts/plot_fig8_counterfactual.py",
+   "source": {
+    "file": "counterfactual_fd/counterfactual_repairs_agg.json",
+    "path": "R3H.per_seed_gap_pp.priority_aware"
+   }
+  },
+  {
+   "id": "fig8.gap_median_pp.retime.R1C",
+   "value": 0.0,
+   "unit": "pp",
+   "caliber_tag": "figure receipt / counterfactual pure-plan caliber / frozen v5 artifacts, s=1.0, budget 40/60, ten seeds",
+   "produced_by": "PYTHONHASHSEED=0 \"/d/Program Files/Python/python\" -B papers/sliding-spotlight-scheduling/scripts/plot_fig8_counterfactual.py",
+   "source": {
+    "file": "counterfactual_fd/counterfactual_repairs_agg.json",
+    "path": "R1C.median_gap_pp.retime"
+   }
+  },
+  {
+   "id": "fig8.gap_per_seed.retime.R1C",
+   "value": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+   ],
+   "unit": "pp",
+   "caliber_tag": "figure receipt / counterfactual pure-plan caliber / frozen v5 artifacts, s=1.0, budget 40/60, ten seeds",
+   "produced_by": "PYTHONHASHSEED=0 \"/d/Program Files/Python/python\" -B papers/sliding-spotlight-scheduling/scripts/plot_fig8_counterfactual.py",
+   "source": {
+    "file": "counterfactual_fd/counterfactual_repairs_agg.json",
+    "path": "R1C.per_seed_gap_pp.retime"
+   }
+  },
+  {
+   "id": "fig8.gap_median_pp.retime.R2F",
+   "value": 7.0825,
+   "unit": "pp",
+   "caliber_tag": "figure receipt / counterfactual pure-plan caliber / frozen v5 artifacts, s=1.0, budget 40/60, ten seeds",
+   "produced_by": "PYTHONHASHSEED=0 \"/d/Program Files/Python/python\" -B papers/sliding-spotlight-scheduling/scripts/plot_fig8_counterfactual.py",
+   "source": {
+    "file": "counterfactual_fd/counterfactual_repairs_agg.json",
+    "path": "R2F.median_gap_pp.retime"
+   }
+  },
+  {
+   "id": "fig8.gap_per_seed.retime.R2F",
+   "value": [
+    13.5338,
+    2.1583,
+    6.5891,
+    8.0586,
+    3.5842,
+    1.5625,
+    7.5758,
+    1.5152,
+    10.6719,
+    15.4812
+   ],
+   "unit": "pp",
+   "caliber_tag": "figure receipt / counterfactual pure-plan caliber / frozen v5 artifacts, s=1.0, budget 40/60, ten seeds",
+   "produced_by": "PYTHONHASHSEED=0 \"/d/Program Files/Python/python\" -B papers/sliding-spotlight-scheduling/scripts/plot_fig8_counterfactual.py",
+   "source": {
+    "file": "counterfactual_fd/counterfactual_repairs_agg.json",
+    "path": "R2F.per_seed_gap_pp.retime"
+   }
+  },
+  {
+   "id": "fig8.gap_median_pp.retime.R3H",
+   "value": 25.3321,
+   "unit": "pp",
+   "caliber_tag": "figure receipt / counterfactual pure-plan caliber / frozen v5 artifacts, s=1.0, budget 40/60, ten seeds",
+   "produced_by": "PYTHONHASHSEED=0 \"/d/Program Files/Python/python\" -B papers/sliding-spotlight-scheduling/scripts/plot_fig8_counterfactual.py",
+   "source": {
+    "file": "counterfactual_fd/counterfactual_repairs_agg.json",
+    "path": "R3H.median_gap_pp.retime"
+   }
+  },
+  {
+   "id": "fig8.gap_per_seed.retime.R3H",
+   "value": [
+    35.6747,
+    32.9768,
+    4.3071,
+    27.5142,
+    31.4,
+    24.4821,
+    0.0,
+    25.7519,
+    24.9123,
+    22.0588
+   ],
+   "unit": "pp",
+   "caliber_tag": "figure receipt / counterfactual pure-plan caliber / frozen v5 artifacts, s=1.0, budget 40/60, ten seeds",
+   "produced_by": "PYTHONHASHSEED=0 \"/d/Program Files/Python/python\" -B papers/sliding-spotlight-scheduling/scripts/plot_fig8_counterfactual.py",
+   "source": {
+    "file": "counterfactual_fd/counterfactual_repairs_agg.json",
+    "path": "R3H.per_seed_gap_pp.retime"
+   }
+  },
+  {
+   "id": "fig8.gap_median_pp.conservative.R1C",
+   "value": 0.0,
+   "unit": "pp",
+   "caliber_tag": "figure receipt / counterfactual pure-plan caliber / frozen v5 artifacts, s=1.0, budget 40/60, ten seeds",
+   "produced_by": "PYTHONHASHSEED=0 \"/d/Program Files/Python/python\" -B papers/sliding-spotlight-scheduling/scripts/plot_fig8_counterfactual.py",
+   "source": {
+    "file": "counterfactual_fd/counterfactual_summary.json",
+    "path": "conservative.R1C.gap_pp_median"
+   }
+  },
+  {
+   "id": "fig8.gap_per_seed.conservative.R1C",
+   "value": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+   ],
+   "unit": "pp",
+   "caliber_tag": "figure receipt / counterfactual pure-plan caliber / frozen v5 artifacts, s=1.0, budget 40/60, ten seeds",
+   "produced_by": "PYTHONHASHSEED=0 \"/d/Program Files/Python/python\" -B papers/sliding-spotlight-scheduling/scripts/plot_fig8_counterfactual.py",
+   "source": {
+    "file": "counterfactual_fd/conservative/counterfactual_units.json",
+    "path": "[family=R1C].coverage_gap_pp"
+   }
+  },
+  {
+   "id": "fig8.gap_median_pp.conservative.R2F",
+   "value": 28.3,
+   "unit": "pp",
+   "caliber_tag": "figure receipt / counterfactual pure-plan caliber / frozen v5 artifacts, s=1.0, budget 40/60, ten seeds",
+   "produced_by": "PYTHONHASHSEED=0 \"/d/Program Files/Python/python\" -B papers/sliding-spotlight-scheduling/scripts/plot_fig8_counterfactual.py",
+   "source": {
+    "file": "counterfactual_fd/counterfactual_summary.json",
+    "path": "conservative.R2F.gap_pp_median"
+   }
+  },
+  {
+   "id": "fig8.gap_per_seed.conservative.R2F",
+   "value": [
+    33.4586,
+    27.6978,
+    31.3953,
+    30.7692,
+    30.1075,
+    28.9062,
+    26.8939,
+    15.1515,
+    22.9249,
+    27.6151
+   ],
+   "unit": "pp",
+   "caliber_tag": "figure receipt / counterfactual pure-plan caliber / frozen v5 artifacts, s=1.0, budget 40/60, ten seeds",
+   "produced_by": "PYTHONHASHSEED=0 \"/d/Program Files/Python/python\" -B papers/sliding-spotlight-scheduling/scripts/plot_fig8_counterfactual.py",
+   "source": {
+    "file": "counterfactual_fd/conservative/counterfactual_units.json",
+    "path": "[family=R2F].coverage_gap_pp"
+   }
+  },
+  {
+   "id": "fig8.gap_median_pp.conservative.R3H",
+   "value": 55.52,
+   "unit": "pp",
+   "caliber_tag": "figure receipt / counterfactual pure-plan caliber / frozen v5 artifacts, s=1.0, budget 40/60, ten seeds",
+   "produced_by": "PYTHONHASHSEED=0 \"/d/Program Files/Python/python\" -B papers/sliding-spotlight-scheduling/scripts/plot_fig8_counterfactual.py",
+   "source": {
+    "file": "counterfactual_fd/counterfactual_summary.json",
+    "path": "conservative.R3H.gap_pp_median"
+   }
+  },
+  {
+   "id": "fig8.gap_per_seed.conservative.R3H",
+   "value": [
+    64.1405,
+    55.0802,
+    69.1011,
+    55.5977,
+    52.4,
+    51.9774,
+    58.7219,
+    55.4511,
+    62.9825,
+    53.8603
+   ],
+   "unit": "pp",
+   "caliber_tag": "figure receipt / counterfactual pure-plan caliber / frozen v5 artifacts, s=1.0, budget 40/60, ten seeds",
+   "produced_by": "PYTHONHASHSEED=0 \"/d/Program Files/Python/python\" -B papers/sliding-spotlight-scheduling/scripts/plot_fig8_counterfactual.py",
+   "source": {
+    "file": "counterfactual_fd/conservative/counterfactual_units.json",
+    "path": "[family=R3H].coverage_gap_pp"
+   }
+  },
+  {
+   "id": "fig8.cons_viol_pairs.R2F",
+   "value": "0/324",
+   "unit": "pairs",
+   "caliber_tag": "figure receipt / counterfactual pure-plan caliber / frozen v5 artifacts, s=1.0, budget 40/60, ten seeds",
+   "produced_by": "PYTHONHASHSEED=0 \"/d/Program Files/Python/python\" -B papers/sliding-spotlight-scheduling/scripts/plot_fig8_counterfactual.py",
+   "source": {
+    "file": "counterfactual_fd/counterfactual_summary.json",
+    "path": "conservative.R2F.violating_pairs_pure_total"
+   },
+   "note": "zero by construction: the conservative dwell is pre-shrunk"
+  },
+  {
+   "id": "fig8.cons_viol_pairs.R3H",
+   "value": "0/354",
+   "unit": "pairs",
+   "caliber_tag": "figure receipt / counterfactual pure-plan caliber / frozen v5 artifacts, s=1.0, budget 40/60, ten seeds",
+   "produced_by": "PYTHONHASHSEED=0 \"/d/Program Files/Python/python\" -B papers/sliding-spotlight-scheduling/scripts/plot_fig8_counterfactual.py",
+   "source": {
+    "file": "counterfactual_fd/counterfactual_summary.json",
+    "path": "conservative.R3H.violating_pairs_pure_total"
+   },
+   "note": "zero by construction: the conservative dwell is pre-shrunk"
+  }
+ ]
+}

@@ -32,7 +32,7 @@ sys.path.insert(0, str(FORK / "scripts"))
 import build_reading_ledger_l8 as lb  # noqa: E402
 
 LEDGER = FORK / "experiments" / "v5_results" / "reading_ledger_l8.json"
-FIGURE = FORK / "paper" / "figures" / "fig3_coverage_vs_requirement.pdf"
+FIGURE = FORK / "paper" / "figures" / "fig5_coverage_vs_requirement.pdf"
 
 
 @pytest.fixture(scope="module")

@@ -17,7 +17,7 @@ stdout is the provenance record: archive it next to the figure.
 
 Usage (repo root):
     PYTHONHASHSEED=0 "/d/Program Files/Python/python" -B \
-        papers/sliding-spotlight-scheduling/scripts/plot_fig3_coverage_vs_requirement.py
+        papers/sliding-spotlight-scheduling/scripts/plot_fig5_coverage_vs_requirement.py
 """
 from __future__ import annotations
 
@@ -27,7 +27,7 @@ from pathlib import Path
 
 FORK = Path(__file__).resolve().parent.parent
 AGG = FORK / "experiments" / "v5_results" / "sweep_results.json"
-OUT = FORK / "paper" / "figures" / "fig3_coverage_vs_requirement.pdf"
+OUT = FORK / "paper" / "figures" / "fig5_coverage_vs_requirement.pdf"
 
 FAMILIES = ("R1C", "R2F", "R3H")
 S_GRID = (0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 2.0)
@@ -161,6 +161,43 @@ def main() -> int:
     OUT.parent.mkdir(parents=True, exist_ok=True)
     fig.savefig(OUT, bbox_inches="tight")
     print(f"# written {OUT}")
+
+    # figure-data receipt (R96): every number the caption states, sourced
+    # from the same aggregate the curve draws
+    receipt_entries = []
+    for fam in FAMILIES:
+        xs, meds, seeds, infeas = series(agg, fam)
+        receipt_entries.append({
+            "id": f"fig5.coverage_median.{fam}", "unit": "fraction",
+            "value": {str(s): (None if m is None else round(m, 6))
+                      for s, m in zip(xs, meds)},
+            "caliber_tag": "L8 / caliber v5 / 9-point demand grid / single budget 40-60",
+            "produced_by": ("PYTHONHASHSEED=0 \"/d/Program Files/Python/python\" -B "
+                            "papers/sliding-spotlight-scheduling/scripts/"
+                            "plot_fig5_coverage_vs_requirement.py"),
+            "source": {"file": "experiments/v5_results/sweep_results.json",
+                       "path": f"families.{fam}.*.coverage_median"},
+        })
+    receipt_entries.append({
+        "id": "fig5.zoom_b_range", "unit": "y-fraction",
+        "value": [0.958, 1.004],
+        "caliber_tag": "figure receipt / upper-band zoom declaration",
+        "produced_by": ("PYTHONHASHSEED=0 \"/d/Program Files/Python/python\" -B "
+                        "papers/sliding-spotlight-scheduling/scripts/"
+                        "plot_fig5_coverage_vs_requirement.py"),
+        "source": {"file": "scripts/plot_fig5_coverage_vs_requirement.py",
+                   "path": "axz.set_ylim"},
+        "note": ("the control family's s=0.9 median (0.5398) lies outside this "
+                 "window and is not drawn in panel (b); its in-range points "
+                 "appear for context"),
+    })
+    rc_path = (FORK / "experiments" / "v5_results" / "figure_data"
+               / "fig5_coverage_vs_requirement.json")
+    rc_path.parent.mkdir(parents=True, exist_ok=True)
+    rc_path.write_text(json.dumps({"figure": "fig5_coverage_vs_requirement",
+                                   "entries": receipt_entries}, indent=1),
+                       encoding="utf-8")
+    print(f"# written {rc_path}")
 
     # silent-zero guard: a figure that rendered nothing must not look like one
     # that rendered the curve

@@ -1,0 +1,238 @@
+{
+ "figure": "fig2_dwell_mechanism",
+ "entries": [
+  {
+   "id": "fig2.floor_m",
+   "value": 2.466901617924378,
+   "unit": "m",
+   "caliber_tag": "figure receipt / library scene caliber / frozen fixture + production closures",
+   "produced_by": "PYTHONHASHSEED=0 \"/d/Program Files/Python/python\" -B papers/sliding-spotlight-scheduling/scripts/plot_fig2_dwell_mechanism.py",
+   "source": {
+    "file": "scripts/plot_fig2_dwell_mechanism.py",
+    "path": "vals.floor_m"
+   },
+   "note": "D/2 with D=lambda/theta_a; also the SLS task-law domain edge at zero squint"
+  },
+  {
+   "id": "fig2.str_dwell_s_psi0",
+   "value": 1.3027299992939185,
+   "unit": "s",
+   "caliber_tag": "figure receipt / library scene caliber / frozen fixture + production closures",
+   "produced_by": "PYTHONHASHSEED=0 \"/d/Program Files/Python/python\" -B papers/sliding-spotlight-scheduling/scripts/plot_fig2_dwell_mechanism.py",
+   "source": {
+    "file": "scripts/plot_fig2_dwell_mechanism.py",
+    "path": "vals.str_dwell_s_psi0"
+   }
+  },
+  {
+   "id": "fig2.str_dwell_s_psi12",
+   "value": 1.3317780758268154,
+   "unit": "s",
+   "caliber_tag": "figure receipt / library scene caliber / frozen fixture + production closures",
+   "produced_by": "PYTHONHASHSEED=0 \"/d/Program Files/Python/python\" -B papers/sliding-spotlight-scheduling/scripts/plot_fig2_dwell_mechanism.py",
+   "source": {
+    "file": "scripts/plot_fig2_dwell_mechanism.py",
+    "path": "vals.str_dwell_s_psi12"
+   }
+  },
+  {
+   "id": "fig2.sls_dwell_s_rho0.3",
+   "value": 10.720431243475085,
+   "unit": "s",
+   "caliber_tag": "figure receipt / library scene caliber / frozen fixture + production closures",
+   "produced_by": "PYTHONHASHSEED=0 \"/d/Program Files/Python/python\" -B papers/sliding-spotlight-scheduling/scripts/plot_fig2_dwell_mechanism.py",
+   "source": {
+    "file": "scripts/plot_fig2_dwell_mechanism.py",
+    "path": "vals.sls_dwell_s_rho0.3"
+   }
+  },
+  {
+   "id": "fig2.sls_dwell_s_edge",
+   "value": 1.3048857992668126,
+   "unit": "s",
+   "caliber_tag": "figure receipt / library scene caliber / frozen fixture + production closures",
+   "produced_by": "PYTHONHASHSEED=0 \"/d/Program Files/Python/python\" -B papers/sliding-spotlight-scheduling/scripts/plot_fig2_dwell_mechanism.py",
+   "source": {
+    "file": "scripts/plot_fig2_dwell_mechanism.py",
+    "path": "vals.sls_dwell_s_edge"
+   }
+  },
+  {
+   "id": "fig2.sls_dwell_s_rho0.5_regpoint",
+   "value": 6.428930538022892,
+   "unit": "s",
+   "caliber_tag": "figure receipt / library scene caliber / frozen fixture + production closures",
+   "produced_by": "PYTHONHASHSEED=0 \"/d/Program Files/Python/python\" -B papers/sliding-spotlight-scheduling/scripts/plot_fig2_dwell_mechanism.py",
+   "source": {
+    "file": "scripts/plot_fig2_dwell_mechanism.py",
+    "path": "vals.sls_dwell_s_rho0.5_regpoint"
+   }
+  },
+  {
+   "id": "fig2.spt_dwell_s_rho0.3",
+   "value": 5.287977996696454,
+   "unit": "s",
+   "caliber_tag": "figure receipt / library scene caliber / frozen fixture + production closures",
+   "produced_by": "PYTHONHASHSEED=0 \"/d/Program Files/Python/python\" -B papers/sliding-spotlight-scheduling/scripts/plot_fig2_dwell_mechanism.py",
+   "source": {
+    "file": "scripts/plot_fig2_dwell_mechanism.py",
+    "path": "vals.spt_dwell_s_rho0.3"
+   }
+  },
+  {
+   "id": "fig2.spt_dwell_s_floor",
+   "value": 0.6429302614180387,
+   "unit": "s",
+   "caliber_tag": "figure receipt / library scene caliber / frozen fixture + production closures",
+   "produced_by": "PYTHONHASHSEED=0 \"/d/Program Files/Python/python\" -B papers/sliding-spotlight-scheduling/scripts/plot_fig2_dwell_mechanism.py",
+   "source": {
+    "file": "scripts/plot_fig2_dwell_mechanism.py",
+    "path": "vals.spt_dwell_s_floor"
+   }
+  },
+  {
+   "id": "fig2.scene_sweep_s",
+   "value": 0.6597997378758798,
+   "unit": "s",
+   "caliber_tag": "figure receipt / library scene caliber / frozen fixture + production closures",
+   "produced_by": "PYTHONHASHSEED=0 \"/d/Program Files/Python/python\" -B papers/sliding-spotlight-scheduling/scripts/plot_fig2_dwell_mechanism.py",
+   "source": {
+    "file": "scripts/plot_fig2_dwell_mechanism.py",
+    "path": "vals.scene_sweep_s"
+   },
+   "note": "W_a/v_s: the constant gap between the STR and SPT branches at the floor"
+  },
+  {
+   "id": "fig2.sls_domain_edge_m",
+   "value": 2.466901617924378,
+   "unit": "m",
+   "caliber_tag": "figure receipt / library scene caliber / frozen fixture + production closures",
+   "produced_by": "PYTHONHASHSEED=0 \"/d/Program Files/Python/python\" -B papers/sliding-spotlight-scheduling/scripts/plot_fig2_dwell_mechanism.py",
+   "source": {
+    "file": "scripts/plot_fig2_dwell_mechanism.py",
+    "path": "vals.sls_domain_edge_m"
+   },
+   "note": "rho_req cos(psi) < D/2; the SLS branch is truncated here, not extrapolated"
+  },
+  {
+   "id": "fig2.r0_registered_m",
+   "value": 197118.6893691377,
+   "unit": "m",
+   "caliber_tag": "figure receipt / library scene caliber / frozen fixture + production closures",
+   "produced_by": "PYTHONHASHSEED=0 \"/d/Program Files/Python/python\" -B papers/sliding-spotlight-scheduling/scripts/plot_fig2_dwell_mechanism.py",
+   "source": {
+    "file": "scripts/plot_fig2_dwell_mechanism.py",
+    "path": "vals.r0_registered_m"
+   }
+  },
+  {
+   "id": "fig2.ribbon_squint_deg",
+   "value": 12.0,
+   "unit": "deg",
+   "caliber_tag": "figure receipt / library scene caliber / frozen fixture + production closures",
+   "produced_by": "PYTHONHASHSEED=0 \"/d/Program Files/Python/python\" -B papers/sliding-spotlight-scheduling/scripts/plot_fig2_dwell_mechanism.py",
+   "source": {
+    "file": "scripts/plot_fig2_dwell_mechanism.py",
+    "path": "vals.ribbon_squint_deg"
+   }
+  },
+  {
+   "id": "fig2.tier_fine",
+   "value": [
+    0.3,
+    0.6
+   ],
+   "unit": "m-band",
+   "caliber_tag": "figure receipt / library scene caliber / frozen fixture + production closures",
+   "produced_by": "PYTHONHASHSEED=0 \"/d/Program Files/Python/python\" -B papers/sliding-spotlight-scheduling/scripts/plot_fig2_dwell_mechanism.py",
+   "source": {
+    "file": "scripts/plot_fig2_dwell_mechanism.py",
+    "path": "vals.tier_fine"
+   }
+  },
+  {
+   "id": "fig2.tier_coarse",
+   "value": [
+    2.5,
+    3.0
+   ],
+   "unit": "m-band",
+   "caliber_tag": "figure receipt / library scene caliber / frozen fixture + production closures",
+   "produced_by": "PYTHONHASHSEED=0 \"/d/Program Files/Python/python\" -B papers/sliding-spotlight-scheduling/scripts/plot_fig2_dwell_mechanism.py",
+   "source": {
+    "file": "scripts/plot_fig2_dwell_mechanism.py",
+    "path": "vals.tier_coarse"
+   }
+  },
+  {
+   "id": "fig2.s08_coarse_rect",
+   "value": [
+    2.0,
+    2.4000000000000004
+   ],
+   "unit": "m-band",
+   "caliber_tag": "figure receipt / library scene caliber / frozen fixture + production closures",
+   "produced_by": "PYTHONHASHSEED=0 \"/d/Program Files/Python/python\" -B papers/sliding-spotlight-scheduling/scripts/plot_fig2_dwell_mechanism.py",
+   "source": {
+    "file": "scripts/plot_fig2_dwell_mechanism.py",
+    "path": "vals.s08_coarse_rect"
+   },
+   "note": "0.8 x [2.5,3.0] m: the coarse tier under the s=0.8 tightening lies wholly fine-side of the floor"
+  },
+  {
+   "id": "fig2.D_m",
+   "value": 4.933803235848756,
+   "unit": "s",
+   "caliber_tag": "figure receipt / library scene caliber / frozen fixture + production closures",
+   "produced_by": "PYTHONHASHSEED=0 \"/d/Program Files/Python/python\" -B papers/sliding-spotlight-scheduling/scripts/plot_fig2_dwell_mechanism.py",
+   "source": {
+    "file": "scripts/plot_fig2_dwell_mechanism.py",
+    "path": "vals.D_m"
+   }
+  },
+  {
+   "id": "fig2.R0_km",
+   "value": 775.4261380865795,
+   "unit": "s",
+   "caliber_tag": "figure receipt / library scene caliber / frozen fixture + production closures",
+   "produced_by": "PYTHONHASHSEED=0 \"/d/Program Files/Python/python\" -B papers/sliding-spotlight-scheduling/scripts/plot_fig2_dwell_mechanism.py",
+   "source": {
+    "file": "scripts/plot_fig2_dwell_mechanism.py",
+    "path": "vals.R0_km"
+   }
+  },
+  {
+   "id": "fig2.theta_a_deg",
+   "value": 0.36,
+   "unit": "s",
+   "caliber_tag": "figure receipt / library scene caliber / frozen fixture + production closures",
+   "produced_by": "PYTHONHASHSEED=0 \"/d/Program Files/Python/python\" -B papers/sliding-spotlight-scheduling/scripts/plot_fig2_dwell_mechanism.py",
+   "source": {
+    "file": "scripts/plot_fig2_dwell_mechanism.py",
+    "path": "vals.theta_a_deg"
+   }
+  },
+  {
+   "id": "fig2.lambda_m",
+   "value": 0.031,
+   "unit": "s",
+   "caliber_tag": "figure receipt / library scene caliber / frozen fixture + production closures",
+   "produced_by": "PYTHONHASHSEED=0 \"/d/Program Files/Python/python\" -B papers/sliding-spotlight-scheduling/scripts/plot_fig2_dwell_mechanism.py",
+   "source": {
+    "file": "scripts/plot_fig2_dwell_mechanism.py",
+    "path": "vals.lambda_m"
+   }
+  },
+  {
+   "id": "fig2.Wa_km",
+   "value": 5.0,
+   "unit": "s",
+   "caliber_tag": "figure receipt / library scene caliber / frozen fixture + production closures",
+   "produced_by": "PYTHONHASHSEED=0 \"/d/Program Files/Python/python\" -B papers/sliding-spotlight-scheduling/scripts/plot_fig2_dwell_mechanism.py",
+   "source": {
+    "file": "scripts/plot_fig2_dwell_mechanism.py",
+    "path": "vals.Wa_km"
+   }
+  }
+ ]
+}

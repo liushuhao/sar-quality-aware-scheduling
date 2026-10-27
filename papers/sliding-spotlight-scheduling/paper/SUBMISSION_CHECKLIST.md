@@ -7,14 +7,14 @@
 
 | EM 表单要求的件 | 本仓文件 | 备注 |
 |---|---|---|
-| Manuscript（主稿） | `main.pdf`（59 页，2026-10-25 R87 审查轮修订后重编译）或 `main.tex` + `refs.bib` + `figures/` | AST 通常要 pdf 供审、源文件录用后收。建议两者都备 |
+| Manuscript（主稿） | `main.pdf`（64 页，2026-10-28 R96 图面扩展波后重编译：新增 Fig 2/4/6/7/8 五图 + Fig 3/5 改名）或 `main.tex` + `refs.bib` + `figures/` | AST 通常要 pdf 供审、源文件录用后收。建议两者都备 |
 | Cover Letter | `cover_letter.md` | 已含定稿标题；需转 pdf 或纯文本粘贴 |
 | Highlights | `highlights.md`（5 条，最长 82 字符） | EM 表单逐条填入 |
 | Declaration of Competing Interest | `declaration.md` | 已含 "no specific grant" Funding 段 |
 | CRediT authorship | `credit.md` | 单作者全角色 |
 | Suggested reviewers | **需你填** | 见下方第三节 |
 
-`figures/` 需随源文件一并上传：`fig3_coverage_vs_requirement.pdf`（1 张数据图，正文实际引用）+ `fig1_modes_geometry.tex`、`fig2_scheduling_loop.tex`（2 张 TikZ，靠 `\input` 引入，缺了编译不过）；`fig3_quality_vs_squint.pdf` 已不被正文引用，不需上传（2026-10-24 复核）。
+`figures/` 需随源文件一并上传（2026-10-28 R96 图面扩展波更新）：六张数据图 PDF `fig2_dwell_mechanism.pdf`、`fig4_scenario_set.pdf`、`fig5_coverage_vs_requirement.pdf`（原 fig3_ 改名）、`fig6_construction_probes.pdf`、`fig7_dwell_distribution.pdf`、`fig8_counterfactual.pdf` + 两张 TikZ `fig1_modes_geometry.tex`、`fig3_scheduling_loop.tex`（原 fig2_ 改名；靠 `\input` 引入，缺了编译不过）；`fig3_quality_vs_squint.pdf` 不被正文引用，不需上传。
 
 ## 二、EM 表单元数据（照抄即可）
 
@@ -34,7 +34,7 @@
 
 ## 四、投稿前最后三项自检（你点上传前做）
 
-1. **pdf 页数与图表**：59 页（2026-10-25 R87 全面审查轮：+1 页来自面板要求的新增引文 Lemaître 2002/Cui 2018/Shabtay-Steiner 2007 与摘要/正文限定句；上一基线 58 页）、3 图（Fig1/Fig2 TikZ + Fig3 数据图）全部在位；编译零 error、零未定义引用；视觉验收 2026-10-24 过（9 抽样页 judge 2 缺陷——Nomenclature 列碰撞 + xin2024sar 参考文献元数据——已修复并复判 pass；refs.bib 改动含 bibtex 重跑，见 R80 台账）。**注：R87 轮后 Nomenclature 已改 \scriptsize 排版（修 115.6pt 超限盒），2026-10-25 视觉复验待做**。
+1. **pdf 页数与图表**：64 页（2026-10-28 R96 图面扩展波：+5 页来自五张新图；上一基线 59 页）、8 图（Fig1/Fig3 TikZ + Fig2/4/5/6/7/8 数据图）全部在位；编译零 error、零未定义引用；视觉验收 2026-10-28 全八图模型读图 PASS（fig4 两轮：注记挤叠修复后复验）；Nomenclature 已改 \scriptsize 且 17.08pt 溢出已清（R96）。
 2. **标题五处一致**：`main.tex` / `highlights.md` / `cover_letter.md` / `credit.md` / `declaration.md`。
 3. **[2026-10-24 已失效]** `caleiras2026a` 现有 `pages = {110--121}`，此条不再适用，bibtex 报 1 个 `empty pages` warning（阶段五实测：`mittermayer2003sliding` 有 `pages = {1462-1464}`、`wang2024research` 有 `pages = {328--332}`）。不影响审稿，但编辑部排版时会来找你补。建议投稿前顺手补上。
 

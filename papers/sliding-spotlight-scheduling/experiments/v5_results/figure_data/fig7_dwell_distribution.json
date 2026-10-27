@@ -1,0 +1,509 @@
+{
+ "figure": "fig7_dwell_distribution",
+ "entries": [
+  {
+   "id": "fig7.R1C.STR.n",
+   "value": 196,
+   "unit": "count",
+   "caliber_tag": "figure receipt / evaluator-consumed dwell caliber / deterministic recomputation of frozen v5 sweep artifacts, s=1.0, ten seeds",
+   "produced_by": "PYTHONHASHSEED=0 \"/d/Program Files/Python/python\" -B papers/sliding-spotlight-scheduling/scripts/plot_fig7_dwell_distribution.py",
+   "source": {
+    "file": "scripts/plot_fig7_dwell_distribution.py",
+    "path": "data[('R1C','STR')]"
+   },
+   "note": "deterministic recomputation, evaluator-consumed caliber"
+  },
+  {
+   "id": "fig7.R1C.STR.T_med",
+   "value": 1.2114,
+   "unit": "s",
+   "caliber_tag": "figure receipt / evaluator-consumed dwell caliber / deterministic recomputation of frozen v5 sweep artifacts, s=1.0, ten seeds",
+   "produced_by": "PYTHONHASHSEED=0 \"/d/Program Files/Python/python\" -B papers/sliding-spotlight-scheduling/scripts/plot_fig7_dwell_distribution.py",
+   "source": {
+    "file": "scripts/plot_fig7_dwell_distribution.py",
+    "path": "data[('R1C','STR')]"
+   },
+   "note": "deterministic recomputation, evaluator-consumed caliber"
+  },
+  {
+   "id": "fig7.R1C.STR.T_p5",
+   "value": 0.9172,
+   "unit": "s",
+   "caliber_tag": "figure receipt / evaluator-consumed dwell caliber / deterministic recomputation of frozen v5 sweep artifacts, s=1.0, ten seeds",
+   "produced_by": "PYTHONHASHSEED=0 \"/d/Program Files/Python/python\" -B papers/sliding-spotlight-scheduling/scripts/plot_fig7_dwell_distribution.py",
+   "source": {
+    "file": "scripts/plot_fig7_dwell_distribution.py",
+    "path": "data[('R1C','STR')]"
+   },
+   "note": "deterministic recomputation, evaluator-consumed caliber"
+  },
+  {
+   "id": "fig7.R1C.STR.T_p95",
+   "value": 1.4687,
+   "unit": "s",
+   "caliber_tag": "figure receipt / evaluator-consumed dwell caliber / deterministic recomputation of frozen v5 sweep artifacts, s=1.0, ten seeds",
+   "produced_by": "PYTHONHASHSEED=0 \"/d/Program Files/Python/python\" -B papers/sliding-spotlight-scheduling/scripts/plot_fig7_dwell_distribution.py",
+   "source": {
+    "file": "scripts/plot_fig7_dwell_distribution.py",
+    "path": "data[('R1C','STR')]"
+   },
+   "note": "deterministic recomputation, evaluator-consumed caliber"
+  },
+  {
+   "id": "fig7.R1C.STR.ratio_med",
+   "value": 1.0767,
+   "unit": "x",
+   "caliber_tag": "figure receipt / evaluator-consumed dwell caliber / deterministic recomputation of frozen v5 sweep artifacts, s=1.0, ten seeds",
+   "produced_by": "PYTHONHASHSEED=0 \"/d/Program Files/Python/python\" -B papers/sliding-spotlight-scheduling/scripts/plot_fig7_dwell_distribution.py",
+   "source": {
+    "file": "scripts/plot_fig7_dwell_distribution.py",
+    "path": "data[('R1C','STR')]"
+   },
+   "note": "deterministic recomputation, evaluator-consumed caliber"
+  },
+  {
+   "id": "fig7.R1C.STR.ratio_max",
+   "value": 1.2828,
+   "unit": "x",
+   "caliber_tag": "figure receipt / evaluator-consumed dwell caliber / deterministic recomputation of frozen v5 sweep artifacts, s=1.0, ten seeds",
+   "produced_by": "PYTHONHASHSEED=0 \"/d/Program Files/Python/python\" -B papers/sliding-spotlight-scheduling/scripts/plot_fig7_dwell_distribution.py",
+   "source": {
+    "file": "scripts/plot_fig7_dwell_distribution.py",
+    "path": "data[('R1C','STR')]"
+   },
+   "note": "deterministic recomputation, evaluator-consumed caliber"
+  },
+  {
+   "id": "fig7.R1C.STR.psi_med_deg",
+   "value": 20.0659,
+   "unit": "deg",
+   "caliber_tag": "figure receipt / evaluator-consumed dwell caliber / deterministic recomputation of frozen v5 sweep artifacts, s=1.0, ten seeds",
+   "produced_by": "PYTHONHASHSEED=0 \"/d/Program Files/Python/python\" -B papers/sliding-spotlight-scheduling/scripts/plot_fig7_dwell_distribution.py",
+   "source": {
+    "file": "scripts/plot_fig7_dwell_distribution.py",
+    "path": "data[('R1C','STR')]"
+   },
+   "note": "deterministic recomputation, evaluator-consumed caliber"
+  },
+  {
+   "id": "fig7.R2F.SLS.n",
+   "value": 145,
+   "unit": "count",
+   "caliber_tag": "figure receipt / evaluator-consumed dwell caliber / deterministic recomputation of frozen v5 sweep artifacts, s=1.0, ten seeds",
+   "produced_by": "PYTHONHASHSEED=0 \"/d/Program Files/Python/python\" -B papers/sliding-spotlight-scheduling/scripts/plot_fig7_dwell_distribution.py",
+   "source": {
+    "file": "scripts/plot_fig7_dwell_distribution.py",
+    "path": "data[('R2F','SLS')]"
+   },
+   "note": "deterministic recomputation, evaluator-consumed caliber"
+  },
+  {
+   "id": "fig7.R2F.SLS.T_med",
+   "value": 5.1028,
+   "unit": "s",
+   "caliber_tag": "figure receipt / evaluator-consumed dwell caliber / deterministic recomputation of frozen v5 sweep artifacts, s=1.0, ten seeds",
+   "produced_by": "PYTHONHASHSEED=0 \"/d/Program Files/Python/python\" -B papers/sliding-spotlight-scheduling/scripts/plot_fig7_dwell_distribution.py",
+   "source": {
+    "file": "scripts/plot_fig7_dwell_distribution.py",
+    "path": "data[('R2F','SLS')]"
+   },
+   "note": "deterministic recomputation, evaluator-consumed caliber"
+  },
+  {
+   "id": "fig7.R2F.SLS.T_p5",
+   "value": 3.7476,
+   "unit": "s",
+   "caliber_tag": "figure receipt / evaluator-consumed dwell caliber / deterministic recomputation of frozen v5 sweep artifacts, s=1.0, ten seeds",
+   "produced_by": "PYTHONHASHSEED=0 \"/d/Program Files/Python/python\" -B papers/sliding-spotlight-scheduling/scripts/plot_fig7_dwell_distribution.py",
+   "source": {
+    "file": "scripts/plot_fig7_dwell_distribution.py",
+    "path": "data[('R2F','SLS')]"
+   },
+   "note": "deterministic recomputation, evaluator-consumed caliber"
+  },
+  {
+   "id": "fig7.R2F.SLS.T_p95",
+   "value": 6.2459,
+   "unit": "s",
+   "caliber_tag": "figure receipt / evaluator-consumed dwell caliber / deterministic recomputation of frozen v5 sweep artifacts, s=1.0, ten seeds",
+   "produced_by": "PYTHONHASHSEED=0 \"/d/Program Files/Python/python\" -B papers/sliding-spotlight-scheduling/scripts/plot_fig7_dwell_distribution.py",
+   "source": {
+    "file": "scripts/plot_fig7_dwell_distribution.py",
+    "path": "data[('R2F','SLS')]"
+   },
+   "note": "deterministic recomputation, evaluator-consumed caliber"
+  },
+  {
+   "id": "fig7.R2F.SLS.ratio_med",
+   "value": 1.3492,
+   "unit": "x",
+   "caliber_tag": "figure receipt / evaluator-consumed dwell caliber / deterministic recomputation of frozen v5 sweep artifacts, s=1.0, ten seeds",
+   "produced_by": "PYTHONHASHSEED=0 \"/d/Program Files/Python/python\" -B papers/sliding-spotlight-scheduling/scripts/plot_fig7_dwell_distribution.py",
+   "source": {
+    "file": "scripts/plot_fig7_dwell_distribution.py",
+    "path": "data[('R2F','SLS')]"
+   },
+   "note": "deterministic recomputation, evaluator-consumed caliber"
+  },
+  {
+   "id": "fig7.R2F.SLS.ratio_max",
+   "value": 1.3757,
+   "unit": "x",
+   "caliber_tag": "figure receipt / evaluator-consumed dwell caliber / deterministic recomputation of frozen v5 sweep artifacts, s=1.0, ten seeds",
+   "produced_by": "PYTHONHASHSEED=0 \"/d/Program Files/Python/python\" -B papers/sliding-spotlight-scheduling/scripts/plot_fig7_dwell_distribution.py",
+   "source": {
+    "file": "scripts/plot_fig7_dwell_distribution.py",
+    "path": "data[('R2F','SLS')]"
+   },
+   "note": "deterministic recomputation, evaluator-consumed caliber"
+  },
+  {
+   "id": "fig7.R2F.SLS.psi_med_deg",
+   "value": 25.7293,
+   "unit": "deg",
+   "caliber_tag": "figure receipt / evaluator-consumed dwell caliber / deterministic recomputation of frozen v5 sweep artifacts, s=1.0, ten seeds",
+   "produced_by": "PYTHONHASHSEED=0 \"/d/Program Files/Python/python\" -B papers/sliding-spotlight-scheduling/scripts/plot_fig7_dwell_distribution.py",
+   "source": {
+    "file": "scripts/plot_fig7_dwell_distribution.py",
+    "path": "data[('R2F','SLS')]"
+   },
+   "note": "deterministic recomputation, evaluator-consumed caliber"
+  },
+  {
+   "id": "fig7.R2F.SPT.n",
+   "value": 333,
+   "unit": "count",
+   "caliber_tag": "figure receipt / evaluator-consumed dwell caliber / deterministic recomputation of frozen v5 sweep artifacts, s=1.0, ten seeds",
+   "produced_by": "PYTHONHASHSEED=0 \"/d/Program Files/Python/python\" -B papers/sliding-spotlight-scheduling/scripts/plot_fig7_dwell_distribution.py",
+   "source": {
+    "file": "scripts/plot_fig7_dwell_distribution.py",
+    "path": "data[('R2F','SPT')]"
+   },
+   "note": "deterministic recomputation, evaluator-consumed caliber"
+  },
+  {
+   "id": "fig7.R2F.SPT.T_med",
+   "value": 6.8072,
+   "unit": "s",
+   "caliber_tag": "figure receipt / evaluator-consumed dwell caliber / deterministic recomputation of frozen v5 sweep artifacts, s=1.0, ten seeds",
+   "produced_by": "PYTHONHASHSEED=0 \"/d/Program Files/Python/python\" -B papers/sliding-spotlight-scheduling/scripts/plot_fig7_dwell_distribution.py",
+   "source": {
+    "file": "scripts/plot_fig7_dwell_distribution.py",
+    "path": "data[('R2F','SPT')]"
+   },
+   "note": "deterministic recomputation, evaluator-consumed caliber"
+  },
+  {
+   "id": "fig7.R2F.SPT.T_p5",
+   "value": 3.7394,
+   "unit": "s",
+   "caliber_tag": "figure receipt / evaluator-consumed dwell caliber / deterministic recomputation of frozen v5 sweep artifacts, s=1.0, ten seeds",
+   "produced_by": "PYTHONHASHSEED=0 \"/d/Program Files/Python/python\" -B papers/sliding-spotlight-scheduling/scripts/plot_fig7_dwell_distribution.py",
+   "source": {
+    "file": "scripts/plot_fig7_dwell_distribution.py",
+    "path": "data[('R2F','SPT')]"
+   },
+   "note": "deterministic recomputation, evaluator-consumed caliber"
+  },
+  {
+   "id": "fig7.R2F.SPT.T_p95",
+   "value": 10.7898,
+   "unit": "s",
+   "caliber_tag": "figure receipt / evaluator-consumed dwell caliber / deterministic recomputation of frozen v5 sweep artifacts, s=1.0, ten seeds",
+   "produced_by": "PYTHONHASHSEED=0 \"/d/Program Files/Python/python\" -B papers/sliding-spotlight-scheduling/scripts/plot_fig7_dwell_distribution.py",
+   "source": {
+    "file": "scripts/plot_fig7_dwell_distribution.py",
+    "path": "data[('R2F','SPT')]"
+   },
+   "note": "deterministic recomputation, evaluator-consumed caliber"
+  },
+  {
+   "id": "fig7.R2F.SPT.ratio_med",
+   "value": 2.0257,
+   "unit": "x",
+   "caliber_tag": "figure receipt / evaluator-consumed dwell caliber / deterministic recomputation of frozen v5 sweep artifacts, s=1.0, ten seeds",
+   "produced_by": "PYTHONHASHSEED=0 \"/d/Program Files/Python/python\" -B papers/sliding-spotlight-scheduling/scripts/plot_fig7_dwell_distribution.py",
+   "source": {
+    "file": "scripts/plot_fig7_dwell_distribution.py",
+    "path": "data[('R2F','SPT')]"
+   },
+   "note": "deterministic recomputation, evaluator-consumed caliber"
+  },
+  {
+   "id": "fig7.R2F.SPT.ratio_max",
+   "value": 2.6549,
+   "unit": "x",
+   "caliber_tag": "figure receipt / evaluator-consumed dwell caliber / deterministic recomputation of frozen v5 sweep artifacts, s=1.0, ten seeds",
+   "produced_by": "PYTHONHASHSEED=0 \"/d/Program Files/Python/python\" -B papers/sliding-spotlight-scheduling/scripts/plot_fig7_dwell_distribution.py",
+   "source": {
+    "file": "scripts/plot_fig7_dwell_distribution.py",
+    "path": "data[('R2F','SPT')]"
+   },
+   "note": "deterministic recomputation, evaluator-consumed caliber"
+  },
+  {
+   "id": "fig7.R2F.SPT.psi_med_deg",
+   "value": 37.7747,
+   "unit": "deg",
+   "caliber_tag": "figure receipt / evaluator-consumed dwell caliber / deterministic recomputation of frozen v5 sweep artifacts, s=1.0, ten seeds",
+   "produced_by": "PYTHONHASHSEED=0 \"/d/Program Files/Python/python\" -B papers/sliding-spotlight-scheduling/scripts/plot_fig7_dwell_distribution.py",
+   "source": {
+    "file": "scripts/plot_fig7_dwell_distribution.py",
+    "path": "data[('R2F','SPT')]"
+   },
+   "note": "deterministic recomputation, evaluator-consumed caliber"
+  },
+  {
+   "id": "fig7.R3H.STR.n",
+   "value": 439,
+   "unit": "count",
+   "caliber_tag": "figure receipt / evaluator-consumed dwell caliber / deterministic recomputation of frozen v5 sweep artifacts, s=1.0, ten seeds",
+   "produced_by": "PYTHONHASHSEED=0 \"/d/Program Files/Python/python\" -B papers/sliding-spotlight-scheduling/scripts/plot_fig7_dwell_distribution.py",
+   "source": {
+    "file": "scripts/plot_fig7_dwell_distribution.py",
+    "path": "data[('R3H','STR')]"
+   },
+   "note": "deterministic recomputation, evaluator-consumed caliber"
+  },
+  {
+   "id": "fig7.R3H.STR.T_med",
+   "value": 1.1932,
+   "unit": "s",
+   "caliber_tag": "figure receipt / evaluator-consumed dwell caliber / deterministic recomputation of frozen v5 sweep artifacts, s=1.0, ten seeds",
+   "produced_by": "PYTHONHASHSEED=0 \"/d/Program Files/Python/python\" -B papers/sliding-spotlight-scheduling/scripts/plot_fig7_dwell_distribution.py",
+   "source": {
+    "file": "scripts/plot_fig7_dwell_distribution.py",
+    "path": "data[('R3H','STR')]"
+   },
+   "note": "deterministic recomputation, evaluator-consumed caliber"
+  },
+  {
+   "id": "fig7.R3H.STR.T_p5",
+   "value": 0.9444,
+   "unit": "s",
+   "caliber_tag": "figure receipt / evaluator-consumed dwell caliber / deterministic recomputation of frozen v5 sweep artifacts, s=1.0, ten seeds",
+   "produced_by": "PYTHONHASHSEED=0 \"/d/Program Files/Python/python\" -B papers/sliding-spotlight-scheduling/scripts/plot_fig7_dwell_distribution.py",
+   "source": {
+    "file": "scripts/plot_fig7_dwell_distribution.py",
+    "path": "data[('R3H','STR')]"
+   },
+   "note": "deterministic recomputation, evaluator-consumed caliber"
+  },
+  {
+   "id": "fig7.R3H.STR.T_p95",
+   "value": 1.4809,
+   "unit": "s",
+   "caliber_tag": "figure receipt / evaluator-consumed dwell caliber / deterministic recomputation of frozen v5 sweep artifacts, s=1.0, ten seeds",
+   "produced_by": "PYTHONHASHSEED=0 \"/d/Program Files/Python/python\" -B papers/sliding-spotlight-scheduling/scripts/plot_fig7_dwell_distribution.py",
+   "source": {
+    "file": "scripts/plot_fig7_dwell_distribution.py",
+    "path": "data[('R3H','STR')]"
+   },
+   "note": "deterministic recomputation, evaluator-consumed caliber"
+  },
+  {
+   "id": "fig7.R3H.STR.ratio_med",
+   "value": 1.1079,
+   "unit": "x",
+   "caliber_tag": "figure receipt / evaluator-consumed dwell caliber / deterministic recomputation of frozen v5 sweep artifacts, s=1.0, ten seeds",
+   "produced_by": "PYTHONHASHSEED=0 \"/d/Program Files/Python/python\" -B papers/sliding-spotlight-scheduling/scripts/plot_fig7_dwell_distribution.py",
+   "source": {
+    "file": "scripts/plot_fig7_dwell_distribution.py",
+    "path": "data[('R3H','STR')]"
+   },
+   "note": "deterministic recomputation, evaluator-consumed caliber"
+  },
+  {
+   "id": "fig7.R3H.STR.ratio_max",
+   "value": 1.333,
+   "unit": "x",
+   "caliber_tag": "figure receipt / evaluator-consumed dwell caliber / deterministic recomputation of frozen v5 sweep artifacts, s=1.0, ten seeds",
+   "produced_by": "PYTHONHASHSEED=0 \"/d/Program Files/Python/python\" -B papers/sliding-spotlight-scheduling/scripts/plot_fig7_dwell_distribution.py",
+   "source": {
+    "file": "scripts/plot_fig7_dwell_distribution.py",
+    "path": "data[('R3H','STR')]"
+   },
+   "note": "deterministic recomputation, evaluator-consumed caliber"
+  },
+  {
+   "id": "fig7.R3H.STR.psi_med_deg",
+   "value": 23.5725,
+   "unit": "deg",
+   "caliber_tag": "figure receipt / evaluator-consumed dwell caliber / deterministic recomputation of frozen v5 sweep artifacts, s=1.0, ten seeds",
+   "produced_by": "PYTHONHASHSEED=0 \"/d/Program Files/Python/python\" -B papers/sliding-spotlight-scheduling/scripts/plot_fig7_dwell_distribution.py",
+   "source": {
+    "file": "scripts/plot_fig7_dwell_distribution.py",
+    "path": "data[('R3H','STR')]"
+   },
+   "note": "deterministic recomputation, evaluator-consumed caliber"
+  },
+  {
+   "id": "fig7.R3H.SLS.n",
+   "value": 145,
+   "unit": "count",
+   "caliber_tag": "figure receipt / evaluator-consumed dwell caliber / deterministic recomputation of frozen v5 sweep artifacts, s=1.0, ten seeds",
+   "produced_by": "PYTHONHASHSEED=0 \"/d/Program Files/Python/python\" -B papers/sliding-spotlight-scheduling/scripts/plot_fig7_dwell_distribution.py",
+   "source": {
+    "file": "scripts/plot_fig7_dwell_distribution.py",
+    "path": "data[('R3H','SLS')]"
+   },
+   "note": "deterministic recomputation, evaluator-consumed caliber"
+  },
+  {
+   "id": "fig7.R3H.SLS.T_med",
+   "value": 5.0676,
+   "unit": "s",
+   "caliber_tag": "figure receipt / evaluator-consumed dwell caliber / deterministic recomputation of frozen v5 sweep artifacts, s=1.0, ten seeds",
+   "produced_by": "PYTHONHASHSEED=0 \"/d/Program Files/Python/python\" -B papers/sliding-spotlight-scheduling/scripts/plot_fig7_dwell_distribution.py",
+   "source": {
+    "file": "scripts/plot_fig7_dwell_distribution.py",
+    "path": "data[('R3H','SLS')]"
+   },
+   "note": "deterministic recomputation, evaluator-consumed caliber"
+  },
+  {
+   "id": "fig7.R3H.SLS.T_p5",
+   "value": 3.5864,
+   "unit": "s",
+   "caliber_tag": "figure receipt / evaluator-consumed dwell caliber / deterministic recomputation of frozen v5 sweep artifacts, s=1.0, ten seeds",
+   "produced_by": "PYTHONHASHSEED=0 \"/d/Program Files/Python/python\" -B papers/sliding-spotlight-scheduling/scripts/plot_fig7_dwell_distribution.py",
+   "source": {
+    "file": "scripts/plot_fig7_dwell_distribution.py",
+    "path": "data[('R3H','SLS')]"
+   },
+   "note": "deterministic recomputation, evaluator-consumed caliber"
+  },
+  {
+   "id": "fig7.R3H.SLS.T_p95",
+   "value": 6.3268,
+   "unit": "s",
+   "caliber_tag": "figure receipt / evaluator-consumed dwell caliber / deterministic recomputation of frozen v5 sweep artifacts, s=1.0, ten seeds",
+   "produced_by": "PYTHONHASHSEED=0 \"/d/Program Files/Python/python\" -B papers/sliding-spotlight-scheduling/scripts/plot_fig7_dwell_distribution.py",
+   "source": {
+    "file": "scripts/plot_fig7_dwell_distribution.py",
+    "path": "data[('R3H','SLS')]"
+   },
+   "note": "deterministic recomputation, evaluator-consumed caliber"
+  },
+  {
+   "id": "fig7.R3H.SLS.ratio_med",
+   "value": 1.3481,
+   "unit": "x",
+   "caliber_tag": "figure receipt / evaluator-consumed dwell caliber / deterministic recomputation of frozen v5 sweep artifacts, s=1.0, ten seeds",
+   "produced_by": "PYTHONHASHSEED=0 \"/d/Program Files/Python/python\" -B papers/sliding-spotlight-scheduling/scripts/plot_fig7_dwell_distribution.py",
+   "source": {
+    "file": "scripts/plot_fig7_dwell_distribution.py",
+    "path": "data[('R3H','SLS')]"
+   },
+   "note": "deterministic recomputation, evaluator-consumed caliber"
+  },
+  {
+   "id": "fig7.R3H.SLS.ratio_max",
+   "value": 1.3744,
+   "unit": "x",
+   "caliber_tag": "figure receipt / evaluator-consumed dwell caliber / deterministic recomputation of frozen v5 sweep artifacts, s=1.0, ten seeds",
+   "produced_by": "PYTHONHASHSEED=0 \"/d/Program Files/Python/python\" -B papers/sliding-spotlight-scheduling/scripts/plot_fig7_dwell_distribution.py",
+   "source": {
+    "file": "scripts/plot_fig7_dwell_distribution.py",
+    "path": "data[('R3H','SLS')]"
+   },
+   "note": "deterministic recomputation, evaluator-consumed caliber"
+  },
+  {
+   "id": "fig7.R3H.SLS.psi_med_deg",
+   "value": 25.6941,
+   "unit": "deg",
+   "caliber_tag": "figure receipt / evaluator-consumed dwell caliber / deterministic recomputation of frozen v5 sweep artifacts, s=1.0, ten seeds",
+   "produced_by": "PYTHONHASHSEED=0 \"/d/Program Files/Python/python\" -B papers/sliding-spotlight-scheduling/scripts/plot_fig7_dwell_distribution.py",
+   "source": {
+    "file": "scripts/plot_fig7_dwell_distribution.py",
+    "path": "data[('R3H','SLS')]"
+   },
+   "note": "deterministic recomputation, evaluator-consumed caliber"
+  },
+  {
+   "id": "fig7.R3H.SPT.n",
+   "value": 349,
+   "unit": "count",
+   "caliber_tag": "figure receipt / evaluator-consumed dwell caliber / deterministic recomputation of frozen v5 sweep artifacts, s=1.0, ten seeds",
+   "produced_by": "PYTHONHASHSEED=0 \"/d/Program Files/Python/python\" -B papers/sliding-spotlight-scheduling/scripts/plot_fig7_dwell_distribution.py",
+   "source": {
+    "file": "scripts/plot_fig7_dwell_distribution.py",
+    "path": "data[('R3H','SPT')]"
+   },
+   "note": "deterministic recomputation, evaluator-consumed caliber"
+  },
+  {
+   "id": "fig7.R3H.SPT.T_med",
+   "value": 6.4624,
+   "unit": "s",
+   "caliber_tag": "figure receipt / evaluator-consumed dwell caliber / deterministic recomputation of frozen v5 sweep artifacts, s=1.0, ten seeds",
+   "produced_by": "PYTHONHASHSEED=0 \"/d/Program Files/Python/python\" -B papers/sliding-spotlight-scheduling/scripts/plot_fig7_dwell_distribution.py",
+   "source": {
+    "file": "scripts/plot_fig7_dwell_distribution.py",
+    "path": "data[('R3H','SPT')]"
+   },
+   "note": "deterministic recomputation, evaluator-consumed caliber"
+  },
+  {
+   "id": "fig7.R3H.SPT.T_p5",
+   "value": 3.616,
+   "unit": "s",
+   "caliber_tag": "figure receipt / evaluator-consumed dwell caliber / deterministic recomputation of frozen v5 sweep artifacts, s=1.0, ten seeds",
+   "produced_by": "PYTHONHASHSEED=0 \"/d/Program Files/Python/python\" -B papers/sliding-spotlight-scheduling/scripts/plot_fig7_dwell_distribution.py",
+   "source": {
+    "file": "scripts/plot_fig7_dwell_distribution.py",
+    "path": "data[('R3H','SPT')]"
+   },
+   "note": "deterministic recomputation, evaluator-consumed caliber"
+  },
+  {
+   "id": "fig7.R3H.SPT.T_p95",
+   "value": 10.5965,
+   "unit": "s",
+   "caliber_tag": "figure receipt / evaluator-consumed dwell caliber / deterministic recomputation of frozen v5 sweep artifacts, s=1.0, ten seeds",
+   "produced_by": "PYTHONHASHSEED=0 \"/d/Program Files/Python/python\" -B papers/sliding-spotlight-scheduling/scripts/plot_fig7_dwell_distribution.py",
+   "source": {
+    "file": "scripts/plot_fig7_dwell_distribution.py",
+    "path": "data[('R3H','SPT')]"
+   },
+   "note": "deterministic recomputation, evaluator-consumed caliber"
+  },
+  {
+   "id": "fig7.R3H.SPT.ratio_med",
+   "value": 1.8164,
+   "unit": "x",
+   "caliber_tag": "figure receipt / evaluator-consumed dwell caliber / deterministic recomputation of frozen v5 sweep artifacts, s=1.0, ten seeds",
+   "produced_by": "PYTHONHASHSEED=0 \"/d/Program Files/Python/python\" -B papers/sliding-spotlight-scheduling/scripts/plot_fig7_dwell_distribution.py",
+   "source": {
+    "file": "scripts/plot_fig7_dwell_distribution.py",
+    "path": "data[('R3H','SPT')]"
+   },
+   "note": "deterministic recomputation, evaluator-consumed caliber"
+  },
+  {
+   "id": "fig7.R3H.SPT.ratio_max",
+   "value": 2.6539,
+   "unit": "x",
+   "caliber_tag": "figure receipt / evaluator-consumed dwell caliber / deterministic recomputation of frozen v5 sweep artifacts, s=1.0, ten seeds",
+   "produced_by": "PYTHONHASHSEED=0 \"/d/Program Files/Python/python\" -B papers/sliding-spotlight-scheduling/scripts/plot_fig7_dwell_distribution.py",
+   "source": {
+    "file": "scripts/plot_fig7_dwell_distribution.py",
+    "path": "data[('R3H','SPT')]"
+   },
+   "note": "deterministic recomputation, evaluator-consumed caliber"
+  },
+  {
+   "id": "fig7.R3H.SPT.psi_med_deg",
+   "value": 34.9475,
+   "unit": "deg",
+   "caliber_tag": "figure receipt / evaluator-consumed dwell caliber / deterministic recomputation of frozen v5 sweep artifacts, s=1.0, ten seeds",
+   "produced_by": "PYTHONHASHSEED=0 \"/d/Program Files/Python/python\" -B papers/sliding-spotlight-scheduling/scripts/plot_fig7_dwell_distribution.py",
+   "source": {
+    "file": "scripts/plot_fig7_dwell_distribution.py",
+    "path": "data[('R3H','SPT')]"
+   },
+   "note": "deterministic recomputation, evaluator-consumed caliber"
+  }
+ ]
+}

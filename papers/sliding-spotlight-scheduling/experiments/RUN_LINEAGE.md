@@ -155,3 +155,5 @@
 > 找回、仍低锚——非绝对不可达）；正文表述为「不可替代」而非「伪象排除」。
 > 编译 59→60 页（两新增句所致，用户批准落句的合理结果）；红闸 0/1417；
 > 版式 0 FAIL。
+
+> 2026-10-28 R96 图面扩展波改名登记: scripts/plot_fig3_coverage_vs_requirement.py -> plot_fig5_coverage_vs_requirement.py, paper/figures/fig3_coverage_vs_requirement.pdf -> fig5_coverage_vs_requirement.pdf, fig2_scheduling_loop.tex -> fig3_scheduling_loop.tex（编号对齐 Fig 1-8；上表历史行不改，现名以本行为准）。新增图链: plot_fig{2,4,6,7,8}_*.py -> figures/fig{2,4,6,7,8}_*.pdf，收据 experiments/v5_results/figure_data/fig{2,4,6,7,8}_*.json。

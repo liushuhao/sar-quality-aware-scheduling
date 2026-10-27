@@ -1,0 +1,140 @@
+{
+ "figure": "fig6_construction_probes",
+ "entries": [
+  {
+   "id": "fig6.af_total_cells",
+   "value": 40,
+   "unit": "cells",
+   "caliber_tag": "figure receipt / construction probes / frozen v5 artifacts, registered budget 40/60 and 16x check 160/240, ten seeds per cell",
+   "produced_by": "PYTHONHASHSEED=0 \"/d/Program Files/Python/python\" -B papers/sliding-spotlight-scheduling/scripts/plot_fig6_construction_probes.py",
+   "source": {
+    "file": "anchor_free/anchor_free.json",
+    "path": "$.length"
+   }
+  },
+  {
+   "id": "fig6.af_feasible_cells",
+   "value": 28,
+   "unit": "cells",
+   "caliber_tag": "figure receipt / construction probes / frozen v5 artifacts, registered budget 40/60 and 16x check 160/240, ten seeds per cell",
+   "produced_by": "PYTHONHASHSEED=0 \"/d/Program Files/Python/python\" -B papers/sliding-spotlight-scheduling/scripts/plot_fig6_construction_probes.py",
+   "source": {
+    "file": "anchor_free/anchor_free.json",
+    "path": "[?(@.anchor_free_max_f1_star != null)]"
+   }
+  },
+  {
+   "id": "fig6.af_infeasible_cells",
+   "value": 12,
+   "unit": "cells",
+   "caliber_tag": "figure receipt / construction probes / frozen v5 artifacts, registered budget 40/60 and 16x check 160/240, ten seeds per cell",
+   "produced_by": "PYTHONHASHSEED=0 \"/d/Program Files/Python/python\" -B papers/sliding-spotlight-scheduling/scripts/plot_fig6_construction_probes.py",
+   "source": {
+    "file": "anchor_free/anchor_free.json",
+    "path": "[?(@.rc == 11)]"
+   },
+   "note": "all R3H; rc=11 'no feasible individual survived'; status, not zero coverage"
+  },
+  {
+   "id": "fig6.af_free_vs_anchor_pp_min",
+   "value": -54.902,
+   "unit": "pp",
+   "caliber_tag": "figure receipt / construction probes / frozen v5 artifacts, registered budget 40/60 and 16x check 160/240, ten seeds per cell",
+   "produced_by": "PYTHONHASHSEED=0 \"/d/Program Files/Python/python\" -B papers/sliding-spotlight-scheduling/scripts/plot_fig6_construction_probes.py",
+   "source": {
+    "file": "anchor_free/anchor_free.json",
+    "path": "[].free_vs_anchor_arm_pp"
+   }
+  },
+  {
+   "id": "fig6.af_free_vs_anchor_pp_max",
+   "value": -12.8906,
+   "unit": "pp",
+   "caliber_tag": "figure receipt / construction probes / frozen v5 artifacts, registered budget 40/60 and 16x check 160/240, ten seeds per cell",
+   "produced_by": "PYTHONHASHSEED=0 \"/d/Program Files/Python/python\" -B papers/sliding-spotlight-scheduling/scripts/plot_fig6_construction_probes.py",
+   "source": {
+    "file": "anchor_free/anchor_free.json",
+    "path": "[].free_vs_anchor_arm_pp"
+   }
+  },
+  {
+   "id": "fig6.af_beats_anchor_count",
+   "value": 0,
+   "unit": "cells",
+   "caliber_tag": "figure receipt / construction probes / frozen v5 artifacts, registered budget 40/60 and 16x check 160/240, ten seeds per cell",
+   "produced_by": "PYTHONHASHSEED=0 \"/d/Program Files/Python/python\" -B papers/sliding-spotlight-scheduling/scripts/plot_fig6_construction_probes.py",
+   "source": {
+    "file": "anchor_free/anchor_free.json",
+    "path": "[].free_beats_anchor_arm"
+   }
+  },
+  {
+   "id": "fig6.bc_total_cells",
+   "value": 40,
+   "unit": "cells",
+   "caliber_tag": "figure receipt / construction probes / frozen v5 artifacts, registered budget 40/60 and 16x check 160/240, ten seeds per cell",
+   "produced_by": "PYTHONHASHSEED=0 \"/d/Program Files/Python/python\" -B papers/sliding-spotlight-scheduling/scripts/plot_fig6_construction_probes.py",
+   "source": {
+    "file": "budget_check/budget_check.json",
+    "path": "$.length"
+   }
+  },
+  {
+   "id": "fig6.bc_gain_nonzero",
+   "value": 0,
+   "unit": "cells",
+   "caliber_tag": "figure receipt / construction probes / frozen v5 artifacts, registered budget 40/60 and 16x check 160/240, ten seeds per cell",
+   "produced_by": "PYTHONHASHSEED=0 \"/d/Program Files/Python/python\" -B papers/sliding-spotlight-scheduling/scripts/plot_fig6_construction_probes.py",
+   "source": {
+    "file": "budget_check/budget_check.json",
+    "path": "[].gain_vs_4060_pp"
+   }
+  },
+  {
+   "id": "fig6.bc_beats_anchor_count",
+   "value": 0,
+   "unit": "cells",
+   "caliber_tag": "figure receipt / construction probes / frozen v5 artifacts, registered budget 40/60 and 16x check 160/240, ten seeds per cell",
+   "produced_by": "PYTHONHASHSEED=0 \"/d/Program Files/Python/python\" -B papers/sliding-spotlight-scheduling/scripts/plot_fig6_construction_probes.py",
+   "source": {
+    "file": "budget_check/budget_check.json",
+    "path": "[].search_beats_anchor"
+   }
+  },
+  {
+   "id": "fig6.bc_budget_check",
+   "value": "160/240",
+   "unit": "pop/gens",
+   "caliber_tag": "figure receipt / construction probes / frozen v5 artifacts, registered budget 40/60 and 16x check 160/240, ten seeds per cell",
+   "produced_by": "PYTHONHASHSEED=0 \"/d/Program Files/Python/python\" -B papers/sliding-spotlight-scheduling/scripts/plot_fig6_construction_probes.py",
+   "source": {
+    "file": "budget_check/budget_check.json",
+    "path": "[].budget"
+   }
+  },
+  {
+   "id": "fig6.af_s_points_R2F",
+   "value": "0.9, 1.4",
+   "unit": "s",
+   "caliber_tag": "figure receipt / construction probes / frozen v5 artifacts, registered budget 40/60 and 16x check 160/240, ten seeds per cell",
+   "produced_by": "PYTHONHASHSEED=0 \"/d/Program Files/Python/python\" -B papers/sliding-spotlight-scheduling/scripts/plot_fig6_construction_probes.py",
+   "source": {
+    "file": "anchor_free/anchor_free.json",
+    "path": "[?(@.family=='R2F')].s"
+   },
+   "note": "unique"
+  },
+  {
+   "id": "fig6.af_s_points_R3H",
+   "value": "0.9, 1.0",
+   "unit": "s",
+   "caliber_tag": "figure receipt / construction probes / frozen v5 artifacts, registered budget 40/60 and 16x check 160/240, ten seeds per cell",
+   "produced_by": "PYTHONHASHSEED=0 \"/d/Program Files/Python/python\" -B papers/sliding-spotlight-scheduling/scripts/plot_fig6_construction_probes.py",
+   "source": {
+    "file": "anchor_free/anchor_free.json",
+    "path": "[?(@.family=='R3H')].s"
+   },
+   "note": "unique"
+  }
+ ]
+}
