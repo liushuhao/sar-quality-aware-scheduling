@@ -7,7 +7,7 @@
 
 | EM 表单要求的件 | 本仓文件 | 备注 |
 |---|---|---|
-| Manuscript（主稿） | `main.pdf`（64 页，2026-10-28 R96 图面扩展波后重编译：新增 Fig 2/4/6/7/8 五图 + Fig 3/5 改名）或 `main.tex` + `refs.bib` + `figures/` | AST 通常要 pdf 供审、源文件录用后收。建议两者都备 |
+| Manuscript（主稿） | `main.pdf`（66 页，2026-10-28 R96 图面扩展 + Wave B/C 五席审查修复波后重编译）或 `main.tex` + `refs.bib` + `figures/` | AST 通常要 pdf 供审、源文件录用后收。建议两者都备 |
 | Cover Letter | `cover_letter.md` | 已含定稿标题；需转 pdf 或纯文本粘贴 |
 | Highlights | `highlights.md`（5 条，最长 82 字符） | EM 表单逐条填入 |
 | Declaration of Competing Interest | `declaration.md` | 已含 "no specific grant" Funding 段 |
@@ -34,7 +34,7 @@
 
 ## 四、投稿前最后三项自检（你点上传前做）
 
-1. **pdf 页数与图表**：64 页（2026-10-28 R96 图面扩展波：+5 页来自五张新图；上一基线 59 页）、8 图（Fig1/Fig3 TikZ + Fig2/4/5/6/7/8 数据图）全部在位；编译零 error、零未定义引用；视觉验收 2026-10-28 全八图模型读图 PASS（fig4 两轮：注记挤叠修复后复验）；Nomenclature 已改 \scriptsize 且 17.08pt 溢出已清（R96）。
+1. **pdf 页数与图表**：66 页（2026-10-28 R96 图面扩展：+5 张新图；Wave B/C 五席审查修复：摘要 250 词重写与口径修正）、8 图（Fig1/Fig3 TikZ + Fig2/4/5/6/7/8 数据图）全部在位；编译零 error、零未定义引用；视觉验收 2026-10-28 全八图模型读图 PASS（fig4 三轮）；>3mm 行溢出已清零（R96）。
 2. **标题五处一致**：`main.tex` / `highlights.md` / `cover_letter.md` / `credit.md` / `declaration.md`。
 3. **[2026-10-24 已失效]** `caleiras2026a` 现有 `pages = {110--121}`，此条不再适用，bibtex 报 1 个 `empty pages` warning（阶段五实测：`mittermayer2003sliding` 有 `pages = {1462-1464}`、`wang2024research` 有 `pages = {328--332}`）。不影响审稿，但编辑部排版时会来找你补。建议投稿前顺手补上。
 
