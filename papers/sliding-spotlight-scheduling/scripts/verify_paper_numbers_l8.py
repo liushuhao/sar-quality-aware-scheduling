@@ -1396,11 +1396,13 @@ def check_ignition_sentences(text: str, label: str, cons_summary: dict,
 
     # conservative sentence: medians, pairs, per-seed ranges
     r2f, r3h = cons_summary["R2F"], cons_summary["R3H"]
-    m = re.search(r"serves\s+a\s+median\s+(\d+)\s+and\s+(\d+)\s+points\s+less",
-                  text)
-    want_lo, want_hi = round(r2f["gap_pp_median"]), round(r3h["gap_pp_median"])
+    m = re.search(r"serves\s+a\s+median\s+(\d+(?:\.\d+)?)\s+and\s+"
+                  r"(\d+(?:\.\d+)?)\s+points\s+less", text)
+    want_lo = round(r2f["gap_pp_median"], 1)
+    want_hi = round(r3h["gap_pp_median"], 1)
     need(m, "conservative gap medians", bool(m) and
-         (int(m.group(1)), int(m.group(2))) == (want_lo, want_hi),
+         (round(float(m.group(1)), 1), round(float(m.group(2)), 1))
+         == (want_lo, want_hi),
          (m.group(1), m.group(2)) if m else None, (want_lo, want_hi))
     m = re.search(r"among\s+the\s+(\d+)\s+and\s+(\d+)\s+consecutive\s+pairs",
                   text)

@@ -376,6 +376,32 @@ def coverage_cost_section(med: dict) -> list:
     return entries
 
 
+def paired_drop_section(agg: dict) -> list:
+    """Headline tightening drops in the paired per-seed form (Wave B): the
+    median over seeds of each seed's own drop, with the per-seed range --
+    the control family's 1.0 ceiling at the as-placed point compresses its
+    unpaired median-of-medians difference, so the paired form travels with
+    the headline numbers."""
+    import statistics
+    entries = []
+    for fam, a, b in (("R3H", 1.0, 0.9), ("R3H", 1.0, 0.8), ("R1C", 1.0, 0.9)):
+        pa = agg["families"][fam][str(a)]["coverage_per_seed"]
+        pb = agg["families"][fam][str(b)]["coverage_per_seed"]
+        drops = [(x - y) * 100.0 for x, y in zip(pa, pb)]
+        med = statistics.median(drops)
+        entries.append(_entry(
+            f"coverage_paired_drop.{fam}.s{a:g}_to_s{b:g}", round(med, 4),
+            "percentage points",
+            "experiments/v5_results/sweep_results.json",
+            f"families.{fam}.coverage_per_seed (paired s={a:g} minus s={b:g}, "
+            "median over seeds)",
+            note=(f"per-seed range [{min(drops):.4f}, {max(drops):.4f}] pp; "
+                  f"{sum(1 for x in pa if x >= 1.0)}/10 seeds sit at the 1.0 "
+                  f"ceiling at s={a:g}"),
+            producer=GEN))
+    return entries
+
+
 def dip_section(agg: dict) -> list:
     """The two R2F dips, with the per-seed movement that produces them."""
     entries = []
@@ -663,6 +689,7 @@ def build(fast: bool = False) -> dict:
     entries = list(cov_entries)
     entries += criteria_section(agg, med)
     entries += coverage_cost_section(med)
+    entries += paired_drop_section(agg)
     entries += dip_section(agg)
     entries += demand_section()
     entries += fulfillment_section(agg)

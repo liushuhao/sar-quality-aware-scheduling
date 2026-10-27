@@ -22,7 +22,7 @@ Image quality reaches the planning literature in three roles, and the difference
 
 ## 2.4 Positioning
 
-A recent SAR-specific line is the closest neighbour and is worth separating explicitly. Liu et al. \cite{liu2025a} and Xin et al. \cite{xin2024sar} plan SAR regional observation with weighted multi-objective and genetic-algorithm planners; Shen et al. \cite{shen2024multistrip} plan multistrip stitching missions under an onboard energy budget; Li et al. \cite{li2026efficient} generate visible windows and screen them for quality before any planning runs. Across these four, the imaging geometry is fixed upstream of the scheduler --- by the request, the strip design, or the generation-side screen --- and none carries a per-task dwell that responds to a per-task resolution requirement inside the scheduling loop. Table 3 positions the neighbouring work on the three axes this paper treats as one chain.
+A recent SAR-specific line is the closest neighbour and is worth separating explicitly. Liu et al. \cite{liu2025a} and Shi et al. \cite{xin2024sar} plan SAR regional observation with weighted multi-objective and genetic-algorithm planners; Shen et al. \cite{shen2024multistrip} plan multistrip stitching missions under an onboard energy budget; Li et al. \cite{li2026efficient} generate visible windows and screen them for quality before any planning runs. Across these four, the imaging geometry is fixed upstream of the scheduler --- by the request, the strip design, or the generation-side screen --- and none carries a per-task dwell that responds to a per-task resolution requirement inside the scheduling loop. Table 3 positions the neighbouring work on the three axes this paper treats as one chain.
 
 | Work | Duration | Quality | Mode |
 |---|---|---|---|
@@ -31,7 +31,7 @@ A recent SAR-specific line is the closest neighbour and is worth separating expl
 | Multistrip planning (shen2024multistrip) | derived from strip design | energy constraint | designed per strip |
 | Window screening (li2026efficient) | generation-side pruning | screening filter | fixed per request |
 | SAR imaging design (kim2021optimal, song2025spaceborne) | mode + geometry at design time | design criterion | designed, not scheduled |
-| This paper | endogenous per task and start | reported reading, never optimised | frozen per task by its requirement |
+| This paper | endogenous per task and start | reported reading, never optimised | grandfathered per task; parameters follow the requirement |
 
 **Table 3.** Positioning on the three axes the paper treats as one chain: what fixes the imaging duration, where image quality enters, and who decides the imaging mode.
 

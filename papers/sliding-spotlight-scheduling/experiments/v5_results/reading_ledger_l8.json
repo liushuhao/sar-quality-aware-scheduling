@@ -2081,6 +2081,42 @@
     },
     {
       "caliber_tag": "L8 / caliber v5 / 9-point demand grid / single budget 40-60",
+      "id": "coverage_paired_drop.R3H.s1_to_s0.9",
+      "note": "per-seed range [16.1404, 32.7715] pp; 0/10 seeds sit at the 1.0 ceiling at s=1",
+      "produced_by": "PYTHONHASHSEED=0 \"/d/Program Files/Python/python\" -B papers/sliding-spotlight-scheduling/scripts/build_reading_ledger_l8.py",
+      "source": {
+        "file": "experiments/v5_results/sweep_results.json",
+        "path": "families.R3H.coverage_per_seed (paired s=1 minus s=0.9, median over seeds)"
+      },
+      "unit": "percentage points",
+      "value": 25.5863
+    },
+    {
+      "caliber_tag": "L8 / caliber v5 / 9-point demand grid / single budget 40-60",
+      "id": "coverage_paired_drop.R3H.s1_to_s0.8",
+      "note": "per-seed range [37.9679, 54.1199] pp; 0/10 seeds sit at the 1.0 ceiling at s=1",
+      "produced_by": "PYTHONHASHSEED=0 \"/d/Program Files/Python/python\" -B papers/sliding-spotlight-scheduling/scripts/build_reading_ledger_l8.py",
+      "source": {
+        "file": "experiments/v5_results/sweep_results.json",
+        "path": "families.R3H.coverage_per_seed (paired s=1 minus s=0.8, median over seeds)"
+      },
+      "unit": "percentage points",
+      "value": 46.9807
+    },
+    {
+      "caliber_tag": "L8 / caliber v5 / 9-point demand grid / single budget 40-60",
+      "id": "coverage_paired_drop.R1C.s1_to_s0.9",
+      "note": "per-seed range [26.7857, 52.9412] pp; 6/10 seeds sit at the 1.0 ceiling at s=1",
+      "produced_by": "PYTHONHASHSEED=0 \"/d/Program Files/Python/python\" -B papers/sliding-spotlight-scheduling/scripts/build_reading_ledger_l8.py",
+      "source": {
+        "file": "experiments/v5_results/sweep_results.json",
+        "path": "families.R1C.coverage_per_seed (paired s=1 minus s=0.9, median over seeds)"
+      },
+      "unit": "percentage points",
+      "value": 42.0696
+    },
+    {
+      "caliber_tag": "L8 / caliber v5 / 9-point demand grid / single budget 40-60",
       "id": "dip.R2F.s0.8->s0.9",
       "note": "per-seed movements [seed_index, delta]: [(3, -0.018315018315), (9, 0.004184100418)]; the median moves because these opposite displacements net negative",
       "produced_by": "PYTHONHASHSEED=0 \"/d/Program Files/Python/python\" -B papers/sliding-spotlight-scheduling/scripts/build_reading_ledger_l8.py",
@@ -5179,7 +5215,7 @@
       "reads": "deliv.sec2_median.<FAM>.s<X>"
     }
   ],
-  "n_entries": 387,
+  "n_entries": 390,
   "notes": {
     "caliber_separation": "The fulfillment ratio is a dimensionless ratio on the library caliber; f_Q_deliv is an absolute m^-2 quantity on the descriptive delivered caliber. They are different quantities at different calibers: report them in separate statements with their own tags, never side by side in one table and never as a ratio of one to the other.",
     "dip_attribution": "Both R2F dips come from the greedy anchor construction, which is deterministic and reproducible. Evidence: in all 180 R2F and R3H sweep units the anchor equals the unit maximum (max_f1_star == anchor_f1_star) and the search-only maximum is empty, so no dip can be a search miss. Each dip is the net of two opposite single-seed displacements (see the dip.* entries for the exact seeds). No physical monotonicity claim is made from either dip.",
