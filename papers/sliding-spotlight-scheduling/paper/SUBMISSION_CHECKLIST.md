@@ -7,7 +7,7 @@
 
 | EM 表单要求的件 | 本仓文件 | 备注 |
 |---|---|---|
-| Manuscript（主稿） | `main.pdf`（66 页，2026-10-28 R96 图面扩展 + Wave B/C 五席审查修复波后重编译）或 `main.tex` + `refs.bib` + `figures/` | AST 通常要 pdf 供审、源文件录用后收。建议两者都备 |
+| Manuscript（主稿） | `main.pdf`（46 页，elsarticle `preprint` 单倍行距，2026-10-29 压缩波批0/批1 后编译物）+ `main.tex` + `refs.bib` + `figures/` | 现行 AST 指南要求**可编辑源文件**（"A PDF is not an acceptable source file"）——EM 传 LaTeX 源码组，由 EM 自建审稿 PDF；另需每位作者 100 词内简介 + 证件照（随图上传） |
 | Cover Letter | `cover_letter.md` | 已含定稿标题；需转 pdf 或纯文本粘贴 |
 | Highlights | `highlights.md`（5 条，最长 82 字符） | EM 表单逐条填入 |
 | Declaration of Competing Interest | `declaration.md` | 已含 "no specific grant" Funding 段 |
@@ -34,7 +34,7 @@
 
 ## 四、投稿前最后三项自检（你点上传前做）
 
-1. **pdf 页数与图表**：66 页（2026-10-28 R96 图面扩展：+5 张新图；Wave B/C 五席审查修复：摘要 250 词重写与口径修正；R98 图波：fig4/6/7 标注重排 + fig4(b) 刻度标签倒序修复）、8 图（Fig1/Fig3 TikZ + Fig2/4/5/6/7/8 数据图）全部在位；编译零 error、零未定义引用；视觉验收 2026-10-28 五轮判读终态 PASS（R98 修复后 30/43/46 三图页复核 PASS，早前「全八图 PASS」判词中三页被 R98 推翻重验）；>3mm 行溢出已清零（R96）。
+1. **pdf 页数与图表**：46 页（preprint 单倍行距；2026-10-29 压缩波：批0 排版切换 + fig2/fig8 图面修复 + 批1 纯压缩 ≈-1 页，Table 1 已删——其内容由 §2.4 散文完全承载）、8 图（Fig1/Fig3 TikZ + Fig2/4/5/6/7/8 数据图）全部在位；编译零 error、零未定义引用；视觉验收 2026-10-29 三轮闭环 8/8 PASS（fig2 地板标注冲突、fig8(b) 图例/基线标注/(a)标签三处修复后复判过）。**关于 AST 指南「<35 页」**：劝导性条款、无强制后果；本稿单倍行距 46 页（约 22,000 词）——进一步压缩受 L8 数字闸静默丢失守卫与 T55/IGN 片段钉限制（§6.7/§3.2/§6.5/§7.1 的读数句为历轮波次刻意钉入的检查面），投稿前不再压缩。
 2. **标题五处一致**：`main.tex` / `highlights.md` / `cover_letter.md` / `credit.md` / `declaration.md`。
 3. **[2026-10-24 已失效]** `caleiras2026a` 现有 `pages = {110--121}`，此条不再适用，bibtex 报 1 个 `empty pages` warning（阶段五实测：`mittermayer2003sliding` 有 `pages = {1462-1464}`、`wang2024research` 有 `pages = {328--332}`）。不影响审稿，但编辑部排版时会来找你补。建议投稿前顺手补上。
 
