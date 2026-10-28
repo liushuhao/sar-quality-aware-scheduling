@@ -1,0 +1,41 @@
+{
+  "faces": {
+    "tex": "paper/main.tex",
+    "full": "paper/full.md",
+    "abs": "paper/sections/sec_abstract.md",
+    "sec1": "paper/sections/sec1_introduction.md",
+    "sec2": "paper/sections/sec2_related_work.md",
+    "sec3": "paper/sections/sec3_problem_formulation.md",
+    "sec4": "paper/sections/sec4_solving_approach.md",
+    "sec5": "paper/sections/sec5_experimental_design.md",
+    "sec6": "paper/sections/sec6_results.md",
+    "sec7": "paper/sections/sec7_discussion.md",
+    "sec8": "paper/sections/sec8_conclusion.md"
+  },
+  "probes": [
+    {"id": "wavec.stale-five-scope", "why": "Wave C 1323c36: scope count word is now Six", "faces": ["tex", "full", "sec7"], "needle": "Five scope statements", "expect": 0},
+    {"id": "wavec.stale-moved-exactly", "why": "Wave C: attribution wording replaced by decided-by form", "faces": ["tex", "full", "sec7"], "needle": "moved by exactly the sub-tolerance", "expect": 0},
+    {"id": "wavec.stale-every-cost", "why": "Wave C: 'Every cost' narrowed to 'Every as-placed cost'", "faces": ["tex", "full", "sec7"], "needle": "Every cost in this subsection", "expect": 0},
+    {"id": "wavec.stale-dated-paren", "why": "Wave C: parenthetical replaced by em-dash form", "faces": ["tex", "full", "sec7"], "needle": "were measured (dated design record) to exceed", "expect": 0},
+    {"id": "wavec.stale-55.52", "why": "Wave C: 55.52 precision unified to 55.5", "faces": ["tex", "full"], "needle": "28.3 and 55.52", "expect": 0},
+    {"id": "wavec.stale-unqual-contrib", "why": "Wave C: stripmap delivery claim must carry the clip qualifier", "faces": ["tex", "full"], "needle": "so that the delivered resolution equals the requirement at the selected start by construction", "expect": 0},
+    {"id": "wavec.stale-unqual-concl", "why": "Wave C: same qualifier rule, conclusion form", "faces": ["tex", "full"], "needle": "per task, so the delivered resolution equals the requirement at the selected start by construction;", "expect": 0},
+    {"id": "wavec.stale-unqual-mech", "why": "Wave C: same qualifier rule, mechanism form", "faces": ["tex", "full"], "needle": "at the selected start, so the delivered resolution equals the requirement by construction, and a tighter", "expect": 0},
+    {"id": "wavec.stale-unqual-pos", "why": "Wave C: same qualifier rule, position form", "faces": ["tex", "full"], "needle": "the resolution delivered at the selected start equals the requirement, and the coverage cost", "expect": 0},
+    {"id": "wavec.six-scope", "why": "Wave C: Six scope statements present", "faces": ["tex", "full"], "needle": "Six scope statements are registered", "expect": 1},
+    {"id": "wavec.sixth-texfull", "why": "Wave C: sixth scenario-set scope item present", "faces": ["tex", "full"], "needle": "Sixth, the scenario set itself", "expect": 1},
+    {"id": "wavec.clip-contrib", "why": "Wave C: STR/P contributions carry start-domain clip qualifier", "faces": ["tex", "full"], "needle": "(the stripmap branch delivers at or finer through its start-domain clip)", "expect": 1},
+    {"id": "wavec.clip-concl", "why": "Wave C: conclusion carries start-domain clip qualifier", "faces": ["tex", "full"], "needle": "(stripmap delivers at or finer through the start-domain clip)", "expect": 1},
+    {"id": "wavec.tasklaw-mech", "why": "Wave C: task-law modes equal-requirement claim scoped by construction", "faces": ["tex", "full"], "needle": "so for the two task-law modes the delivered resolution equals the requirement by construction", "expect": 1},
+    {"id": "wavec.caption-55.5", "why": "Wave C: 55.5 precision, tex uses ~pp and md uses pp", "faces": ["tex", "full"], "needle": "28.3 and 55.5~pp", "override": {"full": "28.3 and 55.5 pp"}, "expect": 1},
+    {"id": "wavec.decided-by", "why": "Wave C: attribution wording present", "faces": ["tex", "full"], "needle": "decided by the sub-tolerance displacements", "expect": 1},
+    {"id": "wavec.asplaced-cost", "why": "Wave C: narrowed cost claim present", "faces": ["tex", "full"], "needle": "Every as-placed cost in this subsection", "expect": 1},
+    {"id": "wavec.dash-record", "why": "Wave C: em-dash dated-design-record form present", "faces": ["tex", "full"], "needle": "were measured --- a dated design record --- to exceed", "expect": 1},
+    {"id": "wavec.concl-attrib", "why": "Wave C: conclusion attribution numbers present exactly once per face", "faces": ["tex", "full"], "needle": "costs 28.3 points on the 50-task and 55.5 on the 100-task family", "expect": 1},
+    {"id": "wavec.sixth-sec7", "why": "Wave C round2 dcd84ba: sec7 carries Sixth exactly once (dedup guard)", "faces": ["sec7"], "needle": "Sixth, the scenario set itself", "expect": 1},
+    {"id": "wavec.sec6-lead", "why": "Wave C: sec6 replay lead sentence present", "faces": ["sec6"], "needle": "The violation rate --- median per-seed rates 27.4 and 42.4", "expect": 1},
+    {"id": "wavec.sec6-old-lead", "why": "Wave C: superseded sec6 lead absent", "faces": ["sec6"], "needle": "The fixed-dwell plan does not survive the replay on the dense families.", "expect": 0},
+    {"id": "wavec.555-count-tex", "why": "Wave C: 55.5 appears exactly 3x in tex (caption/body/conclusion)", "faces": ["tex"], "needle": "55.5", "expect": 3},
+    {"id": "wavec.555-count-full", "why": "Wave C: 55.5 appears exactly 3x in full.md", "faces": ["full"], "needle": "55.5", "expect": 3}
+  ]
+}
