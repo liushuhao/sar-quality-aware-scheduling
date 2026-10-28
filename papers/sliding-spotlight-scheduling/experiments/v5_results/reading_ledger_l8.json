@@ -5090,22 +5090,22 @@
       },
       {
         "id": "l7_coverage_cost_5_5pp",
-        "regex": "5\\.5\\s*(?:pp|percentage\\s+points)",
+        "regex": "(?<![\\d.])5\\.5\\s*(?:pp|percentage\\s+points)",
         "why": "the L7 coverage cost, superseded by the L8 figure"
       },
       {
         "id": "l7_cost_misattributed_1_61pp",
-        "regex": "1\\.6[01]\\s*(?:pp|percentage\\s+points)",
+        "regex": "(?<![\\d.])1\\.6[01]\\s*(?:pp|percentage\\s+points)",
         "why": "the withdrawn -1.61 pp reading (an L7 number moved onto L8 undivided); the L8 R2F order-point cost is -2.36 pp against s = 2.0, so a bare 1.60/1.61 pp value is the withdrawn one"
       },
       {
         "id": "old_retention_84_4",
-        "regex": "84\\.4",
+        "regex": "(?<![\\d.])84\\.4(?!\\d)",
         "why": "the L7 retention figure, which included the SLS/SPT library-caliber narrowing retired by 8.17-12"
       },
       {
         "id": "old_retention_63_7",
-        "regex": "63\\.7",
+        "regex": "(?<![\\d.])63\\.7(?!\\d)",
         "why": "same as 84.4, on the other family"
       }
     ],
@@ -5118,17 +5118,17 @@
       },
       {
         "id": "pooled_quality_position_3_9722",
-        "regex": "3\\.9722",
+        "regex": "(?<![\\d.])3\\.9722(?!\\d)",
         "why": "the retired pooled quality-position statistic (dB)"
       },
       {
         "id": "pooled_quality_t_24_78",
-        "regex": "24\\.78",
+        "regex": "(?<![\\d.])24\\.78(?!\\d)",
         "why": "the t statistic of the retired pooled quality-position test"
       },
       {
         "id": "dq_all_66_872",
-        "regex": "66\\.872",
+        "regex": "(?<![\\d.])66\\.872(?!\\d)",
         "why": "the retired dq_all reading"
       },
       {
