@@ -6,6 +6,13 @@
 
 ## 当前活跃批次
 
+### 2026-10-28 Wave B/C 五席全量审查（R96 图波后、投稿前全量）→ 修复闭环 executed
+
+- **产物**: [waveb-20261028/](waveb-20261028/) — 五席报告 + 确认席（report-claims 主张 / report-ars 方法论 / report-code 代码 / report-theory 理论 / report-kdense 异轨 K-Dense 物料 / report-confirm 确认轮）。审查对象 = eba51b9（R96 图波后 main.tex）。
+- **发现与处置**: 合计 4 P0/16 P1/19 P2，全部修复或裁决（42f4d39 + 确认轮 1323c36 + round2 对账 dcd84ba）。两枚实证 P0：C3 归一化参考写死库常数 13.7579s vs 实现逐任务 1.3·T_env；STR 交付方向「at or coarser」写反（C5 分支改 (D/2)/cosψ + 起始域裁剪）。kdense P0：Xin→Shi 姓氏更正 +「double-digit」与 7.08 自相矛盾。摘要压回 250 词（R-30 裁决口径）。
+- **常驻化**: 镜像双向探针已泛化为 `scripts/sync_mirrors_check.py` + 探针登记表（bcb43ab），后续修复波只追加探针不再写一次性脚本。
+- **用途**: 审稿期 rebuttal 预答索引——C3 口径、STR 交付方向、引用勘误、统计标签（paired/median/bound-to-bound）四类已有预答与证据链。
+
 ### 2026-10-23 t54 后全量面板复审（ARS 五席 fresh + 编辑裁决 + 三层链闭合 2026-10-24）→ Major Revision
 
 - **面板产物**: [panel-full-20261023/](panel-full-20261023/) — 五席报告（seat1-eic / seat2-methodology / seat3-domain / seat4-perspective / seat5-devils-advocate）+ [editorial-decision.md](panel-full-20261023/editorial-decision.md)（含 T1–T22 路线图、DA 两条 CRITICAL 裁决、§8 复审整合、§9 终裁整合、六轴 provenance）。审查对象 = t54 八步修订后的 main.tex（commit 479eda5），五席全部 fresh 上下文、互不可见、不读旧批次。
