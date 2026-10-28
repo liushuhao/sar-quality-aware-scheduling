@@ -1149,6 +1149,25 @@ def t54_expectations(served_instances: int | None = None,
         pb.append(max(fb2, key=lambda m: m["f1_star"])["f1_star"])
     exp["pair_r2f_sat_pp"] = statistics.median(
         [b_ - a_ for a_, b_ in zip(pa, pb)]) * 100.0
+    # R3H paired per-seed drop s=1.0 -> s=0.9 plus a seed-level bootstrap CI
+    # for the median (post-hoc, added in the 2026-10-28 revision wave); RNG
+    # seeded so gate recomputation is exact; B=10000 must match the prose
+    import random as _random
+    r3a, r3b = [], []
+    for seed in range(300, 310):
+        a = _load(V5 / "sweep" / "s1_0" / f"pilot_R3H_seed{seed}.json")
+        b = _load(V5 / "sweep" / "s0_9" / f"pilot_R3H_seed{seed}.json")
+        fa = [m for m in a["front"] if m["cv"] <= 0.0] or a["front"]
+        fb3 = [m for m in b["front"] if m["cv"] <= 0.0] or b["front"]
+        r3a.append(max(fa, key=lambda m: m["f1_star"])["f1_star"])
+        r3b.append(max(fb3, key=lambda m: m["f1_star"])["f1_star"])
+    r3_drops = [a_ - b_ for a_, b_ in zip(r3a, r3b)]
+    exp["pair_r3h_drop_pp"] = statistics.median(r3_drops) * 100.0
+    rng = _random.Random(20261028)
+    boots = sorted(statistics.median(rng.choices(r3_drops, k=len(r3_drops)))
+                   for _ in range(10000))
+    exp["pair_r3h_ci"] = (boots[round(0.025 * 9999)] * 100.0,
+                          boots[round(0.975 * 9999)] * 100.0)
     return exp
 
 
@@ -1237,6 +1256,13 @@ _T54_CHECKS = [
      lambda m, e: [(float(m.group(1)), e[("drop", "R3H", 0.8)], 0.055, "fig caption drop")]),
     (re.compile(r"the\s+(\d+(?:\.\d+)?)~s\s+settle"),
      lambda m, e: [(float(m.group(1)), e["fb_settle"], 0.005, "settle term")]),
+    (re.compile(r"bootstrap of those ten paired R3H drops \(10,000 resamples, "
+                r"computed for this revision\) puts a 95\\?% confidence "
+                r"interval for the median at (\d+(?:\.\d+)?)--(\d+(?:\.\d+)?)"),
+     lambda m, e: [(float(m.group(1)), round(e["pair_r3h_ci"][0], 1), 0.051,
+                    "R3H paired bootstrap CI lo"),
+                   (float(m.group(2)), round(e["pair_r3h_ci"][1], 1), 0.051,
+                    "R3H paired bootstrap CI hi")]),
 ]
 
 _TAB_ROW = re.compile(

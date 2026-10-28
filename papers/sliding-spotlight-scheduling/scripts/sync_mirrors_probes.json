@@ -36,6 +36,8 @@
     {"id": "wavec.sec6-lead", "why": "Wave C: sec6 replay lead sentence present", "faces": ["sec6"], "needle": "The violation rate --- median per-seed rates 27.4 and 42.4", "expect": 1},
     {"id": "wavec.sec6-old-lead", "why": "Wave C: superseded sec6 lead absent", "faces": ["sec6"], "needle": "The fixed-dwell plan does not survive the replay on the dense families.", "expect": 0},
     {"id": "wavec.555-count-tex", "why": "Wave C: 55.5 appears exactly 3x in tex (caption/body/conclusion)", "faces": ["tex"], "needle": "55.5", "expect": 3},
-    {"id": "wavec.555-count-full", "why": "Wave C: 55.5 appears exactly 3x in full.md", "faces": ["full"], "needle": "55.5", "expect": 3}
+    {"id": "wavec.555-count-full", "why": "Wave C: 55.5 appears exactly 3x in full.md", "faces": ["full"], "needle": "55.5", "expect": 3},
+    {"id": "rev1.bootstrap-ci-tex", "why": "2026-10-28 revision: seed-level bootstrap CI sentence (R3H paired drop)", "faces": ["tex"], "needle": "puts a 95\\% confidence interval for the median at 18.0--30.2 points", "expect": 1},
+    {"id": "rev1.bootstrap-ci-md", "why": "2026-10-28 revision: bootstrap CI sentence mirrors (percent form)", "faces": ["full", "sec6"], "needle": "puts a 95% confidence interval for the median at 18.0--30.2 points", "expect": 1}
   ]
 }
