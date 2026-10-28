@@ -116,8 +116,8 @@ def main() -> int:
     axa.set_ylim(-0.55, 2.55)
     axa.invert_yaxis()
     axa.set_xlabel("pairs violating C2 under replay (%)")
-    axa.text(0.02, 0.94, "(a)", transform=axa.transAxes, fontsize=9.5,
-             va="top", ha="left")
+    axa.text(0.02, 0.06, "(a)", transform=axa.transAxes, fontsize=9.5,
+             va="bottom", ha="left")
 
     # ---- (b) coverage gap after repair, per arm, per family ---------------
     offsets = {"R1C": -0.24, "R2F": 0.0, "R3H": 0.24}
@@ -151,8 +151,8 @@ def main() -> int:
                 f"fig8.gap_per_seed.{ARM_KEYS[arm]}.{fam}",
                 [round(g, 4) for g in gaps], "pp", src[0], src[1]))
     axb.axvline(0.0, color="0.55", lw=0.7, ls=":")
-    axb.text(0.4, 3.62, "endogenous baseline = 0", fontsize=6.4, color="0.30",
-             va="top", ha="left")
+    axb.text(5.5, -0.5, "endogenous baseline = 0", fontsize=6.4, color="0.30",
+             va="center", ha="left")
     axb.set_yticks(range(4))
     axb.set_yticklabels(ARMS)
     axb.set_xlim(-2.0, 72.0)
@@ -178,7 +178,7 @@ def main() -> int:
 
     handles = [plt.Line2D([], [], marker=".", linestyle="none",
                           color=COLORS[f], label=f) for f in FAMILIES]
-    axb.legend(handles=handles, frameon=False, loc="lower right",
+    axb.legend(handles=handles, frameon=False, loc="upper right",
                borderaxespad=0.3, handletextpad=0.2)
 
     OUT.parent.mkdir(parents=True, exist_ok=True)

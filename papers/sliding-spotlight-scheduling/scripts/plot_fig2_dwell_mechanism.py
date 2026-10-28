@@ -141,7 +141,7 @@ def main() -> int:
 
     # stripmap floor = the SLS domain edge at zero squint
     ax.axvline(floor, color="0.35", lw=0.7, ls=":", zorder=2)
-    ax.text(floor - 0.04, 12.9, "STR floor $D/2=2.4669$ m\n= SLS domain edge",
+    ax.text(floor - 0.04, 11.3, "STR floor $D/2=2.4669$ m\n= SLS domain edge",
             ha="right", va="top", fontsize=6.4, color="0.30")
 
     # registered operating point on the sliding branch
