@@ -132,8 +132,7 @@ def main() -> int:
     xs = range(len(GROUPS))
     for ax, key, ylab in ((axa, "T", "dwell at the selected start $T$ (s)"),
                           (axb, "ratio",
-                           "$T/T(\\bar\\psi\\!=\\!0)$, same geometry\n"
-                           "(axis range $[0.8,2.9]$)")):
+                           "$T/T(\\bar\\psi\\!=\\!0)$, same geometry")):
         boxes, medians = [], []
         for g in GROUPS:
             v = sorted(data[g][key])
@@ -160,14 +159,20 @@ def main() -> int:
         else:
             ax.set_ylim(0.8, 2.9)
             ax.axhline(1.0, color="0.45", lw=0.7, ls=":")
-            ax.text(0.995, 1.02, "the frozen zero-squint assumption",
+            # ratios are >=1 by construction, so the band under the reference
+            # line is data-free -- the label lives there instead of on boxes
+            ax.text(0.995, 0.988, "the frozen zero-squint assumption",
                     transform=ax.get_yaxis_transform(), fontsize=6.2,
-                    color="0.30", va="bottom", ha="right")
-        ax.set_ylabel(ylab, fontsize=8.0)
+                    color="0.30", va="top", ha="right")
+        ax.set_ylabel(ylab, fontsize=8.0 if key == "T" else 7.0)
+        if key == "ratio":
+            # one-line label is ~11pt taller than panel (b); pin it low so
+            # its top clears panel (a)'s rotated label above
+            ax.yaxis.set_label_coords(-0.115, -0.08)
         ax.text(0.011, 0.955, "(a)" if key == "T" else "(b)",
                 transform=ax.transAxes, fontsize=9.5, va="top", ha="left")
 
-    axb.set_xlabel("family \\ mode")
+    axb.set_xlabel("family $\\times$ mode")
 
     # receipts: per-group stats + mode-level squint medians
     for g in GROUPS:

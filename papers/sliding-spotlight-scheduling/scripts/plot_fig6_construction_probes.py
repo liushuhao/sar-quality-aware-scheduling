@@ -103,15 +103,20 @@ def main() -> int:
         axa.plot(x, lo - 0.012, marker="x", markersize=3.4, mew=0.8,
                  linestyle="none", color=COLORS["R3H"], clip_on=False,
                  zorder=3)
-    axa.text(0.565, lo - 0.052,
-             "12 of 40 cells: no feasible individual\n(all R3H; marked, not "
-             "plotted as zero)", fontsize=6.0, color=COLORS["R3H"],
-             va="top", ha="left")
     axa.set_ylabel("anchor-free arm $\\eta$")
     axa.text(0.04, 0.97, "(a)", transform=axa.transAxes, fontsize=9.5,
              va="top", ha="left")
-    axa.text(0.04, 0.885, "28 cells, 0 above\nthe identity line",
-             transform=axa.transAxes, fontsize=6.4, color="0.30", va="top")
+    # merged note, upper-left above-identity triangle (data-free zone; the
+    # below-axis placement used to overprint the tick labels and the xlabel)
+    axa.text(0.04, 0.855,
+             "28 cells, 0 above\n"
+             "the identity line;\n"
+             "12 more (all R3H):\n"
+             "no feasible individual\n"
+             "(marked below the axis,\n"
+             "not zero)",
+             transform=axa.transAxes, fontsize=6.0, color="0.30",
+             va="top", ha="left")
 
     # (b) 16x budget vs registered: all 40 on the identity line
     for u in bc:

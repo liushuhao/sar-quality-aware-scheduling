@@ -114,15 +114,16 @@ def main() -> int:
     axa.add_patch(plt.Rectangle((cx - half * 1.47, cy - half), half * 2 * 1.47,
                                 half * 2, fill=False, lw=0.7, ls="--",
                                 color="0.45"))
-    axa.text(cx + half * 1.47, cy - half + 0.35,
-             f"shared domain: {pre['domain_side_km']:.0f} km side, "
-             f"5$\\times$5 nodes @ {pre['grid_spacing_km']:.0f} km",
-             fontsize=6.4, color="0.30", ha="right", va="bottom")
+    # the shared-domain note is redundant with the caption (which carries
+    # the 1000 km side, 20N/0E centre and the 5x5/250 km grid) and its long
+    # single line crossed the panel frame
     axa.set_xlabel("longitude (deg)")
     axa.set_ylabel("latitude (deg)")
     axa.set_aspect(1.0 / 0.78)  # cosmetic lat stretch, lon-lat equal spacing
     axa.text(0.02, 0.97, "(a)", transform=axa.transAxes, fontsize=9.5,
-             va="top", ha="left")
+             va="top", ha="left",
+             bbox=dict(facecolor="white", edgecolor="none", alpha=0.85,
+                       pad=0.5))
     receipts.append(_entry("fig4.domain_centre_deg", [cx, cy], "deg",
                            f"scenarios/R3H_seed{REP_SEED['R3H']}.json",
                            "preregistration.domain_centre_deg"))
@@ -151,9 +152,10 @@ def main() -> int:
                          color="white" if m == "STR" else "black")
                 left += counts[m]
         ci = COMP_INTERVAL[fam]
-        axb.text(left + 1.5, ymap[fam],
-                 f"{ci['admitted']} admitted/seed\n"
-                 f"(STR {ci['STR']} / SLS {ci['SLS']} / SPT {ci['SPT']})",
+        # short admitted-range tag in the empty right zone; the 2-line
+        # mode-range label was wider than the panel and crossed the frame
+        # (mode ranges live in the reading ledger, cited nowhere in prose)
+        axb.text(left + 3, ymap[fam], f"adm {ci['admitted']}",
                  fontsize=6.2, color="0.30", va="center", ha="left")
         receipts.append(_entry(f"fig4.rep_seed_modes.{fam}", counts, "tasks",
                                f"scenarios/{fam}_seed{REP_SEED[fam]}.json",
@@ -165,12 +167,16 @@ def main() -> int:
                                "mode_decomposition.json",
                                f"families.{fam}.composition_interval"))
     axb.set_yticks([2, 1, 0])
-    axb.set_yticklabels(FAMILIES[::-1])
+    # bars sit at ymap {R1C:2, R2F:1, R3H:0}, so labels follow ytick order
+    # (top first) -- the reversed list put R3H's name on R1C's row
+    axb.set_yticklabels(FAMILIES)
     axb.set_xlabel("tasks of the representative seed")
     axb.set_xlim(0, 168)
     axb.set_xticks([0, 50, 100])
     axb.text(0.02, 0.97, "(b)", transform=axb.transAxes, fontsize=9.5,
-             va="top", ha="left")
+             va="top", ha="left",
+             bbox=dict(facecolor="white", edgecolor="none", alpha=0.85,
+                       pad=0.5))
 
     # ---- (c) passes per task, ten seeds pooled -----------------------------
     for row, fam in enumerate(FAMILIES):
@@ -181,16 +187,22 @@ def main() -> int:
         axc.plot([row + ((i % 7) - 3) * 0.021 for i in range(len(wpt))], wpt,
                  marker=".", markersize=1.7, linestyle="none",
                  color=COLORS[fam], alpha=0.30)
-        ci = COMP_INTERVAL[fam]
-        axc.text(row + 0.28, 16.0,
-                 f"{ci['windows']} windows/seed", fontsize=6.2,
-                 color="0.30", va="top", ha="left")
         print(f"# (c) {fam}: {len(wpt)} tasks pooled, windows/task "
               f"median {sorted(wpt)[len(wpt)//2]}, max {max(wpt)}")
         receipts.append(_entry(f"fig4.windows_per_task_median.{fam}",
                                sorted(wpt)[len(wpt) // 2], "windows/task",
                                f"scenarios/{fam}_seed*.json",
                                "tasks[].windows.length"))
+    # per-seed intervals as one stacked block in the empty top band (strip
+    # data max = 12); the wide per-row labels crossed the panel frame in
+    # both the same-y and the staggered variants
+    axc.text(0.16, 0.97,
+             "per-seed intervals:\n" +
+             "\n".join(f"{fam} adm {COMP_INTERVAL[fam]['admitted']}, "
+                       f"win {COMP_INTERVAL[fam]['windows']}"
+                       for fam in FAMILIES),
+             transform=axc.transAxes, fontsize=6.2, color="0.30",
+             va="top", ha="left")
     axc.set_xticks(range(3))
     axc.set_xticklabels(FAMILIES)
     axc.set_ylabel("windows per task")
@@ -203,9 +215,13 @@ def main() -> int:
                           color="0.35", label=m) for m in ("STR", "SLS", "SPT")]
     handles += [plt.Line2D([], [], marker="s", linestyle="none",
                            color=COLORS[f], label=f) for f in FAMILIES]
-    axa.legend(handles=handles, frameon=False, loc="upper left",
+    # the map has no data-free corner, so the legend takes an opaque white
+    # box at upper right instead of floating transparent over the markers
+    axa.legend(handles=handles, frameon=True, loc="upper right",
                borderaxespad=0.2, handletextpad=0.15, ncol=2,
-               columnspacing=0.8, fontsize=6.6)
+               columnspacing=0.8, fontsize=6.6,
+               facecolor="white", framealpha=0.92, edgecolor="0.75",
+               borderpad=0.35, labelspacing=0.25)
 
     OUT.parent.mkdir(parents=True, exist_ok=True)
     fig.savefig(OUT, bbox_inches="tight")
