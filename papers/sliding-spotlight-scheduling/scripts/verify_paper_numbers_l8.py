@@ -1263,6 +1263,10 @@ _T54_CHECKS = [
                     "R3H paired bootstrap CI lo"),
                    (float(m.group(2)), round(e["pair_r3h_ci"][1], 1), 0.051,
                     "R3H paired bootstrap CI hi")]),
+    (re.compile(r"Attribution of the (\d+(?:\.\d+)?)-point as-placed residual "
+                r"is left as future work"),
+     lambda m, e: [(float(m.group(1)), round(abs(e["_cost_r3h"]), 2), 0.055,
+                    "R3H as-placed residual (future-work sentence)")]),
 ]
 
 _TAB_ROW = re.compile(
