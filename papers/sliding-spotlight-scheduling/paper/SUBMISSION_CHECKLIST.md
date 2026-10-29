@@ -9,7 +9,7 @@
 |---|---|---|
 | Manuscript（主稿） | `main.pdf`（46 页，elsarticle `preprint` 单倍行距，2026-10-29 压缩波批0/批1 后编译物）+ `main.tex` + `refs.bib` + `figures/` | 现行 AST 指南要求**可编辑源文件**（"A PDF is not an acceptable source file"）——EM 传 LaTeX 源码组，由 EM 自建审稿 PDF；另需每位作者 100 词内简介 + 证件照（随图上传） |
 | Cover Letter | `cover_letter.md` | 已含定稿标题；需转 pdf 或纯文本粘贴 |
-| Highlights | `highlights.md`（5 条，最长 82 字符） | EM 表单逐条填入 |
+| Highlights | `highlights.md`（5 条，最长 83 字符） | EM 表单逐条填入 |
 | Declaration of Competing Interest | `declaration.md` | 已含 "no specific grant" Funding 段 |
 | CRediT authorship | `credit.md` | 单作者全角色 |
 | Suggested reviewers | **需你填** | 见下方第三节 |

@@ -34,7 +34,7 @@ Three features distinguish the submission:
    caliber where it is stated.
 
 The manuscript has not been published previously and is not under
-consideration elsewhere. I approve the submission and declares
+consideration elsewhere. I approve the submission and declare
 no competing interests. I believe the paper fits Aerospace Science and Technology's scope in
 space-systems engineering and mission planning, and I thank you for your
 consideration.
