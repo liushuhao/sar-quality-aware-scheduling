@@ -4,7 +4,7 @@ Declaration of Competing Interest
 Paper: Resolution-Driven Scheduling of Agile SAR Satellite: From Fixed to Endogenous Imaging Dwells
 Author: LIU Shuhao
 
-The author declares that he has no known competing financial interests
+The author declares no known competing financial interests
 or personal relationships that could have appeared to influence the
 work reported in this paper.
 
