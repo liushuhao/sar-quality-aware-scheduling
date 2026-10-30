@@ -95,6 +95,23 @@ def _git_head8():
 
 HEAD8 = _git_head8()
 KNOWN_BAD_CALIBER = {"681ced6b"}  # pre-RDR066 f2/f3 NESZ double-count
+# 2026-10-31: stamps 4cfc42c0/720e63c8 predate R51 (19c9f34), which removed
+# the never-passed resolution_reqs kwarg (moea.py) and write-only
+# phi_min_res/theta_min_res fields (types.py); the only other shared-lib
+# deltas since the stamp are ticket-26's fail-loud replacement of a
+# never-executed fallback (so_f1.py) and verifier-only C1 window-containment
+# (verification/constraints.py). None touch the stored-data generation path,
+# so these stamps remain numerically current. Enforcement:
+# src/tests/test_paper1_solver_equivalence_pin.py pins HEAD vs the stamped
+# tree (bit-identical value fields, entropy RNG pinned) and carries a
+# negative control against KNOWN_BAD stamp 681ced6b; the FULL run additionally
+# compares against stored entries (evidence:
+# papers/single-sat-quality/review/pin-equivalence-evidence-20261031-obj{2,3}.json;
+# stored-comparison deltas on some scenarios are per-schedule tau jitter of the
+# documented non-bit-reproducible stochastic search, not code drift).
+# A future behavior change in the value chain must re-adjudicate this
+# whitelist (the pin test turns red).
+REVIEWED_EQUIVALENT = {"4cfc42c0", "720e63c8"}
 # Value-defining solver code. m2/m3 f-values change iff this file changes
 # (RDR-066 objective formula and the B1 knee-selection fix both live here).
 SOLVER_CODE = "src/sar_sim/solver/moea.py"
@@ -108,6 +125,8 @@ def _solver_code_identical(ver):
     output that is still numerically current."""
     if ver in KNOWN_BAD_CALIBER or ver in ("MISSING", "unknown"):
         return False
+    if ver in REVIEWED_EQUIVALENT:
+        return True
     r = subprocess.run(
         ["git", "diff", "--quiet", ver, "HEAD", "--", SOLVER_CODE],
         cwd=str(REPO), capture_output=True,
