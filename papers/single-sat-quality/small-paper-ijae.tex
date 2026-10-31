@@ -398,7 +398,7 @@ We define a dimensionless geometric quality index:
 f_2 = \frac{1}{|\mathcal{S}|} \sum_{i \in \mathcal{S}} \sin\theta_{\text{elev},i} \cdot \cos\psi_{\text{sq},i}
 \label{eq:f2}
 \end{equation}
-Higher $f_2$ indicates smaller ground pixel area (better geometric resolution).
+Higher $f_2$ indicates a smaller per-task ground-pixel-area factor (better geometric resolution).
 The quality indices are unweighted means over the scheduled set, orthogonal to
 the priority weights used in $f_1$: they reflect the average imaging geometry
 of the selected tasks rather than biasing quality toward high-priority targets.
@@ -413,7 +413,7 @@ so no separate squint factor is needed), we define the radiometric quality index
 f_3 = \frac{1}{|\mathcal{S}|} \sum_{i \in \mathcal{S}} \cos^3\xi_i
 \label{eq:f3}
 \end{equation}
-Higher $f_3$ indicates lower NESZ (better radiometric sensitivity).
+Higher $f_3$ indicates a lower per-task NESZ factor (better radiometric sensitivity).
 
 \paragraph{Modeling choices behind Eq.~\ref{eq:f3}.}
 Equation~\ref{eq:f3} is grounded in a 3D geometric approximation that
@@ -1558,8 +1558,9 @@ the geometric correlation over the full feasible envelope from the
 within-schedule residual isolates where an objective's value is lost to
 saturation rather than to a mathematical redundancy. The geometric-resolution
 objective ($f_2$) carries directly to optical systems, where ground sample
-distance grows with off-nadir angle (the optical pixel footprint scales
-as $1/\cos^2\eta$), and an analogous density-dependent
+distance grows with off-nadir angle (the cross-track optical ground sample
+distance scales as $1/\cos^2\eta$; the pixel area additionally takes a
+$1/\cos\eta$ along-track factor), and an analogous density-dependent
 saturation is a testable expectation for such settings; the radiometric objective ($f_3$, NESZ) does not,
 because optical radiometry depends on illumination and cloud cover rather
 than on observation geometry alone. The decomposition, rather than any
