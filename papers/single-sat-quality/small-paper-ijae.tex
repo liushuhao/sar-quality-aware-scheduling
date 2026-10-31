@@ -519,12 +519,12 @@ Both are observation-geometry limits applied before scheduling.
 The quality objectives capture first-order geometric and radiometric
 effects (ground-range resolution, azimuth broadening, $R^3$ NESZ scaling).
 Second-order radar effects are treated as platform-level constants and are
-not modeled: the Doppler-centroid magnitude $f_{\text{dc}} \approx (2v/\lambda)\sin\psi_{\text{sq}}$
-(its sign follows the look direction and is outside the model scope)
+not modeled: the Doppler centroid $f_{\text{dc}} \approx (2v/\lambda)\sin\psi_{\text{sq}}$
 (of order $10^2$\,kHz at the scheduled $16$--$24^\circ$ squints, versus a
 PRF of order $10^0$--$10^1$\,kHz --- large enough that operational Stripmap
 systems employ yaw steering, with Doppler-centroid tracking handling the
-residual), the azimuth antenna gain roll-off with squint, and
+residual; the model uses only its magnitude, whose sign follows the look
+direction and is out of scope), the azimuth antenna gain roll-off with squint, and
 squint-dependent azimuth processing. This idealization preserves the
 relative ordering of acquisition geometries \emph{within} the simulated
 platform family, which is what the solver comparisons act on; absolute
