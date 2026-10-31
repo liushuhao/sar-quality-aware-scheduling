@@ -678,6 +678,10 @@ try:
           extra["f3_margins"]["S1"]["knee3"]["margin_pct"] / 100.0, 0.003)
     check("n13-knee2-blind", "§6.4 radiometric-blind knee margin", 0.0005,
           extra["f3_margins"]["S1"]["knee2"]["margin_pct"] / 100.0, 0.003)
+    # §5.3 tail risk (memory How-to-apply trigger, cleared 2026-10-31): S4
+    # MOEA-3 f2 10th percentile sits below the G-BL mean.
+    check("tail-p10-s4-m3-f2", "§5.3 S4 MOEA-3 f2 10th percentile", 0.2913,
+          extra["tail_risk"]["S4"]["MOEA-3_f2"]["p10"], 0.002)
     env = json.load(open(PAPER / "experiments" / "results" / "null_new_caliber2026.json"))
     r_env = np.mean([env[g]["r_envelope"] for g in ("S1", "S2", "S3", "S4")])
     r_null = np.mean([env[g]["r_shuffle_null_mean"] for g in ("S1", "S2", "S3", "S4")])
