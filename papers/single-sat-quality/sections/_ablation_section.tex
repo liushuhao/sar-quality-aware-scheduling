@@ -51,7 +51,7 @@ degradation), the opposite sign of the $\Delta f_1^*\%$ column.
 
 \begin{table}[H]
 \centering
-\caption{Per-class ablation results. $f_1/n$ is the mean priority weight of the selected tasks. Bold: significant at the ablation threshold $\alpha=0.05/12$ (Wilcoxon signed-rank vs.~A, \S\ref{sec:evaluation-metrics}; all marked cells satisfy it).}
+\caption{Per-class ablation results. $f_1/n$ is the mean priority weight of the selected tasks. Bold: significant at the ablation threshold $\alpha=0.05/12$ on the $\Delta f_1^*\%$ column (Wilcoxon signed-rank vs.~A, \S\ref{sec:evaluation-metrics}; the family comprises the 12 variant-by-class comparisons, and all marked cells satisfy it).}
 \label{tab:ablation}
 \begin{tabular}{llccccrc}
 \toprule
@@ -105,7 +105,7 @@ degradation), the opposite sign of the $\Delta f_1^*\%$ column.
 \begin{figure}[H]
     \centering
     \includegraphics[width=\textwidth]{fig5_ablation.pdf}
-    \caption{Ablation results across objective-function variants B--D and scenario classes S1--S4. Bars show degradation relative to the full-physics baseline A for normalized profit $f_1^*$ and post hoc geometric-quality metrics $f_2$ and $f_3$; negative values indicate that a variant outperforms A. Asterisks mark paired Wilcoxon comparisons against A significant at the Bonferroni threshold ($p<0.05/12$).}
+    \caption{Ablation results across objective-function variants B--D and scenario classes S1--S4. Bars show degradation relative to the full-physics baseline A for normalized profit $f_1^*$ and post hoc geometric-quality metrics $f_2$ and $f_3$; negative values indicate that a variant outperforms A. Asterisks mark paired Wilcoxon comparisons against A significant at the Bonferroni threshold ($p<0.05/12$, applied within each reported metric).}
     \label{fig:fig5}
 \end{figure}
 

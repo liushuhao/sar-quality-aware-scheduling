@@ -634,6 +634,16 @@ check("t2-s1-m3-f3", "Table 2 S1 MOEA-3 f3", 0.698, _grp_mean(m3, "S1", "f3"), 0
 check("t2-s2-m2-f1", "Table 2 S2 MOEA-2 f1*", 0.98, _grp_mean(m2, "S2", "f1"), 0.005)
 check("t2-s4-m2-f2", "Table 2 S4 MOEA-2 f2", 0.337, _grp_mean(m2, "S4", "f2"), 0.0005)
 
+# ── panel 20261031 R1-02: variant-A-only density trend (§5.1) ────────────────
+# A-only = distribution-only modulation, identical geometry definition across
+# classes; the pure-density-axis replication of the saturation claim.
+for _cls, _exp in (("S1", 0.372), ("S2", 0.035), ("S3", 0.004), ("S4", 0.003)):
+    _va = [k for k in m2 if k.startswith(_cls + "/") and "-A_" in k]
+    _g = float(np.mean([bl[k]["b1"]["f2"] for k in _va]))
+    _m = float(np.mean([m2[k]["f2"] for k in _va]))
+    check(f"va-{_cls.lower()}-f2gain", f"§5.1 variant-A-only MOEA-2 f2 gain ({_cls})",
+          _exp, (_m - _g) / _g, 0.002)
+
 # ── panel 20260830 new findings (N13/N15/N18/envelope) ─────────────────────
 try:
     extra = json.load(open(PAPER / "experiments" / "results" / "panel20260830_extra.json"))
