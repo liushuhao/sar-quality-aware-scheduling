@@ -148,6 +148,8 @@ $$B_D(m,\bar\psi)=\frac{V_s}{\rho_{a,\mathrm{ach}}(m,\bar\psi)}\equiv\frac{V_s\c
 | (23) | p.11 | $A_q\tan^2\theta_{s_1}+B_q\tan\theta_{s_1}+C_q=0$，其中 $A_q=\tan\frac{\theta_a}{2}$；$B_q=\frac{r_0}{R_0+r_0}+\Big[\frac{W_a}{R_0+r_0}+\frac{R_0}{R_0+r_0}\tan\big(\theta_{s_0}+\frac{\theta_a}{2}\big)-\tan\theta_{s_0}\Big]\tan\frac{\theta_a}{2}$；$C_q=\frac{R_0}{R_0+r_0}\tan\frac{\theta_a}{2}-\tan\theta_{s_0}+\frac{W_a}{R_0+r_0}+\frac{R_0}{R_0+r_0}\tan\big(\theta_{s_0}+\frac{\theta_a}{2}\big)$（两根中取落在所需斜视角区间的一个） |
 | (24) | p.11 | $\Delta t_{SAT_{squint,sliding}}=\dfrac{L}{V_s}=\dfrac{(R_0+r_0)(\tan\theta_{s_0}-\tan\theta_{s_1})}{V_s}$ |
 
+- **Eq.(22) 两式不可混用**（2026-11-01 复核）：左式（$R_0$ 杠杆）自带 $+W_a$，右式（$(R_0+r_0)$ 杠杆）已把场景项含在括号内、其后再加 $W_a$ 即重复计入。生产实现 `sss_core/duration.py:486` 走**左式**，即 `R0*(tan(hi)-tan(lo)) + Wa`，`hi/lo = psi ± alpha/2`、`alpha = theta_a + (R0*theta_a + Wa)/r0`。在 12°/0.5 m 参考点：左式 = 50,695.671 m（代码值），右式单用 = 50,919.920 m（+0.442%），两者相加 $W_a$ 的混写 = 55,919.920 m（+10.305%）——论文正文曾印此混写，已改为左式。两项差异不是数值噪声：右式与本实现的差别来自本实现用对称 alpha 构造而非 Eq.(23) 的端斜视精确根（该近似即正文 §3.2 的 ≤1.9% 项）。
+
 - Eq.(23) 系数经**独立代数重推逐项验证一致**（由 Eq.(22) 两个等价形式对 $\tan\theta_{s_1}$ 消元；本轮复核曾疑 $C_q$ 末项分母为 $r_0$，经 p.11 高分辨率渲染（4× DPI）确认其为 $R_0$，与重推一致）。
 - Eq.(25)-(29)（p.13-14）：姿态四元数/DCM 与**旋转中心 ECEF 位置构造**（Eq.(27) 中点式、Eq.(28) 比例式（$\|\cdot\|=W_a$）、Eq.(29) 直线参数式）——蓝图附 A 引用定位正确；D5（边界角速率）与 C1b（旋转中心几何）引用此处，本票不复原其符号细节（姿态域非本票公式族）。
 - **25% 裕度**（Kim 2021 全文共 **4 处**，票 21 修订——原记「两处」漏 p.19/p.25；逐处原文，p.7/p.11 为执行层定义，p.19/p.25 为参数复述与结果段回述）：

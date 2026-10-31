@@ -295,8 +295,9 @@ def duration_scene_s(
          `theta_a` centred on `psi`; the planar sec^2 form approximates it to
          0.0009% at 45 deg and is kept as `duration_scene_planar_oracle`.
     SLS: the Kim Eq.(22)/(24) sliding chain via the symmetric-alpha checker
-         (`kim_checker_scene_sls`), i.e. `(R0+r0)(tan theta_s0 - tan
-         theta_s1) + Wa` over `Vs`.  The planar sec^2 form deviates +0.42% at
+         (`kim_checker_scene_sls`), i.e. `R0*(tan(psi+alpha/2) - tan(psi-alpha/2))
+         + Wa` over `Vs`, with `alpha = theta_a + (R0*theta_a + Wa)/r0` the
+         broadened sweep.  The planar sec^2 form deviates +0.42% at
          12 deg and +5.30% at 45 deg -- it is the oracle now, not production.
     SPT: exact tan-difference over beta_span (Kim Eq.(10)-(11)); unchanged,
          the beam is parked on the scene so scene == point; an azimuth extent

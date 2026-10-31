@@ -10,7 +10,7 @@ Two discipline risks shape the methodology as much as the physics does. First, a
 
 ## 1.2 Contributions
 
-The paper's contributions are three: the platform that carries the requirement into the physics, the mode-dependence of what a requirement costs in coverage, and the discipline that keeps both claims testable:
+The paper's contributions are three: the platform that carries the requirement into the physics, the family-shape contrast in what a requirement costs in coverage, and the discipline that keeps both claims testable:
 
 1. **An enabling physics-to-scheduler platform** (the platform leg). A three-mode continuum formalisation (Section 3) that carries the scene-level dwell closures and the maneuver-coupled transfer feasibility into one scheduling loop: the imaging mode is resolved from the product requirement, the mode parameters follow the requirement where the mode has them --- so that the delivered resolution equals the requirement at the selected start by construction, an identity the search cannot violate rather than a constraint it could --- and the requirement excludes solutions in exactly one place, the stripmap antenna floor, where a finer order has no admissible mode. The dwell duration is a consequence of the requirement rather than a constant --- under a frozen mode assignment (Section 3.5).
 
