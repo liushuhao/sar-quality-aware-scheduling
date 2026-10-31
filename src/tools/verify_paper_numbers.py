@@ -49,6 +49,7 @@ m2 = json.loads(fingerprint("moea_2obj/_progress.json").read_text(encoding="utf-
 m3 = json.loads(fingerprint("moea_3obj/_progress.json").read_text(encoding="utf-8"))
 b2 = json.loads(fingerprint("b2_profit_bl/_progress.json").read_text(encoding="utf-8"))
 sched_corr = json.loads(fingerprint("schedule_correlation.json").read_text(encoding="utf-8"))
+sched_corr_a = json.loads(fingerprint("schedule_correlation_a_only.json").read_text(encoding="utf-8"))
 env = json.loads(fingerprint("r_visible_envelope.json").read_text(encoding="utf-8"))
 sr = json.loads(fingerprint("statistical_results.json").read_text(encoding="utf-8"))
 p2_cliff = json.loads(fingerprint("phenomenon2_cliff.json").read_text(encoding="utf-8"))
@@ -453,6 +454,11 @@ for v, key in (("A_full_physics", "A"), ("D_no_physics", "D")):
     else:
         check("corr-D-S1", "§6.4 D per-task r S1", -0.13, r1, 0.02)
         check("corr-D-S4", "§6.4 D per-task r S4", -0.2, r4, 0.02)
+
+# ── panel 20261031 RES1: variant-A-only coupling trend (§5.1) ────────────────
+for _cls, _exp in (("S1", -0.80), ("S2", -0.23), ("S3", -0.15), ("S4", -0.31)):
+    check(f"corr-aonly-{_cls.lower()}", f"§5.1 variant-A-only pooled r ({_cls})",
+          _exp, sched_corr_a["classes"][_cls]["r"], 0.005)
 
 # envelope correlation (C7-feasible, |psi|<=45deg, pooled across S1-S4)
 from scipy.integrate import quad  # noqa: E402
