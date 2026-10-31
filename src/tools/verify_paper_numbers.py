@@ -474,6 +474,13 @@ check("rep-max-f3-sd", "§5.4 max within-instance f3 SD", 0.00288, max(v for k, 
 check("rep-max-f2-sd", "§5.4 max within-instance f2 SD", 0.00094, max(v for k, v in _rep_sds.items() if k.endswith("/f2")), 0.0002)
 check("rep-max-f1-sd", "§5.4 max within-instance f1 SD", 0.00394, max(v for k, v in _rep_sds.items() if k.endswith("/f1")), 0.0005)
 
+# ── ticket 04: f3 proxy conservatism validation (§3.2) ───────────────────────
+_tnf = json.loads(fingerprint("true_nesz_factor_gain.json").read_text(encoding="utf-8"))
+check("tnf-proxy-gain", "§3.2 f3 proxy gain MOEA-3 vs G-BL S1 (rom)", 0.404,
+      _tnf["proxy_gain_rom"], 0.003)
+check("tnf-true-gain", "§3.2 true-factor gain cos3xi/sintheta (rom)", 0.943,
+      _tnf["true_gain_rom"], 0.003)
+
 # envelope correlation (C7-feasible, |psi|<=45deg, pooled across S1-S4)
 from scipy.integrate import quad  # noqa: E402
 c7_means = [env["summary"][s]["r_visible_c7_mean"] for s in ("S1", "S2", "S3", "S4")]

@@ -308,6 +308,12 @@ $\text{NESZ} \propto 1/(\cos^3\theta_{\text{elev}} \cdot \cos^3\psi_{\text{sq}})
 该排序辩护在窗口内择时最强，因为入射角在单个可见窗口内仅变化几度（S1 场景内窗口均值约 $1.5^\circ$；\S\ref{sec:ablation}）；
 而在跨目标或跨窗口、跨越完整 $18^\circ$--$47^\circ$ 入射角范围时，被抑制的 $\sin\theta$ 因子变化约 $2.4\times$，
 因此 $f_3$ 应读作几何代理，而非宽分离入射角间的绝对 NESZ 排序。
+事实上该抑制是构造性保序的：地面入射角是同一离底角的单调函数
+（$\theta = \arcsin\big(\frac{R_e+H}{R_e}\sin\xi\big)$，\S\ref{sec:system-model}），
+除以 $\sin\theta$ 只会重新加权而不可能改变观测几何的排序。
+按保留因子重算 \S\ref{sec:overall-performance} 的稀疏场景对比，MOEA-3 相对
+G-BL 的增益从 $+40\%$ 扩大到 $+94\%$（S1 类均值之比）：代理读数是保守下界，
+基于排序的比较不受影响。
 在求解器产生的调度中，逐任务斜视角适中而非常近零
 （四个密度类的平均 $|\psi_{\text{sq}}|$ 为 $16$--$24^\circ$，第 90 百分位为 $32$--$39^\circ$），
 因此 $\cos^3\psi_{\text{sq}}$ 因子贡献约 $10$--$25\%$ 的 $f_3$ 范围，远高于近零斜视时的几个百分点。

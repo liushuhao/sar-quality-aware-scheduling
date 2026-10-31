@@ -436,6 +436,15 @@ few degrees (about $1.5^\circ$ mean within-window range in the S1 scenarios;
 $18^\circ$--$47^\circ$ incidence range, the suppressed $\sin\theta$ factor
 varies by roughly $2.4\times$, so $f_3$ should be read as a geometry proxy
 rather than an absolute NESZ ranking across widely separated incidence angles.
+In fact the suppression is ordering-preserving by construction: the ground
+incidence is a monotone function of the same off-nadir angle
+($\theta = \arcsin\big(\frac{R_e+H}{R_e}\sin\xi\big)$,
+\S\ref{sec:system-model}), so dividing by $\sin\theta$ reweights but cannot
+reorder acquisition geometries. Recomputing the sparse-regime comparison of
+\S\ref{sec:overall-performance} with the retained factor enlarges the MOEA-3
+gain over G-BL from $+40\%$ to $+94\%$ (ratio of class means at S1): the
+proxy reading is conservative, and the ordering-based comparisons are
+unaffected.
 In the schedules produced by the solvers below, the per-task squint angle is
 moderate rather than near-zero (the mean $|\psi_{\text{sq}}|$ across the four
 density classes is $16$--$24^\circ$, with a $90$th percentile of
