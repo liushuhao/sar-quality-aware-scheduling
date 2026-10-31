@@ -1607,9 +1607,9 @@ roughly half of the dense S3--S4 scenarios, so dense-regime convergence
 reflects both temporal (C2) and resource (C3--C4) saturation, and results
 may differ under other energy or downlink budgets; and the
 dwell time is fixed at 30\,s, removing the dwell-versus-SNR trade-off that an
-agile scheduler could otherwise exploit. The utility model also optimizes quality
-and quantity at a fixed timeliness operating point; explicit latency and
-urgency objectives are left to future work. The reference-point counts of MOEA-2
+agile scheduler could otherwise exploit. The utility model optimizes quality and quantity without an explicit
+latency or urgency objective; acquisition timeliness is therefore not
+evaluated as a separate scheduling dimension and is left to future work. The reference-point counts of MOEA-2
 ($H=13$) and MOEA-3 ($H=91$) differ by construction, but a matched control at $p=4$
 ($H=15$, \S~\ref{sec:pareto-coupling}) confirms the sparse-regime $f_3$ gain is not driven by
 reference-direction density. Finally, we do not benchmark against learning-based
