@@ -460,6 +460,20 @@ for _cls, _exp in (("S1", -0.80), ("S2", -0.23), ("S3", -0.15), ("S4", -0.31)):
     check(f"corr-aonly-{_cls.lower()}", f"§5.1 variant-A-only pooled r ({_cls})",
           _exp, sched_corr_a["classes"][_cls]["r"], 0.005)
 
+# ── panel 20261031 RES2: replicate-run within-instance SD (§5.4) ─────────────
+_rep = json.loads(fingerprint("replicate_variance_20261031/_progress.json").read_text(encoding="utf-8"))["completed"]
+def _rep_sd(cls, solver, key):
+    vals = [v[key] for k, v in _rep.items() if k.startswith(f"{cls}/{solver}/rep")]
+    return float(np.std(vals))
+_rep_sds = {f"{c}/{s}/{k}": _rep_sd(c, s, k) for c in ("S1", "S2", "S3", "S4")
+            for s in ("MOEA-2", "MOEA-3") for k in ("f1", "f2", "f3")}
+check("rep-s1s4-zero", "§5.4 replicate SD bit-identical at S1/S4", 0.0,
+      max(_rep_sds[f"{c}/{s}/{k}"] for c in ("S1", "S4") for s in ("MOEA-2", "MOEA-3")
+          for k in ("f1", "f2", "f3")), 1e-12)
+check("rep-max-f3-sd", "§5.4 max within-instance f3 SD", 0.00288, max(v for k, v in _rep_sds.items() if k.endswith("/f3")), 0.0002)
+check("rep-max-f2-sd", "§5.4 max within-instance f2 SD", 0.00094, max(v for k, v in _rep_sds.items() if k.endswith("/f2")), 0.0002)
+check("rep-max-f1-sd", "§5.4 max within-instance f1 SD", 0.00394, max(v for k, v in _rep_sds.items() if k.endswith("/f1")), 0.0005)
+
 # envelope correlation (C7-feasible, |psi|<=45deg, pooled across S1-S4)
 from scipy.integrate import quad  # noqa: E402
 c7_means = [env["summary"][s]["r_visible_c7_mean"] for s in ("S1", "S2", "S3", "S4")]

@@ -852,6 +852,13 @@ governs instance generation; the NSGA-III sampling seed is fixed at the
 library default while operator-level random draws are not pinned), so
 within-instance search stochasticity is not replicated; the released
 processed results pin the exact front realizations analyzed.
+A replicated-run check quantifies the cost of this design: five repeats of
+each NSGA-III solver on one variant-A scenario per class reproduce
+bit-identically at S1 and S4, and where variation appears (S2, S3) the
+within-instance SD of the knee values stays at or below $0.004$ in absolute
+terms---at most $7\%$ of the corresponding between-scenario SD for $f_3$ and
+$3\%$ for $f_2$ ($f_1^*$ varies by at most $0.004$ against class means of
+$0.98$--$1.00$).
 Results from the main experiment are presented in
 \S\ref{sec:overall-performance}--\S\ref{sec:pareto-coupling} and \S\ref{sec:squint-special}.
 The second is the ablation experiment, which successively removes the squint component
