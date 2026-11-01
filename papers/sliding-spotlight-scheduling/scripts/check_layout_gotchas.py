@@ -99,7 +99,10 @@ def check(tex_path: Path, log_path: Path) -> tuple[list[str], list[str], list[st
             prev = max(prev, refs[lab])
 
     # 4. advisory caps tokens outside whitelisted/expanded usage
-    body = re.sub(r"%.*", "", tex)
+    # An escaped percent (\% , a literal sign in the manuscript) is NOT a
+    # comment opener; stripping from it silently swallows the rest of the
+    # line and any caps token printed after it (R87, 2026-11-01).
+    body = re.sub(r"(?<!\\)%.*", "", tex)
     seen: dict[str, int] = {}
     for m in CAPS_TOKEN.finditer(body):
         tok = m.group(0)
@@ -117,6 +120,7 @@ SELFTEST_TEX = (
     r"\begin{figure}[t]\label{fig:one}\end{figure}" + "\n"
     r"\begin{figure}[t]\label{fig:two}\end{figure}" + "\n"
     r"see Fig.~\ref{fig:two} then Fig.~\ref{fig:one} and the H/W item" + "\n"
+    r"a literal 5\% sign and then the SCENE token" + "\n"
     r"\begin{table}[t]\label{tab:orphan}\end{table}" + "\n"
 )
 SELFTEST_LOG = (
@@ -133,7 +137,8 @@ def selftest() -> int:
         (d / "m.log").write_text(SELFTEST_LOG, encoding="utf-8")
         fails, warns, advisories = check(d / "m.tex", d / "m.log")
     joined = "\n".join(fails + advisories)
-    need = ["201.0pt", "orphan table: tab:orphan", "citation order: fig:two", "'H/W'"]
+    need = ["201.0pt", "orphan table: tab:orphan", "citation order: fig:two",
+            "'H/W'", "'SCENE'"]
     missing = [n for n in need if n not in joined]
     if missing:
         print(f"SELFTEST FAIL: did not re-detect {missing}")
