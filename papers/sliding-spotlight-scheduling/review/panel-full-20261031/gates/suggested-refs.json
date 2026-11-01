@@ -1,0 +1,30 @@
+{
+  "checker": "verify_panel_recommendations/1",
+  "status": "partial",
+  "reports": [
+    {
+      "seat": "R2",
+      "input": "papers\\sliding-spotlight-scheduling\\review\\panel-full-20261031\\reports\\domain.phase2.md",
+      "input_sha256": "4c8160943613fdbfa06ef4aac3566917e182413372c6aad19e6000382147e64d",
+      "blocks": 0,
+      "problems": [
+        {
+          "kind": "missing"
+        }
+      ]
+    },
+    {
+      "seat": "R3",
+      "input": "papers\\sliding-spotlight-scheduling\\review\\panel-full-20261031\\reports\\perspective.phase2.md",
+      "input_sha256": "37e96d1522ee4281ba65fd8d76b127759f5586ca9a641372179c178fa4221482",
+      "blocks": 0,
+      "problems": [
+        {
+          "kind": "missing"
+        }
+      ]
+    }
+  ],
+  "items": [],
+  "item_problems": []
+}

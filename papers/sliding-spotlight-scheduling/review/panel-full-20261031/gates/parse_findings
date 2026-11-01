@@ -1,0 +1,17 @@
+import pathlib
+import re
+
+d = pathlib.Path(r"D:\hermes\my-workspace\projects\planning-paper\papers\sliding-spotlight-scheduling\review\panel-full-20261031\reports")
+for name in ["methodology", "domain", "perspective", "da"]:
+    text = (d / f"{name}.phase2.md").read_text(encoding="utf-8", errors="replace")
+    print(f"=== {name} ===")
+    blocks = re.split(r"(?m)^### (W\d+): ", text)
+    for i in range(1, len(blocks), 2):
+        wid = blocks[i]
+        body = blocks[i + 1]
+        title = body.splitlines()[0]
+        sev_match = re.search(r"(?m)^\*\*Severity\*\*: (\w+)", body)
+        anchor_match = re.search(r"(?m)^\*\*Evidence Anchor\*\*: (.+)$", body)
+        sev = sev_match.group(1) if sev_match else "?"
+        anchor = anchor_match.group(1) if anchor_match else "?"
+        print(f"{wid} {sev} | {title} | {anchor[:220]}")

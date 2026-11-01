@@ -1,0 +1,64 @@
+import pathlib
+import sys
+
+sys.stdout.reconfigure(encoding="utf-8")
+base = pathlib.Path(r"D:\hermes\my-workspace\projects\planning-paper\papers\sliding-spotlight-scheduling\paper")
+targets = ["full.md", "sections/sec_abstract.md", "sections/sec1_introduction.md",
+           "sections/sec3_problem_formulation.md", "sections/sec4_solving_approach.md",
+           "sections/sec5_experimental_design.md", "sections/sec6_results.md",
+           "sections/sec7_discussion.md"]
+
+PAIRS = [
+    ("The cost's shape covaries with mode composition and density, which vary together by design.",
+     "The cost's shape covaries with mode composition and density, which vary together by design. Every magnitude above is internal to this scenario set: no scheduler from the published literature is run on it, so none of these numbers is a cross-scheduler comparison."),
+    ("the mode-dependence of what a requirement costs in coverage, and the discipline that keeps both claims testable:",
+     "the family-shape contrast in what a requirement costs in coverage, and the discipline that keeps both claims testable:"),
+    ("\\textbf{The mode-dependence of what a requirement costs} (main result). Three scenario families swept over a frozen nine-point demand grid at a single search budget and under a frozen mode assignment:",
+     "\\textbf{The family-shape contrast in what a requirement costs} (main result). Three scenario families, whose density and mode composition covary by design, swept over a frozen nine-point demand grid at a single search budget and under a frozen mode assignment:"),
+    ("and a fixed-dwell counterfactual that quantifies what the endogenous dwell buys (Section~\\ref{sec:results}).",
+     "and a fixed-dwell counterfactual that quantifies what the endogenous dwell buys (Section~\\ref{sec:results}). Because the families differ in density and composition together, these are contrasts across family shapes rather than density-controlled effects."),
+    ("That the deterministic anchor attains the best-found coverage in 258 of the 260 units is itself a finding: the selection problem is, in this scenario set, essentially solved by a single construction pass --- which is what makes the coverage response a construction property rather than a search artifact.",
+     "That the deterministic anchor attains the best-found coverage in 258 of the 260 units is itself a finding: within the tested search family and the probe coverage recorded here, a single construction pass reaches the best coverage found in this scenario set --- which is what makes the coverage response a construction property rather than a search artifact."),
+    ("of which the stripmap floor accounts for 20.0 and 44.8 points (the floor-exclusion bound of Table~\\ref{tab:modes})",
+     "of which the stripmap floor accounts for 20.0 and 44.8 points (the floor-exclusion bound of Table~\\ref{tab:modes}, which bounds that contribution rather than separating it: part of the share is the comparability policy of a frozen mode assignment rather than the antenna floor)"),
+    ("a difference of mechanism, not merely of sign, carried together with",
+     "a bandwidth-side reading consistent with the registered model rather than a demonstrated difference of mechanism, carried together with"),
+    ("The search optimises one criterion, coverage; a front is a tie-set on coverage,",
+     "Under this scenario set's uniform random priorities the metric is close to inert: what the schedule drops under tightening is, to within about two points, a proportional slice of the task set rather than a priority-selected one, so $f_1$ behaves as the served-task fraction. The search optimises one criterion, coverage; a front is a tie-set on coverage,"),
+    ("The control family at $s=0.8$ admits no feasible individual and is kept off the curve (Section~\\ref{sec:floor}).}",
+     "The control family at $s=0.8$ admits no feasible individual and is kept off the curve (Section~\\ref{sec:floor}). Medians are rounded to three decimals; percentage-point drops quoted in the text are computed from the unrounded medians.}"),
+    ("(10,000 resamples, computed for this revision)", "(10,000 resamples, computed in this study)"),
+    ("(rules (ii) and (iii) are reanalysis additions of this revision, dated 2026-10-24, not preregistered arms)",
+     "(rules (ii) and (iii) were added in the reanalysis of 2026-10-24 and are not preregistered arms)"),
+    ("For a sliding-spotlight platform it fails measurably: planning with the zero-squint library dwell --- the least conservative convention --- violates the transfer constraint",
+     "For a sliding-spotlight platform it fails measurably under the least conservative dwell convention: planning with the zero-squint library dwell violates the transfer constraint"),
+    ("(stripmap floor accounting for 20.0 and 44.8 of those points)",
+     "(stripmap floor accounting for at most 20.0 and 44.8 of those points; part of that share is the comparability policy of a frozen mode assignment rather than the antenna floor)"),
+    ("Loosening recovers 4.15 and 2.36 points (3.98 and 0.93 points paired per seed).",
+     "Loosening recovers 4.15 and 2.36 points (3.98 and 0.93 points paired per seed). Both figures are what the anchor construction paid, not a measured gap to an optimum: no non-trivial upper bound on achievable coverage is available at the as-placed point, and the anchor itself attains the best-found coverage in 258 of the 260 units."),
+]
+
+unmatched = []
+for name in targets:
+    p = base / name
+    if not p.exists():
+        print(f"MISSING FILE {name}")
+        continue
+    t = p.read_text(encoding="utf-8")
+    applied = 0
+    for old, new in PAIRS:
+        n = t.count(old)
+        if n == 0:
+            continue
+        t = t.replace(old, new)
+        applied += n
+    if applied:
+        p.write_text(t, encoding="utf-8")
+    print(f"{name}: applied {applied} replacement(s)")
+
+print("\nper-pair coverage across all files:")
+for i, (old, _) in enumerate(PAIRS, 1):
+    total = sum((base / n).read_text(encoding="utf-8").count(old) for n in targets if (base / n).exists())
+    if total:
+        unmatched.append((i, total))
+print("pairs still present (should be empty):", unmatched)

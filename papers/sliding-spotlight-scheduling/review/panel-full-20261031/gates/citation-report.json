@@ -1,0 +1,373 @@
+{
+ "tool": "check_citation_exists.py",
+ "generated": "2026-10-31T15:14:07+00:00",
+ "policy": {
+  "existence": "hard fail",
+  "metadata": "warn only"
+ },
+ "cache": {
+  "path": "C:\\Users\\33151\\AppData\\Local\\Temp\\planning-paper-citation-cache.json",
+  "hits": 0
+ },
+ "bibfiles": [
+  {
+   "bib": "papers\\sliding-spotlight-scheduling\\paper\\refs.bib",
+   "entries_total": 36,
+   "missing": [
+    "mittermayer2003sliding",
+    "cumming2005digital",
+    "currie1992wideswath"
+   ],
+   "warned": [
+    "shen2024multistrip",
+    "habet2010bounding",
+    "caleiras2026a",
+    "peng2019agile",
+    "zhang2018sliding"
+   ],
+   "errors": [],
+   "allowlisted": [],
+   "records": [
+    {
+     "key": "long2024deep",
+     "type": "article",
+     "status": "found",
+     "found_via": "crossref:doi",
+     "source": "crossref",
+     "warnings": [],
+     "note": ""
+    },
+    {
+     "key": "qin2024multisatellite",
+     "type": "article",
+     "status": "found",
+     "found_via": "crossref:doi",
+     "source": "crossref",
+     "warnings": [],
+     "note": ""
+    },
+    {
+     "key": "li2024earth",
+     "type": "article",
+     "status": "found",
+     "found_via": "crossref:doi",
+     "source": "crossref",
+     "warnings": [],
+     "note": ""
+    },
+    {
+     "key": "chen2024learning",
+     "type": "article",
+     "status": "found",
+     "found_via": "crossref:doi",
+     "source": "crossref",
+     "warnings": [],
+     "note": ""
+    },
+    {
+     "key": "chang2021integrated",
+     "type": "article",
+     "status": "found",
+     "found_via": "crossref:doi",
+     "source": "crossref",
+     "warnings": [],
+     "note": ""
+    },
+    {
+     "key": "liu2025a",
+     "type": "article",
+     "status": "found",
+     "found_via": "crossref:doi",
+     "source": "crossref",
+     "warnings": [],
+     "note": ""
+    },
+    {
+     "key": "shen2024multistrip",
+     "type": "article",
+     "status": "found",
+     "found_via": "crossref:doi",
+     "source": "crossref",
+     "warnings": [
+      "year bib=2024 vs source=2025"
+     ],
+     "note": ""
+    },
+    {
+     "key": "xin2024sar",
+     "type": "article",
+     "status": "found",
+     "found_via": "crossref:doi",
+     "source": "crossref",
+     "warnings": [],
+     "note": ""
+    },
+    {
+     "key": "he2018a",
+     "type": "article",
+     "status": "found",
+     "found_via": "crossref:doi",
+     "source": "crossref",
+     "warnings": [],
+     "note": ""
+    },
+    {
+     "key": "he2019time",
+     "type": "article",
+     "status": "found",
+     "found_via": "crossref:doi",
+     "source": "crossref",
+     "warnings": [],
+     "note": ""
+    },
+    {
+     "key": "kim2020optimal",
+     "type": "article",
+     "status": "found",
+     "found_via": "crossref:doi",
+     "source": "crossref",
+     "warnings": [],
+     "note": ""
+    },
+    {
+     "key": "gawiejnowicz2009equivalent",
+     "type": "article",
+     "status": "found",
+     "found_via": "crossref:doi",
+     "source": "crossref",
+     "warnings": [],
+     "note": ""
+    },
+    {
+     "key": "habet2010bounding",
+     "type": "article",
+     "status": "found",
+     "found_via": "crossref:doi",
+     "source": "crossref",
+     "warnings": [
+      "year bib=2010 vs source=2008"
+     ],
+     "note": ""
+    },
+    {
+     "key": "gawiejnowicz2015structural",
+     "type": "article",
+     "status": "found",
+     "found_via": "crossref:doi",
+     "source": "crossref",
+     "warnings": [],
+     "note": ""
+    },
+    {
+     "key": "kim2019multi",
+     "type": "article",
+     "status": "found",
+     "found_via": "crossref:doi",
+     "source": "crossref",
+     "warnings": [],
+     "note": ""
+    },
+    {
+     "key": "li2026efficient",
+     "type": "misc",
+     "status": "found",
+     "found_via": "openalex:doi",
+     "source": "openalex",
+     "warnings": [],
+     "note": ""
+    },
+    {
+     "key": "wang2024memetic",
+     "type": "article",
+     "status": "found",
+     "found_via": "crossref:doi",
+     "source": "crossref",
+     "warnings": [],
+     "note": ""
+    },
+    {
+     "key": "caleiras2026a",
+     "type": "inproceedings",
+     "status": "found",
+     "found_via": "crossref:doi",
+     "source": "crossref",
+     "warnings": [
+      "venue bib='ICORES 2026, SciTePress' vs source='Proceedings of the 15th International Conference on Operations Research and Enterprise Systems'"
+     ],
+     "note": ""
+    },
+    {
+     "key": "peng2019agile",
+     "type": "article",
+     "status": "found",
+     "found_via": "crossref:doi",
+     "source": "crossref",
+     "warnings": [
+      "first page/article-no bib=193--205 vs source=84-98"
+     ],
+     "note": ""
+    },
+    {
+     "key": "wang2024research",
+     "type": "inproceedings",
+     "status": "found",
+     "found_via": "crossref:doi",
+     "source": "crossref",
+     "warnings": [],
+     "note": ""
+    },
+    {
+     "key": "du2025satellite",
+     "type": "book",
+     "status": "found",
+     "found_via": "crossref:doi",
+     "source": "crossref",
+     "warnings": [],
+     "note": ""
+    },
+    {
+     "key": "zhang2025deep",
+     "type": "article",
+     "status": "found",
+     "found_via": "crossref:doi",
+     "source": "crossref",
+     "warnings": [],
+     "note": ""
+    },
+    {
+     "key": "deb2002a",
+     "type": "article",
+     "status": "found",
+     "found_via": "crossref:doi",
+     "source": "crossref",
+     "warnings": [],
+     "note": ""
+    },
+    {
+     "key": "guo2011extended",
+     "type": "article",
+     "status": "found",
+     "found_via": "crossref:doi",
+     "source": "crossref",
+     "warnings": [],
+     "note": ""
+    },
+    {
+     "key": "mittermayer2003sliding",
+     "type": "inproceedings",
+     "status": "missing",
+     "found_via": null,
+     "source": null,
+     "warnings": [],
+     "note": "no title field"
+    },
+    {
+     "key": "prats2010processing",
+     "type": "article",
+     "status": "found",
+     "found_via": "crossref:doi",
+     "source": "crossref",
+     "warnings": [],
+     "note": ""
+    },
+    {
+     "key": "ren2025high",
+     "type": "article",
+     "status": "found",
+     "found_via": "crossref:doi",
+     "source": "crossref",
+     "warnings": [],
+     "note": ""
+    },
+    {
+     "key": "kim2021optimal",
+     "type": "article",
+     "status": "found",
+     "found_via": "crossref:doi",
+     "source": "crossref",
+     "warnings": [],
+     "note": ""
+    },
+    {
+     "key": "song2025spaceborne",
+     "type": "article",
+     "status": "found",
+     "found_via": "crossref:doi",
+     "source": "crossref",
+     "warnings": [],
+     "note": ""
+    },
+    {
+     "key": "zhang2018sliding",
+     "type": "article",
+     "status": "found",
+     "found_via": "crossref:doi",
+     "source": "crossref",
+     "warnings": [
+      "year bib=2018 vs source=2017"
+     ],
+     "note": ""
+    },
+    {
+     "key": "cumming2005digital",
+     "type": "book",
+     "status": "missing",
+     "found_via": null,
+     "source": null,
+     "warnings": [],
+     "note": "best title hit only c=0.57/j=0.36 ('Range‐Doppler Inverse Synthetic Aperture Radar Processing')"
+    },
+    {
+     "key": "currie1992wideswath",
+     "type": "article",
+     "status": "missing",
+     "found_via": null,
+     "source": null,
+     "warnings": [],
+     "note": "best title hit only c=1.00/j=0.27 ('Wide-swath space-borne SAR : overcoming the trade-off between swath-wi')"
+    },
+    {
+     "key": "lanari2001hybrid",
+     "type": "article",
+     "status": "found",
+     "found_via": "crossref:title(c=1.00,j=1.00)",
+     "source": "crossref",
+     "warnings": [],
+     "note": ""
+    },
+    {
+     "key": "lemaitre2002selecting",
+     "type": "article",
+     "status": "found",
+     "found_via": "crossref:doi",
+     "source": "crossref",
+     "warnings": [],
+     "note": ""
+    },
+    {
+     "key": "cui2018mission",
+     "type": "article",
+     "status": "found",
+     "found_via": "crossref:doi",
+     "source": "crossref",
+     "warnings": [],
+     "note": ""
+    },
+    {
+     "key": "shabtay2007survey",
+     "type": "article",
+     "status": "found",
+     "found_via": "crossref:doi",
+     "source": "crossref",
+     "warnings": [],
+     "note": ""
+    }
+   ]
+  }
+ ],
+ "summary": {
+  "missing": 3,
+  "warnings": 5,
+  "errors": 0
+ }
+}

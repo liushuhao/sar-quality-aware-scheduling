@@ -1,0 +1,22 @@
+import pathlib
+import sys
+
+sys.stdout.reconfigure(encoding="utf-8")
+p = pathlib.Path(r"D:\hermes\my-workspace\projects\planning-paper\papers\sliding-spotlight-scheduling\paper\full.md")
+t = p.read_text(encoding="utf-8")
+
+pairs = [
+    ("and a fixed-dwell counterfactual that quantifies what the endogenous dwell buys (Section 6).",
+     "and a fixed-dwell counterfactual that quantifies what the endogenous dwell buys (Section 6). Because the families differ in density and composition together, these are contrasts across family shapes rather than density-controlled effects."),
+    ("of which the stripmap floor accounts for 20.0 and 44.8 points (the floor-exclusion bound of Table 2)",
+     "of which the stripmap floor accounts for 20.0 and 44.8 points (the floor-exclusion bound of Table 2, which bounds that contribution rather than separating it: part of the share is the comparability policy of a frozen mode assignment rather than the antenna floor)"),
+]
+
+for old, new in pairs:
+    n = t.count(old)
+    print(f"occurrences={n} :: {old[:60]!r}")
+    if n == 1:
+        t = t.replace(old, new)
+
+p.write_text(t, encoding="utf-8")
+print("written")

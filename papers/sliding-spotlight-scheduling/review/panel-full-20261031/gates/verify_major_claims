@@ -1,0 +1,31 @@
+import pathlib
+
+p = pathlib.Path(r"D:\hermes\my-workspace\projects\planning-paper\papers\sliding-spotlight-scheduling\paper\main.tex")
+lines = p.read_text(encoding="utf-8", errors="ignore").splitlines()
+
+needles = [
+    ("abstract_frozen_assignment", "frozen mode assignment"),
+    ("abstract_floor", "stripmap antenna floor"),
+    ("policy_share_disclosure", "comparability policy, not the platform"),
+    ("no_external_planner", "no scheduler from the published literature is run"),
+    ("density_mode_confound", "Densities and mode composition covary by design"),
+    ("priority_inert", "uniform random priorities are close to inert"),
+    ("single_construction", "essentially solved by a single construction pass"),
+    ("selected_start", "equals the requirement at the selected start by construction"),
+    ("intra_dwell_scope", "does not claim a constant delivered resolution"),
+    ("s1_result", "both failures are reported as results about this scenario set"),
+    ("dip_no_axis_claim", "no statement about the demand axis is made from a movement"),
+    ("posthoc_main_result", "headline curve is a post hoc descriptive reading"),
+    ("fixed_dwell_robust", "robust, repair-independent reading"),
+    ("revision_deixis", "this revision"),
+]
+
+for label, needle in needles:
+    hits = [(i + 1, line.strip()) for i, line in enumerate(lines) if needle.lower() in line.lower()]
+    print(f"## {label}: {len(hits)} hit(s)")
+    for lineno, text in hits[:3]:
+        pos = text.lower().find(needle.lower())
+        start = max(0, pos - 140)
+        end = min(len(text), pos + len(needle) + 220)
+        print(f"{lineno}: ...{text[start:end]}...")
+    print()

@@ -1,0 +1,32 @@
+import math
+import pathlib
+import sys
+
+FORK = pathlib.Path(r"D:\hermes\my-workspace\projects\planning-paper\papers\sliding-spotlight-scheduling")
+sys.path.insert(0, str(FORK))
+from sss_core.duration import kim_checker_scene_sls  # noqa: E402
+from sss_core.geometry import DerivedGeometry  # noqa: E402
+
+geo = DerivedGeometry.from_fixture()
+psi = math.radians(12.0)
+out = kim_checker_scene_sls(psi, 0.5, geo)
+R0 = geo.R0_m
+r0 = out["r0_m"]
+ta = geo.theta_a_rad
+alpha = out["alpha_rad"]
+Wa = geo.scene_wa_m
+hi = psi + alpha / 2.0
+lo = psi - alpha / 2.0
+code_L = out["L_m"]
+code_sat = out["sat_raw_s"]
+theta_s0 = hi - ta / 2.0
+theta_s1 = lo + ta / 2.0
+B_noWa = (R0 + r0) * (math.tan(theta_s0) - math.tan(theta_s1))
+print(f"code_L_m={code_L:.6f}")
+print(f"code_sat_raw_s={code_sat:.9f}")
+print(f"B_noWa_L_m={B_noWa:.6f}")
+print(f"B_noWa_rel_err_vs_code={(B_noWa-code_L)/code_L:+.9%}")
+print(f"manuscript_B_plus_Wa_L_m={B_noWa+Wa:.6f}")
+print(f"manuscript_B_plus_Wa_sat_s={(B_noWa+Wa)/geo.vs_mps:.9f}")
+print(f"manuscript_rel_err_vs_code={((B_noWa+Wa)/geo.vs_mps-code_sat)/code_sat:+.6%}")
+print(f"Wa_over_Vs_s={Wa/geo.vs_mps:.9f}")
