@@ -36,6 +36,7 @@ CAPS_WHITELIST = {
     "P8WH", "ALIVE", "DEAD", "NOT-PLATEAUED", "SEARCH-ARTIFACT", "C1", "C2",
     "C3", "C4", "M1", "M2", "M3", "M4", "AND", "OR", "PDF", "ID", "DOI",
     "NESZ", "NOT", "PLATEAUED", "SEARCH", "ARTIFACT", "STRUCTURAL", "T1",
+    "ECEF",
 }
 CAPS_TOKEN = re.compile(r"\b(?:[A-Z][A-Z0-9]{1,9}|[A-Z]/[A-Z])\b")
 

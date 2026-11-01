@@ -94,6 +94,49 @@ def _printed_tol(token: str) -> float:
     return tol / 100.0 if is_percent else tol
 
 
+def _moves_bind(moves_m, mv) -> list:
+    """Bind printed per-seed movers to registered ones, one-to-one, by verb.
+
+    The manuscript prints magnitudes; the registered movers are signed
+    (positive = the seed lost coverage).  The verb carries the missing sign:
+    "loses X" can only be a registered +X, "gains X" only a -X.  Matching
+    each printed value against the whole registered set -- the behaviour
+    before 2026-11-01 -- let "one loses 1.83 ... one gains 0.42" pass with
+    the two numbers exchanged, because the set is unchanged (R104).  Each
+    registered value is consumed at most once, so a sentence cannot satisfy
+    two clauses from one mover.
+
+    Within one polarity the two lists are sorted and paired in order: for
+    one-dimensional tolerance matching that is optimal (an exchange argument
+    on any crossing pair), and it is O(n log n) where a permutation search is
+    n! -- measured 4.8 s for a ten-clause sentence against the ten-mover row.
+
+    Seed identity is NOT available here: ``per_seed_moves`` stores the
+    movers sorted by value, with the seed ids dropped, so a claim that two
+    dips move the SAME seed is outside what this check can see (residual
+    R105).
+
+    Returns [(match, registered_value)] in sentence order, or [] when no
+    assignment exists.
+    """
+    if len(mv) != len(moves_m):
+        return []
+    out = []
+    for sign in (1.0, -1.0):
+        reg = sorted(q for q in mv if q * sign > 0)
+        prt = [(m, float(m.group(1))) for m in moves_m
+               if (1.0 if m.group(0).lower().startswith("lose") else -1.0) == sign]
+        if len(reg) != len(prt):
+            return []
+        prt.sort(key=lambda t: t[1])
+        for (m, val), q in zip(prt, reg):
+            if abs(val - abs(q)) > _printed_tol(m.group(1)):
+                return []
+            out.append((m, q))
+    order = {id(m): i for i, m in enumerate(moves_m)}
+    return sorted(out, key=lambda t: order[id(t[0])])
+
+
 def _exit_census(fam: str, s: float) -> "tuple[int, set, set]":
     """(n_exit11, exit11 keys, artifact seeds) from the DRIVER LEDGER.
 
@@ -411,7 +454,7 @@ _RANGE_CTX = re.compile(r"from\s+\$?s\s*=\s*(\d(?:\.\d)?)[^;]*?"
 # an optional "$" after each number.
 _BETWEEN = re.compile(r"between\s+\$?s\s*=\s*(\d(?:\.\d)?)\$?\s+and\s+"
                       r"\$?s\s*=\s*(\d(?:\.\d)?)\$?", re.IGNORECASE)
-_MOVE = re.compile(r"\b(?:loses?|gains?)\s+(\d+(?:\.\d+)?)", re.IGNORECASE)
+_MOVE = re.compile(r"\b(?:loses?|gains?)\s+\$?(\d+(?:\.\d+)?)\$?", re.IGNORECASE)
 _DIP = re.compile(r"(\d+(?:\.\d+)?)\s+(?:pp|percentage\s+points)\s+between\s+"
                   r"\$?s\s*=\s*(\d(?:\.\d)?)\$?\s+and\s+\$?s\s*=\s*"
                   r"(\d(?:\.\d)?)\$?", re.IGNORECASE)
@@ -774,24 +817,18 @@ def check_paper(text: str, label: str, exp: dict) -> "tuple[list, list, list, in
             moves_m = list(_MOVE.finditer(sent))
             if bet and moves_m:
                 lo, hi = float(bet.group(1)), float(bet.group(2))
-                printed_moves = [float(m.group(1)) for m in moves_m]
                 cands = []
                 for (f, a, b), (mv, _prov) in exp["per_seed_moves"].items():
-                    if (abs(a - lo) > 1e-9 or abs(b - hi) > 1e-9
-                            or len(mv) != len(printed_moves)):
+                    if abs(a - lo) > 1e-9 or abs(b - hi) > 1e-9:
                         continue
-                    # the paper prints magnitudes; the registered moves are
-                    # signed (positive = the seed lost coverage)
-                    if all(any(abs(p - abs(q)) <= _printed_tol(m.group(1))
-                               for q in mv)
-                           for p, m in zip(printed_moves, moves_m)):
-                        cands.append((f, mv))
+                    bound = _moves_bind(moves_m, mv)
+                    if bound:
+                        cands.append((f, bound))
                 if len(cands) == 1:
-                    fam_m, mv = cands[0]
-                    for p, m in zip(printed_moves, moves_m):
-                        near = min(mv, key=lambda q: abs(p - abs(q)))
+                    fam_m, bound = cands[0]
+                    for m, q in bound:
                         seen += 1
-                        _score(label, fails, passes, p, abs(near),
+                        _score(label, fails, passes, float(m.group(1)), abs(q),
                                _printed_tol(m.group(1)),
                                f"{fam_m} per-seed move (pp) s={lo}->{hi}",
                                "per-seed s=a minus s=b, pp", m.group(0))
@@ -800,6 +837,14 @@ def check_paper(text: str, label: str, exp: dict) -> "tuple[list, list, list, in
                                  f"{hi} matches {len(cands)} registered mover "
                                  f"set(s) -- unverifiable or ambiguous  "
                                  f"[{sent[:90]!r}]")
+            elif bet and re.search(r"\b(?:loses?|gains?)\b", sent, re.I):
+                # a between-grid sentence that DOES talk about a seed moving,
+                # but whose clause the mover pattern could not read (measured
+                # escape: the numbers wrapped in $...$ left moves_m empty and
+                # the whole block was skipped -- no check, no fail)
+                fails.append(f"{label}: 'between s={bet.group(1)} and s="
+                             f"{bet.group(2)}' carries a loses/gains clause the "
+                             f"mover pattern cannot read  [{sent[:90]!r}]")
 
             # ---- the STR floor (a step, not a continuous degradation) ------
             sm = re.search(r"STR[^;]{0,60}?(?:floor|地板)[^;]{0,20}?"

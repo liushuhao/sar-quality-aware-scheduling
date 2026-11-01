@@ -73,7 +73,7 @@ FAM_SEEDS = {"R1C": range(100, 110), "R2F": range(200, 210),
              "R3H": range(300, 310)}
 R5_PSI_DEG = tuple(range(0, 27, 2))  # 0..26 in 2 deg steps (SLS registered cap)
 R6_SERVED_TASKS = 1607              # recomputed below; an exact pin, not a floor
-R56_MIN_CHECKS = 14                 # per-manuscript floor (whole-group loss guard)
+R56_MIN_CHECKS = 17                 # per-manuscript floor (whole-group loss guard)
 
 
 def _aasr(lib: ModeLibrary, mode: Mode, psi_rad: float, extra_hz: float = 0.0,
@@ -144,6 +144,13 @@ def _r5(lib: ModeLibrary) -> dict:
     spt_point = aasr_direct(Mode.SPT, 0.0, 0.0, PRF_HZ, lib,
                             spt_scene_wa_m=1e-9)["aasr_db"]
     out["spt_scene_effect_db"] = spt_scene - spt_point
+    # the same paragraph's scope note prints two more constants, both a pure
+    # function of the registered library: the zero-squint processing bands of
+    # the two task-law modes, and the spotlight library-edge AASR at the
+    # platform-level scene extent (the default spt_scene_wa_m, i.e. 5 km).
+    out["band_khz"] = {"SLS": lib.bandwidth_d_hz(Mode.SLS, 0.0) / 1e3,
+                       "SPT": lib.bandwidth_d_hz(Mode.SPT, 0.0) / 1e3}
+    out["spt_library_edge_db"] = spt_scene
     # model invariants (reported separately from the manuscript checks)
     for key in (("sls", "geom"), ("str", "geom"), ("sls", "reg"), ("str", "reg"),
                 ("sls", "flat"), ("str", "flat")):
@@ -210,6 +217,10 @@ _MINUS = str.maketrans({"−": "-", "–": "-"})
 _LABEL_STR = re.compile(r"\(stripmap[^)]{0,12}\)")
 _LABEL_SLS = re.compile(r"\(sliding spotlight[^)]{0,12}\)")
 _LABEL_SPT = re.compile(r"\(spotlight[^)]{0,12}\)")
+# the scope note's band attribution, read for its MODE ORDER so the printed
+# pair is bound to the labels the sentence actually names
+_BAND_ATTR = re.compile(
+    r"the\s+(SLS|SPT)\s+and\s+(SLS|SPT)\s+processing bandwidths")
 _REF = re.compile(r"\b(?:Section|Sections|Sec\.|Eq\.|Eqs\.|Fig\.|Figure|Figs\.|"
                   r"Table|Tables|Ref\.|Refs\.)\s*~?\$?\d+(?:\.\d+)?")
 _NUM = re.compile(r"[-−]?\d+\.\d+")
@@ -234,7 +245,13 @@ def _printed_tol(val: float) -> float:
 
 
 def _nums_ending_before(para: str, phrase, window: int = 170) -> list:
-    """The contiguous number run that ends just before each ``phrase`` hit.
+    """The numbers in the ``window`` chars just before each ``phrase`` hit.
+
+    NOT a contiguous run: every decimal in the window is returned, so the
+    callers take a suffix of it (``_last_before`` the last one,
+    ``_tail_matches`` the last ``n``).  Contiguity is deliberately not
+    enforced -- a window that reaches back past a sentence boundary and picks
+    up an earlier reading is handled by the caller's anchor choice, not here.
 
     ``phrase`` may be a compiled pattern, so a label that legitimately grows
     a qualifier ("(stripmap mode)") does not read as a false red.
@@ -313,6 +330,42 @@ def check_r56(text: str, label: str, exp: dict) -> "tuple[list, list, int]":
              _last_before(para, _LABEL_SLS), " dB")
         term("R5 stripmap level shift", round(r5["str_level_shift"], 1),
              _last_before(para, _LABEL_STR), " dB")
+        # the scope note's two library constants (R102, 2026-11-01).  The
+        # bands are bound to the LABELS the sentence prints ("the X and Y
+        # processing bandwidths ... A and B kHz"), not to a fixed order, and
+        # the clause between the labels and the unit must carry exactly two
+        # numbers.  A first version read only the ordered pair and let three
+        # escapes through (measured, all three): the two labels exchanged, the
+        # attribution dropped entirely, and a fabricated third band prepended.
+        seen += 1
+        mlab = _BAND_ATTR.search(para)
+        kz = para.find("kHz", mlab.end()) if mlab else -1
+        got = ([float(x) for x in _NUM.findall(_clean(para[mlab.end():kz]))]
+               if kz > 0 else [])
+        if mlab is None or kz < 0:
+            fails.append(f"{label}: R5 the 'the X and Y processing bandwidths' "
+                         "attribution is missing -- the band check has no surface")
+        elif len(got) != 2:
+            fails.append(f"{label}: R5 the kHz clause carries {len(got)} band(s) "
+                         f"{got}, not the two the attribution names")
+        else:
+            bands = [round(r5["band_khz"][mlab.group(1)], 1),
+                     round(r5["band_khz"][mlab.group(2)], 1)]
+            if all(abs(a - b) <= _printed_tol(b) for a, b in zip(got, bands)):
+                passes.append(f"{label}: R5 zero-squint processing bands "
+                              f"({mlab.group(1)}, {mlab.group(2)}) {bands} kHz")
+            else:
+                fails.append(f"{label}: R5 zero-squint processing bands "
+                             f"({mlab.group(1)}, {mlab.group(2)}) {bands} kHz -- "
+                             f"the sentence prints {got}")
+        term("R5 spotlight library-edge AASR", round(r5["spt_library_edge_db"], 2),
+             _last_before(para, "is the library-edge constant"), " dB")
+        # the same constant is printed a second time in the same paragraph
+        # ("the spotlight ratio is squint-invariant at -7.05 dB"); a gate on
+        # one printing leaves the other free to drift (measured 2026-11-01)
+        term("R5 spotlight squint-invariance level (first printing)",
+             round(r5["spt_library_edge_db"], 2),
+             _last_before(para, "exactly as the degenerate-integral"), " dB")
         seen += 1
         if "no mapping of it reverses the direction" in para:
             passes.append(f"{label}: R5 direction claim present and unpolarised")

@@ -94,6 +94,18 @@ PROBES = [
      "one loses 9.99 percentage points"),
     (MAIN, MAIN_TEXT, "a different seed loses 1.14",
      "a different seed loses 9.99"),
+    # R104 (2026-11-01): the two values of one sentence exchanged -- the set
+    # of printed magnitudes is unchanged, so only a polarity-bound match sees it
+    (MAIN, MAIN_TEXT, "one loses 1.83 percentage points and one gains 0.42",
+     "one loses 0.42 percentage points and one gains 1.83"),
+    (MAIN, MAIN_TEXT, "the same seed gains 0.42 points as in the first dip, "
+                      "and a different seed loses 1.14",
+     "the same seed gains 1.14 points as in the first dip, "
+     "and a different seed loses 0.42"),
+    # the mover clauses math-wrapped: before the pattern learned the optional
+    # "$", moves_m came back empty and the whole block was skipped silently
+    (MAIN, MAIN_TEXT, "one loses 1.83 percentage points",
+     "one loses $9.99$ percentage points"),
     (MAIN, MAIN_TEXT, "9,430 tie-set records", "9,999 tie-set records"),
     (MAIN, MAIN_TEXT, "in 258 of 260 units", "in 111 of 260 units"),
     (MAIN, MAIN_TEXT, "2.4669$~m", "9.9999$~m"),

@@ -85,6 +85,27 @@ MUTATIONS = {
     "R6 mode labels exchanged": (
         "$1.045$ (spotlight)", "$1.008$ (spotlight)"),
     "one endpoint falsified": ("$-3.88$~dB", "$-3.98$~dB"),
+    # R102 (2026-11-01): the scope note's two library constants
+    "processing bands exchanged": (
+        "15.2 and 25.3~kHz", "25.3 and 15.2~kHz"),
+    "processing band falsified": (
+        "15.2 and 25.3~kHz", "15.9 and 25.3~kHz"),
+    "band attribution labels exchanged": (
+        "the SLS and SPT processing bandwidths",
+        "the SPT and SLS processing bandwidths"),
+    "band attribution dropped": (
+        "the SLS and SPT processing bandwidths at zero squint, 15.2 and 25.3~kHz",
+        "the zero-squint processing bandwidths, 15.2 and 25.3~kHz"),
+    "fabricated third band prepended": (
+        "the SLS and SPT processing bandwidths at zero squint, 15.2 and 25.3~kHz",
+        "the SLS, SPT and STR processing bandwidths at zero squint, "
+        "9.9, 15.2 and 25.3~kHz"),
+    "library-edge AASR falsified": (
+        "$-7.05$~dB is the library-edge constant",
+        "$-7.15$~dB is the library-edge constant"),
+    "first printing of the spotlight level falsified": (
+        "is squint-invariant at $-7.05$~dB",
+        "is squint-invariant at $-7.15$~dB"),
 }
 
 
@@ -116,4 +137,4 @@ def test_model_invariants_are_reported_not_counted(exp):
     ok, bad = r56.r5_invariants(exp)
     assert bad == [] and len(ok) == 7
     _f, _p, seen = r56.check_r56(TEXT, "main.tex", exp)
-    assert seen == r56.R56_MIN_CHECKS  # the 14 manuscript checks, no more
+    assert seen == r56.R56_MIN_CHECKS  # the 17 manuscript checks, no more
