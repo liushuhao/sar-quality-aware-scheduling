@@ -3,7 +3,7 @@ Cover Letter
 Date: 2026-09-23
 To: Editor-in-Chief, Advances in Space Research
 From: LIU Shuhao, College of Intelligent Systems Science and Engineering,
-       Harbin Engineering University, liushuhao@hrbeu.edu.cn
+       Harbin Engineering University, shuhao.liu.86@outlook.com
 
 Dear Editor,
 
@@ -60,4 +60,4 @@ LIU Shuhao
 College of Intelligent Systems Science and Engineering
 Harbin Engineering University
 145 Nantong Street, Nangang District, Harbin 150001, China
-liushuhao@hrbeu.edu.cn
+shuhao.liu.86@outlook.com

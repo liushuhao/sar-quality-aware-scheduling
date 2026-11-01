@@ -20,7 +20,8 @@
 
 - **Title**：`Resolution-Driven Scheduling of Agile SAR Satellite: From Fixed to Endogenous Imaging Dwells`
 - **Authors**：`Liu Shuhao`
-- **Corresponding email**：`liushuhao@hrbeu.edu.cn`
+- **Corresponding email**：`shuhao.liu.86@outlook.com`
+- **ORCID**：`0009-0009-2116-3670`（EM 表单采集，正文 PDF 不印）
 - **Affiliation**：`College of Intelligent Systems Science and Engineering, Harbin Engineering University`
 - **Address**：`145 Nantong Street, Nangang District, Harbin 150001, China`
 - **Article type**：Research Paper / Full Length Article（AST 的 VSI 常规栏目）

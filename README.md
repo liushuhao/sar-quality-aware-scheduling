@@ -130,5 +130,5 @@ CC-BY-4.0. See `LICENSE`. Underlying paper © 2026 LIU SHUHAO.
 
 ## Contact
 
-LIU SHUHAO — liushuhao@hrbeu.edu.cn
+LIU SHUHAO — shuhao.liu.86@outlook.com
 Harbin Engineering University, College of Intelligent Systems Science and Engineering
