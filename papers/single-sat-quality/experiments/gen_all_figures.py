@@ -192,8 +192,8 @@ def _delta_magnitude(delta):
 #  FIGURE 1: Squint Awareness — G-SM vs G-BL (3-panel)
 # ═══════════════════════════════════════════════════════════════════════════
 print("\n── Fig 1: Squint Awareness ──")
-fig = plt.figure(figsize=(11, 4.2))
-gs = gridspec.GridSpec(1, 3, width_ratios=[1, 0.8, 1], wspace=0.4,
+fig = plt.figure(figsize=(5.70, 2.18))
+gs = gridspec.GridSpec(1, 3, width_ratios=[1, 0.8, 1], wspace=0.55,
                         left=0.05, right=0.95, top=0.88, bottom=0.15)
 
 keys_bl_sq = [k for k in common_keys if all(s in results[k] for s in ["G-BL", "G-SM"])]
@@ -208,9 +208,9 @@ n_targets = [results[k].get("G-BL", {}).get("n_targets", 20) for k in keys_bl_sq
 sc = ax_a.scatter(f3_bl, f3_sq, c=n_targets, cmap='viridis', s=18, alpha=0.7, edgecolors='none')
 ax_a.plot([lim_min, lim_max], [lim_min, lim_max], 'k--', linewidth=0.8)
 ax_a.set_xlim(lim_min, lim_max); ax_a.set_ylim(lim_min, lim_max)
-ax_a.set_xlabel("G-BL  $f_3$ (NESZ)", fontsize=9)
-ax_a.set_ylabel("G-SM  $f_3$ (NESZ)", fontsize=9)
-ax_a.set_title("(a) NESZ improvement", fontsize=10)
+ax_a.set_xlabel("G-BL  $f_3$ (NESZ)", fontsize=8)
+ax_a.set_ylabel("G-SM  $f_3$ (NESZ)", fontsize=8)
+ax_a.set_title("(a)", fontsize=8)
 cbar = plt.colorbar(sc, ax=ax_a, shrink=0.8)
 cbar.set_label("N targets", size=8)
 # δ annotation — upper-right is the cleanest area in panel (a); upper-left sits
@@ -220,13 +220,13 @@ if stats_data and "effect_sizes" in stats_data:
     for k, v in es.items():
         if "GSM_f3_vs_GBL_f3" in k or (("G-SM" in k or "GSM" in k) and "f3" in k):
             ax_a.text(0.98, 0.97, f"Cliff's δ = {v['cliff_delta']:+.3f} ({v['magnitude']})",
-                     transform=ax_a.transAxes, fontsize=7, ha='right', va='top',
+                     transform=ax_a.transAxes, fontsize=6.5, ha='right', va='top',
                      bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.7))
             break
 
 below = sum(1 for i in range(len(f3_bl)) if f3_sq[i] > f3_bl[i])
 ax_a.text(0.98, 0.88, f"G-SM better: {below}/{len(f3_bl)}", transform=ax_a.transAxes,
-          fontsize=7, va='top', ha='right',
+          fontsize=6.5, va='top', ha='right',
           bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.5))
 
 # (b) Δf1* histogram
@@ -237,10 +237,10 @@ ax_b.hist(delta_f1, bins=25, color='#56B4E9', alpha=0.7, edgecolor='white', line
 mean_d = np.mean(delta_f1); med_d = np.median(delta_f1)
 ax_b.axvline(x=mean_d, color='#D55E00', linestyle='-', linewidth=1.2, label=f'Mean={mean_d:.2f}')
 ax_b.axvline(x=med_d, color='#009E73', linestyle=':', linewidth=1.2, label=f'Med={med_d:.2f}')
-ax_b.set_xlabel("$\\Delta f_1^*$ (profit loss)", fontsize=9)
-ax_b.set_ylabel("Frequency", fontsize=9)
-ax_b.set_title("(b) Profit loss distribution", fontsize=10)
-ax_b.legend(fontsize=7)
+ax_b.set_xlabel("$\\Delta f_1^*$ (profit loss)", fontsize=8)
+ax_b.set_ylabel("Frequency", fontsize=8)
+ax_b.set_title("(b)", fontsize=8)
+ax_b.legend(fontsize=6.5)
 
 # (c) Δf1* vs N — with LOESS trend
 ax_c = fig.add_subplot(gs[2])
@@ -268,12 +268,12 @@ if len(all_ns) > 10:
 ax_c.axhline(y=0, color='gray', linestyle='--', linewidth=0.6)
 ax_c.set_xscale('log')
 ax_c.set_xticks([20, 100, 300, 500])
-ax_c.set_xticklabels(["S1\n(20)", "S2\n(100)", "S3\n(300)", "S4\n(500)"])
+ax_c.set_xticklabels(["S1", "S2", "S3", "S4"])
 ax_c.set_xlim(15, 550)
-ax_c.set_xlabel("Scenario class (N targets)", fontsize=9)
-ax_c.set_ylabel("$\\Delta f_1^*$ (profit loss)", fontsize=9)
-ax_c.set_title("(c) Profit loss vs. scenario scale", fontsize=10)
-ax_c.legend(fontsize=7)
+ax_c.set_xlabel("Scenario class (N targets)", fontsize=8)
+ax_c.set_ylabel("$\\Delta f_1^*$ (profit loss)", fontsize=8)
+ax_c.set_title("(c)", fontsize=8)
+ax_c.legend(fontsize=6.5)
 
 save_figure(fig, "fig2_squint_effect")
 
@@ -298,7 +298,7 @@ rep_key = s4_keys[0] if s4_keys else (common_keys[0] if common_keys else None)
 group_label = "S4 ($N=500$)"
 
 if rep_key:
-    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(11, 4.8))
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(4.28, 1.87))
     # bottom=0.22 reserves a strip below the axes for the shared horizontal legend.
     plt.subplots_adjust(wspace=0.30, top=0.86, bottom=0.22, left=0.07, right=0.97)
     m3_entry = results[rep_key]["MOEA-3"]
@@ -356,9 +356,9 @@ if rep_key:
     # (a) f1-f2 — MOEA-3 frontier + MOEA-2 overlay + baselines
     if ff1_m3:
         _plot_baselines(ax1, "f2")
-    ax1.set_xlabel("$f_1^*$ (Norm. Profit)", fontsize=9)
-    ax1.set_ylabel("$f_2$ (Geom. Quality)", fontsize=9)
-    ax1.set_title("(a) $f_1^*$–$f_2$: profit vs geometric quality", fontsize=10)
+    ax1.set_xlabel("$f_1^*$ (Norm. Profit)", fontsize=8)
+    ax1.set_ylabel("$f_2$ (Geom. Quality)", fontsize=8)
+    ax1.set_title("(a)", fontsize=8, loc="left")
     # Build a single shared horizontal legend below both subplots. We do this once
     # by reading handles from ax1 (handles from ax2 would duplicate the same series
     # since both panels plot the same frontier + baselines). Anchored to the figure
@@ -376,19 +376,19 @@ if rep_key:
     ax1.legend().set_visible(False)  # suppress the per-axes auto-legend
     fig.legend(unique_h, unique_l,
                loc='lower center', bbox_to_anchor=(0.5, -0.02),
-               ncol=5, frameon=True, framealpha=0.9, fontsize=7,
+               ncol=5, frameon=True, framealpha=0.9, fontsize=6.5,
                borderaxespad=0.0)
     if stats_data and "effect_sizes" in stats_data:
         for k, v in stats_data["effect_sizes"].items():
             if "MOEA-2_f2_vs_GBL_f2" in k:
                 ax1.text(0.98, 0.97, f"MOEA-2 vs G-BL: δ={v['cliff_delta']:+.3f} ({v['magnitude']})",
-                        transform=ax1.transAxes, fontsize=7, ha='right', va='top',
+                        transform=ax1.transAxes, fontsize=6.5, ha='right', va='top',
                         bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.7))
                 break
         for k, v in stats_data["effect_sizes"].items():
             if "MOEA2_f2_vs_MOEA3_f2" in k or "MOEA-2_f2_vs_MOEA-3_f2" in k:
                 ax1.text(0.98, 0.88, f"MOEA-2 vs MOEA-3: δ={v['cliff_delta']:+.3f} ({v['magnitude']})",
-                        transform=ax1.transAxes, fontsize=7, ha='right', va='top',
+                        transform=ax1.transAxes, fontsize=6.5, ha='right', va='top',
                         bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.7))
                 break
 
@@ -409,16 +409,16 @@ if rep_key:
     # (b) f1-f3 — MOEA-3 frontier + MOEA-2 overlay + baselines
     if ff1_m3:
         _plot_baselines(ax2, "f3")
-    ax2.set_xlabel("$f_1^*$ (Norm. Profit)", fontsize=9)
-    ax2.set_ylabel("$f_3$ (NESZ)", fontsize=9)
-    ax2.set_title("(b) $f_1^*$–$f_3$: profit vs NESZ quality", fontsize=10)
+    ax2.set_xlabel("$f_1^*$ (Norm. Profit)", fontsize=8)
+    ax2.set_ylabel("$f_3$ (NESZ)", fontsize=8)
+    ax2.set_title("(b)", fontsize=8, loc="left")
     # No legend on ax2 — see shared legend on ax1.
     ax2.legend().set_visible(False)
     if stats_data and "effect_sizes" in stats_data:
         for k, v in stats_data["effect_sizes"].items():
             if "GSM_f3_vs_GBL_f3" in k:
                 ax2.text(0.98, 0.97, f"δ = {v['cliff_delta']:+.3f} ({v['magnitude']})",
-                        transform=ax2.transAxes, fontsize=7, ha='right', va='top',
+                        transform=ax2.transAxes, fontsize=6.5, ha='right', va='top',
                         bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.7))
                 break
 
@@ -431,8 +431,8 @@ else:
 # ═══════════════════════════════════════════════════════════════════════════
 print("── Fig 4: Statistical Validation ──")
 if stats_data and "per_scenario_hv" in stats_data:
-    fig = plt.figure(figsize=(9.5, 5.5))
-    gs = gridspec.GridSpec(1, 2, width_ratios=[1.2, 1], wspace=0.42,
+    fig = plt.figure(figsize=(4.28, 2.48))
+    gs = gridspec.GridSpec(1, 2, width_ratios=[1.15, 1], wspace=0.62,
                            left=0.07, right=0.97, top=0.90, bottom=0.12)
 
     # LEFT: HV boxplot
@@ -450,16 +450,16 @@ if stats_data and "per_scenario_hv" in stats_data:
     for i, solver in enumerate(SOLVERS):
         bp['boxes'][i].set_facecolor(SOLVER_COLORS[solver])
         bp['boxes'][i].set_alpha(0.7)
-    ax_left.set_xticklabels(SOLVERS, fontsize=8)
-    ax_left.set_ylabel("Hypervolume", fontsize=9)
-    ax_left.set_title("Hypervolume distribution (reference)", fontsize=10)
+    ax_left.set_xticklabels(SOLVERS, rotation=30, ha="right", fontsize=6)
+    ax_left.set_ylabel("Hypervolume", fontsize=8)
+    ax_left.set_title("(a)", fontsize=8, loc="left")
     # Annotation: clarify that the small grey dots are per-scenario outliers, not
     # data noise. Placed at the lower-left so it never collides with the upper-left
     # Friedman box. Reference note ("reference") in the title signals that HV is a
     # secondary metric, not a decision objective.
-    ax_left.text(0.02, 0.02, r"$\circ$ per-scenario HV (outliers beyond $1.5\times\mathrm{IQR}$)",
-                transform=ax_left.transAxes, fontsize=6.5, ha='left', va='bottom',
-                style='italic', color='#555')
+    # (the per-scenario outliers and the MOEA-2 vs MOEA-3 margin are described in
+    # the figure caption instead of inside the axes, where they collided at
+    # true column width)
 
     # RIGHT: δ forest plot
     ax_right = fig.add_subplot(gs[1])
@@ -480,37 +480,32 @@ if stats_data and "per_scenario_hv" in stats_data:
         ax_right.barh(y_positions, deltas, height=0.6, color=colors, alpha=0.8, edgecolor='white')
         ax_right.axvline(x=0, color='black', linewidth=0.8)
         ax_right.axvspan(-0.147, 0.147, alpha=0.08, color='#808080')
-        ax_right.annotate("negligible effect",
-                          xy=(0.16, len(pairs) - 1.45),
-                          fontsize=6.5, color='#555', ha='left', va='center')
+        # the grey band is explained in the caption; an in-axes label ran past
+        # the top spine at true column width.
         # Direction-of-effect annotation: Cliff's δ is computed as A(row) - A(col)
         # (Vargha-Delaney, scaled), so positive bars mean the ROW solver has higher
         # HV. Placed BELOW the axis (under the x-label strip) so it never collides
         # with the MOEA-2-vs-MOEA-3 callout or any bar.
-        ax_right.text(0.98, -0.14,
-                      r"$\delta > 0$  $\rightarrow$  row solver has higher HV",
-                      transform=ax_right.transAxes, fontsize=6.5,
-                      ha='right', va='top', style='italic', color='#555')
+        ax_right.text(0.98, 0.02,
+                      r"$\delta > 0$: row higher",
+                      transform=ax_right.transAxes, fontsize=6,
+                      ha='right', va='bottom', style='italic', color='#555')
         ax_right.set_yticks(y_positions)
         ax_right.set_yticklabels(labels, fontsize=6.5)
-        ax_right.set_xlabel(r"Cliff's $\delta$ (effect size)", fontsize=9)
-        ax_right.set_title("Pairwise effect sizes", fontsize=10)
+        ax_right.set_xlabel(r"Cliff's $\delta$ (effect size)", fontsize=8)
+        ax_right.set_title("(b)", fontsize=8, loc="left")
         # Annotation: place the MOEA-2 vs MOEA-3 label in the empty right half
         # (positive-δ region is unoccupied for this row), offset above the bar so
         # it never sits on the bar or the gray band.
-        for i, (label, d) in enumerate(zip(labels, deltas)):
-            if 'MOEA-2' in label and 'MOEA-3' in label:
-                ax_right.annotate(f"MOEA-2 vs MOEA-3: $\\delta$={d:+.2f} (small)",
-                                 xy=(d, i), xytext=(30, 10), textcoords='offset points',
-                                 fontsize=7, va='center', ha='left',
-                                 color='#555', fontweight='normal')
+        # the MOEA-2 vs MOEA-3 margin is given in the caption and in the text;
+        # the grey bar marks it visually.
 
     if "friedman" in stats_data:
         fp = stats_data["friedman"]["p_value"]
         fp_str = "p<0.001" if fp < 0.001 else f"p={fp:.3f}"
         # Place in the upper-LEFT of the HV panel (away from MOEA-2/MOEA-3 boxes).
         ax_left.text(0.02, 0.95, f"Friedman {fp_str}", transform=ax_left.transAxes,
-                    ha='left', va='top', fontsize=8,
+                    ha='left', va='top', fontsize=7,
                     bbox=dict(boxstyle='round', facecolor='lightgray', alpha=0.5))
 
     save_figure(fig, "fig1_hypervolume")
@@ -575,9 +570,9 @@ for obj in objectives:
     else:
         obj_ylim[obj] = (0, 1)
 
-fig = plt.figure(figsize=(8, 10.5))
+fig = plt.figure(figsize=(4.28, 5.62))
 gs = gridspec.GridSpec(4, 2, height_ratios=[1, 1, 1, 0.9],
-                       hspace=0.35, wspace=0.20,
+                       hspace=0.55, wspace=0.28,
                        left=0.09, right=0.95, top=0.96, bottom=0.08)
 
 for oi, obj in enumerate(objectives):
@@ -591,8 +586,8 @@ for oi, obj in enumerate(objectives):
         for i, solver in enumerate(SOLVERS):
             bp['boxes'][i].set_facecolor(SOLVER_COLORS[solver])
             bp['boxes'][i].set_alpha(0.7)
-        ax.set_xticklabels(SOLVERS, rotation=30, ha='right', fontsize=7)
-        ax.set_title(f"{pair_labels[pi]} ({pair_n_labels[pi]})", fontsize=10)
+        ax.set_xticklabels(SOLVERS, rotation=40, ha='right', fontsize=6.5)
+        ax.set_title(f"{pair_labels[pi]} ({pair_n_labels[pi]})", fontsize=6.5, pad=2)
         ax.yaxis.grid(True, linestyle='--', alpha=0.3, linewidth=0.5)
         ax.set_ylim(obj_ylim[obj])
 
@@ -612,7 +607,7 @@ for oi, obj in enumerate(objectives):
     # Row label (shared y-axis label)
     pos = gs[oi, 0].get_position(fig)
     fig.text(0.01, 0.5 * (pos.y0 + pos.y1),
-             obj_labels[obj], fontsize=9, ha='left', va='center', rotation=90)
+             obj_labels[obj], fontsize=8, ha='left', va='center', rotation=90)
 
 # ── Bottom panel: Logistic regression for f1* deficit ──
 ax_log = fig.add_subplot(gs[3, :])
@@ -687,19 +682,17 @@ if not np.isnan(n50_lower) and not np.isnan(n50_upper):
     ax_log.axvspan(n50_lower, n50_upper, alpha=0.08, color='#D55E00')
     ax_log.annotate(f'95% CI [{n50_lower:.0f}, {n50_upper:.0f}]',
                     xy=(n50_est, 0.5), xytext=(n50_est + 50, 0.55),
-                    fontsize=7, color='#D55E00',
+                    fontsize=6.5, color='#D55E00',
                     arrowprops=dict(arrowstyle='->', color='#D55E00', lw=0.8))
 
-ax_log.set_xlabel('Number of targets $N$', fontsize=9)
-ax_log.set_ylabel('$P(f_1^* < 0.95)$', fontsize=9)
-ax_log.set_title('Multi-objective advantage transition', fontsize=10)
+ax_log.set_xlabel('Number of targets $N$', fontsize=8)
+ax_log.set_ylabel('$P(f_1^* < 0.95)$', fontsize=8)
+ax_log.set_title('', fontsize=8)
 ax_log.set_xlim(10, 550)
-ax_log.legend(fontsize=7, loc='upper right', ncol=3)
+ax_log.legend(fontsize=6.5, loc='upper right', ncol=3)
 ax_log.yaxis.grid(True, linestyle='--', alpha=0.3, linewidth=0.5)
-ax_log.text(0.02, 0.98,
-            r"$\circ$ per-scenario $f_1^*$ deficit (MOEA-2 vs G-BL, $f_1^*<0.95$)",
-            transform=ax_log.transAxes, fontsize=6.5, ha='left', va='top',
-            style='italic', color='#555')
+# the parenthetical note moved to the caption: at true column width it collided
+# with the legend and ran past the left spine.
 
 save_figure(fig, "fig3_scale_sensitivity")
 

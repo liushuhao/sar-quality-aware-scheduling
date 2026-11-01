@@ -162,7 +162,7 @@ def generate_figure(degs: dict, pvalues: dict) -> None:
         "f3": r"$f_3$ degradation (%)",
     }
 
-    fig, axes = plt.subplots(len(metrics), 1, figsize=(8, 5.8), sharex=True)
+    fig, axes = plt.subplots(len(metrics), 1, figsize=(5.70, 4.13), sharex=True)
 
     x = np.arange(len(CLASSES))
     width = 0.8 / len(variants)
@@ -184,12 +184,14 @@ def generate_figure(degs: dict, pvalues: dict) -> None:
                 for cls, bar in zip(CLASSES, bars):
                     if pvalues[metric][v].get(cls, 1.0) < 0.005:
                         y = bar.get_height()
-                        offset_pts = 3 if y >= 0 else -9
+                        # Mark significance above the zero line for negative bars too;
+                        # anchoring below the bar tip pushed the star outside the axes.
+                        y_anchor = max(y, 0.0)
                         ax.annotate(
-                            "*", xy=(bar.get_x() + bar.get_width() / 2, y),
-                            xytext=(0, offset_pts), textcoords="offset points",
-                            ha="center", va="bottom" if y >= 0 else "top",
-                            fontsize=10, fontweight="bold", color="#222",
+                            "*", xy=(bar.get_x() + bar.get_width() / 2, y_anchor),
+                            xytext=(0, 3), textcoords="offset points",
+                            ha="center", va="bottom",
+                            fontsize=9, fontweight="bold", color="#222",
                         )
         ax.axhline(y=0, color="#555", linewidth=0.6)
         ax.set_ylabel(metric_labels[metric], fontsize=9)
@@ -215,7 +217,7 @@ def generate_figure(degs: dict, pvalues: dict) -> None:
         ha="center", va="bottom", fontsize=7, color="#444",
     )
 
-    fig.tight_layout(rect=(0, 0.08, 1, 1), pad=1.0)
+    fig.tight_layout(rect=(0.02, 0.08, 1, 1), pad=1.0)
     out = FIG_DIR / "fig6_ablation.pdf"
     preview = FIG_DIR / "fig6_ablation.png"
     fig.savefig(str(out), dpi=300, bbox_inches="tight")
