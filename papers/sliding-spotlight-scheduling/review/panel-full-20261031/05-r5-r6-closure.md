@@ -95,6 +95,8 @@
 - **可选开关**：`L8_R56_OPTIONAL=1` 给合成小稿直通（与既有 `L8_B16X_OPTIONAL` 同制）。
 - **单测**：`tests/test_verify_r56_group.py`（24 条）钉住①本地积分器与 `sss_core.aasr.aasr_direct` 在 STR/SLS × 0–26° 逐点相等，②九类变异必须被抓。
 
+> **2026-11-01 增补（commit `6faf243`，清残留 R102/R104）**：本组由 14 项扩到 **17 项/篇**，新增 §7.2 范围脚注里的 SPT 库边 AASR 与 SLS/SPT 零斜视处理带宽（按句中真正印出的模式标签绑定数值，且标签与 kHz 之间须恰好两个数），并额外闸住同一常数在该段内的第二处印刷；`R56_MIN_CHECKS` 同步 14→17，单测 24→31 条。跨句的种子身份断言（「the same seed ... as in the first dip」）仍不在本组覆盖内，挂残留 R105。原 14 项行为未变。
+
 ## 验证（本轮实跑，cwd = `papers/sliding-spotlight-scheduling`）
 
 | 闸 | 命令 | 结果 |
