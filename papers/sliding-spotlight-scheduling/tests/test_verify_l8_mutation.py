@@ -15,7 +15,9 @@ the same in-memory gate the CLI uses.
 """
 from __future__ import annotations
 
+import json
 import os
+import re
 import subprocess
 import sys
 from pathlib import Path
@@ -203,7 +205,7 @@ def test_cli_rc_is_one_for_a_wrong_value_and_zero_restored(tmp_path):
                    encoding="utf-8", newline="")
     good.write_text(MAIN_TEXT, encoding="utf-8", newline="")
 
-    env = dict(os.environ, PYTHONHASHSEED="0")
+    env = dict(os.environ, PYTHONHASHSEED="0", L8_CENSUS_OPTIONAL="1")
     argv = [sys.executable, "-B", str(SCRIPT), "--paper", str(bad)]
     r = subprocess.run(argv, capture_output=True, text=True,
                        encoding="utf-8", errors="replace", env=env,
@@ -216,6 +218,221 @@ def test_cli_rc_is_one_for_a_wrong_value_and_zero_restored(tmp_path):
                        encoding="utf-8", errors="replace", env=env,
                        cwd=str(FORK.parent.parent))
     assert r.returncode == 0, r.stdout[-2000:]
+
+
+# ── R105: the cross-dip seed identity claim (2026-11-01) ─────────────────
+# The sentence keeps every magnitude and every verb; what changes is WHICH
+# seed the text credits.  The registered movers carry their seed ids now, so
+# the claim is decidable against the earlier dip instead of passing on the
+# magnitudes alone.
+IDENT = ("the same seed gains 0.42 points as in the first dip, "
+         "and a different seed loses 1.14")
+
+
+def _fails_of(text):
+    fails, _p, _n, _s = v8.check_paper(text, MAIN.name, exp_fixture())
+    return fails
+
+
+_EXP_CACHE = None
+
+
+def exp_fixture():
+    global _EXP_CACHE
+    if _EXP_CACHE is None:
+        need = bool(v8._DELIV_TOKEN.search(MAIN_TEXT)
+                    or re.search(r"squint[-\s]?loss", MAIN_TEXT, re.I))
+        _EXP_CACHE = v8.recompute(need_deliv=need)
+    return _EXP_CACHE
+
+
+@pytest.mark.parametrize("mutated", [
+    # the two clauses exchange their adjectives: the same magnitudes and verbs,
+    # so only a seed-identity check can see it (this was R105's blind spot)
+    IDENT.replace("the same seed gains", "a different seed gains").replace(
+        "and a different seed loses", "and the same seed loses"),
+    # the same-seed clause stops naming the dip it points back to
+    IDENT.replace("as in the first dip, ", ""),
+], ids=["adjectives-swapped", "prior-dip-dropped"])
+def test_r105_identity_mutations_are_caught(mutated):
+    assert IDENT in MAIN_TEXT
+    text = MAIN_TEXT.replace(IDENT, mutated, 1)
+    assert text != MAIN_TEXT
+    assert _fails_of(text), f"identity mutation not caught: {mutated!r}"
+
+
+def test_r105_the_identity_sentence_is_not_a_free_pass():
+    """The untouched sentence must score -- an identity claim that the gate
+    silently skips is the fail-open shape R104 closed for the magnitudes."""
+    assert IDENT in MAIN_TEXT
+    assert not _fails_of(MAIN_TEXT)
+
+
+# ── R106: the reading census (2026-11-01) ────────────────────────────────
+CENSUS = FORK / "scripts" / "readings_census.json"
+
+
+def _registered():
+    """The registered value set the CLI folds into the census (exp + T54)."""
+    exp = exp_fixture()
+    t54 = v8.t54_expectations(
+        served_instances=exp["served_task_instances"][0],
+        cost_r3h=abs(exp["coverage_cost_pp"]["R3H"][0]),
+        cost_r2f=abs(exp["coverage_cost_pp"]["R2F"][0]))
+    return v8.registered_values(exp) + v8.registered_values(t54)
+
+
+def _scored_literals(text):
+    v8._CENSUS_COLLECT = []
+    try:
+        v8.check_paper(text, MAIN.name, exp_fixture())
+        return list(v8._CENSUS_COLLECT)
+    finally:
+        v8._CENSUS_COLLECT = None
+
+
+def test_r106_untouched_manuscripts_match_their_census():
+    reg = json.loads(CENSUS.read_text(encoding="utf-8"))
+    for paper, text in ((MAIN, MAIN_TEXT), (FULL, FULL_TEXT)):
+        scored = _scored_literals(text)
+        assert scored, f"{paper.name}: nothing was scored"
+        assert v8.check_census(text, paper.name, scored, reg,
+                               paper.suffix.lower() == ".tex",
+                               _registered()) == []
+
+
+@pytest.mark.parametrize("anchor,replacement", [
+    # a reprint the sentence-anchored classes never read: the floor is stated
+    # seven times in the manuscript and checked once
+    ("$2.4669$~m (Section", "$2.4667$~m (Section"),
+])
+def test_r106_a_reprint_drift_is_caught(anchor, replacement):
+    reg = json.loads(CENSUS.read_text(encoding="utf-8"))
+    scored = _scored_literals(MAIN_TEXT)
+    assert anchor in MAIN_TEXT
+    drifted = MAIN_TEXT.replace(anchor, replacement, 1)
+    fails = v8.check_census(drifted, MAIN.name, scored, reg, True,
+                            _registered())
+    assert any("2.4669" in f for f in fails), fails
+
+
+def test_r106_a_new_reprint_is_caught():
+    reg = json.loads(CENSUS.read_text(encoding="utf-8"))
+    scored = _scored_literals(MAIN_TEXT)
+    doubled = MAIN_TEXT.replace("$2.4669$~m (Section",
+                                "$2.4669$~m again and $2.4669$~m (Section", 1)
+    fails = v8.check_census(doubled, MAIN.name, scored, reg, True,
+                            _registered())
+    assert any("2.4669" in f for f in fails), fails
+
+
+def test_r106_a_file_without_a_census_fails_loud():
+    """Silence is the loophole: an unregistered manuscript must not pass the
+    census by simply having no entry."""
+    reg = json.loads(CENSUS.read_text(encoding="utf-8"))
+    scored = _scored_literals(MAIN_TEXT)
+    fails = v8.check_census(MAIN_TEXT, "some-other.tex", scored, reg, True,
+                            _registered())
+    assert any("no reading census registered" in f for f in fails), fails
+
+
+def test_r106_cli_rc_flips_on_a_reprint_drift(tmp_path):
+    """The census must be wired into the exit code, not just available."""
+    reg_path = CENSUS
+    good_dir = tmp_path / "good"
+    bad_dir = tmp_path / "bad"
+    good_dir.mkdir()
+    bad_dir.mkdir()
+    (good_dir / "main.tex").write_text(MAIN_TEXT, encoding="utf-8", newline="")
+    (bad_dir / "main.tex").write_text(
+        MAIN_TEXT.replace("$2.4669$~m (Section", "$2.4667$~m (Section", 1),
+        encoding="utf-8", newline="")
+    env = dict(os.environ, PYTHONHASHSEED="0")
+    for path, want in ((bad_dir / "main.tex", 1), (good_dir / "main.tex", 0)):
+        r = subprocess.run([sys.executable, "-B", str(SCRIPT), "--paper",
+                            str(path)], capture_output=True, text=True,
+                           encoding="utf-8", errors="replace", env=env,
+                           cwd=str(FORK.parent.parent))
+        assert r.returncode == want, r.stdout[-2000:]
+    assert reg_path.is_file()
+
+
+# ── follow-ups from the 2026-11-01 independent review ────────────────────
+# Each of these passed the first cut of R105/R106 with rc=0; they are the
+# fail-open shapes the review measured, kept as probes so they cannot return.
+
+def test_a_period_before_the_identity_clause_cannot_hide_it():
+    """Splitting the sentence must fail loud, not drop the movers (the review
+    measured seen 73 -> 71 with rc=0)."""
+    assert "recurs --- the same seed gains" in MAIN_TEXT
+    split = MAIN_TEXT.replace("recurs --- the same seed gains",
+                              "recurs. The same seed gains", 1)
+    fails = _fails_of(split)
+    assert any("no 'between s=A and s=B'" in f for f in fails), fails
+
+
+def test_a_false_paraphrased_identity_claim_is_caught():
+    """"another seed" is a different wording, not a free pass."""
+    false_claim = MAIN_TEXT.replace("and a different seed loses 1.14",
+                                    "and the same seed loses 1.14", 1)
+    fails = _fails_of(false_claim)
+    assert any("moved the same way in both dips" in f for f in fails), fails
+
+
+def test_a_true_paraphrase_is_not_a_false_positive():
+    """The claim is still true when reworded; the gate must read it, not
+    fail it (reading is what makes the next wording checkable)."""
+    assert not _fails_of(MAIN_TEXT.replace("and a different seed loses 1.14",
+                                           "and another seed loses 1.14", 1))
+
+
+def test_every_same_seed_clause_is_checked():
+    both_same = MAIN_TEXT.replace("and a different seed loses 1.14",
+                                  "and the same seed loses 1.14", 1)
+    fails = _fails_of(both_same)
+    assert any("moved the same way" in f for f in fails), fails
+
+
+def test_a_commented_out_reading_changes_its_count():
+    """A reading inside a commented-out line is not in the compiled paper."""
+    reg = json.loads(CENSUS.read_text(encoding="utf-8"))
+    lines = MAIN_TEXT.splitlines()
+    target = next(i for i, l in enumerate(lines) if "51.14" in l)
+    commented = "\n".join(l if i != target else "% " + l
+                          for i, l in enumerate(lines))
+    scored = _scored_literals(MAIN_TEXT)
+    fails = v8.check_census(commented, MAIN.name, scored, reg, True,
+                            _registered())
+    assert any("51.14" in f for f in fails), fails
+
+
+def test_a_reprint_outside_the_scored_classes_is_counted():
+    """26.0 is printed twice and scored by no class; the census must still see
+    it drift (review finding 3)."""
+    reg = json.loads(CENSUS.read_text(encoding="utf-8"))
+    scored = _scored_literals(MAIN_TEXT)
+    assert any("drops 26.0 percentage points" in l for l in MAIN_TEXT.splitlines())
+    drifted = MAIN_TEXT.replace("drops 26.0 percentage points",
+                                "drops 26.1 percentage points", 1)
+    fails = v8.check_census(drifted, MAIN.name, scored, reg, True,
+                            _registered())
+    assert any("26.0" in f for f in fails), fails
+
+
+def test_update_census_refuses_a_same_named_copy(tmp_path):
+    """--update-census pointed at a copy must not replace the real registry."""
+    before = CENSUS.read_bytes()
+    copy = tmp_path / "main.tex"
+    copy.write_text(MAIN_TEXT, encoding="utf-8", newline="")
+    r = subprocess.run([sys.executable, "-B", str(SCRIPT), "--paper",
+                        str(copy), "--update-census"],
+                       capture_output=True, text=True, encoding="utf-8",
+                       errors="replace", env=dict(os.environ,
+                                                  PYTHONHASHSEED="0"),
+                       cwd=str(FORK.parent.parent))
+    assert r.returncode == 1, r.stdout[-1500:]
+    assert "REFUSED" in r.stdout, r.stdout[-1500:]
+    assert CENSUS.read_bytes() == before, "the census was overwritten by a copy"
 
 
 if __name__ == "__main__":

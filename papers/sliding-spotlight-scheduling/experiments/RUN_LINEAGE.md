@@ -71,7 +71,7 @@
 
 | 项 | 现指向 | 处置 | 留痕 |
 |---|---|---|---|
-| `scripts/verify_paper_numbers_l8.py` | **新建**，读 `experiments/v5_results/` | **ACTIVE —— 论文数字闸（L8）**：覆盖率–需求曲线、兑现率三要素标签、tie-set 事实（260/260 unique f1 = 1）、anchor-optimal 258/260、STR 库地板 2.4669 m；raw 单元与 `sweep_results.json` 交叉核对，不一致即 FAIL | 本行 + 预注册 amendment `machine_anchor` + `tests/test_verify_paper_numbers_l8.py` |
+| `scripts/verify_paper_numbers_l8.py` | **新建**，读 `experiments/v5_results/` | **ACTIVE —— 论文数字闸（L8）**：覆盖率–需求曲线、兑现率三要素标签、tie-set 事实（260/260 unique f1 = 1）、anchor-optimal 258/260、STR 库地板 2.4669 m；raw 单元与 `sweep_results.json` 交叉核对，不一致即 FAIL。**2026-11-01 增两层判别力**：①读数普查 `scripts/readings_census.json`（覆盖"闸打过分的字面量 + 任何是登记值正确舍入的印刷数"，未入任何检查类的重印也在内，如 26.0；先剥 LaTeX 注释再计数，`.md` 面不剥；任一处漂移/增删即 FAIL，`--update-census` 显式重写并带路径守卫与跨文件合并）；②跨句种子身份校验（`per_seed_moves` 带 seed id，`the same seed … as in the first dip` 按两次下跌的种子集核对；每条 same/different 子句逐一核，读不懂的身份措辞或"mover 缺 grid 对"一律 FAIL 而非静默跳过） | 本行 + 预注册 amendment `machine_anchor` + `tests/test_verify_paper_numbers_l8.py` |
 | `scripts/verify_paper_numbers.py` | 钉 `experiments/v3_results/`，仅 `--paper` | **SUPERSEDED 作为论文数字闸**；保留为 v3/L6 世界验证器。每次运行打印 `WORLD: caliber v3 / node L6 -- SUPERSEDED…` 横幅，使其不能再被误当作现行闸（原"对 L8 恒绿"的失败模式） | 本行 + 脚本 docstring 的 WORLD SCOPE 段 |
 | `scripts/verify_v3_verdicts.py` | v3 verdicts（R_fam/ALIVE/DEAD/no_promotion） | **保留为 L6 机器锚**；不再作论文读数闸（promotion / R_fam 读数已 vacate） | 本行 + amendment |
 | `scripts/verify_prereg_v2.py` | v1 冻结件（`experiments/results/`） | **保留**：验证的是冻结前缀，amendment 为 append-only、前缀字节未动 | 本行 + amendment `_doc` |

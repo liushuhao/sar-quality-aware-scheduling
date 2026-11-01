@@ -43,9 +43,12 @@ def run_tool(*papers: Path) -> subprocess.CompletedProcess:
     # L8_B16X_OPTIONAL / L8_R56_OPTIONAL: synthetic fixtures carry neither
     # the sixteen-fold sentence nor the R5/R6 anchor paragraphs, so those
     # missing-anchor guards must not fire here (real manuscripts run the gate
-    # without these flags and keep the drop guards armed).
+    # without these flags and keep the drop guards armed).  L8_CENSUS_OPTIONAL
+    # is the same shape: a fixture has no reading census, and the census of
+    # the real manuscripts is exercised by test_verify_l8_mutation.
     env = dict(os.environ, PYTHONHASHSEED="0", L8_MIN_CHECKED="0",
-               L8_B16X_OPTIONAL="1", L8_R56_OPTIONAL="1")
+               L8_B16X_OPTIONAL="1", L8_R56_OPTIONAL="1",
+               L8_CENSUS_OPTIONAL="1")
     argv = [sys.executable, "-B", str(SCRIPT)]
     for p in papers:
         argv += ["--paper", str(p)]

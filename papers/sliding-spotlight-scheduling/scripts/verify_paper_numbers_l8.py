@@ -64,6 +64,7 @@ V5 = FORK / "experiments" / "v5_results"
 SWEEP = V5 / "sweep"
 AGGREGATE = V5 / "sweep_results.json"
 LEDGER = V5 / "reading_ledger_l8.json"
+CENSUS = Path(__file__).resolve().parent / "readings_census.json"
 FAMILIES = ("R1C", "R2F", "R3H")
 S_GRID = (0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 2.0)
 N_SEEDS = 10
@@ -111,28 +112,30 @@ def _moves_bind(moves_m, mv) -> list:
     on any crossing pair), and it is O(n log n) where a permutation search is
     n! -- measured 4.8 s for a ten-clause sentence against the ten-mover row.
 
-    Seed identity is NOT available here: ``per_seed_moves`` stores the
-    movers sorted by value, with the seed ids dropped, so a claim that two
-    dips move the SAME seed is outside what this check can see (residual
-    R105).
+    The registered movers carry their seed id (2026-11-01, R105): a sentence
+    that claims the SAME seed moves in two dips can only be checked if the
+    binding knows which seed each printed magnitude belongs to.  The pairing
+    is still by magnitude, so the id rides along as a consequence of the
+    correct match, not as an input to it.
 
-    Returns [(match, registered_value)] in sentence order, or [] when no
-    assignment exists.
+    Returns [(match, seed, registered_value)] in sentence order, or [] when
+    no assignment exists.
     """
     if len(mv) != len(moves_m):
         return []
     out = []
     for sign in (1.0, -1.0):
-        reg = sorted(q for q in mv if q * sign > 0)
+        reg = sorted(((seed, q) for seed, q in mv if q * sign > 0),
+                     key=lambda t: t[1])
         prt = [(m, float(m.group(1))) for m in moves_m
-               if (1.0 if m.group(0).lower().startswith("lose") else -1.0) == sign]
+               if (1.0 if _lose_word(m.group(0)) else -1.0) == sign]
         if len(reg) != len(prt):
             return []
         prt.sort(key=lambda t: t[1])
-        for (m, val), q in zip(prt, reg):
+        for (m, val), (seed, q) in zip(prt, reg):
             if abs(val - abs(q)) > _printed_tol(m.group(1)):
                 return []
-            out.append((m, q))
+            out.append((m, seed, q))
     order = {id(m): i for i, m in enumerate(moves_m)}
     return sorted(out, key=lambda t: order[id(t[0])])
 
@@ -259,9 +262,9 @@ def recompute(need_deliv: bool = False) -> dict:
                   _load(p)["max_f1_star_on_front"] for p in _units(fam, a)}
             pb = {p.name.rsplit("seed", 1)[1][:-5]:
                   _load(p)["max_f1_star_on_front"] for p in _units(fam, b)}
-            mv = sorted((pa[seed] - pb[seed]) * 100.0
-                        for seed in sorted(set(pa) & set(pb))
-                        if abs(pa[seed] - pb[seed]) > 1e-12)
+            mv = [(seed, (pa[seed] - pb[seed]) * 100.0)
+                  for seed in sorted(set(pa) & set(pb))
+                  if abs(pa[seed] - pb[seed]) > 1e-12]
             if mv:
                 moves[(fam, a, b)] = (mv,
                                       f"per-seed s={a} minus s={b}, pp, "
@@ -454,7 +457,31 @@ _RANGE_CTX = re.compile(r"from\s+\$?s\s*=\s*(\d(?:\.\d)?)[^;]*?"
 # an optional "$" after each number.
 _BETWEEN = re.compile(r"between\s+\$?s\s*=\s*(\d(?:\.\d)?)\$?\s+and\s+"
                       r"\$?s\s*=\s*(\d(?:\.\d)?)\$?", re.IGNORECASE)
-_MOVE = re.compile(r"\b(?:loses?|gains?)\s+\$?(\d+(?:\.\d+)?)\$?", re.IGNORECASE)
+_MOVE = re.compile(r"\b(?:lose[sd]?|losing|gain[sd]?|gaining)\s+\$?"
+                   r"(\d+(?:\.\d+)?)\$?", re.IGNORECASE)
+
+
+def _lose_word(text: str) -> bool:
+    """True for the "lost coverage" polarity of a printed mover clause."""
+    return re.match(r"los", text.strip(), re.IGNORECASE) is not None
+# R105: a sentence that claims seed IDENTITY across two dips -- "the same seed
+# gains 0.42 points as in the first dip, and a different seed loses 1.14".
+# The magnitudes and verbs are bound as before; these clauses say which SEED
+# each one belongs to, which is checkable once the movers carry their seed ids.
+_SAME_SEED = re.compile(r"same\s+seed[^.;]{0,40}?(lose[sd]?|losing|gain[sd]?|"
+                        r"gaining)\s+\$?(\d+(?:\.\d+)?)", re.IGNORECASE)
+_DIFF_SEED = re.compile(r"(?:a\s+)?(?:different|another)\s+seed[^.;]{0,40}?"
+                        r"(lose[sd]?|losing|gain[sd]?|gaining)\s+\$?"
+                        r"(\d+(?:\.\d+)?)", re.IGNORECASE)
+_PRIOR_DIP = re.compile(r"first\s+(?:dip|decline)|previous\s+(?:dip|decline)|"
+                        r"earlier\s+(?:dip|decline)", re.IGNORECASE)
+# Any wording that claims seed identity: if a sentence carries one of these but
+# neither clause pattern can read it, the claim is unchecked -- that must fail,
+# not pass (the escape R104 closed for the magnitudes themselves, 2026-11-01
+# review: "another seed" and "the same seed that lost ..." both slipped past).
+_IDENT_VOCAB = re.compile(r"\b(?:same|different|another|other)\s+seeds?\b|"
+                          r"同一个种子|不同种子", re.IGNORECASE)
+_MOVE_VERB = re.compile(r"\b(?:lose[sd]?|losing|gain[sd]?|gaining)\b", re.IGNORECASE)
 _DIP = re.compile(r"(\d+(?:\.\d+)?)\s+(?:pp|percentage\s+points)\s+between\s+"
                   r"\$?s\s*=\s*(\d(?:\.\d)?)\$?\s+and\s+\$?s\s*=\s*"
                   r"(\d(?:\.\d)?)\$?", re.IGNORECASE)
@@ -537,6 +564,103 @@ def _blank_s_tag(sent: str) -> str:
     cost-match exclusion can use spans from either view.
     """
     return _S_TAG_ANY.sub(lambda m: " " * len(m.group(0)), sent)
+
+
+def _seed_identity(sent: str, label: str, fam: str, lo: float, hi: float,
+                   bound: list, moves_reg: dict) -> list:
+    """Check "the same seed ... as in the first dip" against the seed ids.
+
+    Until 2026-11-01 the gate bound printed magnitudes to registered ones by
+    verb and value only, so the sentence's identity claim -- that the seed
+    which gains in the second dip is the seed that gained in the first -- was
+    outside the check (R105): exchanging WHICH seed the text credits left
+    every magnitude in place.  The movers now carry their seed id, so the
+    claim is decidable:
+
+    * every identity clause must be readable; an identity word the patterns
+      cannot parse is a fail, not a silent pass (the escape R104 closed for
+      the magnitudes themselves);
+    * "the same seed ... as in the first dip" requires that seed to be a
+      mover of the referenced earlier dip, with that same magnitude;
+    * "a different seed" requires a seed different from the one the sentence
+      just named.
+
+    The earlier dip is resolved from the registered data (the nearest dip of
+    the same family that ends before this one starts), not from a hard-coded
+    key, so a re-registered grid cannot leave the check pointing at a stale
+    pair.
+    """
+    same = list(_SAME_SEED.finditer(sent))
+    diff = list(_DIFF_SEED.finditer(sent))
+    if not same and not diff:
+        return []
+    out: list = []
+
+    def sign_of(m) -> float:
+        return 1.0 if _lose_word(m.group(1)) else -1.0
+
+    def seeds_of(clause):
+        verb, val = sign_of(clause), float(clause.group(2))
+        return [s for m, s, _q in bound
+                if (1.0 if _lose_word(m.group(0)) else -1.0) == verb
+                and abs(float(m.group(1)) - val) <= _printed_tol(clause.group(2))]
+
+    priors = [(key[2], key) for key in moves_reg
+              if key[0] == fam and key[2] <= lo + 1e-9]
+    prior = max(priors)[1] if priors else None
+    if same and prior is None:
+        out.append(f"{label}: 'same seed' claim at s={lo}->{hi} for {fam} has "
+                   f"no earlier registered dip to compare against  "
+                   f"[{sent[:90]!r}]")
+        return out
+    prior_moves = dict((s, q) for s, q in moves_reg[prior][0]) if prior else {}
+
+    ref_seed = None
+    if same and not _PRIOR_DIP.search(sent):
+        out.append(f"{label}: 'same seed' clause does not name the dip it "
+                   f"points back to (first/previous/earlier)  "
+                   f"[{sent[:90]!r}]")
+    # EVERY same-seed clause is verified, not just the first (2026-11-01
+    # review: "… as in the first dip, and the same seed loses 1.14" passed
+    # because only same[0] was looked at).
+    for clause in same:
+        hits = seeds_of(clause)
+        if len(hits) != 1:
+            out.append(f"{label}: 'same seed' clause gains/loses "
+                       f"{clause.group(2)} but that magnitude binds to "
+                       f"{len(hits)} mover(s)  [{sent[:90]!r}]")
+            continue
+        if ref_seed is None:
+            ref_seed = hits[0]
+        if hits[0] not in prior_moves:
+            out.append(f"{label}: text says seed {hits[0]} moved the same "
+                       f"way in both dips, but at s={prior[1]}->{prior[2]} "
+                       f"the movers are seeds "
+                       f"{sorted(prior_moves)}  [{sent[:90]!r}]")
+        elif abs(abs(prior_moves[hits[0]]) - float(clause.group(2))) > \
+                _printed_tol(clause.group(2)):
+            out.append(f"{label}: seed {hits[0]} moves "
+                       f"{abs(prior_moves[hits[0]]):.4f} pp at "
+                       f"s={prior[1]}->{prior[2]} but the sentence prints "
+                       f"{clause.group(2)} 'as in the first dip'  "
+                       f"[{sent[:90]!r}]")
+
+    for clause in diff:
+        hits = seeds_of(clause)
+        if len(hits) != 1:
+            out.append(f"{label}: 'different seed' clause gains/loses "
+                       f"{clause.group(2)} but that magnitude binds to "
+                       f"{len(hits)} mover(s)  [{sent[:90]!r}]")
+            continue
+        if ref_seed is None:
+            out.append(f"{label}: 'different seed' clause has no seed to be "
+                       f"different FROM -- the sentence never names the "
+                       f"first one  [{sent[:90]!r}]")
+        elif hits[0] == ref_seed:
+            out.append(f"{label}: the clause is introduced as a DIFFERENT "
+                       f"seed, but it binds to seed {hits[0]} -- the same one "
+                       f"the previous clause credits  [{sent[:90]!r}]")
+    return out
 
 
 def check_paper(text: str, label: str, exp: dict) -> "tuple[list, list, list, int]":
@@ -815,6 +939,17 @@ def check_paper(text: str, label: str, exp: dict) -> "tuple[list, list, list, in
             # ---- per-seed movers (loses/gains between two grid points) -----
             bet = _BETWEEN.search(sent)
             moves_m = list(_MOVE.finditer(sent))
+            # An identity claim the clause patterns cannot read is a fail, not
+            # a pass: "and another seed loses 1.14" and "the same seed that
+            # lost 1.83 ... gains 0.42" both used to slip through untouched
+            # (2026-11-01 review; same escape shape R104 closed).
+            _ident = _IDENT_VOCAB.search(sent)
+            if (_ident and _MOVE_VERB.search(sent)
+                    and not (_SAME_SEED.search(sent) or _DIFF_SEED.search(sent))):
+                fails.append(f"{label}: seed-identity wording "
+                             f"{_ident.group(0)!r} carrying a mover clause that "
+                             f"neither identity pattern can read -- the claim "
+                             f"would go unchecked  [{sent[:90]!r}]")
             if bet and moves_m:
                 lo, hi = float(bet.group(1)), float(bet.group(2))
                 cands = []
@@ -826,18 +961,21 @@ def check_paper(text: str, label: str, exp: dict) -> "tuple[list, list, list, in
                         cands.append((f, bound))
                 if len(cands) == 1:
                     fam_m, bound = cands[0]
-                    for m, q in bound:
+                    for m, seed, q in bound:
                         seen += 1
                         _score(label, fails, passes, float(m.group(1)), abs(q),
                                _printed_tol(m.group(1)),
-                               f"{fam_m} per-seed move (pp) s={lo}->{hi}",
+                               f"{fam_m} per-seed move (pp) s={lo}->{hi} "
+                               f"[seed {seed}]",
                                "per-seed s=a minus s=b, pp", m.group(0))
+                    fails.extend(_seed_identity(sent, label, fam_m, lo, hi,
+                                                bound, exp["per_seed_moves"]))
                 else:
                     fails.append(f"{label}: per-seed move statement s={lo}->"
                                  f"{hi} matches {len(cands)} registered mover "
                                  f"set(s) -- unverifiable or ambiguous  "
                                  f"[{sent[:90]!r}]")
-            elif bet and re.search(r"\b(?:loses?|gains?)\b", sent, re.I):
+            elif bet and _MOVE_VERB.search(sent):
                 # a between-grid sentence that DOES talk about a seed moving,
                 # but whose clause the mover pattern could not read (measured
                 # escape: the numbers wrapped in $...$ left moves_m empty and
@@ -845,6 +983,16 @@ def check_paper(text: str, label: str, exp: dict) -> "tuple[list, list, list, in
                 fails.append(f"{label}: 'between s={bet.group(1)} and s="
                              f"{bet.group(2)}' carries a loses/gains clause the "
                              f"mover pattern cannot read  [{sent[:90]!r}]")
+            elif moves_m and re.search(r"\bseeds?\b|种子", sent, re.I):
+                # a per-seed mover clause with no grid pair in the SAME
+                # sentence: a period inserted before it splits the sentence and
+                # the whole block silently vanished (2026-11-01 review measured
+                # seen drop 73 -> 71 with rc=0).  The clause is unverifiable
+                # here, so it must be loud.
+                fails.append(f"{label}: per-seed mover clause with no "
+                             f"'between s=A and s=B' in the same sentence -- "
+                             f"the grid pair (and the seed registry it selects) "
+                             f"cannot be resolved  [{sent[:90]!r}]")
 
             # ---- the STR floor (a step, not a continuous degradation) ------
             sm = re.search(r"STR[^;]{0,60}?(?:floor|地板)[^;]{0,20}?"
@@ -929,7 +1077,66 @@ def reverse_check(text: str, label: str) -> "tuple[list, list]":
     return fails, []
 
 
+_CENSUS_COLLECT: "list | None" = None
+# scored readings whose printed token carries no decimal point (counts, integer
+# percentages): they stay outside the census, and the run says how many.
+_CENSUS_MISSES = 0
+
+
+def strip_tex_comments(text: str) -> str:
+    """Drop LaTeX comments: an escaped ``\\%`` is a sign, a bare ``%`` a comment.
+
+    The census counts what the compiled paper prints.  Without this, commenting
+    a sentence out left every literal count unchanged and the deletion
+    invisible (2026-11-01 review; the R87 layout script had the same hole).
+    """
+    out = []
+    for line in text.splitlines():
+        cut, i = len(line), 0
+        while True:
+            j = line.find("%", i)
+            if j < 0:
+                break
+            run, k = 0, j - 1
+            while k >= 0 and line[k] == "\\":
+                run, k = run + 1, k - 1
+            if run % 2 == 0:      # even backslashes: a bare % starts a comment
+                cut = j
+                break
+            i = j + 1
+        out.append(line[:cut])
+    return "\n".join(out)
+
+
+def _census_literal(printed_raw: str, printed: float) -> "str | None":
+    """The printed literal that carries the scored value, or None.
+
+    Counting literals is only meaningful for READINGS: an integer in the match
+    ("no feasible 2 of 10 units") is a count, not a reading, and census-counting
+    a bare "2" would fire on every prose edit that reorders a list.  A
+    percentage token scores as its fraction, so the /100 form is matched too.
+    """
+    toks = re.findall(r"\d+(?:\.\d+)?", printed_raw or "")
+    for t in toks:
+        if "." not in t:
+            continue
+        try:
+            v = float(t)
+        except ValueError:
+            continue
+        if abs(v - printed) <= 1e-9 or abs(v / 100.0 - printed) <= 1e-9:
+            return t
+    return None
+
+
 def _score(label, fails, passes, printed, want, tol, what, prov, printed_raw):
+    global _CENSUS_MISSES
+    if _CENSUS_COLLECT is not None:
+        lit = _census_literal(printed_raw, printed)
+        if lit:
+            _CENSUS_COLLECT.append(lit)
+        elif "." in (printed_raw or ""):
+            _CENSUS_MISSES += 1
     if want is None:
         fails.append(f"{label}: {what} has no registered L8 reading  [{prov}]")
         return
@@ -941,10 +1148,123 @@ def _score(label, fails, passes, printed, want, tol, what, prov, printed_raw):
                      f"{want} (off by {delta:+.4g}, tol {tol})  [{prov}]")
 
 
+def registered_values(exp: dict) -> "list[float]":
+    """Every number the artifacts produce, minus the grid tags themselves.
+
+    The grid values (0.8 … 2.0) are axis labels, not readings: counting their
+    literals would make every ``s=0.8`` tag a census entry and fire on any
+    grid edit.
+    """
+    vals: list = []
+
+    def walk(o):
+        if isinstance(o, dict):
+            for v in o.values():
+                walk(v)
+        elif isinstance(o, (list, tuple, set)):
+            for v in o:
+                walk(v)
+        elif isinstance(o, (int, float)) and not isinstance(o, bool):
+            vals.append(float(o))
+
+    walk(exp)
+    return [v for v in vals
+            if not any(abs(v - g) <= 1e-12 for g in S_GRID)]
+
+
+def census_literals(text: str, scored: "list[str]", registered: "list[float]",
+                    strip_comments: bool = True) -> "list[str]":
+    """Literals the census counts: what the gate scored, plus every printed
+    number that is a correct rounding of a registered reading.
+
+    The second half is what makes a reprint visible even when no anchored class
+    reads it (2026-11-01 review: "26.0 percentage points" is printed twice and
+    scored nowhere, so a scored-only census could not see it drift).
+    """
+    body = strip_tex_comments(text) if strip_comments else text
+    lits = set(scored)
+    for m in re.finditer(r"\d+\.\d+", body):
+        tok = m.group(0)
+        v = float(tok)
+        if any(abs(v - g) <= 1e-12 for g in S_GRID):
+            continue          # an s-axis tag, not a reading
+        tol = _printed_tol(tok)
+        if any(abs(v - r) <= tol for r in registered):
+            lits.add(tok)
+    return sorted(lits)
+
+
+def census_counts(text: str, literals: "list[str]",
+                  strip_comments: bool = True) -> dict:
+    """literal -> how many times the COMPILED manuscript prints it.
+
+    LaTeX comments are dropped first: a reading inside a commented-out
+    sentence is not in the paper, so commenting one out must change its count.
+    Only for .tex -- in the markdown face a bare "%" is a percent sign, and
+    stripping there would cut every percentage reading off its line.
+    """
+    body = strip_tex_comments(text) if strip_comments else text
+    out = {}
+    for lit in sorted(set(literals)):
+        rx = r"(?<![\d.])" + re.escape(lit) + r"(?![\d])"
+        out[lit] = len(re.findall(rx, body))
+    return out
+
+
+def check_census(text: str, label: str, scored: "list[str]",
+                 registry: dict, strip_comments: bool = True,
+                 registered: "list[float] | None" = None) -> list:
+    """Every scored reading literal must be printed the registered times.
+
+    The sentence-anchored classes above score the occurrence they can see: a
+    reading printed seven times (2.4669) was checked once, and an edit to any
+    of the other six left the gate green (R106).  Matching each anchored
+    class to every reprint is not available -- the reprints sit in sentences
+    that carry no reading context -- but their COUNT is: a drifted, deleted
+    or duplicated occurrence changes how many times the literal appears.  The
+    census is frozen here on purpose, so the change lands in review as a diff
+    rather than as a silent edit.
+
+    A file with no census entry is a fail, not a skip: silence is exactly the
+    loophole.  Synthetic fixtures opt out explicitly with L8_CENSUS_OPTIONAL=1.
+    """
+    fails: list = []
+    name = Path(label).name
+    known = registry.get("files", {}).get(name)
+    cur = census_counts(text, census_literals(text, scored, registered or [],
+                                               strip_comments),
+                        strip_comments)
+    if known is None:
+        fails.append(f"{label}: no reading census registered for {name} -- the "
+                     f"gate cannot tell whether a reading printed once is "
+                     f"printed correctly elsewhere (review the text, then "
+                     f"regenerate with --update-census)")
+        return fails
+    for lit, n in sorted(cur.items()):
+        if lit not in known:
+            fails.append(f"{label}: reading {lit} is printed but has no census "
+                         f"entry ({CENSUS.name}) -- a new reading occurrence "
+                         f"needs review, then --update-census")
+        elif known[lit] != n:
+            fails.append(f"{label}: reading {lit} is printed {n} time(s), the "
+                         f"census registers {known[lit]} -- one occurrence was "
+                         f"edited, added or removed (--update-census if that "
+                         f"was intended)")
+    for lit in sorted(set(known) - set(cur)):
+        fails.append(f"{label}: the census registers {lit} ({known[lit]} "
+                     f"occurrence(s)) but nothing prints it any more")
+    return fails
+
+
 def main(argv=None) -> int:
+    global _CENSUS_COLLECT, _CENSUS_MISSES
     ap = argparse.ArgumentParser()
     ap.add_argument("--paper", action="append", default=None,
                     help="manuscript file(s) to check; omit for readings only")
+    ap.add_argument("--update-census", action="store_true",
+                    help="rewrite readings_census.json from the current "
+                         "manuscript (review the text first: the census is "
+                         "what makes a reprint invisible no more)")
     args = ap.parse_args(argv)
 
     if not AGGREGATE.is_file():
@@ -1011,6 +1331,18 @@ def main(argv=None) -> int:
     all_pass: list = []
     reverse: list = []
     total = 0
+    census_reg = _load(CENSUS) if CENSUS.is_file() else {"files": {}}
+    census_skipped: list = []
+    registered_vals = registered_values(exp)
+    census_new: dict = {"note": "Every literal the L8 core classes and T54 "
+                                "score, and how many times the COMPILED "
+                                "manuscript prints it (R106). An occurrence "
+                                "that drifts, disappears or is duplicated "
+                                "changes the count; regenerate with "
+                                "--update-census after reviewing the text. "
+                                "T55 / R56 / 16x / ignition readings are "
+                                "outside this census (residual R110).",
+                        "files": {}, "paths": {}}
     print("\n=== manuscript L8 numbers vs artifacts ===")
     from verify_r56_group import (R56_MIN_CHECKS, check_r56,
                                   r5_invariants, r56_expectations as _r56_exp)
@@ -1021,12 +1353,22 @@ def main(argv=None) -> int:
         return 2
     seen56_total = 0
     for p, text in texts.items():
+        _CENSUS_COLLECT = []
+        _CENSUS_MISSES = 0
         fails, passes, _notes, seen = check_paper(text, p.name, exp)
         t54 = t54_expectations(
             served_instances=exp["served_task_instances"][0],
             cost_r3h=abs(exp["coverage_cost_pp"]["R3H"][0]),
             cost_r2f=abs(exp["coverage_cost_pp"]["R2F"][0]))
         f54, p54, seen54 = check_t54(text, p.name, t54)
+        # the census covers the core classes AND T54 (both score through this
+        # module's funnels); T55 / R56 / 16x / ignition live in other modules
+        # and are outside it -- stated in the census note, tracked as R110
+        scored = list(_CENSUS_COLLECT)
+        _CENSUS_COLLECT = None
+        # T54 readings come from a separate expectation dict, so they must be
+        # folded in here or their reprints stay outside the census
+        reg_vals = registered_vals + registered_values(t54)
         fails += f54
         passes += p54
         seen += seen54
@@ -1057,13 +1399,36 @@ def main(argv=None) -> int:
         seen += seen56
         seen56_total += seen56
         rev, _ = reverse_check(text, p.name)
+        # --update-census wins over the fixture opt-out: an update run must
+        # never be downgraded into a silent no-op that then wipes the file.
+        if args.update_census:
+            census_new["files"][p.name] = census_counts(
+                text, census_literals(text, scored, reg_vals,
+                                      p.suffix.lower() == ".tex"),
+                p.suffix.lower() == ".tex")
+            census_new.setdefault("paths", {})[p.name] = str(p.resolve())
+            census_note = (f"census rewritten "
+                           f"({len(census_new['files'][p.name])} literal(s))")
+        elif os.environ.get("L8_CENSUS_OPTIONAL") == "1":
+            census_note = "CENSUS SKIPPED (L8_CENSUS_OPTIONAL=1)"
+            census_skipped.append(p.name)
+        else:
+            fc = check_census(text, p.name, scored, census_reg,
+                               p.suffix.lower() == ".tex", reg_vals)
+            fails += fc
+            census_note = (f"{len(fc)} census mismatch(es)" if fc
+                           else "census matches")
+        if _CENSUS_MISSES:
+            census_note += f"; {_CENSUS_MISSES} scored number(s) outside the " \
+                           f"census (no decimal point)"
         all_fail += fails
         all_pass += passes
         reverse += rev
         total += seen
         print(f"  {p.name}: {seen} L8 number(s) checked ({seen54} T54, {seen55} T55, "
               f"{seen56} R56), "
-              f"{len(fails)} mismatch(es), {len(rev)} retired-world token(s)")
+              f"{len(fails)} mismatch(es), {len(rev)} retired-world token(s); "
+              f"{census_note}")
 
     # Per-GROUP floor: the R5/R6 group is a late extension, and a whole-group
     # loss (its anchor reworded away, its module not imported) leaves the
@@ -1079,7 +1444,10 @@ def main(argv=None) -> int:
     _inv_ok, inv_bad = r5_invariants(r56)
     all_fail += inv_bad
 
-    print(f"\n=== RESULT: {len(all_fail)} mismatch(es) over {total} checked ===")
+    _skip = (f"  [CENSUS SKIPPED: {', '.join(census_skipped)}]"
+             if census_skipped else "")
+    print(f"\n=== RESULT: {len(all_fail)} mismatch(es) over {total} checked ==="
+          f"{_skip}")
     for f in all_fail:
         print(f"FAIL   {f}")
 
@@ -1111,6 +1479,38 @@ def main(argv=None) -> int:
         for r in reverse:
             print(f"FAIL   {r}")
         all_fail += reverse
+    if args.update_census:
+        if all_fail:
+            print("REFUSED: the census is not rewritten while the gate has "
+                  "mismatches -- fix the manuscript first")
+            return 1
+        merged = dict(census_reg.get("files", {}))
+        merged_paths = dict(census_reg.get("paths", {}))
+        blocked = [(name, merged_paths[name], path)
+                   for name, path in census_new.get("paths", {}).items()
+                   if merged_paths.get(name) and merged_paths[name] != path
+                   and Path(merged_paths[name]).exists()]
+        if blocked:
+            print("REFUSED: these entries belong to a different file with the "
+                  "same name -- updating from a copy would silently replace "
+                  "the real registry")
+            for name, old, new in blocked:
+                print(f"  {name}: registered={old}  this run={new}")
+            return 1
+        if not census_new["files"]:
+            print("REFUSED: this run scored no reading literal -- nothing to "
+                  "write (a census of {} would erase the registry)")
+            return 1
+        merged.update(census_new["files"])
+        merged_paths.update(census_new.get("paths", {}))
+        out = {"note": census_new["note"], "files": merged,
+               "paths": merged_paths}
+        CENSUS.write_text(json.dumps(out, ensure_ascii=False, indent=1,
+                                     sort_keys=True) + "\n", encoding="utf-8")
+        print(f"census rewritten -> {CENSUS} "
+              f"({sum(len(v) for v in merged.values())} literal(s) over "
+              f"{len(merged)} file(s); {len(merged) - len(census_new['files'])} "
+              f"entry(ies) kept from the previous run)")
     if all_fail:
         print("VERDICT: the manuscript contradicts the L8 artifacts")
         return 1
@@ -1359,6 +1759,10 @@ def check_t54(text: str, label: str, t54: dict) -> "tuple[list, list, int]":
     def score(ok: bool, printed: str, want: str, desc: str) -> None:
         nonlocal seen
         seen += 1
+        if _CENSUS_COLLECT is not None:
+            cm = re.match(r"\d+(?:\.\d+)?", printed or "")
+            if cm and "." in cm.group(0):
+                _CENSUS_COLLECT.append(cm.group(0))
         if ok:
             passes.append(f"{label}: {desc}")
         else:
