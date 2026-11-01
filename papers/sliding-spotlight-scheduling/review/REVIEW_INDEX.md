@@ -6,6 +6,13 @@
 
 ## 当前活跃批次
 
+### 2026-10-31 投稿前五席 + 异源复核 → 修复并复验（1a6e5e8 入库产物 / 8597573 修复）
+
+- **产物**: [panel-full-20261031/](panel-full-20261031/) — 五席 phase1/phase2 报告、编辑决定与路线图 R1–R9 / S1–S13 / C1–C3、[independent-hetero-review.md](panel-full-20261031/independent-hetero-review.md)、[03-hetero-findings-verification.md](panel-full-20261031/03-hetero-findings-verification.md)、[04-revision-applied.md](panel-full-20261031/04-revision-applied.md)。审查对象 = `main.tex`（HEAD ec6d607）。
+- **判定**: Major Revision（0 Critical，9 must-fix / 13 should-fix / 3 optional）；同模型家族五席**不是**独立误差过程，故另跑异源复核。
+- **实证缺陷（五席全漏、异源抓到并主线程复算确认）**: `main.tex:143` 滑聚驻留闭式混印 Kim Eq.(22) 两种写法（用 `(R_0+r_0)` 杠杆又外加 `W_a`），比 `sss_core/duration.py:486` 实际执行值高 **10.305%**——全部报告数字仍出自代码、回归测试照旧通过，但正文照印式复现不出结果。
+- **处置**: 8597573 修闭式（四载体 + formula-spec 记两式不可混用）并落地 R1–R4/R7–R9 文字限定、R5 撤回「机制不同」断言；R6 与需新增实验臂的选项未做（见 04 文档末节）。
+
 ### 2026-10-28 Wave B/C 五席全量审查（R96 图波后、投稿前全量）→ 修复闭环 executed
 
 - **产物**: [waveb-20261028/](waveb-20261028/) — 五席报告 + 确认席（report-claims 主张 / report-ars 方法论 / report-code 代码 / report-theory 理论 / report-kdense 异轨 K-Dense 物料 / report-confirm 确认轮）。审查对象 = eba51b9（R96 图波后 main.tex）。
