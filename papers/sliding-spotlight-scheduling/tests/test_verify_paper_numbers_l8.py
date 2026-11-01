@@ -40,11 +40,12 @@ NO_L8 = ("The R3H median front size at 160/240 is 140 and the distinct-fq "
 
 
 def run_tool(*papers: Path) -> subprocess.CompletedProcess:
-    # L8_B16X_OPTIONAL: synthetic fixtures carry no sixteen-fold sentence, so
-    # the B16X missing-sentence guard must not fire here (real manuscripts
-    # run the gate without this flag and keep the drop guard armed).
+    # L8_B16X_OPTIONAL / L8_R56_OPTIONAL: synthetic fixtures carry neither
+    # the sixteen-fold sentence nor the R5/R6 anchor paragraphs, so those
+    # missing-anchor guards must not fire here (real manuscripts run the gate
+    # without these flags and keep the drop guards armed).
     env = dict(os.environ, PYTHONHASHSEED="0", L8_MIN_CHECKED="0",
-               L8_B16X_OPTIONAL="1")
+               L8_B16X_OPTIONAL="1", L8_R56_OPTIONAL="1")
     argv = [sys.executable, "-B", str(SCRIPT)]
     for p in papers:
         argv += ["--paper", str(p)]

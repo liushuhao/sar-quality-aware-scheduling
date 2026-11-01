@@ -967,6 +967,14 @@ def main(argv=None) -> int:
     reverse: list = []
     total = 0
     print("\n=== manuscript L8 numbers vs artifacts ===")
+    from verify_r56_group import (R56_MIN_CHECKS, check_r56,
+                                  r5_invariants, r56_expectations as _r56_exp)
+    try:
+        r56 = _r56_exp()  # R5 ambiguity re-evaluation + R6 intra-dwell bound
+    except Exception as exc:  # artifacts moved under the registered readings
+        print(f"ABORT: could not recompute the R5/R6 readings: {exc}", file=sys.stderr)
+        return 2
+    seen56_total = 0
     for p, text in texts.items():
         fails, passes, _notes, seen = check_paper(text, p.name, exp)
         t54 = t54_expectations(
@@ -998,13 +1006,33 @@ def main(argv=None) -> int:
         fails += fi
         passes += pi
         seen += seeni
+        f56, p56, seen56 = check_r56(text, p.name, r56)
+        fails += f56
+        passes += p56
+        seen += seen56
+        seen56_total += seen56
         rev, _ = reverse_check(text, p.name)
         all_fail += fails
         all_pass += passes
         reverse += rev
         total += seen
-        print(f"  {p.name}: {seen} L8 number(s) checked ({seen54} T54, {seen55} T55), "
+        print(f"  {p.name}: {seen} L8 number(s) checked ({seen54} T54, {seen55} T55, "
+              f"{seen56} R56), "
               f"{len(fails)} mismatch(es), {len(rev)} retired-world token(s)")
+
+    # Per-GROUP floor: the R5/R6 group is a late extension, and a whole-group
+    # loss (its anchor reworded away, its module not imported) leaves the
+    # manuscript total far above any global floor.  Guard it on its own.
+    if (os.environ.get("L8_R56_OPTIONAL") != "1"
+            and seen56_total < R56_MIN_CHECKS * len(texts)):
+        print(f"ABORT: the R5/R6 group contributed {seen56_total} checks < "
+              f"{R56_MIN_CHECKS * len(texts)} ({R56_MIN_CHECKS}/manuscript) -- "
+              "the group stopped reading the manuscript")
+        return 2
+    # Model invariants ride along as FAILs (they are what makes the printed
+    # direction claim true); they are not counted as manuscript checks.
+    _inv_ok, inv_bad = r5_invariants(r56)
+    all_fail += inv_bad
 
     print(f"\n=== RESULT: {len(all_fail)} mismatch(es) over {total} checked ===")
     for f in all_fail:
@@ -1013,11 +1041,12 @@ def main(argv=None) -> int:
     # A regex that no longer matches silently drops its checks (seen never
     # increments), so a manuscript regression could turn the gate green by
     # shrinking the check surface.  Floor the check count at the last
-    # registered level; bump alongside every gate extension (R83: 145,
-    # ignition sentences 2026-10-25: 155).  The unit tests override this via
-    # L8_MIN_CHECKED=0 because their synthetic manuscripts legitimately
-    # exercise single-check surfaces.
-    MIN_CHECKED = int(os.environ.get("L8_MIN_CHECKED", "155"))
+    # registered level PER MANUSCRIPT (R83: 145, ignition sentences
+    # 2026-10-25: 155) -- scaled by how many were passed, because the harness
+    # and the mutation tests legitimately run one at a time.  The R5/R6 group
+    # carries its own per-group floor above, which is what a global count
+    # cannot see.  The unit tests override this via L8_MIN_CHECKED=0.
+    MIN_CHECKED = int(os.environ.get("L8_MIN_CHECKED", "155")) * max(len(texts), 1)
     if total < MIN_CHECKED:
         print(f"ABORT: check surface shrank to {total} < {MIN_CHECKED} -- "
               "a gate regex stopped matching the manuscript (silent-drop "
