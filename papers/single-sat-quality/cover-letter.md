@@ -21,16 +21,19 @@ The manuscript presents a physics-aware multi-objective optimization
 framework for single-satellite agile SAR scheduling. Five configurations spanning
 greedy heuristics, a single-objective GA control, and NSGA-III variants are compared
 on 200 systematically varied scenarios across four density classes
-(N = 20 to 500). The central finding is a conditional empirical saturation regime for SAR
-quality optimization: G-BL-seeded NSGA-III converges to
-low-squint geometries under which the three-objective formulation is
-indistinguishable from the two-objective one at operational densities, while
-retaining measurable quality gains at sparse density. The work establishes that multi-objective scheduling
-provides measurable quality benefit only when observation requests are sparse
-($N \lesssim 100$), within the single-satellite, single-pass Stripmap setting studied.
-A matched-knee-point control confirms the sparse-density third-objective
-gain is a modest controlled margin (+4.9% under matched knee selection), not
-an artifact of NSGA-III reference-direction count or knee selection.
+(N = 20 to 500). In sparse request sets, re-optimizing observation times buys
+measurable image quality at a stated coverage price: +40% radiometric-index
+quality at a 15% coverage cost and +33.7% geometric-index quality at 14%, with a
+matched-knee-point control confirming that the third objective contributes a
+modest controlled +4.9% margin rather than an artifact of the NSGA-III
+reference-direction count or knee selection. Two measured boundaries delimit
+that gain. It contracts from +28% to +2.3% in geometric quality as the
+platform's squint envelope narrows from 45 to 15 degrees, and it vanishes beyond
+roughly 150 targets, where G-BL-seeded NSGA-III converges to the greedy coverage
+anchor with quality margins below 2%, conditional on greedy hot-start
+initialization. The work establishes when multi-objective SAR quality scheduling
+is worth its coverage cost, within the single-satellite, single-pass Stripmap
+setting studied.
 
 Disclosure of related manuscript:
 I have an article previously accepted by Advances in Space Research
