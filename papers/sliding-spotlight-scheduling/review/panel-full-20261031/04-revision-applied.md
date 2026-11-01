@@ -53,4 +53,4 @@ Remaining S1, S2, S5–S8, S10–S13 were not edited: they are framing/precision
 
 `paper/main.pdf` was regenerated from this build. `refs.bib:3` provenance count updated to the actual 36 entries.
 
-> **Envelope note (2026-11-01, second round)**: the gate figures above are the state after the FIRST round (46 pages, 299 L8 checks). The second round closed R5 and R6 and moved them to **47 pages / 327 L8 checks** (`0 mismatch`), with the same seven gates green — see [05-r5-r6-closure.md](05-r5-r6-closure.md) §验证 for the current run.
+> **Envelope note (2026-11-01, second round)**: the gate figures above are the state after the FIRST round (46 pages, 299 L8 checks). The second round closed R5 and R6 and moved them to **47 pages / 327 L8 checks** (`0 mismatch`), with the same seven gates green — see [05-r5-r6-closure.md](05-r5-r6-closure.md) §验证 for the current run. A later pass the same day (commit `6faf243`, closing residuals R102/R103/R104) did not change the page count but took the gate to **333 L8 checks** (the R5/R6 group went 14→17 per manuscript).
