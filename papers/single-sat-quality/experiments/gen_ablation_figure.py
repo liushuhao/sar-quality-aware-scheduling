@@ -152,8 +152,11 @@ def load_real_table() -> Tuple[Dict, List[str], List[str], List[str]]:
 def main():
     import argparse
     parser = argparse.ArgumentParser()
+    # Diagnostic redraw from the tables (150 dpi, PDF only). The manuscript
+    # figure is produced by gen_fig6_ablation.py; keep a distinct default name
+    # so running this tool cannot silently overwrite figures/fig5_ablation.pdf.
     parser.add_argument("--out", default=str(PROJECT / "figures" /
-                         "fig6_ablation.pdf"))
+                         "ablation_redraw.pdf"))
     parser.add_argument("--classes", nargs="*", default=None,
                         help="Class labels (default: S1-S4)")
     args = parser.parse_args()

@@ -28,6 +28,10 @@ different pkl bytes (e.g. a baseline not rerun after a window fix paired with
 a post-fix MOEA). Wired into `statistical_analysis.py`,
 `recompute_scale_sensitivity.py`, `analyze_ablation.py`,
 `gen_fig6_ablation.py`. Tests: `pytest test_provenance_guard.py`.
+`gen_fig6_ablation.py` writes `figures/fig5_ablation.{pdf,png}` — the file the
+manuscript includes (it prints as Figure 6, since filenames do not track printed
+numbers: fig7 prints as Figure 5, fig8 as Figure 7). The script keeps its
+historical name.
 
 ## Audit + downstream
 

@@ -374,9 +374,12 @@ if rep_key:
             unique_h.append(h)
             unique_l.append(l)
     ax1.legend().set_visible(False)  # suppress the per-axes auto-legend
+    # Placed fully below the x-axis labels: anchoring the legend's LOWER edge at
+    # y=-0.02 (loc='lower center') let its top edge reach the xlabel row and
+    # strike through "f1* (Norm. Profit)". Anchor the UPPER edge below the figure.
     fig.legend(unique_h, unique_l,
-               loc='lower center', bbox_to_anchor=(0.5, -0.02),
-               ncol=5, frameon=True, framealpha=0.9, fontsize=6.5,
+               loc='upper center', bbox_to_anchor=(0.5, -0.08),
+               ncol=3, frameon=True, framealpha=0.9, fontsize=7,
                borderaxespad=0.0)
     if stats_data and "effect_sizes" in stats_data:
         for k, v in stats_data["effect_sizes"].items():
@@ -611,61 +614,48 @@ for oi, obj in enumerate(objectives):
 
 # ── Bottom panel: Logistic regression for f1* deficit ──
 ax_log = fig.add_subplot(gs[3, :])
-from scipy.optimize import minimize
 
-# Compute deficit per scenario
+# Deficit over the SAME six density classes and scenario set as
+# scripts/n50_logistic.py, whose output the manuscript quotes (§6.3).
+# common_keys cannot be used here: it requires all five solvers, which
+# excludes S7/S8 and would silently fit a different (four-class) subset.
+GROUP_N = {"S1": 20, "S2": 100, "S7": 150, "S8": 200, "S3": 300, "S4": 500}
 deficit_data = []
-n_targets_list = []
-for k in common_keys:
-    if "MOEA-2" in results[k] and "G-BL" in results[k]:
-        f1_moea = results[k]["MOEA-2"].get("f1", 0.0) or 0.0
-        n_t = results[k].get("G-BL", {}).get("n_targets", 0)
-        deficit = 1.0 if f1_moea < 0.95 else 0.0
-        deficit_data.append((n_t, deficit))
-        n_targets_list.append(n_t)
+for k, v in m2_data.items():
+    if not isinstance(v, dict) or "f1" not in v:
+        continue
+    grp = k.split("/")[0]
+    if grp not in GROUP_N:
+        continue
+    deficit_data.append((GROUP_N[grp], 1.0 if float(v["f1"]) < 0.95 else 0.0))
 
 n_vals = np.asarray([d[0] for d in deficit_data])
 deficit_vals = np.asarray([d[1] for d in deficit_data])
 
-# Fit logistic regression: p(deficit) = 1 / (1 + exp(-(alpha + beta * N)))
-def neg_log_likelihood(params, x, y):
-    alpha, beta = params
-    p = 1.0 / (1.0 + np.exp(-(alpha + beta * x)))
-    # Avoid log(0)
-    eps = 1e-12
-    return -np.sum(y * np.log(p + eps) + (1 - y) * np.log(1 - p + eps))
+# Single source for the fit statistics: the JSON written by
+# scripts/n50_logistic.py (alpha/beta/N50/CI), so figure and text cannot diverge.
+N50_JSON = os.path.join(RESULTS, "n50_logistic.json")
+n50_meta = {}
+if os.path.exists(N50_JSON):
+    with open(N50_JSON, encoding="utf-8") as f:
+        n50_meta = json.load(f)
 
-result = minimize(neg_log_likelihood, x0=[-2.0, 0.01], args=(n_vals, deficit_vals),
-                  method='Nelder-Mead')
-alpha_opt, beta_opt = result.x
+alpha_fit = n50_meta.get("alpha")
+beta_fit = n50_meta.get("beta")
+if alpha_fit is None or beta_fit is None:
+    from scipy.optimize import curve_fit
+    def _sigmoid(x, a, b):
+        return 1.0 / (1.0 + np.exp(-(a + b * x)))
+    (alpha_fit, beta_fit), _ = curve_fit(_sigmoid, n_vals, deficit_vals,
+                                         p0=[1.0, -0.01], maxfev=10000)
 
-# Generate fitted curve
 n_smooth = np.linspace(10, 550, 200)
-p_smooth = 1.0 / (1.0 + np.exp(-(alpha_opt + beta_opt * n_smooth)))
+p_smooth = 1.0 / (1.0 + np.exp(-(alpha_fit + beta_fit * n_smooth)))
 
-# Bootstrap CI for N50
-n_bootstrap = 1000
-n50_samples = []
+n50_est = n50_meta.get("N50", -alpha_fit / beta_fit)
+n50_lower = n50_meta.get("ci_low", np.nan)
+n50_upper = n50_meta.get("ci_high", np.nan)
 rng = np.random.default_rng(42)
-n_unique = len(deficit_data)
-for _ in range(n_bootstrap):
-    idx = rng.integers(0, n_unique, n_unique)
-    x_boot = n_vals[idx]
-    y_boot = deficit_vals[idx]
-    try:
-        res = minimize(neg_log_likelihood, x0=[-2.0, 0.01], args=(x_boot, y_boot),
-                       method='Nelder-Mead')
-        a, b = res.x
-        if b < -1e-6:  # deficit falls with N => slope must be negative (reject b>0 wrong-direction fits)
-            n50 = -a / b
-            if 0 < n50 < 2000:
-                n50_samples.append(n50)
-    except Exception:
-        pass
-
-n50_est = -alpha_opt / beta_opt
-n50_lower = np.percentile(n50_samples, 2.5) if n50_samples else np.nan
-n50_upper = np.percentile(n50_samples, 97.5) if n50_samples else np.nan
 
 # Scatter: per-scenario deficit (jittered for visibility)
 jitter = rng.uniform(-8, 8, len(n_vals))

@@ -314,11 +314,38 @@ for cls, (pm, psd, pf2, pf2sd, ptrade) in [
     check(f"sc-{cls}-f2imp", f"§6.3 {cls} f2 improvement %", pf2, f2, 0.31)
     check(f"sc-{cls}-trade", f"§6.3 {cls} % f1*<0.95", ptrade, tr, 0.5)
 
-# N50 transition midpoint (§6.3 ≈50, §7.2 ≈50; n50_logistic.json 50.03 CI[30,62])
+# N50 transition midpoint. The manuscript text is what needs testing, so parse
+# every printed value out of both .tex files and compare with the JSON written
+# by scripts/n50_logistic.py. The earlier version compared a hardcoded constant
+# against the JSON only and never read the paper, so a stale text value passed
+# while the JSON itself had gone stale after the 2026-08-15 data regeneration.
 if n50.get("N50"):
-    check("n50-mid", "§6.3/§7.2 N50 logistic midpoint", 50.0, n50["N50"], 1.0)
-    check("n50-ci-low", "§6.3 N50 CI low", 30.0, n50.get("ci_low", 0), 1.5)
-    check("n50-ci-high", "§6.3 N50 CI high", 62.0, n50.get("ci_high", 0), 2.0)
+    import re as _re
+    _n50_mid = round(float(n50["N50"]))
+    _n50_lo = round(float(n50.get("ci_low", 0)))
+    _n50_hi = round(float(n50.get("ci_high", 0)))
+    for _tex_rel in ("small-paper-ijae.tex", "small-paper-ijae-zh.tex"):
+        _tag = "en" if _tex_rel == "small-paper-ijae.tex" else "zh"
+        _t = (PAPER / _tex_rel).read_text(encoding="utf-8")
+        _mids = [int(m) for m in _re.findall(r"N_\{50\}\s*\\approx\s*(\d+)", _t)]
+        _cis = [(int(a), int(b)) for a, b in
+                _re.findall(r"N_\{50\}\s*\\in\s*\[(\d+)\s*,\s*(\d+)\]", _t)]
+        # Relationship, not an absolute count: at least one mention, and every
+        # mention must carry the same (JSON) value. New legitimate mentions do
+        # not break the gate; a drifting one does.
+        check(f"n50-text-present-{_tag}", f"{_tex_rel} prints N50 at least once",
+              1, 1 if _mids else 0, 0)
+        if _mids:
+            for _i, _mv in enumerate(_mids):
+                check(f"n50-mid-{_tag}-{_i}", f"{_tex_rel} N50 midpoint vs JSON",
+                      _n50_mid, _mv, 0)
+        check(f"n50-ci-present-{_tag}", f"{_tex_rel} prints the N50 CI at least once",
+              1, 1 if _cis else 0, 0)
+        if _cis:
+            check(f"n50-ci-{_tag}", f"{_tex_rel} N50 CI low vs JSON",
+                  _n50_lo, _cis[0][0], 0)
+            check(f"n50-ci-high-{_tag}", f"{_tex_rel} N50 CI high vs JSON",
+                  _n50_hi, _cis[0][1], 0)
 
 # §6.2 G-SM f3 gain
 for cls, (pbase_m, pbase_s, pgsm_m, pgsm_s) in [

@@ -7,7 +7,7 @@ The MOEA-3 baseline (A) for S1/S2 stores f2/f3 as SUM (old format),
 while new-format runs (S3/S4, and all B/C/D variants) store f2/f3 as
 per-task MEAN. We detect the format and normalize accordingly.
 
-Output: papers/single-sat-quality/figures/fig6_ablation.pdf
+Output: papers/single-sat-quality/figures/fig5_ablation.pdf
 No dependency on analyze_ablation.py — completely self-contained.
 """
 import json
@@ -42,6 +42,8 @@ VARIANT_DIRS = {
     "D": "moea_3obj_no_physics",
 }
 CLASSES = ["S1", "S2", "S3", "S4"]
+# Manuscript Bonferroni threshold for the ablation comparisons (§6.5).
+ALPHA_BONF = 0.05 / 12
 CLASS_LABELS = {
     "S1": "S1 ($N{=}20$)",
     "S2": "S2 ($N{=}100$)",
@@ -157,9 +159,12 @@ def generate_figure(degs: dict, pvalues: dict) -> None:
     variant_labels = {"B": "no squint", "C": "no incidence", "D": "no physics"}
     metrics = ["f1", "f2", "f3"]
     metric_labels = {
-        "f1": r"$f_1^*$ degradation (%)",
-        "f2": r"$f_2$ degradation (%)",
-        "f3": r"$f_3$ degradation (%)",
+        # Short labels: the full phrases ("degradation (%)") overran the panel
+        # height and collided with the label of the panel above. The caption
+        # defines what the bars show.
+        "f1": r"$f_1^*$ (%)",
+        "f2": r"$f_2$ (%)",
+        "f3": r"$f_3$ (%)",
     }
 
     fig, axes = plt.subplots(len(metrics), 1, figsize=(5.70, 4.13), sharex=True)
@@ -179,10 +184,10 @@ def generate_figure(degs: dict, pvalues: dict) -> None:
             )
             # Statistical claim in the paper concerns normalized profit f1*.
             # Mark only those pre-specified A-vs-variant comparisons that pass
-            # the manuscript's Bonferroni threshold (p < 0.005).
+            # the manuscript's Bonferroni threshold (p < 0.05/12).
             if metric == "f1":
                 for cls, bar in zip(CLASSES, bars):
-                    if pvalues[metric][v].get(cls, 1.0) < 0.005:
+                    if pvalues[metric][v].get(cls, 1.0) < ALPHA_BONF:
                         y = bar.get_height()
                         # Mark significance above the zero line for negative bars too;
                         # anchoring below the bar tip pushed the star outside the axes.
@@ -213,13 +218,15 @@ def generate_figure(degs: dict, pvalues: dict) -> None:
     axes[-1].set_xticklabels([CLASS_LABELS[c] for c in CLASSES], fontsize=9)
     fig.text(
         0.5, 0.02,
-        r"* paired Wilcoxon vs A, $p<0.005$ (Bonferroni threshold); negative = variant outperforms A",
+        r"* paired Wilcoxon vs A, $p<0.05/12$ (Bonferroni threshold); negative = variant outperforms A",
         ha="center", va="bottom", fontsize=7, color="#444",
     )
 
     fig.tight_layout(rect=(0.02, 0.08, 1, 1), pad=1.0)
-    out = FIG_DIR / "fig6_ablation.pdf"
-    preview = FIG_DIR / "fig6_ablation.png"
+    # The manuscript includes this figure as fig5_ablation.pdf; write the output
+    # under the name the .tex actually uses (the old fig6 name was a stale copy).
+    out = FIG_DIR / "fig5_ablation.pdf"
+    preview = FIG_DIR / "fig5_ablation.png"
     fig.savefig(str(out), dpi=300, bbox_inches="tight")
     fig.savefig(str(preview), dpi=300, bbox_inches="tight")
     plt.close(fig)

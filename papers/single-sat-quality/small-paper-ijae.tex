@@ -46,7 +46,7 @@ quality at a $15\%$ cost, with a controlled $+4.9\%$ third-objective margin
 under a matched radiometric-aware knee rule. Two measured boundaries delimit
 that gain. The advantage contracts as the squint envelope narrows, from $+28\%$
 to $+2.3\%$ in geometric quality when the cap tightens from $45^\circ$ to
-$15^\circ$, and it vanishes at operational densities ($N \geq 300$), where the
+$15^\circ$, and it vanishes beyond $N \approx 150$, where the
 multi-objective fronts converge to the greedy coverage anchor with quality
 margins below $2\%$ under greedy hot-start initialization. The geometric and
 radiometric objectives conflict most inside sparse schedules
@@ -168,7 +168,7 @@ The specific contributions of the paper are:
     tightening squint cap (from $+28\%$ to $+2.3\%$ as the cap narrows from
     $45^\circ$ to $15^\circ$), and the density threshold beyond which the
     multi-objective variants converge to the greedy coverage anchor
-    ($N_{50} \approx 50$; negligible advantage beyond $N=150$)
+    ($N_{50} \approx 51$; negligible advantage beyond $N=150$)
     (\S\ref{sec:scale-sensitivity}, \S\ref{sec:operational-implications});
     \item An anchor-independent decomposition of the $f_2$--$f_3$ coupling: the
     trade-off is mild over raw visibility geometry ($r \approx -0.36$ against
@@ -854,7 +854,7 @@ processed results pin the exact front realizations analyzed.
 A replicated-run check quantifies the cost of this design: five repeats of
 each NSGA-III solver on one variant-A scenario per class reproduce
 bit-identically at S1 and S4, and where variation appears (S2, S3) the
-within-instance SD of the knee values stays at or below $0.004$ in absolute
+within-instance standard deviation (SD) of the knee values stays at or below $0.004$ in absolute
 terms, at most $7\%$ of the corresponding between-scenario SD for $f_3$ and
 $3\%$ for $f_2$ ($f_1^*$ varies by at most $0.004$ against class means of
 $0.98$--$1.00$).
@@ -951,7 +951,7 @@ G-BL    & 0.0234 & 0.0150 \\
 \begin{figure}[H]
     \centering
     \includegraphics[width=\textwidth]{fig1_hypervolume.pdf}
-    \caption{Statistical validation: (left) hypervolume distribution; (right) pairwise effect sizes as the matched-pairs sign statistic $\delta_{\text{pairs}} = (W-L)/n$, which equals Cliff's $\delta$ for the within-scenario pairing; the gray band marks the negligible-effect range ($|\delta|<0.147$ of \citet{Romano2006}; shown for reference, as the conventional unpaired $\delta$ is weaker for the within-pair comparisons, see \S\ref{sec:evaluation-metrics}); small grey dots are per-scenario outliers beyond $1.5\times$IQR, and the grey bar marks the MOEA-2 vs. MOEA-3 comparison ($\delta = -0.56$).}
+    \caption{Statistical validation: (left) hypervolume distribution; (right) pairwise effect sizes as the matched-pairs sign statistic $\delta_{\text{pairs}} = (W-L)/n$, which equals Cliff's $\delta$ for the within-scenario pairing; the gray band marks the negligible-effect range ($|\delta|<0.147$ of \citet{Romano2006}; shown for reference, as the conventional unpaired $\delta$ is weaker for the within-pair comparisons, see \S\ref{sec:evaluation-metrics}); small grey dots are per-scenario outliers beyond $1.5\times$ the interquartile range (IQR), and the grey bar marks the MOEA-2 vs. MOEA-3 comparison ($\delta = -0.56$).}
     \label{fig:fig1}
 \end{figure}
 
@@ -1054,11 +1054,11 @@ S4 & 500  & $1.00 \pm 0.01$ & +0.3\% ($\pm 0.2$) & 0\% \\
 \end{table}
 Fitting a logistic regression to the proportion of scenarios with
 $f_1^* < 0.95$ across the six density points ($N=20, 100, 150, 200, 300, 500$)
-yields a transition midpoint $N_{50} \approx 50$ targets. This estimate is
+yields a transition midpoint $N_{50} \approx 51$ targets. This estimate is
 weakly constrained: only the two sparse densities ($N=20, 100$) carry
 informative deficit proportions ($80\%$ and $10\%$), while the four denser
 points are all at most $1\%$, so the bootstrap confidence interval is wide
-($N_{50} \in [30, 62]$). $N_{50}$ should therefore be read as a coarse indicator that the
+($N_{50} \in [37, 64]$). $N_{50}$ should therefore be read as a coarse indicator that the
 transition is confined to $N \in [20, 100]$, not as a precise threshold.
 Beyond $N \approx 150$, no scenario shows a
 coverage deficit exceeding $5\%$.
@@ -1415,7 +1415,7 @@ $|\psi_{\text{sq}}| \lesssim 25^\circ$ agility, or without
 Doppler-centroid compensation for large squints
 (\S~\ref{sec:system-model}), the greedy baseline attains comparable
 quality at full coverage even in sparse regimes. The logistic midpoint
-$N_{50} \approx 50$ (\S~\ref{sec:scale-sensitivity}) provides a coarse
+$N_{50} \approx 51$ (\S~\ref{sec:scale-sensitivity}) provides a coarse
 indicator between the density regimes. Our results suggest a conditional
 operational guideline: for sparse observation requests ($N \lesssim 100$)
 on squint-agile platforms (the $45^\circ$ experimental envelope of
@@ -1470,7 +1470,7 @@ re-emerge and the third objective may become discriminative; the static,
 advance-known target set likewise excludes dynamic arrivals and
 rolling-horizon re-optimization, where newly arriving tasks compete
 within the same windows and could shift the saturation threshold.
-The saturation threshold itself ($N_{50} \approx 50$,
+The saturation threshold itself ($N_{50} \approx 51$,
 \S~\ref{sec:scale-sensitivity}) is estimated within this synthetic, static
 scenario family; real mission request streams with heterogeneous priorities
 and arrival processes could shift it, so the threshold should be read as

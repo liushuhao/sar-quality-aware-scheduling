@@ -114,7 +114,7 @@ Tracked assets include solver code, scenario generators, fixed seeds/configurati
     └── single-sat-quality/   # ASR paper (Ch3) — the artifact this repo supports
         ├── *.tex, *.bib      # paper source (EN + ZH)
         ├── sections/         # section fragments
-        ├── figures/          # paper figures (PDF/PNG, grayscale variants)
+        ├── figures/          # paper figures (PDF/PNG)
         ├── experiments/      # experiment scripts + results data
         └── scripts/          # reproduction / analysis driver scripts
 ```
