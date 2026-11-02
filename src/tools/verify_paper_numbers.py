@@ -270,35 +270,12 @@ def checkp(cid, where, paper_val, data_val, tol):
 # /100 scaling makes even one decimal a 0.1% reading), and a percentage token
 # is read as its fraction, the way the checks score it.
 import re as _re  # noqa: E402
+from strip_tex_comments import strip_comments as _strip_tex_comments  # noqa: E402
 
 CENSUS_PATH = Path(__file__).resolve().parent / "readings_census_paper1.json"
 CENSUS_FILES = ("small-paper-ijae.tex", "small-paper-ijae-zh.tex")
 _INPUT_RX = _re.compile(r"\\(?:input|include)\{([^}]+)\}")
 _MINUS = "-\u2212"
-
-
-def _strip_tex_comments(text):
-    """Drop LaTeX comments: an escaped \\% is a sign, a bare % a comment.
-
-    The census counts what the compiled paper prints, so a commented-out
-    sentence must stop counting.
-    """
-    out = []
-    for line in text.splitlines():
-        cut, i = len(line), 0
-        while True:
-            j = line.find("%", i)
-            if j < 0:
-                break
-            run, k = 0, j - 1
-            while k >= 0 and line[k] == "\\":
-                run, k = run + 1, k - 1
-            if run % 2 == 0:
-                cut = j
-                break
-            i = j + 1
-        out.append(line[:cut])
-    return "\n".join(out)
 
 
 def _tex_bodies(path, seen=None, done=None):
