@@ -635,26 +635,23 @@ deficit_vals = np.asarray([d[1] for d in deficit_data])
 # Single source for the fit statistics: the JSON written by
 # scripts/n50_logistic.py (alpha/beta/N50/CI), so figure and text cannot diverge.
 N50_JSON = os.path.join(RESULTS, "n50_logistic.json")
-n50_meta = {}
-if os.path.exists(N50_JSON):
-    with open(N50_JSON, encoding="utf-8") as f:
-        n50_meta = json.load(f)
+if not os.path.exists(N50_JSON):
+    raise SystemExit(
+        f"missing {N50_JSON}: run scripts/n50_logistic.py first. "
+        "Refusing to refit locally - the figure must plot the same fit the "
+        "manuscript quotes in section 6.3.")
+with open(N50_JSON, encoding="utf-8") as f:
+    n50_meta = json.load(f)
 
-alpha_fit = n50_meta.get("alpha")
-beta_fit = n50_meta.get("beta")
-if alpha_fit is None or beta_fit is None:
-    from scipy.optimize import curve_fit
-    def _sigmoid(x, a, b):
-        return 1.0 / (1.0 + np.exp(-(a + b * x)))
-    (alpha_fit, beta_fit), _ = curve_fit(_sigmoid, n_vals, deficit_vals,
-                                         p0=[1.0, -0.01], maxfev=10000)
+alpha_fit = n50_meta["alpha"]
+beta_fit = n50_meta["beta"]
 
 n_smooth = np.linspace(10, 550, 200)
 p_smooth = 1.0 / (1.0 + np.exp(-(alpha_fit + beta_fit * n_smooth)))
 
-n50_est = n50_meta.get("N50", -alpha_fit / beta_fit)
-n50_lower = n50_meta.get("ci_low", np.nan)
-n50_upper = n50_meta.get("ci_high", np.nan)
+n50_est = n50_meta["N50"]
+n50_lower = n50_meta["ci_low"]
+n50_upper = n50_meta["ci_high"]
 rng = np.random.default_rng(42)
 
 # Scatter: per-scenario deficit (jittered for visibility)
