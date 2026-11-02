@@ -81,16 +81,9 @@ def strip_latex(value: str) -> str:
     return v.strip()
 
 
-def strip_comments(text: str) -> str:
-    out = []
-    for line in text.splitlines():
-        idx = None
-        for i, ch in enumerate(line):
-            if ch == "%" and (i == 0 or line[i - 1] != "\\"):
-                idx = i
-                break
-        out.append(line if idx is None else line[:idx])
-    return "\n".join(out)
+from strip_tex_comments import strip_comments  # single implementation: the
+# local copy treated "\\\\%" (escaped backslash then percent) as a literal
+# percent, where an even backslash run means a real comment starts.
 
 
 def _split_top_level(chunk: str, sep: str = ",") -> list[str]:
