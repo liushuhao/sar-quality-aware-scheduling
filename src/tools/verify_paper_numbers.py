@@ -252,6 +252,168 @@ def checkp(cid, where, paper_val, data_val, tol):
     return ok
 
 
+# ── reading census (R115) ───────────────────────────────────────────────────
+# The sentence-anchored checks below score the occurrence they can see. A
+# reading printed several times (33.7 appears 10 times in the EN text) was
+# checked once, so an edit to any other occurrence left the gate green.
+# Binding each anchored check to every reprint is not available -- the
+# reprints sit in sentences that carry no reading context -- but their COUNT
+# is: a drifted, deleted or duplicated occurrence changes how many times the
+# literal appears. The counts are frozen in readings_census_paper1.json on
+# purpose, so an edit lands in review as a diff instead of passing silently.
+#
+# What is counted: a printed decimal that is a correct rounding of a value the
+# ledger scores, together with its sign. Two restrictions keep the census off
+# fields that are not readings at all: at least two decimals (a one-decimal
+# token has a +/-0.05 window, so 0.5 would capture 0.51 and pymoo's 0.6.1.6
+# would freeze a version string; a percentage token is exempt because its
+# /100 scaling makes even one decimal a 0.1% reading), and a percentage token
+# is read as its fraction, the way the checks score it.
+import re as _re  # noqa: E402
+
+CENSUS_PATH = Path(__file__).resolve().parent / "readings_census_paper1.json"
+CENSUS_FILES = ("small-paper-ijae.tex", "small-paper-ijae-zh.tex")
+_INPUT_RX = _re.compile(r"\\(?:input|include)\{([^}]+)\}")
+_MINUS = "-\u2212"
+
+
+def _strip_tex_comments(text):
+    """Drop LaTeX comments: an escaped \\% is a sign, a bare % a comment.
+
+    The census counts what the compiled paper prints, so a commented-out
+    sentence must stop counting.
+    """
+    out = []
+    for line in text.splitlines():
+        cut, i = len(line), 0
+        while True:
+            j = line.find("%", i)
+            if j < 0:
+                break
+            run, k = 0, j - 1
+            while k >= 0 and line[k] == "\\":
+                run, k = run + 1, k - 1
+            if run % 2 == 0:
+                cut = j
+                break
+            i = j + 1
+        out.append(line[:cut])
+    return "\n".join(out)
+
+
+def _tex_bodies(path, seen=None, done=None):
+    """Strip comments from `path` and from every file it \\input's.
+
+    The ablation section lives in sections/_ablation_section.tex; counting
+    only the master file left 45 literals unwatched (2026-11-02 review).
+    """
+    seen = seen if seen is not None else []
+    done = done if done is not None else set()
+    if path in done:
+        return "\n".join(seen)
+    done.add(path)
+    body = _strip_tex_comments(path.read_text(encoding="utf-8"))
+    seen.append(body)
+    for rel in _INPUT_RX.findall(body):
+        child = path.parent / rel
+        if not child.suffix:
+            child = child.with_suffix(".tex")
+        if child.exists():
+            _tex_bodies(child, seen, done)
+    return "\n".join(seen)
+
+
+def _printed_tokens(text):
+    """(literal, signed value, is_percent) for every printed decimal.
+
+    The sign is read from the single hyphen or minus sign in front of the
+    number, so an en-dash range keeps both endpoints positive while
+    "$-0.36$" keeps its sign -- dropping signs let -0.60 print as 0.60 with
+    the census count unchanged (2026-11-02 review).
+    """
+    out = []
+    for m in _re.finditer(r"\d+\.\d+", text):
+        tok, i = m.group(0), m.start()
+        neg = False
+        if i > 0 and text[i - 1] in _MINUS:
+            j = i - 2
+            if j < 0 or (text[j] not in _MINUS and not text[j].isalnum()):
+                neg = True
+        v = float(tok) * (-1.0 if neg else 1.0)
+        is_pct = bool(_re.match(r"\s*(?:\\%|%)", text[m.end():m.end() + 4]))
+        if is_pct:
+            v /= 100.0
+        out.append((("-" if neg else "") + tok, v, is_pct))
+    return out
+
+
+def census_counts(tex_name):
+    """literal -> how many times the compiled manuscript prints it.
+
+    Returns (counts, unscored) where `unscored` counts printed decimals that
+    are not a correct rounding of any scored value: the size of the blind
+    spot, reported rather than asserted.
+    """
+    text = _tex_bodies(PAPER / tex_name)
+    registered = [float(e["paper"]) for e in RESULTS_LEDGER
+                  if isinstance(e.get("paper"), (int, float))]
+    counts, unscored = {}, 0
+    for lit, v, is_pct in _printed_tokens(text):
+        dec = len(lit.split(".")[1])
+        if dec < 2 and not is_pct:      # a +/-0.05 window is not a reading
+            continue
+        tol = 0.5 * 10 ** (-dec) * (0.01 if is_pct else 1.0)
+        if any(abs(v - r) <= tol for r in registered):
+            counts[lit] = counts.get(lit, 0) + 1
+        else:
+            unscored += 1
+    return counts, unscored
+
+
+def run_census(update=False):
+    """Every counted literal must be printed the registered number of times."""
+    global N_FAIL
+    if update and N_FAIL:
+        print(f"CENSUS: refusing to rewrite {CENSUS_PATH.name}: the ledger "
+              f"already has {N_FAIL} failure(s), which would be frozen in")
+        return
+    now, miss = {}, {}
+    for name in CENSUS_FILES:
+        now[name], miss[name] = census_counts(name)
+    if update:
+        CENSUS_PATH.write_text(json.dumps({"files": now}, indent=1, sort_keys=True),
+                               encoding="utf-8")
+        print(f"CENSUS: rewritten {CENSUS_PATH}")
+        return
+    try:
+        known = json.loads(CENSUS_PATH.read_text(encoding="utf-8"))["files"]
+    except (OSError, ValueError, KeyError) as e:
+        print(f"CENSUS: cannot read {CENSUS_PATH.name} ({e})")
+        known = {}
+    for name, cur in now.items():
+        reg = known.get(name)
+        bad = []
+        if reg is None:
+            bad.append("no census registered for this file -- review the text, "
+                       "then re-run with --update-census")
+        else:
+            for lit, n in sorted(cur.items()):
+                if lit not in reg:
+                    bad.append(f"{lit} printed {n}x, not in the census (new or "
+                               f"edited occurrence; --update-census if intended)")
+                elif reg[lit] != n:
+                    bad.append(f"{lit} printed {n}x, census registers {reg[lit]}x")
+            for lit in sorted(set(reg) - set(cur)):
+                bad.append(f"census registers {lit} ({reg[lit]}x) but nothing "
+                           f"prints it any more")
+        check(f"census-{name}", f"reading census, {name}", 0, len(bad), 0,
+              note="; ".join(bad[:6]) + (f" (+{len(bad) - 6} more)" if len(bad) > 6 else ""))
+        for msg in bad[:6]:
+            print(f"  census {name}: {msg}")
+        print(f"  census {name}: {len(cur)} literals watched, "
+              f"{miss[name]} printed decimals tie to no scored reading")
+
+
 # ── Table 1 / overall performance (S1..S4) ─────────────────────────────────
 # paper values from Table 1 (small-paper-ijae.tex ~L684-746)
 T1 = {
@@ -341,11 +503,13 @@ if n50.get("N50"):
                       _n50_mid, _mv, 0)
         check(f"n50-ci-present-{_tag}", f"{_tex_rel} prints the N50 CI at least once",
               1, 1 if _cis else 0, 0)
-        if _cis:
-            check(f"n50-ci-{_tag}", f"{_tex_rel} N50 CI low vs JSON",
-                  _n50_lo, _cis[0][0], 0)
-            check(f"n50-ci-high-{_tag}", f"{_tex_rel} N50 CI high vs JSON",
-                  _n50_hi, _cis[0][1], 0)
+        # Every printed CI, not just the first: a reprint drifted silently
+        # while only _cis[0] was scored (R113, same hole as R106 in paper2).
+        for _i, (_ci_lo, _ci_hi) in enumerate(_cis):
+            check(f"n50-ci-{_tag}-{_i}", f"{_tex_rel} N50 CI low vs JSON",
+                  _n50_lo, _ci_lo, 0)
+            check(f"n50-ci-high-{_tag}-{_i}", f"{_tex_rel} N50 CI high vs JSON",
+                  _n50_hi, _ci_hi, 0)
 
 # §6.2 G-SM f3 gain
 for cls, (pbase_m, pbase_s, pgsm_m, pgsm_s) in [
@@ -753,6 +917,8 @@ try:
           float(np.mean([cap[k]["moea3"]["f1"] for k in cap if k.startswith("E15/")])), 0.02)
 except Exception as e:
     print(f"WARN envelope-cap check skipped: {e}")
+
+run_census(update="--update-census" in sys.argv)
 
 # ── report ──────────────────────────────────────────────────────────────────
 REVIEW.mkdir(exist_ok=True)
