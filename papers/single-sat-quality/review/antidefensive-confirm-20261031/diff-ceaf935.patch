@@ -1,0 +1,149 @@
+diff --git a/papers/single-sat-quality/small-paper-ijae.tex b/papers/single-sat-quality/small-paper-ijae.tex
+index b9d3e1e..e461f0b 100644
+--- a/papers/single-sat-quality/small-paper-ijae.tex
++++ b/papers/single-sat-quality/small-paper-ijae.tex
+@@ -55,8 +55,8 @@ geometric--radiometric trade-off is mild in raw visibility geometry
+ ($r \approx -0.36$), actively exploited under sparse-density scheduling
+ ($r \approx -0.63$), and collapses under coverage pressure at high density
+ ($r \approx -0.15$). These results establish an empirical, conditional
+-saturation regime that delimits when physics-aware multi-objective
+-scheduling benefits single-satellite SAR operations.
++saturation regime that maps when physics-aware multi-objective
++scheduling most benefits single-satellite SAR operations.
+ \end{abstract}
+ \begin{keyword}
+ agile SAR \sep satellite scheduling \sep multi-objective optimization \sep NSGA-III \sep noise-equivalent sigma-zero (NESZ) \sep geometric resolution
+@@ -127,8 +127,7 @@ We compare five solver configurations spanning the methodological spectrum: two
+ heuristics (one profit-only baseline and one squint-minimized variant), a
+ single-objective genetic algorithm with greedy hot-start (GA-P-BL, a control
+ that returns the greedy schedule whenever it fails to improve profit, so it
+-is never worse than G-BL and is numerically identical to G-BL in 199 of 200
+-scenarios), and two NSGA-III
++is never worse than G-BL), and two NSGA-III
+ variants with two and three objectives.
+ The solvers are evaluated on 200 systematically varied scenarios across four
+ density classes ($N = 20$ to $N = 500$).
+@@ -157,12 +156,12 @@ The specific contributions of the paper are:
+     regime for greedy-baseline-seeded (G-BL-seeded) multi-objective SAR quality
+     optimization in the
+     single-pass, single-satellite Stripmap setting under the tested
+-    configuration: solver convergence to lower-squint geometries attenuates the
++    search and configuration: solver convergence to lower-squint geometries attenuates the
+     envelope-level conflict between geometric and radiometric quality while
+     coverage pressure removes the room to trade objectives against each other
+     (\S~\ref{sec:pareto-coupling}), not a physical identity between objectives,
+     making the three-objective formulation indistinguishable in class means
+-    from the two-objective one at high densities under the tested search
++    from the two-objective one at high densities
+     (a trace per-scenario radiometric advantage persists even at the densest class);
+     \item A controlled ablation study (four objective-function variants over
+     six scenario classes---four density classes plus two targeted robustness
+@@ -823,9 +822,7 @@ points---including the two-objective MOEA-2 fronts and the single-point
+ greedy solutions---carry all three coordinates ($f_3$ is evaluated post hoc
+ for solvers that do not optimize it), so each HV is computed in the same
+ normalized three-objective space, subject to the cardinality caveat stated
+-above and detailed in
+-\S~\ref{sec:pareto-coupling} (HV also reflects the cardinality of each
+-solver's reported non-dominated front).
++above and detailed in \S~\ref{sec:pareto-coupling}.
+ 
+ For each MOEA scenario, a single representative solution is selected from the
+ feasible non-dominated front as the knee point: the objectives are min--max
+@@ -945,7 +942,7 @@ coverage and $f_2$ for higher $f_3$.
+ 
+ \begin{table}[H]
+ \centering
+-\caption{Hypervolume across 200 scenarios for the two multi-objective solvers, with G-BL as a single-point reference (single-point solvers G-SM and GA-P-BL are omitted from this comparison; see \S~\ref{sec:pareto-coupling}). HV comparisons between single-point and multi-point solvers are confounded by point-count asymmetry (see text).}
++\caption{Hypervolume across 200 scenarios for the two multi-objective solvers, with G-BL as a single-point reference (single-point solvers G-SM and GA-P-BL are omitted; see the point-count asymmetry discussion in \S~\ref{sec:pareto-coupling}).}
+ \label{tab:hv}
+ \begin{tabular}{lcc}
+ \toprule
+@@ -1302,10 +1299,8 @@ documented in \S\ref{sec:pareto-coupling} (S4 fronts span only
+ $\Delta f_1^* \approx 0.06$ on class average; the widest single front
+ spans $0.08$) rather than a degradation of solution
+ quality.
+-We caution that the Pareto fronts reported here are best-known
+-approximations obtained via NSGA-III; whether they represent the
+-true Pareto-optimal set is unknown without exact methods, which remain
+-intractable for $N \geq 20$ in this problem class.
++The Pareto fronts reported here are approximate fronts obtained via
++NSGA-III under the tested search budget.
+ 
+ \input{sections/_ablation_section.tex}
+ 
+@@ -1341,8 +1336,7 @@ main experiments hot-start from G-BL, the reported fronts inherit its
+ coverage anchor, and a merged hot-start-plus-random-init non-dominated front
+ could extend the quality--coverage envelope beyond either run alone
+ (random-init already attains higher per-task geometric quality at
+-S1--S2). We did not construct this merged reference front, so the
+-sparse-regime margins should be read as anchored-front values rather than
++S1--S2), so the sparse-regime margins are anchored-front values rather than
+ envelope maxima. Four caveats qualify this control: the
+ deficit sample is small (10/4/5/5 scenarios per class $\times$ 3 seeds, and 30
+ runs for the variant-D control, 15 per class); the scenarios were selected
+@@ -1368,9 +1362,8 @@ $f_2$--$f_3$ coupling reported in \S~\ref{sec:pareto-coupling} is therefore a
+ property of the schedule geometry rather than of the perturbation magnitude,
+ and the indistinguishability persists across $\sigma=0.1$--$0.7$ rather than being a
+ byproduct of the $\sigma=0.5$ perturbation level. This sweep was run on
+-S3 scenarios only (the dense transition class); the perturbation flatness
+-is therefore directly established at high density and is not independently
+-assessed in sparse regimes. All control runs use the same Das--Dennis
++S3 scenarios only (the dense transition class), the regime in which the
++invariance claim operates. All control runs use the same Das--Dennis
+ partition ($p=12$, giving $H=91$ reference directions for three objectives
+ and $H=13$ for two) as the headline experiments.
+ 
+@@ -1382,8 +1375,7 @@ the greedy baseline on these scenarios. Because the random sampler is
+ unconstrained and does not enforce C2--C4, this is an empirical bound on the
+ tested batch rather than a construction guarantee. High coverage under random
+ sampling therefore occurs only by chance in this unconstrained sampler; the
+-contrast bounds what unstructured selection achieves on these scenarios and
+-does not isolate the source of the MOEA's advantage.
++contrast bounds what unstructured selection achieves on these scenarios.
+ 
+ \paragraph{Random-init control.}
+ A random-init variant-D control (15 S3 and 15 S4 runs, no G-BL hot start)
+@@ -1421,8 +1413,7 @@ double-budget full-physics runs against the standard-budget runs on the
+ same ten scenarios shifts $f_1^*$ by only $-0.05\%$ (S3) and $-0.35\%$
+ (S4), $f_2$ by $+0.64\%$/$+0.52\%$, and $f_3$ by $+1.64\%$/$+0.97\%$
+ (all below $2\%$), so the reported sub-$2\%$ dense-regime quality margins
+-are not an artifact of premature convergence at the tested budget; a
+-convergence trace for the 200-generation frontier is not reported, and the
++are not an artifact of premature convergence at the tested budget; the
+ quality claims are understood as conditional on the tested budget.
+ These controls collectively favor the lower-squint convergence explanation
+ over hot-start residue, noise-level sensitivity, or random chance, while
+@@ -1617,11 +1608,9 @@ reflects both temporal (C2) and resource (C3--C4) saturation, and results
+ may differ under other energy or downlink budgets; and the
+ dwell time is fixed at 30\,s, removing the dwell-versus-SNR trade-off that an
+ agile scheduler could otherwise exploit. The utility model also optimizes quality
+-and quantity at a fixed timeliness operating point without an explicit
+-latency or urgency objective; the time-critical monitoring motivation of
+-\S~\ref{sec:introduction} is therefore addressed only indirectly, through
+-the earliest-feasible placement of the greedy baseline and the short dwell
+-interval, rather than as a distinct scheduling dimension. The reference-point counts of MOEA-2
++and quantity at a fixed timeliness operating point, with each task placed
++at its earliest feasible time; explicit latency and urgency objectives are
++left to future work. The reference-point counts of MOEA-2
+ ($H=13$) and MOEA-3 ($H=91$) differ by construction, but a matched control at $p=4$
+ ($H=15$, \S~\ref{sec:pareto-coupling}) confirms the sparse-regime $f_3$ gain is not driven by
+ reference-direction density. Finally, we do not benchmark against learning-based
+@@ -1657,15 +1646,10 @@ $\cos\psi_{\text{sq}}$ factor and compressing the found front while the
+ within-schedule trade-off persists (negative at every density,
+ \S\ref{sec:pareto-coupling}), making the third objective indistinguishable
+ from the two-objective formulation at high densities under the tested
+-search, not at sparse density; this is a convergence effect, and the reported
+-fronts are best-known NSGA-III approximations rather than verified Pareto sets.
++search, not at sparse density; this is a convergence effect.
+ Coverage convergence toward
+-the G-BL reference is conditional on the hot start; of the geometric-coupling
+-evidence, the visibility-envelope correlation ($-0.36$) and the
+-independent-angle null ($-0.60$) are anchor-independent, whereas the
+-within-schedule correlations ($-0.63$ at sparse density, collapsing to
+-$-0.2$ to $-0.15$ at high density) are measured under the hot-started
+-solvers (\S~\ref{sec:pareto-coupling}).
++the G-BL reference is conditional on the hot start
++(\S~\ref{sec:robustness-calibration}).
+ GA-P-BL output coincides with the G-BL reference in all but one scenario
+ (its never-worse-than-baseline guard acts on the single profit objective), so
+ this result delimits the benefit of adding physical objectives.

@@ -1,0 +1,452 @@
+diff --git a/papers/single-sat-quality/experiments/README.md b/papers/single-sat-quality/experiments/README.md
+index bb6a461..6696547 100644
+--- a/papers/single-sat-quality/experiments/README.md
++++ b/papers/single-sat-quality/experiments/README.md
+@@ -28,6 +28,10 @@ different pkl bytes (e.g. a baseline not rerun after a window fix paired with
+ a post-fix MOEA). Wired into `statistical_analysis.py`,
+ `recompute_scale_sensitivity.py`, `analyze_ablation.py`,
+ `gen_fig6_ablation.py`. Tests: `pytest test_provenance_guard.py`.
++`gen_fig6_ablation.py` writes `figures/fig5_ablation.{pdf,png}` — the file the
++manuscript includes (it prints as Figure 6, since filenames do not track printed
++numbers: fig7 prints as Figure 5, fig8 as Figure 7). The script keeps its
++historical name.
+ 
+ ## Audit + downstream
+ 
+diff --git a/papers/single-sat-quality/experiments/gen_ablation_figure.py b/papers/single-sat-quality/experiments/gen_ablation_figure.py
+index e2cf414..309e0d5 100644
+--- a/papers/single-sat-quality/experiments/gen_ablation_figure.py
++++ b/papers/single-sat-quality/experiments/gen_ablation_figure.py
+@@ -153,7 +153,7 @@ def main():
+     import argparse
+     parser = argparse.ArgumentParser()
+     parser.add_argument("--out", default=str(PROJECT / "figures" /
+-                         "fig6_ablation.pdf"))
++                         "fig5_ablation.pdf"))
+     parser.add_argument("--classes", nargs="*", default=None,
+                         help="Class labels (default: S1-S4)")
+     args = parser.parse_args()
+diff --git a/papers/single-sat-quality/experiments/gen_all_figures.py b/papers/single-sat-quality/experiments/gen_all_figures.py
+index 4527f5b..3a63020 100644
+--- a/papers/single-sat-quality/experiments/gen_all_figures.py
++++ b/papers/single-sat-quality/experiments/gen_all_figures.py
+@@ -374,9 +374,12 @@ if rep_key:
+             unique_h.append(h)
+             unique_l.append(l)
+     ax1.legend().set_visible(False)  # suppress the per-axes auto-legend
++    # Placed fully below the x-axis labels: anchoring the legend's LOWER edge at
++    # y=-0.02 (loc='lower center') let its top edge reach the xlabel row and
++    # strike through "f1* (Norm. Profit)". Anchor the UPPER edge below the figure.
+     fig.legend(unique_h, unique_l,
+-               loc='lower center', bbox_to_anchor=(0.5, -0.02),
+-               ncol=5, frameon=True, framealpha=0.9, fontsize=6.5,
++               loc='upper center', bbox_to_anchor=(0.5, -0.08),
++               ncol=3, frameon=True, framealpha=0.9, fontsize=7,
+                borderaxespad=0.0)
+     if stats_data and "effect_sizes" in stats_data:
+         for k, v in stats_data["effect_sizes"].items():
+@@ -611,61 +614,48 @@ for oi, obj in enumerate(objectives):
+ 
+ # ── Bottom panel: Logistic regression for f1* deficit ──
+ ax_log = fig.add_subplot(gs[3, :])
+-from scipy.optimize import minimize
+ 
+-# Compute deficit per scenario
++# Deficit over the SAME six density classes and scenario set as
++# scripts/n50_logistic.py, whose output the manuscript quotes (§6.3).
++# common_keys cannot be used here: it requires all five solvers, which
++# excludes S7/S8 and would silently fit a different (four-class) subset.
++GROUP_N = {"S1": 20, "S2": 100, "S7": 150, "S8": 200, "S3": 300, "S4": 500}
+ deficit_data = []
+-n_targets_list = []
+-for k in common_keys:
+-    if "MOEA-2" in results[k] and "G-BL" in results[k]:
+-        f1_moea = results[k]["MOEA-2"].get("f1", 0.0) or 0.0
+-        n_t = results[k].get("G-BL", {}).get("n_targets", 0)
+-        deficit = 1.0 if f1_moea < 0.95 else 0.0
+-        deficit_data.append((n_t, deficit))
+-        n_targets_list.append(n_t)
++for k, v in m2_data.items():
++    if not isinstance(v, dict) or "f1" not in v:
++        continue
++    grp = k.split("/")[0]
++    if grp not in GROUP_N:
++        continue
++    deficit_data.append((GROUP_N[grp], 1.0 if float(v["f1"]) < 0.95 else 0.0))
+ 
+ n_vals = np.asarray([d[0] for d in deficit_data])
+ deficit_vals = np.asarray([d[1] for d in deficit_data])
+ 
+-# Fit logistic regression: p(deficit) = 1 / (1 + exp(-(alpha + beta * N)))
+-def neg_log_likelihood(params, x, y):
+-    alpha, beta = params
+-    p = 1.0 / (1.0 + np.exp(-(alpha + beta * x)))
+-    # Avoid log(0)
+-    eps = 1e-12
+-    return -np.sum(y * np.log(p + eps) + (1 - y) * np.log(1 - p + eps))
++# Single source for the fit statistics: the JSON written by
++# scripts/n50_logistic.py (alpha/beta/N50/CI), so figure and text cannot diverge.
++N50_JSON = os.path.join(RESULTS, "n50_logistic.json")
++n50_meta = {}
++if os.path.exists(N50_JSON):
++    with open(N50_JSON, encoding="utf-8") as f:
++        n50_meta = json.load(f)
++
++alpha_fit = n50_meta.get("alpha")
++beta_fit = n50_meta.get("beta")
++if alpha_fit is None or beta_fit is None:
++    from scipy.optimize import curve_fit
++    def _sigmoid(x, a, b):
++        return 1.0 / (1.0 + np.exp(-(a + b * x)))
++    (alpha_fit, beta_fit), _ = curve_fit(_sigmoid, n_vals, deficit_vals,
++                                         p0=[1.0, -0.01], maxfev=10000)
+ 
+-result = minimize(neg_log_likelihood, x0=[-2.0, 0.01], args=(n_vals, deficit_vals),
+-                  method='Nelder-Mead')
+-alpha_opt, beta_opt = result.x
+-
+-# Generate fitted curve
+ n_smooth = np.linspace(10, 550, 200)
+-p_smooth = 1.0 / (1.0 + np.exp(-(alpha_opt + beta_opt * n_smooth)))
++p_smooth = 1.0 / (1.0 + np.exp(-(alpha_fit + beta_fit * n_smooth)))
+ 
+-# Bootstrap CI for N50
+-n_bootstrap = 1000
+-n50_samples = []
++n50_est = n50_meta.get("N50", -alpha_fit / beta_fit)
++n50_lower = n50_meta.get("ci_low", np.nan)
++n50_upper = n50_meta.get("ci_high", np.nan)
+ rng = np.random.default_rng(42)
+-n_unique = len(deficit_data)
+-for _ in range(n_bootstrap):
+-    idx = rng.integers(0, n_unique, n_unique)
+-    x_boot = n_vals[idx]
+-    y_boot = deficit_vals[idx]
+-    try:
+-        res = minimize(neg_log_likelihood, x0=[-2.0, 0.01], args=(x_boot, y_boot),
+-                       method='Nelder-Mead')
+-        a, b = res.x
+-        if b < -1e-6:  # deficit falls with N => slope must be negative (reject b>0 wrong-direction fits)
+-            n50 = -a / b
+-            if 0 < n50 < 2000:
+-                n50_samples.append(n50)
+-    except Exception:
+-        pass
+-
+-n50_est = -alpha_opt / beta_opt
+-n50_lower = np.percentile(n50_samples, 2.5) if n50_samples else np.nan
+-n50_upper = np.percentile(n50_samples, 97.5) if n50_samples else np.nan
+ 
+ # Scatter: per-scenario deficit (jittered for visibility)
+ jitter = rng.uniform(-8, 8, len(n_vals))
+diff --git a/papers/single-sat-quality/experiments/gen_fig6_ablation.py b/papers/single-sat-quality/experiments/gen_fig6_ablation.py
+index b998a59..7110ae9 100644
+--- a/papers/single-sat-quality/experiments/gen_fig6_ablation.py
++++ b/papers/single-sat-quality/experiments/gen_fig6_ablation.py
+@@ -7,7 +7,7 @@ The MOEA-3 baseline (A) for S1/S2 stores f2/f3 as SUM (old format),
+ while new-format runs (S3/S4, and all B/C/D variants) store f2/f3 as
+ per-task MEAN. We detect the format and normalize accordingly.
+ 
+-Output: papers/single-sat-quality/figures/fig6_ablation.pdf
++Output: papers/single-sat-quality/figures/fig5_ablation.pdf
+ No dependency on analyze_ablation.py — completely self-contained.
+ """
+ import json
+@@ -42,6 +42,8 @@ VARIANT_DIRS = {
+     "D": "moea_3obj_no_physics",
+ }
+ CLASSES = ["S1", "S2", "S3", "S4"]
++# Manuscript Bonferroni threshold for the ablation comparisons (§6.5).
++ALPHA_BONF = 0.05 / 12
+ CLASS_LABELS = {
+     "S1": "S1 ($N{=}20$)",
+     "S2": "S2 ($N{=}100$)",
+@@ -157,9 +159,12 @@ def generate_figure(degs: dict, pvalues: dict) -> None:
+     variant_labels = {"B": "no squint", "C": "no incidence", "D": "no physics"}
+     metrics = ["f1", "f2", "f3"]
+     metric_labels = {
+-        "f1": r"$f_1^*$ degradation (%)",
+-        "f2": r"$f_2$ degradation (%)",
+-        "f3": r"$f_3$ degradation (%)",
++        # Short labels: the full phrases ("degradation (%)") overran the panel
++        # height and collided with the label of the panel above. The caption
++        # defines what the bars show.
++        "f1": r"$f_1^*$ (%)",
++        "f2": r"$f_2$ (%)",
++        "f3": r"$f_3$ (%)",
+     }
+ 
+     fig, axes = plt.subplots(len(metrics), 1, figsize=(5.70, 4.13), sharex=True)
+@@ -179,10 +184,10 @@ def generate_figure(degs: dict, pvalues: dict) -> None:
+             )
+             # Statistical claim in the paper concerns normalized profit f1*.
+             # Mark only those pre-specified A-vs-variant comparisons that pass
+-            # the manuscript's Bonferroni threshold (p < 0.005).
++            # the manuscript's Bonferroni threshold (p < 0.05/12).
+             if metric == "f1":
+                 for cls, bar in zip(CLASSES, bars):
+-                    if pvalues[metric][v].get(cls, 1.0) < 0.005:
++                    if pvalues[metric][v].get(cls, 1.0) < ALPHA_BONF:
+                         y = bar.get_height()
+                         # Mark significance above the zero line for negative bars too;
+                         # anchoring below the bar tip pushed the star outside the axes.
+@@ -213,13 +218,15 @@ def generate_figure(degs: dict, pvalues: dict) -> None:
+     axes[-1].set_xticklabels([CLASS_LABELS[c] for c in CLASSES], fontsize=9)
+     fig.text(
+         0.5, 0.02,
+-        r"* paired Wilcoxon vs A, $p<0.005$ (Bonferroni threshold); negative = variant outperforms A",
++        r"* paired Wilcoxon vs A, $p<0.05/12$ (Bonferroni threshold); negative = variant outperforms A",
+         ha="center", va="bottom", fontsize=7, color="#444",
+     )
+ 
+     fig.tight_layout(rect=(0.02, 0.08, 1, 1), pad=1.0)
+-    out = FIG_DIR / "fig6_ablation.pdf"
+-    preview = FIG_DIR / "fig6_ablation.png"
++    # The manuscript includes this figure as fig5_ablation.pdf; write the output
++    # under the name the .tex actually uses (the old fig6 name was a stale copy).
++    out = FIG_DIR / "fig5_ablation.pdf"
++    preview = FIG_DIR / "fig5_ablation.png"
+     fig.savefig(str(out), dpi=300, bbox_inches="tight")
+     fig.savefig(str(preview), dpi=300, bbox_inches="tight")
+     plt.close(fig)
+diff --git a/papers/single-sat-quality/experiments/results/n50_logistic.json b/papers/single-sat-quality/experiments/results/n50_logistic.json
+index 3a4b7ea..e1affd4 100644
+--- a/papers/single-sat-quality/experiments/results/n50_logistic.json
++++ b/papers/single-sat-quality/experiments/results/n50_logistic.json
+@@ -1,9 +1,9 @@
+ {
+-  "alpha": 2.7634118050202807,
+-  "beta": -0.055231592245756155,
+-  "N50": 50.033172911697356,
+-  "ci_low": 30.181757143296206,
+-  "ci_high": 61.84316803050109,
++  "alpha": 2.2925598384998698,
++  "beta": -0.04515824616765439,
++  "N50": 50.767247027010704,
++  "ci_low": 37.008889343444636,
++  "ci_high": 64.16010060242539,
+   "n_bootstrap": 1000,
+   "n_scenarios": 300,
+   "deficit_threshold": 0.95,
+diff --git a/papers/single-sat-quality/small-paper-ijae-zh.tex b/papers/single-sat-quality/small-paper-ijae-zh.tex
+index 81b8195..70e9fff 100644
+--- a/papers/single-sat-quality/small-paper-ijae-zh.tex
++++ b/papers/single-sat-quality/small-paper-ijae-zh.tex
+@@ -47,7 +47,7 @@
+ 该增益受两条实测边界约束。
+ 平台斜视包络收窄时优势随之收缩：上限由 $45^\circ$ 收紧到 $15^\circ$ 时，
+ 几何质量增益由 $+28\%$ 降至 $+2.3\%$。
+-运营密度下（$N \geq 300$）优势消失：在贪心热启动条件下，
++运营密度下（$N \gtrsim 150$）优势消失：在贪心热启动条件下，
+ 多目标前沿收敛至贪心覆盖锚点，质量边际低于 $2\%$。
+ 几何与辐射目标在稀疏调度的排程内部冲突最强
+ （$r \approx -0.62$，接近独立角零假设的 $-0.60$），
+@@ -63,6 +63,7 @@
+ %  1. 引言
+ % ============================================================
+ \section{引言}
++\label{sec:introduction}
+ 配备合成孔径雷达（SAR）的敏捷地球观测卫星在从灾害响应到海上监视等
+ 时间关键型任务中日益重要。
+ 其敏捷性（天线波束偏离星下点轨迹的能力）使单颗卫星能够比固定指向平台
+@@ -129,7 +130,7 @@ MOEA-2 以 $14\%$ 覆盖率代价使 $f_2$ 提升 $+33.7\%$
+     \item 该形式化的实测适用包络：稀疏区增益大小（$N=20$ 时 $f_2$ 提升 $+33.7\%$）、
+     斜视上限收紧时的收缩（由 $+28\%$ 降至 $+2.3\%$，上限由 $45^\circ$ 收紧到 $15^\circ$），
+     以及多目标变体收敛至贪心覆盖锚点的密度阈值
+-    （$N_{50} \approx 50$；$N=150$ 以上优势可忽略）
++    （$N_{50} \approx 51$；$N=150$ 以上优势可忽略）
+     （\S\ref{sec:scale-sensitivity}、\S\ref{sec:operational-implications}）；
+     \item 与锚点无关的 $f_2$--$f_3$ 耦合分解：在原始可见几何上该权衡较弱
+     （$r \approx -0.36$，而独立角零假设为 $r \approx -0.60$），
+@@ -210,12 +211,12 @@ $\text{NESZ} \propto R^3$
+ \subsection{多目标进化优化}
+ 多目标进化算法已发展为处理两个或更多竞争性目标的标准工具包。
+ NSGA-III 算法 \citep{Deb2014} 通过基于参考点的多样性保持机制，
+-将著名的 NSGA-II 框架扩展到多目标问题（$M \geq 3$），
++将著名的 NSGA-II 框架 \citep{Deb2002NSGA2} 扩展到多目标问题（$M \geq 3$），
+ 取代了在更高维度上退化的拥挤距离算子。NSGA-III 已应用于航空航天轨迹优化、
+ 星座设计和任务规划问题，其中燃料消耗、覆盖率和重访时间等目标必须同时平衡。
+ 在卫星调度中，MOEA 主要应用于光学领域，目标包括总收益、任务完成时间、
+ 资源利用率和负载均衡。
+-超体积（HV）指标是比较帕累托前沿近似最广泛使用的质量度量，
++超体积（HV）指标是比较帕累托前沿近似最广泛使用的质量度量 \citep{Zitzler1999HV}，
+ 但其对前沿基数的敏感性在比较单目标和多目标求解器时产生了可解释性挑战，
+ 我们在 \S~\ref{sec:pareto-coupling} 中处理了这一方法论问题。
+ 这些权衡在此前的 SAR 调度中尚未被显式化：
+@@ -492,9 +493,10 @@ $f_1^{\text{GA-P-BL}} \ge f_1^{\text{G-BL}}$。实践中该保护使 GA-P-BL 的
+ $f_1^*$ 均值之差小于 $0.001$）（\S~\ref{sec:overall-performance}）；
+ 因此 GA-P-BL 起的是确认贪心收益基线的对照作用，而非独立求解器。
+ \subsection{MOEA-2 和 MOEA-3：多目标进化算法}
++\label{sec:moea-description}
+ MOEA-2 和 MOEA-3 通过 NSGA-III 框架 \citep{Deb2014} 将 GA-P-BL 的染色体编码扩展到多目标优化。
+ 两者均使用 100 个个体的种群，运行 200 代，使用与 GA-P-BL 相同的遗传算子。
+-参考点通过 Das--Dennis 系统方法生成，产生
++参考点通过 Das--Dennis 系统方法 \citep{DasDennis1998} 生成，产生
+ $H = \binom{n_{\text{obj}} + p - 1}{p}$ 个结构化参考方向，其中 $n_{\text{obj}}$ 为目标数，
+ $p = 12$ 为每目标维度的划分数（MOEA-2 为 $H = 13$，MOEA-3 为 $H = 91$）。
+ 整个种群以 G-BL 解加高斯噪声（std = 0.5）热启动，且至少一个任务的约束防止空解支配帕累托前沿。
+@@ -562,7 +564,7 @@ C1 可行性还在完整 30 秒观测区间上额外验证（0.5 秒分辨率扫
+ 每个随机配置在每个场景上只求解一次（场景种子决定实例生成；NSGA-III 采样种子固定为库默认，
+ 而算子级随机抽取不加固定），因此不复制场景内搜索随机性；所发布的结果数据即所分析的精确前沿实现。
+ 重复运行检查量化了该设计的代价：每个 NSGA-III 求解器在每类一个变体 A 场景上的五次重复
+-在 S1 与 S4 逐位复现，出现变化的场合（S2、S3）膝点值的实例内 SD 绝对值不超过 $0.004$
++在 S1 与 S4 逐位复现，出现变化的场合（S2、S3）膝点值的实例内标准差（SD）绝对值不超过 $0.004$
+ ，至多为对应类间 SD 的 $7\%$（$f_3$）与 $3\%$（$f_2$）（$f_1^*$ 至多变化 $0.004$，
+ 类均值为 $0.98$--$1.00$）。
+ G-BL 和 G-SM 是确定性贪心启发式，无可调节超参数。
+@@ -677,7 +679,7 @@ G-BL    & 0.0234 & 0.0150 \\
+ \begin{figure}[H]
+     \centering
+     \includegraphics[width=\textwidth]{fig1_hypervolume.pdf}
+-    \caption{统计验证：（左）超体积分布；（右）配对效应量，用匹配对符号统计量 $\delta_{\text{pairs}}=(W-L)/n$（Cliff's $\delta$ 的匹配对限制形式）；灰色波段标记 \citet{Romano2006} 可忽略效应区（$|\delta|<0.147$；仅供参照，配对比较的常规未配对 $\delta$ 更弱），见 \S~\ref{sec:evaluation-metrics}；小灰点为超出 $1.5\times$IQR 的逐场景离群值，灰色柱标记 MOEA-2 与 MOEA-3 的比较（$\delta = -0.56$）。}
++    \caption{统计验证：（左）超体积分布；（右）配对效应量，用匹配对符号统计量 $\delta_{\text{pairs}}=(W-L)/n$（Cliff's $\delta$ 的匹配对限制形式）；灰色波段标记 \citet{Romano2006} 可忽略效应区（$|\delta|<0.147$；仅供参照，配对比较的常规未配对 $\delta$ 更弱），见 \S~\ref{sec:evaluation-metrics}；小灰点为超出 $1.5\times$ 四分位距（IQR）的逐场景离群值，灰色柱标记 MOEA-2 与 MOEA-3 的比较（$\delta = -0.56$）。}
+     \label{fig:fig1}
+ \end{figure}
+ 
+@@ -753,9 +755,9 @@ S4 & 500  & $1.00 \pm 0.01$ & +0.3\% ($\pm 0.2$) & 0\% \\
+ \end{tabular}
+ \end{table}
+ 对 $f_1^* < 0.95$ 的场景比例拟合逻辑回归 $p(\text{deficit} \mid N) = 1 / (1 + \exp(-(\alpha + \beta N)))$
+-得出过渡中点 $N_{50} \approx 50$ 个目标。
++得出过渡中点 $N_{50} \approx 51$ 个目标。
+ 该估计弱约束：只有两个稀疏密度（$N=20, 100$）携带信息性差距比例（$80\%$ 和 $10\%$），
+-而四个更密集的点都不超过 $1\%$，因此 bootstrap 置信区间较宽（$N_{50} \in [30, 62]$）。$N_{50}$ 应被视为“过渡限于 $N \in [20, 100]$”的粗略指示，而非精确阈值。
++而四个更密集的点都不超过 $1\%$，因此 bootstrap 置信区间较宽（$N_{50} \in [37, 64]$）。$N_{50}$ 应被视为“过渡限于 $N \in [20, 100]$”的粗略指示，而非精确阈值。
+ 超过 $N \approx 150$ 后，没有场景显示超过 $5\%$ 的覆盖率差距。
+ 图~\ref{fig:fig3} 的 $f_3$ 行在辐射目标上显示同样的模式：稀疏密度下 MOEA-3 与 G-BL 明显分离、
+ G-SM 占据自己的高 $f_3$ 区域，而密集面板中所有求解器的分布几乎重合，与表~\ref{tab:solver-profiles} 一致。
+@@ -1025,7 +1027,7 @@ MOEA-2 和 MOEA-3 在池化 HV 上不同，$\delta = -0.56$（$p < 10^{-5}$）
+ 因此，物理感知多目标调度的质量优势是宽包络平台特有的：
+ 在 $|\psi_{\text{sq}}| \lesssim 25^\circ$ 机动能力的平台上，或缺乏大斜视多普勒质心补偿的平台上
+ （\S~\ref{sec:system-model}），即使在稀疏区域，贪心基线也能在满覆盖下达到相当的质量。
+-逻辑回归中点 $N_{50} \approx 50$（\S~\ref{sec:scale-sensitivity}）提供了两个区域之间过渡的粗略指示。
++逻辑回归中点 $N_{50} \approx 51$（\S~\ref{sec:scale-sensitivity}）提供了两个区域之间过渡的粗略指示。
+ 我们的结果提出了一个条件性的操作指南：
+ 对于稀疏观测请求（$N \lesssim 100$）且平台具备斜视机动能力（\S\ref{sec:system-model} 的 $45^\circ$ 实验包络），MOEA-2 可以在特定应用背景下提供可能超过覆盖率惩罚的几何质量增益，膝点以 $14\%$ 覆盖率代价换取 $+33\%$ 的 $f_2$，而最佳覆盖率前沿点在零覆盖率代价下仍给出 $+12.5\%$ 的 $f_2$，在覆盖率不可牺牲时应优先选用；
+ 对于窄包络平台上的稀疏请求，以及所测试平台族上的密集监测任务（$N \gtrsim 300$），G-BL 达到覆盖参考（多目标变体相对其增益甚微）而 G-SM 以可观的覆盖代价达到最高辐射质量，故贪心选择追随任务的优先级。
+@@ -1045,7 +1047,7 @@ MOEA-2 和 MOEA-3 在池化 HV 上不同，$\delta = -0.56$（$p < 10^{-5}$）
+ 上述报告的密度依赖的第三目标不可区分性限于单次过境、单星条带设置：它反映了求解器收敛到低斜视几何，衰减了包络级 $f_2$--$f_3$ 相关，而调度内残余 $\theta$ 冲突持续存在（在每个密度下均为负，稀疏密度下最强；\S~\ref{sec:pareto-coupling}，式~\ref{eq:rnull}），
+ 而非 $f_2$ 和 $f_3$ 之间的数学恒等关系；在多过境或多星设置中具有更大的角度多样性，
+ $\theta$ 冲突将重新出现，第三目标可能变得有区分度；静态、预先已知的目标集同样排除了动态到达与滚动时域重优化，新到达任务会在同一批窗口内竞争，可能改变饱和阈值。
+-该饱和阈值本身（$N_{50} \approx 50$，\S~\ref{sec:scale-sensitivity}）是在本合成、静态场景族内估计的；真实任务请求流具有异质优先级与到达过程，可能使其偏移，故该阈值应读作场景族特有而非平台无关。
++该饱和阈值本身（$N_{50} \approx 51$，\S~\ref{sec:scale-sensitivity}）是在本合成、静态场景族内估计的；真实任务请求流具有异质优先级与到达过程，可能使其偏移，故该阈值应读作场景族特有而非平台无关。
+ 类似地，ScanSAR、Spotlight 和 TOPS 模式引入不同的 NESZ 和分辨率依赖关系，
+ 场景设计使用固定轨道（693 km 圆形 LEO），未探索对轨道参数（高度、倾角、升交点赤经）的敏感性。
+ 热启动控制实验（\S~\ref{sec:robustness-calibration}）表明 G-BL 初始化实质性改善 MOEA 收敛；
+diff --git a/papers/single-sat-quality/small-paper-ijae.tex b/papers/single-sat-quality/small-paper-ijae.tex
+index c9cbfbe..e37e124 100644
+--- a/papers/single-sat-quality/small-paper-ijae.tex
++++ b/papers/single-sat-quality/small-paper-ijae.tex
+@@ -46,7 +46,7 @@ quality at a $15\%$ cost, with a controlled $+4.9\%$ third-objective margin
+ under a matched radiometric-aware knee rule. Two measured boundaries delimit
+ that gain. The advantage contracts as the squint envelope narrows, from $+28\%$
+ to $+2.3\%$ in geometric quality when the cap tightens from $45^\circ$ to
+-$15^\circ$, and it vanishes at operational densities ($N \geq 300$), where the
++$15^\circ$, and it vanishes at operational densities ($N \gtrsim 150$), where the
+ multi-objective fronts converge to the greedy coverage anchor with quality
+ margins below $2\%$ under greedy hot-start initialization. The geometric and
+ radiometric objectives conflict most inside sparse schedules
+@@ -168,7 +168,7 @@ The specific contributions of the paper are:
+     tightening squint cap (from $+28\%$ to $+2.3\%$ as the cap narrows from
+     $45^\circ$ to $15^\circ$), and the density threshold beyond which the
+     multi-objective variants converge to the greedy coverage anchor
+-    ($N_{50} \approx 50$; negligible advantage beyond $N=150$)
++    ($N_{50} \approx 51$; negligible advantage beyond $N=150$)
+     (\S\ref{sec:scale-sensitivity}, \S\ref{sec:operational-implications});
+     \item An anchor-independent decomposition of the $f_2$--$f_3$ coupling: the
+     trade-off is mild over raw visibility geometry ($r \approx -0.36$ against
+@@ -854,7 +854,7 @@ processed results pin the exact front realizations analyzed.
+ A replicated-run check quantifies the cost of this design: five repeats of
+ each NSGA-III solver on one variant-A scenario per class reproduce
+ bit-identically at S1 and S4, and where variation appears (S2, S3) the
+-within-instance SD of the knee values stays at or below $0.004$ in absolute
++within-instance standard deviation (SD) of the knee values stays at or below $0.004$ in absolute
+ terms, at most $7\%$ of the corresponding between-scenario SD for $f_3$ and
+ $3\%$ for $f_2$ ($f_1^*$ varies by at most $0.004$ against class means of
+ $0.98$--$1.00$).
+@@ -951,7 +951,7 @@ G-BL    & 0.0234 & 0.0150 \\
+ \begin{figure}[H]
+     \centering
+     \includegraphics[width=\textwidth]{fig1_hypervolume.pdf}
+-    \caption{Statistical validation: (left) hypervolume distribution; (right) pairwise effect sizes as the matched-pairs sign statistic $\delta_{\text{pairs}} = (W-L)/n$, which equals Cliff's $\delta$ for the within-scenario pairing; the gray band marks the negligible-effect range ($|\delta|<0.147$ of \citet{Romano2006}; shown for reference, as the conventional unpaired $\delta$ is weaker for the within-pair comparisons, see \S\ref{sec:evaluation-metrics}); small grey dots are per-scenario outliers beyond $1.5\times$IQR, and the grey bar marks the MOEA-2 vs. MOEA-3 comparison ($\delta = -0.56$).}
++    \caption{Statistical validation: (left) hypervolume distribution; (right) pairwise effect sizes as the matched-pairs sign statistic $\delta_{\text{pairs}} = (W-L)/n$, which equals Cliff's $\delta$ for the within-scenario pairing; the gray band marks the negligible-effect range ($|\delta|<0.147$ of \citet{Romano2006}; shown for reference, as the conventional unpaired $\delta$ is weaker for the within-pair comparisons, see \S\ref{sec:evaluation-metrics}); small grey dots are per-scenario outliers beyond $1.5\times$ the interquartile range (IQR), and the grey bar marks the MOEA-2 vs. MOEA-3 comparison ($\delta = -0.56$).}
+     \label{fig:fig1}
+ \end{figure}
+ 
+@@ -1054,11 +1054,11 @@ S4 & 500  & $1.00 \pm 0.01$ & +0.3\% ($\pm 0.2$) & 0\% \\
+ \end{table}
+ Fitting a logistic regression to the proportion of scenarios with
+ $f_1^* < 0.95$ across the six density points ($N=20, 100, 150, 200, 300, 500$)
+-yields a transition midpoint $N_{50} \approx 50$ targets. This estimate is
++yields a transition midpoint $N_{50} \approx 51$ targets. This estimate is
+ weakly constrained: only the two sparse densities ($N=20, 100$) carry
+ informative deficit proportions ($80\%$ and $10\%$), while the four denser
+ points are all at most $1\%$, so the bootstrap confidence interval is wide
+-($N_{50} \in [30, 62]$). $N_{50}$ should therefore be read as a coarse indicator that the
++($N_{50} \in [37, 64]$). $N_{50}$ should therefore be read as a coarse indicator that the
+ transition is confined to $N \in [20, 100]$, not as a precise threshold.
+ Beyond $N \approx 150$, no scenario shows a
+ coverage deficit exceeding $5\%$.
+@@ -1415,7 +1415,7 @@ $|\psi_{\text{sq}}| \lesssim 25^\circ$ agility, or without
+ Doppler-centroid compensation for large squints
+ (\S~\ref{sec:system-model}), the greedy baseline attains comparable
+ quality at full coverage even in sparse regimes. The logistic midpoint
+-$N_{50} \approx 50$ (\S~\ref{sec:scale-sensitivity}) provides a coarse
++$N_{50} \approx 51$ (\S~\ref{sec:scale-sensitivity}) provides a coarse
+ indicator between the density regimes. Our results suggest a conditional
+ operational guideline: for sparse observation requests ($N \lesssim 100$)
+ on squint-agile platforms (the $45^\circ$ experimental envelope of
+@@ -1470,7 +1470,7 @@ re-emerge and the third objective may become discriminative; the static,
+ advance-known target set likewise excludes dynamic arrivals and
+ rolling-horizon re-optimization, where newly arriving tasks compete
+ within the same windows and could shift the saturation threshold.
+-The saturation threshold itself ($N_{50} \approx 50$,
++The saturation threshold itself ($N_{50} \approx 51$,
+ \S~\ref{sec:scale-sensitivity}) is estimated within this synthetic, static
+ scenario family; real mission request streams with heterogeneous priorities
+ and arrival processes could shift it, so the threshold should be read as
+diff --git a/src/tools/verify_paper_numbers.py b/src/tools/verify_paper_numbers.py
+index 475c833..ef78657 100644
+--- a/src/tools/verify_paper_numbers.py
++++ b/src/tools/verify_paper_numbers.py
+@@ -314,11 +314,36 @@ for cls, (pm, psd, pf2, pf2sd, ptrade) in [
+     check(f"sc-{cls}-f2imp", f"§6.3 {cls} f2 improvement %", pf2, f2, 0.31)
+     check(f"sc-{cls}-trade", f"§6.3 {cls} % f1*<0.95", ptrade, tr, 0.5)
+ 
+-# N50 transition midpoint (§6.3 ≈50, §7.2 ≈50; n50_logistic.json 50.03 CI[30,62])
++# N50 transition midpoint. The manuscript text is what needs testing, so parse
++# every printed value out of both .tex files and compare with the JSON written
++# by scripts/n50_logistic.py. The earlier version compared a hardcoded constant
++# against the JSON only and never read the paper, so a stale text value passed
++# while the JSON itself had gone stale after the 2026-08-15 data regeneration.
+ if n50.get("N50"):
+-    check("n50-mid", "§6.3/§7.2 N50 logistic midpoint", 50.0, n50["N50"], 1.0)
+-    check("n50-ci-low", "§6.3 N50 CI low", 30.0, n50.get("ci_low", 0), 1.5)
+-    check("n50-ci-high", "§6.3 N50 CI high", 62.0, n50.get("ci_high", 0), 2.0)
++    import re as _re
++    _n50_mid = round(float(n50["N50"]))
++    _n50_lo = round(float(n50.get("ci_low", 0)))
++    _n50_hi = round(float(n50.get("ci_high", 0)))
++    for _tex_rel in ("small-paper-ijae.tex", "small-paper-ijae-zh.tex"):
++        _tag = "en" if _tex_rel == "small-paper-ijae.tex" else "zh"
++        _t = (PAPER / _tex_rel).read_text(encoding="utf-8")
++        _mids = [int(m) for m in _re.findall(r"N_\{50\}\s*\\approx\s*(\d+)", _t)]
++        _cis = [(int(a), int(b)) for a, b in
++                _re.findall(r"N_\{50\}\s*\\in\s*\[(\d+)\s*,\s*(\d+)\]", _t)]
++        # Relationship, not an absolute count: at least one mention, and every
++        # mention must carry the same (JSON) value. New legitimate mentions do
++        # not break the gate; a drifting one does.
++        check(f"n50-text-present-{_tag}", f"{_tex_rel} prints N50 at least once",
++              1, 1 if _mids else 0, 0)
++        if _mids:
++            for _i, _mv in enumerate(_mids):
++                check(f"n50-mid-{_tag}-{_i}", f"{_tex_rel} N50 midpoint vs JSON",
++                      _n50_mid, _mv, 0)
++        if _cis:
++            check(f"n50-ci-{_tag}", f"{_tex_rel} N50 CI low vs JSON",
++                  _n50_lo, _cis[0][0], 0)
++            check(f"n50-ci-high-{_tag}", f"{_tex_rel} N50 CI high vs JSON",
++                  _n50_hi, _cis[0][1], 0)
+ 
+ # §6.2 G-SM f3 gain
+ for cls, (pbase_m, pbase_s, pgsm_m, pgsm_s) in [
