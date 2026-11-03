@@ -39,8 +39,9 @@ decision. We formulate single-satellite Stripmap scheduling as a
 three-objective problem that optimises coverage profit, geometric resolution,
 and noise-equivalent sigma-zero (NESZ) radiometric quality jointly with a
 non-dominated sorting genetic algorithm III (NSGA-III), and we measure where
-the formulation pays off. Across 200 scenarios spanning 20 to 500 targets in a
-two-orbit horizon, sparse request sets reward re-optimisation: $+34\%$
+the formulation pays off. Across 200 simulated scenarios spanning 20 to 500
+targets in a two-orbit horizon, sparse request sets reward re-optimisation:
+$+34\%$
 geometric-index quality at a $14\%$ coverage cost and $+40\%$ radiometric-index
 quality at a $15\%$ cost, with a controlled $+4.9\%$ third-objective margin
 under a matched radiometric-aware knee rule. Two measured boundaries delimit
@@ -178,9 +179,12 @@ The specific contributions of the paper are:
     (\S\ref{sec:pareto-coupling});
     \item A controlled ablation (four objective-function variants over six
     scenario classes, 300 scenarios per variant) and initialization controls
-    showing that solver outcomes become invariant to the choice of physical
-    objectives at high target density, and that coverage convergence is
-    conditional on greedy-baseline (G-BL) hot-start initialization
+    showing that the third objective's measurable value is concentrated in
+    sparse schedules and flows through the squint channel, that solver
+    outcomes become invariant to the choice of physical objectives at high
+    target density (where the objective is retained for quality-assessment
+    completeness rather than incremental gain), and that coverage convergence
+    is conditional on greedy-baseline (G-BL) hot-start initialization
     (\S\ref{sec:ablation}, \S\ref{sec:robustness-calibration}).
 \end{enumerate}
 % ============================================================
@@ -1527,10 +1531,11 @@ Two measured boundaries delimit the gain. It contracts monotonically as the
 platform's squint envelope narrows, from $+28\%$ to $+2.3\%$ in geometric
 quality as the cap tightens from $45^\circ$ to $15^\circ$. It vanishes at
 operational densities: beyond $N \approx 150$ the found fronts converge to the
-greedy coverage anchor with quality margins below $2\%$, because coverage
-pressure removes the freedom to move acquisitions while solver convergence to
-lower-squint geometry aligns $f_2$ and $f_3$ through the shared
-$\cos\psi_{\text{sq}}$ factor. The within-schedule trade-off persists at every
+greedy coverage anchor with quality margins below $2\%$. The vanished quality
+margins themselves are an effect of coverage pressure, which removes the
+freedom to move acquisitions, while solver convergence to lower-squint
+geometry aligns $f_2$ and $f_3$ through the shared $\cos\psi_{\text{sq}}$
+factor. The within-schedule trade-off persists at every
 density (negative correlation, \S\ref{sec:pareto-coupling}), so the dense-regime
 convergence is an empirical effect of the schedule geometry, not a redundancy
 between objectives. Coverage convergence toward the greedy anchor is itself
