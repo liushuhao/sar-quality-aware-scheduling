@@ -81,8 +81,15 @@ scientific-agent-skills-main/
 # Unrelated presentation deck (local only)
 satellite-tech-deck/
 
-# Internal review / process records (local only, not part of public artifact)
-papers/single-sat-quality/review/
+# Review tracking (current) is versioned per AGENTS.md: reports md + patch/png
+# evidence tracked; build output and runtime .remember stay local (R114, 2026-11-03)
+papers/single-sat-quality/review/**
+!papers/single-sat-quality/review/**/
+!papers/single-sat-quality/review/**/*.md
+!papers/single-sat-quality/review/**/*.patch
+!papers/single-sat-quality/review/**/*.png
+papers/single-sat-quality/review/**/build*/
+papers/single-sat-quality/review/**/.remember/
 papers/single-sat-quality/.workbuddy/
 .agents/
 skills-lock.json
