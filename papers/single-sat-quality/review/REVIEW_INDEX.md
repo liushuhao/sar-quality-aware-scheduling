@@ -10,6 +10,8 @@
 
 **裁决（2026-11-03，受托代填 + 异源审查闭环）**：[author-adjudication-20261103.md](author-adjudication-20261103.md) 已 **CONFIRMED**——R1-R14 全部 will_address；三个口径问题已答：Q1 密度边界=分层口径（质量边际消失归覆盖压力[状态级排除法]、锚收敛归热启动条件性）、Q2 价值主通道=斜视（入射角限 per-window 惰性、跨窗口通道保留）、Q5→R5 走收窄+G-SM 交换率零成本支路（混合基线列二审备选）。回扫三轮（opencode/deepseek-v4.1-flash-free，发现 17→4须修→PASS，报告 `.scratch/adjudication-20261103/report-r1..r3.md`）；R7 执行前置=先做主跑 vs replicate 对账（轮 3 M3 实测两者同实例不一致）。待办：按 [revision-roadmap-20261103.md](revision-roadmap-20261103.md) 执行 R1-R14（R1-R4 纯文字零成本先行）；作者可逐条推翻裁决。
 
+**执行进度（2026-11-04，批 2+3 修订会话）**：R7 前置对账完成并 **M3 勘误**——轮 3「同实例不一致」系误用 8-06/07 RDR-066 旧口径淘汰快照作主跑；现行正文数据链（`moea_2obj|moea_3obj/_progress.json`）与 replicate 同实例 S1/S4 逐位一致、S2/S3 在 1e-3 级 repeat 包络内无系统方向，**无 solver 版本/口径漂移，闸过放行扩容跑批**（证据 [reconciliation-r7-m3-20261104.md](reconciliation-r7-m3-20261104.md)；commit 7142ec7）。跑批扩容（每类 10 场景×5 repeats×2 求解器=400 次）后台执行中（`replicate_variance_20261104`，最小单元逐位复现 10-31 已知值）。文本批全落：批 1=R1-R4（2f241e3，11-03）；批 2=R9（405a65f）/R5（c0bbdd5）/R6（f01c64a）；批 3=R10-R14+R8 丢弃质量+R12 收尾（0697dbf）——DA-13 实算裁决：per-task 分量 pooled range 0.6533（正文 0.65 对）与调度级 HV 界 0.11–0.56 为两层对象，消歧句落 §6.4；R8 新口径（窗内最优 cos³ξ）：dropped 可达上界高于 retained（S1 0.92 vs 0.80）反证 cherry-picking 机制。数字闸 219→245 断言 0 失败；EN 49 页/ZH 39 页 0 错 0 悬空。**剩余**：跑批落地后 R7 可复现口径段+重复运行证据段（措辞依赖批结果）。
+
 
 
 ## 2026-10-31 批次：ARS 五席异源面板（claude -p × 5：EIC/R1/R2/R3/DA）+ 修复 + 确认轮
