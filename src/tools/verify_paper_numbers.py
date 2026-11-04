@@ -799,6 +799,33 @@ for cls, exp in (("S1", 3.4), ("S2", 23.1), ("S3", 21.3), ("S4", 15.6)):
     check(f"r5-exch-{cls.lower()}", f"§7.2 G-SM f3 over MOEA-3 ({cls})",
           exp, pct(gsm_m, m3_m), 0.31)
 
+# ── R6 2026-11-04: C3/C4-bound split of dense classes (§3.3) ────────────────
+# paper: bound = G-BL schedules selecting exactly 200 tasks; group class-mean
+# f2/f3 printed at 3 decimals for G-BL and MOEA-3, S3 and S4.
+R6 = {
+    "S3-gbl-b": (0.346, 0.606), "S3-gbl-u": (0.339, 0.623),
+    "S4-gbl-b": (0.365, 0.643), "S4-gbl-u": (0.303, 0.714),
+    "S4-m3-b": (0.366, 0.647), "S4-m3-u": (0.305, 0.720),
+}
+for cls, ncap in (("S3", 20), ("S4", 27)):
+    keys_all = [k for k in bl if k.startswith(cls + "/") and isinstance(bl[k], dict)]
+    bound = {k for k in keys_all if bl[k]["b1"].get("n_selected") == 200}
+    check(f"r6-cap-{cls.lower()}", f"§3.3 {cls} G-BL schedules at 200-task cap",
+          ncap, len(bound), 0)
+for tag6, (e2, e3) in R6.items():
+    cls, src, grp = tag6.split("-")
+    keys_all = [k for k in bl if k.startswith(cls + "/") and isinstance(bl[k], dict)]
+    bound = {k for k in keys_all if bl[k]["b1"].get("n_selected") == 200}
+    grp_keys = sorted(bound) if grp == "b" else sorted(set(keys_all) - bound)
+    if src == "gbl":
+        f2v = float(np.mean([bl[k]["b1"]["f2"] for k in grp_keys]))
+        f3v = float(np.mean([bl[k]["b1"]["f3"] for k in grp_keys]))
+    else:
+        f2v = float(np.mean([m3[k]["f2"] for k in grp_keys if k in m3 and isinstance(m3[k], dict)]))
+        f3v = float(np.mean([m3[k]["f3"] for k in grp_keys if k in m3 and isinstance(m3[k], dict)]))
+    check(f"r6-{tag6}-f2", f"§3.3 {cls} {src} {grp} f2", e2, f2v, 0.0005)
+    check(f"r6-{tag6}-f3", f"§3.3 {cls} {src} {grp} f3", e3, f3v, 0.0005)
+
 # phenomenon2 cliff (MOEA-3 vs MOEA-2 f3 per group) + paired Wilcoxon p (§6.4, R11)
 for cls, pv in (("S1", 0.88), ("S4", 0.32)):
     dv = p2_cliff["per_group"][cls]["f3"]

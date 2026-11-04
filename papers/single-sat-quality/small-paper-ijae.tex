@@ -568,7 +568,15 @@ into the same ceiling of 200 concurrently scheduled tasks. This ceiling is
 inactive in sparse regimes but binds in a subset of dense scenarios: 20 of
 50 G-BL schedules at S3 and 27 of 50 at S4 select exactly 200 tasks, so the
 binding constraint there is C3--C4 rather than C2, while the remaining
-dense scenarios are schedule-limited by C2. The A--D ablation invariance is,
+dense scenarios are schedule-limited by C2. Splitting each dense class by
+this classification, the two subpopulations carry distinct quality profiles:
+at S4 the C3--C4-bound scenarios average $f_2 = 0.365$, $f_3 = 0.643$ (G-BL
+class means), whereas the C2-limited scenarios average $0.303$ and $0.714$
+--- coverage packing under the shared cap thins per-task quality --- while
+at S3 the two groups are closer ($0.346$, $0.606$ vs.\ $0.339$, $0.623$).
+MOEA-3 reproduces the same split (S4: $0.366$/$0.647$ vs.\
+$0.305$/$0.720$), so class-mean quality margins partly reflect the
+bound/unbound mix within each class. The A--D ablation invariance is,
 if anything, reinforced when all variants are pinned to a shared resource
 cap (\S~\ref{sec:ablation}), but dense-regime coverage convergence should be
 read as convergence to the feasible task count under both constraint
@@ -1309,8 +1317,11 @@ high coverage arises only by chance.
 Doubling the budget (population 200, 400 generations) on five S3 and five S4
 scenarios keeps the A--D difference in $f_1^*$ negligible ($-0.12\%$ at S3,
 $-0.44\%$ at S4; both variants reach full coverage), and shifts quality by at
-most $+1.64\%$ relative to the standard budget, so the sub-$2\%$ dense-regime
-margins reflect coverage pressure and not premature convergence. A random-init
+most $+1.64\%$ relative to the standard budget. That shift is the same order
+as the sub-$2\%$ margins it is meant to defend, so the control alone cannot
+separate premature convergence from all runs reaching the same coverage
+wall; the bound/unbound split of \S~\ref{sec:constraints} separates the two
+subpopulations directly. A random-init
 run of the no-physics variant D (15 S3 and 15 S4 runs) reproduces the low
 per-task squint of the hot-started runs ($f_2=0.349\pm0.016$ at S3 and
 $0.347\pm0.015$ at S4, against $0.342\pm0.026$ and $0.336\pm0.039$) at a
