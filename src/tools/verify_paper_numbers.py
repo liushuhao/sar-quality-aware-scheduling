@@ -628,19 +628,68 @@ for _cls, _exp in (("S1", -0.80), ("S2", -0.23), ("S3", -0.15), ("S4", -0.31)):
     check(f"corr-aonly-{_cls.lower()}", f"§5.1 variant-A-only pooled r ({_cls})",
           _exp, sched_corr_a["classes"][_cls]["r"], 0.005)
 
-# ── panel 20261031 RES2: replicate-run within-instance SD (§5.4) ─────────────
-_rep = json.loads(fingerprint("replicate_variance_20261031/_progress.json").read_text(encoding="utf-8"))["completed"]
+# ── R7 20261105: scaled replicate check (§5.4; 40 scenarios x 5 reps x 2 solvers) ──
+# supersedes the 20261031 one-scenario-per-class assertions (kept on disk as
+# historical control, no longer gated).
+_rep = json.loads(fingerprint("replicate_variance_20261104/_progress.json").read_text(encoding="utf-8"))["completed"]
+_rep_cells = {}
+for _k, _v in _rep.items():
+    _p = _k.split("/")
+    _rep_cells.setdefault((_p[0], _p[1], _p[2]), []).append(_v)
 def _rep_sd(cls, solver, key):
-    vals = [v[key] for k, v in _rep.items() if k.startswith(f"{cls}/{solver}/rep")]
-    return float(np.std(vals))
+    return max(float(np.std([v[key] for v in vals]))
+               for (c, p, s), vals in _rep_cells.items() if c == cls and s == solver)
 _rep_sds = {f"{c}/{s}/{k}": _rep_sd(c, s, k) for c in ("S1", "S2", "S3", "S4")
             for s in ("MOEA-2", "MOEA-3") for k in ("f1", "f2", "f3")}
-check("rep-s1s4-zero", "§5.4 replicate SD bit-identical at S1/S4", 0.0,
-      max(_rep_sds[f"{c}/{s}/{k}"] for c in ("S1", "S4") for s in ("MOEA-2", "MOEA-3")
-          for k in ("f1", "f2", "f3")), 1e-12)
-check("rep-max-f3-sd", "§5.4 max within-instance f3 SD", 0.00288, max(v for k, v in _rep_sds.items() if k.endswith("/f3")), 0.0002)
-check("rep-max-f2-sd", "§5.4 max within-instance f2 SD", 0.00094, max(v for k, v in _rep_sds.items() if k.endswith("/f2")), 0.0002)
-check("rep-max-f1-sd", "§5.4 max within-instance f1 SD", 0.00394, max(v for k, v in _rep_sds.items() if k.endswith("/f1")), 0.0005)
+check("rep2-max-f3-sd", "§5.4 max within-instance f3 SD (400-solve batch; data-face guard, not printed)", 0.0122,
+      max(v for k, v in _rep_sds.items() if k.endswith("/f3")), 0.001)
+check("rep2-max-f2-sd", "§5.4 max within-instance f2 SD (400-solve batch)", 0.0272,
+      max(v for k, v in _rep_sds.items() if k.endswith("/f2")), 0.002)
+check("rep2-max-f1-sd", "§5.4 max within-instance f1 SD (400-solve batch)", 0.0634,
+      max(v for k, v in _rep_sds.items() if k.endswith("/f1")), 0.006)
+# class-mean layer: max |repeat-mean - main-run class-mean| per class/solver/metric
+def _cls_dev(cls, solver, key):
+    src = m3 if solver == "MOEA-3" else m2
+    keys10 = [k for k in src if k.startswith(cls + "/") and "-A_" in k]
+    mm = float(np.mean([src[k][key] for k in keys10]))
+    rms = [float(np.mean([v[key] for k, v in _rep.items()
+                          if k.startswith(f"{cls}/") and f"/{solver}/" in k and k.endswith(f"rep{r:02d}")]))
+           for r in range(5)]
+    return max(abs(x - mm) for x in rms)
+for _c in ("S1", "S2", "S3", "S4"):
+    for _s in ("MOEA-2", "MOEA-3"):
+        for _k in ("f1", "f2", "f3"):
+            _d = _cls_dev(_c, _s, _k)
+            if _k == "f1":
+                bound = 0.034 if _c == "S1" else 0.0045
+            else:
+                bound = 0.009 if _c == "S1" else 0.0034
+            check(f"rep2-cm-{_c.lower()}-{_s.lower()}-{_k}",
+                  f"§5.4 class-mean shift <= bound {_c}/{_s}/{_k}", 0, 0 if _d <= bound else 1, 0,
+                  note=f"data dev={_d:.4f} bound={bound}")
+# printed aggregate bounds (§5.4): 0.0041 f1 / 0.0032 f2f3 (S2-S4), 0.0082 f2f3 (S1), 0.033 f1 (S1 worst)
+_p1 = max(_cls_dev(c, s, "f1") for c in ("S2", "S3", "S4") for s in ("MOEA-2", "MOEA-3"))
+_p2 = max(_cls_dev(c, s, k) for c in ("S2", "S3", "S4") for s in ("MOEA-2", "MOEA-3") for k in ("f2", "f3"))
+_p3 = max(_cls_dev("S1", s, k) for s in ("MOEA-2", "MOEA-3") for k in ("f2", "f3"))
+_p4 = max(_cls_dev("S1", s, "f1") for s in ("MOEA-2", "MOEA-3"))
+check("rep2-printed-f1-s234", "§5.4 printed aggregate f1* shift bound (S2-S4)", 0.0041, _p1, 0.0002)
+check("rep2-printed-f23-s234", "§5.4 printed aggregate f2/f3 shift bound (S2-S4)", 0.0032, _p2, 0.0002)
+check("rep2-printed-f23-s1", "§5.4 printed aggregate f2/f3 shift bound (S1)", 0.0082, _p3, 0.0002)
+check("rep2-printed-f1-s1", "§5.4 printed worst-pair f1* shift (S1)", 0.033, _p4, 0.001)
+# envelope coverage: 91% of main-run knee values inside 5-repeat envelope
+_in = _tot = 0
+for (_g, _p, _s), _vals in _rep_cells.items():
+    _src = m3 if _s == "MOEA-3" else m2
+    _main = _src.get(f"{_g}/{_p}")
+    if not _main:
+        continue
+    for _k in ("f1", "f2", "f3"):
+        _x = np.array([v[_k] for v in _vals])
+        _tot += 1
+        _in += int(_x.min() - 1e-12 <= _main[_k] <= _x.max() + 1e-12)
+check("rep2-envelope", "§5.4 main-run knee values inside 5-repeat envelope", 218, _in, 1,
+      note=f"coverage {_in}/{_tot} (printed 91%)")
+check("rep2-total", "§5.4 replicate batch size 400", 400, len(_rep), 0)
 
 # ── ticket 04: f3 proxy conservatism validation (§3.2) ───────────────────────
 _tnf = json.loads(fingerprint("true_nesz_factor_gain.json").read_text(encoding="utf-8"))
