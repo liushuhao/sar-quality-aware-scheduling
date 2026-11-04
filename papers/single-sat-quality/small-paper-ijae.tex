@@ -1137,7 +1137,11 @@ $\theta_{\text{elev}}$ conflict.
 
 \textbf{Correlation inside schedules.}
 Fig.~\ref{fig:fig7} reports the pooled per-task correlation within
-solver-selected schedules for the four objective variants. For the full-physics
+solver-selected schedules for the four objective variants. For every
+variant the correlated pair is the same fixed full-physics $(f_2, f_3)$
+(Eqs.~\ref{eq:f2} and~\ref{eq:f3}), evaluated on that variant's own
+schedules; the variant-specific objectives steer task selection but are
+never themselves the correlated quantities. For the full-physics
 variant A it is $-0.62$ at S1 and $-0.15$, $-0.13$, $-0.23$ at S2--S4, with
 per-schedule means of $-0.72$ and $-0.15$/$-0.16$/$-0.18$ (Fisher-z means
 $-1.09$/$-0.16$/$-0.16$/$-0.19$ over the 50 schedules per class), and
@@ -1160,7 +1164,10 @@ density.
     \caption{Correlation between the geometric ($f_2$) and radiometric
     ($f_3$) objectives inside solver-selected schedules, as a function of
     target density, for the four objective variants of
-    \S\ref{sec:ablation}. Markers give the pooled Pearson correlation over all
+    \S\ref{sec:ablation}. For every variant the correlated pair is the fixed
+    full-physics $f_2$/$f_3$ (Eqs.~\ref{eq:f2} and~\ref{eq:f3}), evaluated on
+    that variant's schedules; the variant-specific objectives steer selection
+    only. Markers give the pooled Pearson correlation over all
     scheduled tasks in the 50 scenarios per class; the dashed black line is
     the same correlation evaluated over all visibility-window time steps
     (envelope), and the shaded band is the 95\% interval of the
