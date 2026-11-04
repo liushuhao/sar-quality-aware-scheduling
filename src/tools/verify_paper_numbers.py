@@ -789,6 +789,16 @@ check("g2-gsm-f3delta", "§6.2 G-SM f3 δ", 0.99, cd_f3, 0.011,
       note=f"data: g={g3} l={l3} (per-scenario paired, 199/200)")
 checkp("g2-gsm-f3p", "§6.2 G-SM f3 p", 1e-34, p_f3, 1.0)
 
+# ── R5 2026-11-04: G-SM exchange-rate percentages (§7.2) ────────────────────
+# paper: "f3 higher by +3.4%, +23.1%, +21.3%, +15.6% at S1--S4, from the class
+# means of Table 1" — G-SM class mean f3 over MOEA-3 class mean f3, in %.
+for cls, exp in (("S1", 3.4), ("S2", 23.1), ("S3", 21.3), ("S4", 15.6)):
+    gsm_m = gsm(cls, "f3")[0]
+    m3_m = float(np.mean([m3[k]["f3"] for k in m3
+                          if k.startswith(cls + "/") and isinstance(m3[k], dict)]))
+    check(f"r5-exch-{cls.lower()}", f"§7.2 G-SM f3 over MOEA-3 ({cls})",
+          exp, pct(gsm_m, m3_m), 0.31)
+
 # phenomenon2 cliff (MOEA-3 vs MOEA-2 f3 per group) + paired Wilcoxon p (§6.4, R11)
 for cls, pv in (("S1", 0.88), ("S4", 0.32)):
     dv = p2_cliff["per_group"][cls]["f3"]

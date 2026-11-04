@@ -40,7 +40,8 @@ three-objective problem that optimises coverage profit, geometric resolution,
 and noise-equivalent sigma-zero (NESZ) radiometric quality jointly with a
 non-dominated sorting genetic algorithm III (NSGA-III), and we measure where
 the formulation pays off. Across 200 simulated scenarios spanning 20 to 500
-targets in a two-orbit horizon, sparse request sets reward re-optimisation:
+targets in a two-orbit horizon, sparse request sets reward re-optimisation
+over the greedy coverage baseline:
 $+34\%$
 geometric-index quality at a $14\%$ coverage cost and $+40\%$ radiometric-index
 quality at a $15\%$ cost, with a controlled $+4.9\%$ third-objective margin
@@ -858,7 +859,8 @@ processed results pin the exact front realizations analyzed.
 A replicated-run check quantifies the cost of this design: five repeats of
 each NSGA-III solver on one variant-A scenario per class reproduce
 bit-identically at S1 and S4, and where variation appears (S2, S3) the
-within-instance standard deviation (SD) of the knee values stays at or below $0.004$ in absolute
+within-instance standard deviation (SD) of the knee values (population
+estimator; worst solver--class pair) stays at or below $0.004$ in absolute
 terms, at most $7\%$ of the corresponding between-scenario SD for $f_3$ and
 $3\%$ for $f_2$ ($f_1^*$ varies by at most $0.004$ against class means of
 $0.98$--$1.00$).
@@ -1406,6 +1408,16 @@ the highest radiometric quality ($+16\%$ $f_3$ at S4) at a $63\%$
 coverage cost; this gain comes from the one-line squint-minimization
 heuristic rather than from multi-objective search.
 
+Read as an exchange rate, this favors the quality-first heuristic when
+coverage can be spent: G-SM matches or exceeds MOEA-3's radiometric quality
+at every density ($f_3$ higher by $+3.4\%$, $+23.1\%$, $+21.3\%$, $+15.6\%$
+at S1--S4, from the class means of Table~\ref{tab:solver-profiles}) while
+spending $49$--$71\%$ of the achievable coverage ($f_1^* = 0.51$, $0.35$,
+$0.29$, $0.37$ against the G-BL anchor of $1.00$). The operational choice is
+therefore application-side---coverage budget versus achievable quality---rather
+than solver-side: MOEA-3's remaining value is the coverage-stratified frontier
+itself, which the one-line heuristic cannot enumerate.
+
 The agility-envelope sensitivity, previously an open qualification, is
 tested directly: repeating the sparse $N=20$ configurations with the
 window-generation squint cap reduced from $45^\circ$ to $25^\circ$ and
@@ -1531,7 +1543,7 @@ quality are optimised together with NSGA-III, and we measured where the
 formulation pays for itself. Five configurations were compared on 200
 scenarios across four density classes.
 In sparse request sets, re-optimising observation times buys large quality
-gains at a stated coverage price: $+40\%$ in radiometric quality at a $15\%$
+gains over the greedy coverage baseline at a stated coverage price: $+40\%$ in radiometric quality at a $15\%$
 coverage cost, $+33.7\%$ in geometric quality at $14\%$, and a controlled
 $+4.9\%$ third-objective margin under a matched radiometric-aware rule.
 Two measured boundaries delimit the gain. It contracts monotonically as the
