@@ -541,24 +541,30 @@ Both are observation-geometry limits applied before scheduling.
 The quality objectives capture first-order geometric and radiometric
 effects (ground-range resolution, azimuth broadening, $R^3$ NESZ scaling).
 Throughout, $\psi_{\text{sq}}$ is the geometric line-of-sight squint, the
-angle between the antenna boresight and the zero-Doppler plane; this is the
-quantity that enters $f_2$, $f_3$, and the C1 squint bound. Second-order
+angle between the target line of sight and the zero-Doppler plane; this is
+the quantity that enters $f_2$, $f_3$, and the C1 squint bound. Second-order
 radar effects are treated as platform-level constants and are not modeled:
 the geometric Doppler centroid $f_{\text{dc}} \approx (2v/\lambda)\sin\psi_{\text{sq}}$
-reaches $10^2$\,kHz at the scheduled $16$--$24^\circ$ squints, an order of
-magnitude above typical Stripmap PRFs ($10^0$--$10^1$\,kHz), so unmanaged
-echoes would shift out of the processing window; operational Stripmap
-systems therefore steer the antenna toward zero Doppler (yaw steering) and
-absorb the geometry there, leaving Doppler-centroid tracking to handle the
-small residual. The echo-processing chain itself (receive window, duty
+reaches $10^2$\,kHz at the scheduled $16$--$24^\circ$ squints, one to two
+orders of magnitude above typical Stripmap PRFs ($10^0$--$10^1$\,kHz), so
+unmanaged echoes would alias outside the processing band and leave the
+Doppler centroid ambiguous. Yaw steering cannot remove this offset: it
+compensates only the small Earth-rotation component, whereas the geometric
+squint is fixed by the target's direction relative to the velocity vector at
+the scheduled $16$--$24^\circ$. A squinted acquisition therefore requires a
+dedicated receive-window and PRF timing design, which is outside the model;
+the projection loss itself is not absorbed by Doppler processing --- keeping
+the beam on the target fixes $\psi_{\text{sq}}$, and the
+$1/\cos\psi_{\text{sq}}$ broadening in the azimuth resolution is what $f_2$
+charges for. The echo-processing chain itself (receive window, duty
 cycle, ambiguity control, PRF selection), the azimuth antenna gain roll-off
 with squint, and squint-dependent azimuth processing are all outside the
 model; the Doppler magnitude is used only as a scale, whose sign follows the
 look direction and is out of scope. This idealization preserves the
 relative ordering of acquisition geometries \emph{within} the simulated
 platform family, which is what the solver comparisons act on; absolute
-performance claims for platforms without Doppler compensation at large
-squint are out of scope. The sensitivity of the recommendations to the
+performance claims for platforms without a dedicated large-squint
+timing/processing chain are out of scope. The sensitivity of the recommendations to the
 agility envelope itself is tested directly in \S\ref{sec:operational-implications}.
 
 \paragraph{C2: Attitude Maneuver and Non-Overlap.}
@@ -1232,7 +1238,7 @@ the within-schedule geometry at envelope statistics. The mechanical
 alternative, that dense correlations weaken because the realized $f_2$ range
 contracts, does not hold: the pooled within-schedule standard deviation of
 the \emph{per-task} $f_2$ component is $0.16$--$0.17$ at S1--S3 and $0.14$ at
-S4 for variant A, with a pooled per-task range of $0.65$ in every class ---
+S4 for variant A, with a pooled per-task range of $0.64$--$0.65$ across classes ---
 a different object from the schedule-level $f_2$ objective whose pooled
 bounds ($0.11$--$0.56$) enter the HV normalization of
 \S~\ref{sec:evaluation-metrics}. Consistent with this saturation, the per-density hypervolume
@@ -1485,9 +1491,8 @@ absolute geometry improves for every solver under the tighter cap
 filtering removes the low-quality high-squint options. The quality
 advantage of physics-aware multi-objective scheduling is therefore
 specific to wide-envelope platforms; on platforms with
-$|\psi_{\text{sq}}| \lesssim 25^\circ$ agility, or without
-Doppler-centroid compensation for large squints
-(\S~\ref{sec:system-model}), the greedy baseline attains comparable
+$|\psi_{\text{sq}}| \lesssim 25^\circ$ agility, or without a dedicated
+large-squint timing/processing chain (\S~\ref{sec:system-model}), the greedy baseline attains comparable
 quality at full coverage even in sparse regimes. The logistic midpoint
 $N_{50} \approx 51$ (\S~\ref{sec:scale-sensitivity}) provides a coarse
 indicator between the density regimes. Our results suggest a conditional
