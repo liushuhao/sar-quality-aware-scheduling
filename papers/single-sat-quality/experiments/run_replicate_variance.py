@@ -11,7 +11,10 @@ the quantity being measured is exactly the unpinned draw-to-draw variability.
 Instance build mirrors experiments/run_moea_3obj.py::run_one (scenario ->
 build_agile_instance_from_scenario -> precompute_geometry -> G-BL hot-start).
 
-Output: experiments/results/replicate_variance_20261031/_progress.json
+Output: experiments/results/replicate_variance_20261104/_progress.json
+
+2026-11-04 scale-up (R7 / roadmap batch 2): 10 variant-A scenarios per density
+class (seed00-09, distinct instances) x 5 repeats x 2 solvers = 400 solves.
 """
 import json, os, pickle, sys, time
 from collections import OrderedDict
@@ -27,12 +30,14 @@ from sar_sim.solver.types import build_agile_instance_from_scenario, precompute_
 
 PROJECT = _PROJ / "papers" / "single-sat-quality"
 SCENARIOS_DIR = PROJECT / "experiments" / "scenarios"
-RESULTS_DIR = PROJECT / "experiments" / "results" / "replicate_variance_20261031"
+RESULTS_DIR = PROJECT / "experiments" / "results" / "replicate_variance_20261104"
 RESULTS_DIR.mkdir(parents=True, exist_ok=True)
 
 SLEW_RATE, SETTLE_TIME = 0.0524, 5.0
 POP, GEN, N_REF_DIRS = 100, 200, 12
-SCENARIOS = ["S1-A_seed00.pkl", "S2-A_seed00.pkl", "S3-A_seed00.pkl", "S4-A_seed00.pkl"]
+SCENARIOS = [f"{group}-A_seed{s:02d}.pkl"
+             for group in ("S1", "S2", "S3", "S4")
+             for s in range(10)]
 SOLVERS = [("MOEA-2", 2), ("MOEA-3", 3)]
 REPEATS = 5
 
