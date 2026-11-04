@@ -648,6 +648,10 @@ check("tnf-proxy-gain", "§3.2 f3 proxy gain MOEA-3 vs G-BL S1 (rom)", 0.404,
       _tnf["proxy_gain_rom"], 0.003)
 check("tnf-true-gain", "§3.2 true-factor gain cos3xi/sintheta (rom)", 0.943,
       _tnf["true_gain_rom"], 0.003)
+check("tnf-proxy-ratio", "§3.2 printed class-mean ratio 1.40 (rom)", 1.40,
+      1.0 + _tnf["proxy_gain_rom"], 0.005)
+check("tnf-true-ratio", "§3.2 printed class-mean ratio 1.94 (rom)", 1.94,
+      1.0 + _tnf["true_gain_rom"], 0.005)
 
 # envelope correlation (C7-feasible, |psi|<=45deg, pooled across S1-S4)
 from scipy.integrate import quad  # noqa: E402
@@ -825,6 +829,18 @@ for tag6, (e2, e3) in R6.items():
         f3v = float(np.mean([m3[k]["f3"] for k in grp_keys if k in m3 and isinstance(m3[k], dict)]))
     check(f"r6-{tag6}-f2", f"§3.3 {cls} {src} {grp} f2", e2, f2v, 0.0005)
     check(f"r6-{tag6}-f3", f"§3.3 {cls} {src} {grp} f3", e3, f3v, 0.0005)
+
+# ── R8 2026-11-04: dropped-vs-retained achievable quality (§3.2) ────────────
+_dq = json.loads(fingerprint("dropped_target_quality.json").read_text(encoding="utf-8"))
+for _sv, (_ed, _er) in (("MOEA-3", (0.92, 0.80)), ("MOEA-2", (0.95, 0.79))):
+    check(f"r8-{_sv.lower()}-s1-drop", f"§3.2 dropped f3max mean ({_sv} S1)",
+          _ed, _dq["solvers"][_sv]["S1"]["f3max_dropped_mean"], 0.005)
+    check(f"r8-{_sv.lower()}-s1-ret", f"§3.2 retained f3max mean ({_sv} S1)",
+          _er, _dq["solvers"][_sv]["S1"]["f3max_retained_mean"], 0.005)
+check("r8-m3-s4-drop", "§3.2 dropped f3max mean (MOEA-3 S4)",
+      0.86, _dq["solvers"]["MOEA-3"]["S4"]["f3max_dropped_mean"], 0.005)
+check("r8-m3-s4-ret", "§3.2 retained f3max mean (MOEA-3 S4)",
+      0.82, _dq["solvers"]["MOEA-3"]["S4"]["f3max_retained_mean"], 0.005)
 
 # phenomenon2 cliff (MOEA-3 vs MOEA-2 f3 per group) + paired Wilcoxon p (§6.4, R11)
 for cls, pv in (("S1", 0.88), ("S4", 0.32)):

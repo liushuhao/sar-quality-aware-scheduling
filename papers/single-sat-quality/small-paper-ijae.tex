@@ -45,18 +45,21 @@ over the greedy coverage baseline:
 $+34\%$
 geometric-index quality at a $14\%$ coverage cost and $+40\%$ radiometric-index
 quality at a $15\%$ cost, with a controlled $+4.9\%$ third-objective margin
-under a matched radiometric-aware knee rule. Two measured boundaries delimit
+under a matched selection rule that does not use radiometric quality. Two measured boundaries delimit
 that gain. The advantage contracts as the squint envelope narrows, from $+28\%$
 to $+2.3\%$ in geometric quality when the cap tightens from $45^\circ$ to
 $15^\circ$, and it vanishes beyond $N \approx 150$, where the
 multi-objective fronts converge to the greedy coverage anchor with quality
 margins below $2\%$ under greedy hot-start initialization. The geometric and
 radiometric objectives conflict most inside sparse schedules
-($r \approx -0.62$, close to the independent-angle null of $-0.60$), and
-coverage pressure dilutes that conflict to between $-0.13$ and $-0.23$ at
+($r \approx -0.62$, close to the $-0.60$ correlation two independent angles
+would produce), and
+coverage pressure weakens that conflict to between $-0.13$ and $-0.23$ at
 high density,
 which locates the loss of value in the schedule geometry and not in a
-redundancy between objectives. Mission planners can read the two boundaries as
+redundancy between objectives. A four-variant objective ablation over
+$1{,}200$ further runs traces these gains to the squint channel rather than
+to objective redundancy. Mission planners can read the two boundaries as
 a quantitative rule for when quality-aware SAR scheduling justifies its
 coverage cost.
 \end{abstract}
@@ -80,8 +83,9 @@ into a combinatorial optimization problem: for $N$ targets each with a finite
 visibility window, the scheduler must select a subset and assign observation times
 that satisfy attitude transition constraints while maximizing some measure of
 mission value.
-Throughout this paper, ``single-pass'' denotes a single satellite operating over a two-orbit scheduling
-horizon ($\sim 200$ min, at most one observation per target), not a single overflight.
+Throughout this paper, the setting is a \emph{single-satellite, two-orbit-horizon} problem: one
+satellite plans observations over a two-orbit scheduling horizon ($\sim 200$ min), with at most
+one observation per target.
 In conventional satellite scheduling, observation quality is commonly
 treated as a fixed attribute of each pre-computed opportunity. Under that
 treatment the scheduling problem reduces to maximizing the number or
@@ -125,11 +129,11 @@ scheduler optimizes (1) total coverage profit, (2) mean geometric image quality
 simultaneously (denoted $f_1^*$, $f_2$, and $f_3$ below,
 \S~\ref{sec:objective-functions}).
 We compare five solver configurations spanning the methodological spectrum: two greedy
-heuristics (one profit-only baseline and one squint-minimized variant), a
+heuristics (the profit-only greedy baseline G-BL and one squint-minimized variant G-SM), a
 single-objective genetic algorithm with greedy hot-start (GA-P-BL, a control
 that returns the greedy schedule whenever it fails to improve profit, so it
 is never worse than G-BL), and two NSGA-III
-variants with two and three objectives.
+variants (MOEA-2 and MOEA-3) with two and three objectives.
 The solvers are evaluated on 200 systematically varied scenarios across four
 density classes ($N = 20$ to $N = 500$). In sparse request sets the quality
 gain is large and priced in coverage: MOEA-3 raises $f_3$ by $+40\%$ relative
@@ -295,7 +299,7 @@ for problems with competing objectives. The NSGA-III algorithm
 \citep{Deb2014} extends the NSGA-II framework \citep{Deb2002NSGA2} to many-objective problems
 through reference-point-based diversity preservation.
 The hypervolume (HV) indicator is widely used for comparing Pareto fronts
-\citep{Zitzler1999HV}, but its sensitivity to frontier cardinality creates
+\citep{Zitzler1999HV}, but its blindness to decision-space diversity creates
 interpretational challenges when mixing single-objective and multi-objective
 solvers, a methodological issue we address in \S~\ref{sec:pareto-coupling}.
 These trade-offs have not been made explicit in prior SAR scheduling:
@@ -370,6 +374,15 @@ tension between scheduling throughput and SAR-specific imaging quality.
 All quality objectives use the \emph{mean} over scheduled tasks, making
 them independent of the number of scheduled tasks $m = |\mathcal{S}|$
 and thereby producing a genuine ``quantity versus quality'' Pareto trade-off.
+Because the mean is selection-invariant, one must ask whether solvers raise it
+by discarding poorly-geometried targets. They do not: the targets the solvers
+drop have, if anything, \emph{higher} best-achievable radiometric quality than
+the retained set (mean window-best $\cos^3\xi$: $0.92$ dropped vs.\ $0.80$
+retained for MOEA-3 at S1, $0.95$ vs.\ $0.79$ for MOEA-2; gap $0.86$ vs.\
+$0.82$ at S4). Dropping is not quality-ranked --- it prices coverage profit
+and scheduling feasibility, not per-task quality --- so the quality gains
+reported below come from timing selection within windows, not from cherry-
+picking the target set.
 \paragraph{Objective 1: Coverage Profit.}
 The normalized coverage profit (Eq.~\ref{eq:f1}) is defined relative to the greedy baseline
 \begin{equation}
@@ -437,9 +450,14 @@ incidence is a monotone function of the same off-nadir angle
 \S\ref{sec:system-model}), so dividing by $\sin\theta$ reweights but cannot
 reorder acquisition geometries. Recomputing the sparse-regime comparison of
 \S\ref{sec:overall-performance} with the retained factor enlarges the MOEA-3
-gain over G-BL from $+40\%$ to $+94\%$ (ratio of class means at S1): the
-proxy reading is conservative, and the ordering-based comparisons are
-unaffected.
+gain over G-BL from $+40\%$ to $+94\%$ (ratio of class means at S1; the
+class-mean ratio moves from $1.40$ to $1.94$ because the ground-reference
+factor penalizes the window-edge placement of G-BL more than the MOEA-3
+selections): the proxy reading is conservative, and the ordering-based
+comparisons are unaffected. The proxy also excludes ambiguity-limited NESZ
+regimes, where the noise floor is set by integrated ambiguity power rather
+than the direct $R^3$ scaling; the ordering argument covers the
+direct-scaling component only.
 In the schedules produced by the solvers below, the per-task squint angle is
 moderate rather than near-zero (the mean $|\psi_{\text{sq}}|$ across the four
 density classes is $16$--$24^\circ$, with a $90$th percentile of
@@ -522,14 +540,21 @@ Both are observation-geometry limits applied before scheduling.
 \paragraph{Physical modeling scope.}
 The quality objectives capture first-order geometric and radiometric
 effects (ground-range resolution, azimuth broadening, $R^3$ NESZ scaling).
-Second-order radar effects are treated as platform-level constants and are
-not modeled: the Doppler centroid $f_{\text{dc}} \approx (2v/\lambda)\sin\psi_{\text{sq}}$
-(of order $10^2$\,kHz at the scheduled $16$--$24^\circ$ squints, versus a
-PRF of order $10^0$--$10^1$\,kHz, large enough that operational Stripmap
-systems employ yaw steering, with Doppler-centroid tracking handling the
-residual; the model uses only its magnitude, whose sign follows the look
-direction and is out of scope), the azimuth antenna gain roll-off with squint, and
-squint-dependent azimuth processing. This idealization preserves the
+Throughout, $\psi_{\text{sq}}$ is the geometric line-of-sight squint, the
+angle between the antenna boresight and the zero-Doppler plane; this is the
+quantity that enters $f_2$, $f_3$, and the C1 squint bound. Second-order
+radar effects are treated as platform-level constants and are not modeled:
+the geometric Doppler centroid $f_{\text{dc}} \approx (2v/\lambda)\sin\psi_{\text{sq}}$
+reaches $10^2$\,kHz at the scheduled $16$--$24^\circ$ squints, an order of
+magnitude above typical Stripmap PRFs ($10^0$--$10^1$\,kHz), so unmanaged
+echoes would shift out of the processing window; operational Stripmap
+systems therefore steer the antenna toward zero Doppler (yaw steering) and
+absorb the geometry there, leaving Doppler-centroid tracking to handle the
+small residual. The echo-processing chain itself (receive window, duty
+cycle, ambiguity control, PRF selection), the azimuth antenna gain roll-off
+with squint, and squint-dependent azimuth processing are all outside the
+model; the Doppler magnitude is used only as a scale, whose sign follows the
+look direction and is out of scope. This idealization preserves the
 relative ordering of acquisition geometries \emph{within} the simulated
 platform family, which is what the solver comparisons act on; absolute
 performance claims for platforms without Doppler compensation at large
@@ -642,7 +667,7 @@ $\psi_{\text{sq}} = \arcsin(|l_x| / R)$.
 G-SM minimizes squint angle as a computationally cheap proxy for
 maximizing $f_3$ (NESZ radiometric quality); the correlation between
 squint minimization and $f_3$ improvement is confirmed by the large
-effect size (Cliff's $\delta = +0.99$, \S~\ref{sec:squint-special}).
+effect size (matched-pairs sign statistic $\delta_{\text{pairs}} = +0.99$, \S~\ref{sec:squint-special}).
 This strategy serves as a physics-aware greedy baseline: it answers the question
 ``what quality improvement can a simple squint-minimization heuristic
 achieve, without any multi-objective search?''
@@ -699,7 +724,7 @@ The comparison between MOEA-2 and MOEA-3 directly tests whether
 adding the NESZ objective ($f_3$) produces Pareto-front differentiation
 beyond what $f_2$ alone captures, or whether the $\theta$/$\psi_{\text{sq}}$
 geometric coupling renders the third objective redundant in the
-single-pass, single-satellite setting.
+two-orbit-horizon, single-satellite setting.
 % ============================================================
 %  5. EXPERIMENTAL SETUP (~600 words)
 % ============================================================
@@ -753,12 +778,13 @@ gain over G-BL is $+37.2\%$ (S1), $+3.5\%$ (S2), $+0.4\%$ (S3), and $+0.3\%$
 (S4), reproducing the saturation on the pure density axis; the within-schedule
 $f_2$--$f_3$ correlation follows the same trend on this axis (pooled per-task
 $r$ over the 10 variant-A schedules per class: $-0.80$, $-0.23$, $-0.15$,
-$-0.31$ from S1 to S4, the caliber of
-\S\ref{sec:pareto-coupling}). The four density
+$-0.31$ from S1 to S4, mirroring the dilution trend of
+\S\ref{sec:pareto-coupling} on this smaller variant-A-only subset). The four density
 classes (S1--S4) span sparse reconnaissance ($N=20$) to dense monitoring
-($N=500$). Other intermediate densities ($N=50, 400$) are omitted to limit
-computational cost. To directly constrain the transition midpoint, two
-additional intermediate classes (S7 at $N=150$ and S8 at $N=200$, 50 scenarios
+($N=500$). Other intermediate densities ($N=50, 400$; classes S5--S6 in the
+scenario library) are omitted to limit computational cost. To directly
+constrain the transition midpoint, two additional intermediate classes
+(S7 at $N=150$ and S8 at $N=200$, continuing the numbering, 50 scenarios
 each, generated under the same generic C-band bilateral configuration) were run for
 MOEA-2 and the two greedy baselines (G-BL, G-SM) and are used solely in the
 scale-sensitivity analysis in \S~\ref{sec:scale-sensitivity}; they do not enter
@@ -792,8 +818,10 @@ the reference-point-based selection of \citet{Deb2014}.
 We treat per-objective comparisons paired with Cliff's $\delta$ effect sizes
 as the primary quality indicator, because single-point greedy solvers and
 multi-point NSGA-III fronts contribute different numbers of points to the
-objective space. Hypervolume (HV) is reported as a secondary,
-cardinality-sensitive diagnostic: as shown in \S~\ref{sec:pareto-coupling},
+objective space. Hypervolume (HV) is reported as a secondary
+diagnostic only: with origin-anchored reference boxes it is insensitive to
+cardinality (dominated points add no volume), but it is also blind to
+decision-space diversity --- as shown in \S~\ref{sec:pareto-coupling},
 its ranking inverts if the single-point G-SM is included (its HV of $0.2341$
 exceeds MOEA-3's $0.0893$), so HV is not interpreted as a standalone quality
 judgment. Statistical significance is assessed via the Friedman test for
@@ -827,7 +855,7 @@ comparable as relative rankings: every solver's persisted frontier
 points, including the two-objective MOEA-2 fronts and the single-point
 greedy solutions, carry all three coordinates ($f_3$ is evaluated post hoc
 for solvers that do not optimize it), so each HV is computed in the same
-normalized three-objective space, subject to the cardinality caveat stated
+normalized three-objective space, subject to the HV caveat stated
 above and detailed in \S~\ref{sec:pareto-coupling}.
 
 For each MOEA scenario, a single representative solution is selected from the
@@ -965,7 +993,7 @@ G-BL    & 0.0234 & 0.0150 \\
 \begin{figure}[H]
     \centering
     \includegraphics[width=\textwidth]{fig1_hypervolume.pdf}
-    \caption{Statistical validation: (left) hypervolume distribution; (right) pairwise effect sizes as the matched-pairs sign statistic $\delta_{\text{pairs}} = (W-L)/n$, which equals Cliff's $\delta$ for the within-scenario pairing; the gray band marks the negligible-effect range ($|\delta|<0.147$ of \citet{Romano2006}; shown for reference, as the conventional unpaired $\delta$ is weaker for the within-pair comparisons, see \S\ref{sec:evaluation-metrics}); small grey dots are per-scenario outliers beyond $1.5\times$ the interquartile range (IQR), and the grey bar marks the MOEA-2 vs. MOEA-3 comparison ($\delta = -0.56$).}
+    \caption{Statistical validation: (left) hypervolume distribution; (right) pairwise effect sizes as the matched-pairs sign statistic $\delta_{\text{pairs}} = (W-L)/n$, the within-scenario analogue of Cliff's $\delta$; the gray band marks the negligible-effect range ($|\delta|<0.147$ of \citet{Romano2006}; shown for reference, as the conventional unpaired $\delta$ is weaker for the within-pair comparisons, see \S\ref{sec:evaluation-metrics}); small grey dots are per-scenario outliers beyond $1.5\times$ the interquartile range (IQR), and the grey bar marks the MOEA-2 vs. MOEA-3 comparison ($\delta = -0.56$).}
     \label{fig:fig1}
 \end{figure}
 
@@ -977,8 +1005,9 @@ extreme operating point of G-SM in fact yields the highest HV of any solver
 (\S~\ref{sec:pareto-coupling}). The right panel reports pairwise effect sizes on
 HV as the matched-pairs sign statistic; bars outside the gray band ($|\delta|<0.147$) exceed the negligible-effect
 threshold, and the direction convention is that positive $\delta$ favors the
-row solver. Because HV rewards front cardinality as well as front quality,
-these rankings are interpreted only as secondary diagnostics, and the
+row solver. Because HV is insensitive to cardinality yet blind to
+decision-space diversity (a single extreme point can out-volume an entire
+front), these rankings are interpreted only as secondary diagnostics, and the
 point-count confound is analyzed in \S~\ref{sec:pareto-coupling}.
 
 The following sections deepen this overall analysis from five perspectives:
@@ -995,9 +1024,9 @@ The squint-minimized greedy solver (G-SM) improves NESZ radiometric quality ($f_
 relative to the profit-only baseline (G-BL) by selecting observation times that
 minimize squint angle within each visibility window.
 Across all 200 scenarios, this produces a large positive effect on $f_3$
-(Cliff's $\delta = +0.99$, $p \approx 1.5\times10^{-34}$, on a per-scenario
+(matched-pairs sign statistic $\delta_{\text{pairs}} = +0.99$, $p \approx 1.5\times10^{-34}$, on a per-scenario
 paired basis: 199 of 200 scenarios improve) at an aggregate cost
-in coverage (Cliff's $\delta = -1.0$, $p < 10^{-34}$, on raw $f_1$; $f_1^*$ is not used here because G-BL yields constant $f_1^* = 1.0$ by definition, for which the normalized-profit comparison degenerates to a one-sample test against a fixed value).
+in coverage ($\delta_{\text{pairs}} = -1.0$, $p < 10^{-34}$, on raw $f_1$; $f_1^*$ is not used here because G-BL yields constant $f_1^* = 1.0$ by definition, for which the normalized-profit comparison degenerates to a one-sample test against a fixed value).
 The trade-off, however, is strongly density-dependent.
 In sparse scenarios (S1, $N = 20$), G-SM drops to $f_1^* = 0.51 \pm 0.16$
 ($-49\%$ vs.\ G-BL at $1.00$) while improving $f_3$ from $0.497 \pm 0.044$ to
@@ -1125,10 +1154,14 @@ $|\psi_{\text{sq}}| \leq 45^\circ$, the experimental squint envelope of
 range $[18^\circ, 47^\circ]$). A permutation null that shuffles the
 visibility-window-grid $\theta_{\text{elev}}$ and $\psi_{\text{sq}}$ marginals
 within each density class gives $r_{\text{null}} = -0.60$ to $-0.62$ across
-classes (95\% shuffle interval within $\pm 0.02$, 20 shuffles per class), and
+classes (observed shuffle range within $\pm 0.02$ over 20 shuffles per class;
+a nominal 95\% interval would require an order of magnitude more draws), and
 Monte Carlo sampling over the
 uniform box gives $r_{\text{MC}} = -0.28$ ($N_{\text{MC}} = 2\times 10^6$). We
-adopt the empirical-marginal permutation value as the factorized null:
+adopt the empirical-marginal permutation value as the factorized null,
+because the permutation preserves the empirical marginals and is therefore
+the correct null for ``same marginals, no LOS coupling'', whereas the
+uniform-box Monte Carlo assumes an idealized geometry:
 \begin{equation}
 r_{\text{null}} = \frac{\mathrm{Cov}(f_2, f_3)}{\sqrt{\mathrm{Var}(f_2)\,\mathrm{Var}(f_3)}} \;\approx\; -0.60,
 \label{eq:rnull}
@@ -1180,7 +1213,7 @@ density.
     only. Markers give the pooled Pearson correlation over all
     scheduled tasks in the 50 scenarios per class; the dashed black line is
     the same correlation evaluated over all visibility-window time steps
-    (envelope), and the shaded band is the 95\% interval of the
+    (envelope), and the shaded band is the observed shuffle range of the
     independent-angle shuffle null (20 shuffles per class). Values are
     computed from the same result sets as Table~\ref{tab:solver-profiles}.}
     \label{fig:fig7}
@@ -1197,9 +1230,12 @@ Configurations that see $\psi_{\text{sq}}$ select schedules spanning the
 $\theta_{\text{elev}}$ trade-off, whereas configurations blind to squint leave
 the within-schedule geometry at envelope statistics. The mechanical
 alternative, that dense correlations weaken because the realized $f_2$ range
-contracts, does not hold: the pooled within-schedule $f_2$ standard deviation
-is $0.16$--$0.17$ at S1--S3 and $0.14$ at S4 for variant A, with pooled range $0.65$ in
-every class. Consistent with this saturation, the per-density hypervolume
+contracts, does not hold: the pooled within-schedule standard deviation of
+the \emph{per-task} $f_2$ component is $0.16$--$0.17$ at S1--S3 and $0.14$ at
+S4 for variant A, with a pooled per-task range of $0.65$ in every class ---
+a different object from the schedule-level $f_2$ objective whose pooled
+bounds ($0.11$--$0.56$) enter the HV normalization of
+\S~\ref{sec:evaluation-metrics}. Consistent with this saturation, the per-density hypervolume
 contracts at higher density: at S4 the pooled HV is $0.25$ (MOEA-2) and $0.17$
 (MOEA-3) of its S1 value, reflecting the near-point front compression
 documented above and not a degradation of solution quality. All fronts
@@ -1359,7 +1395,7 @@ MOEA-3 separates from MOEA-2 in $f_3$ at sparse
 density ($+6.2\%$ at $N=20$) with the advantage shrinking to $\lesssim 0.2\%$
 at $N \geq 300$, confirming the coverage-pressure mechanism detailed in
 \S~\ref{sec:pareto-coupling}. Taken together, these results establish that
-the found G-BL-seeded front near the full-coverage working point, while
+the G-BL-seeded front we obtain near the full-coverage working point, while
 offering multiple quality-coverage configurations,
 is compressed by the geometric coupling above: the narrow $f_2$ range limits
 practical differentiation between solutions.
@@ -1369,22 +1405,26 @@ density-dependent coverage cost;
 objectives at $N \geq 300$ (ablation study); and
 \textbf{(5)}~coverage convergence toward the G-BL anchor is conditional
 on the hot start, not a structural property. The first four reflect
-geometric properties of the single-pass observation geometry
+geometric properties of the two-orbit-horizon observation geometry
 (finding (2) being an empirical convergence effect under those
 properties, \S~\ref{sec:pareto-coupling}); the fifth reflects solver
 initialization.
 
-The Friedman test on pooled HV confirms overall differences among the five
+The Friedman test on pooled HV is reported as a descriptive omnibus only:
+it confirms overall differences among the five
 solvers across all 200 scenarios ($\chi^2=669.02$, $p<10^{-140}$; conservative toward fewer
-distinct rankings, \S~\ref{sec:evaluation-metrics}). G-BL, GA-P-BL, and G-SM each contribute a single point
+distinct rankings, \S~\ref{sec:evaluation-metrics}), and the inferential
+weight rests on the per-objective pairwise analyses of
+Table~\ref{tab:solver-profiles}. G-BL, GA-P-BL, and G-SM each contribute a single point
 per scenario, so the pooled statistic is driven largely by the within-scenario
 HV dispersion of the two multi-point NSGA-III solvers rather than by
 baseline-vs-baseline differences. Pairwise Wilcoxon
 signed-rank tests use the Bonferroni threshold $\alpha=0.005$
-($\alpha=0.05/10$; the four-variant ablation of
-\S~\ref{sec:ablation} applies $\alpha=0.05/12$, the 12 being the three
-non-physics variants by four density classes against A within each reported
-metric); pairs
+($\alpha=0.05/10$, the family of ten pairwise solver comparisons; the
+four-variant ablation of \S~\ref{sec:ablation} applies $\alpha=0.05/12$
+within each reported metric, each family of 12 being the three non-physics
+variants by four density classes against A; the S7--S8 ablation comparisons
+are reported as exploratory and lie outside these families); pairs
 with zero within-pair difference are dropped from the Wilcoxon signed-rank
 statistic and reported separately; interpretation
 relies on Cliff's $\delta$ given the large sample size.
@@ -1492,8 +1532,8 @@ single solver ranking, is the transferable contribution.
 % ── 7.4 Limitations ──
 \subsection{Limitations}\label{sec:limitations}
 Our study is bounded by scope decisions that define directions for future work.
-The density-dependent third-objective indistinguishability reported above is specific to the single-pass,
-single-satellite Stripmap setting: it reflects solver convergence to lower-squint
+The density-dependent third-objective indistinguishability reported above is specific to the
+single-satellite, two-orbit-horizon Stripmap setting: it reflects solver convergence to lower-squint
 geometries that attenuate the envelope-level $f_2$--$f_3$ correlation while
 the residual within-schedule $\theta$-conflict persists (negative at all
 densities, strongest at sparse density; \S\ref{sec:pareto-coupling},
@@ -1560,7 +1600,7 @@ $+4.9\%$ third-objective margin under a matched radiometric-aware rule.
 Two measured boundaries delimit the gain. It contracts monotonically as the
 platform's squint envelope narrows, from $+28\%$ to $+2.3\%$ in geometric
 quality as the cap tightens from $45^\circ$ to $15^\circ$. It vanishes at
-operational densities: beyond $N \approx 150$ the found fronts converge to the
+operational densities: beyond $N \approx 150$ the fronts we find converge to the
 greedy coverage anchor with quality margins below $2\%$. The vanished quality
 margins themselves are an effect of coverage pressure, which removes the
 freedom to move acquisitions, while solver convergence to lower-squint
