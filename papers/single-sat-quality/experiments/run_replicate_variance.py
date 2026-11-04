@@ -118,7 +118,7 @@ def main():
         pkl_path = SCENARIOS_DIR / group / pkl_name
         for solver_name, n_obj in SOLVERS:
             for rep in range(REPEATS):
-                key = f"{group}/{solver_name}/rep{rep:02d}"
+                key = f"{group}/{pkl_name}/{solver_name}/rep{rep:02d}"
                 if key in completed:
                     done += 1
                     continue
