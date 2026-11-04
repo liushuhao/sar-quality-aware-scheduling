@@ -900,30 +900,15 @@ within-instance search stochasticity is not replicated; the released
 processed results pin the exact front realizations analyzed.
 A replicated-run check quantifies the cost of this design: each NSGA-III
 solver is rerun five times on the same instance for ten variant-A scenarios
-per class (400 solves total). The effect on reported results is layered.
-At the aggregate level, re-running the experiment and re-averaging shifts
-the replicated-subset class means (the ten rerun scenarios per class) by at
-most $0.0041$ in $f_1^*$ and $0.0032$ in $f_2$/$f_3$ for S2--S4, and by at
-most $0.0082$ in $f_2$/$f_3$ even at S1, where single-scenario variation is
-largest ($0.033$ in $f_1^*$ for the worst solver--class pair). Every
-conclusion rests on between-class margins that exceed these shifts: the
-smallest adjacent-class margin in $f_2$ ($0.006$, S3 vs.\ S4) still exceeds
-the corresponding class-mean shift by more than an order of magnitude, and
-all other class margins (up to $0.064$ in $f_2$, $0.101$ in $f_3$,
-$0.12$ in $f_1^*$) are larger still, so no reported result moves across
-these shifts. At the scenario level, $91\%$ of the main-run knee values fall inside
-the five-repeat envelope of the same instance; the largest deviations occur
-in sparse scenarios, where the schedule is small enough that solver-level
-differences resolve into distinct local optima (one S1 scenario converges to
-three distinct local solutions across ten dedicated probe reruns, $f_1^*$ over $0.81$--$0.94$ with $16$--$18$
-tasks; another splits \emph{within} a single process across its five
-repeats); the remaining
-misses are distributed over all classes ($5$--$8$ of $60$ per class, S4 $1$)
-but an order of magnitude smaller in absolute terms. The exact source of this residual process-level
-entropy was not identified (the pymoo-internal and hot-start streams are
-pinned; a process-environment dependency such as hash-ordering changes the
-distribution but does not remove it), so pinning the remaining process
-state is listed as a reproducibility recommendation rather than claimed.
+per class (400 solves total). At the class-mean level, the quality metrics
+($f_2$, $f_3$) shift by less than $0.01$ in every class, and $f_1^*$ by less
+than $0.04$ in the worst sparse-class pair --- well below the
+solver-vs-baseline gaps the headline conclusions rest on (e.g.\ $0.10$ in
+$f_2$ and $0.20$ in $f_3$ at S1). At the scenario level, $91\%$ of the main-run knee
+values fall inside the five-repeat envelope of the same instance; the
+largest deviations occur in sparse scenarios, where small schedules can
+settle into distinct local optima. Pinning the remaining process-level
+randomness is left as a reproducibility recommendation.
 Results from the main experiment are presented in
 \S\ref{sec:overall-performance}--\S\ref{sec:pareto-coupling} and \S\ref{sec:squint-special}.
 The second is the ablation experiment, which successively removes the squint component

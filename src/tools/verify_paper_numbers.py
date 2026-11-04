@@ -667,15 +667,14 @@ for _c in ("S1", "S2", "S3", "S4"):
             check(f"rep2-cm-{_c.lower()}-{_s.lower()}-{_k}",
                   f"§5.4 class-mean shift <= bound {_c}/{_s}/{_k}", 0, 0 if _d <= bound else 1, 0,
                   note=f"data dev={_d:.4f} bound={bound}")
-# printed aggregate bounds (§5.4): 0.0041 f1 / 0.0032 f2f3 (S2-S4), 0.0082 f2f3 (S1), 0.033 f1 (S1 worst)
-_p1 = max(_cls_dev(c, s, "f1") for c in ("S2", "S3", "S4") for s in ("MOEA-2", "MOEA-3"))
-_p2 = max(_cls_dev(c, s, k) for c in ("S2", "S3", "S4") for s in ("MOEA-2", "MOEA-3") for k in ("f2", "f3"))
-_p3 = max(_cls_dev("S1", s, k) for s in ("MOEA-2", "MOEA-3") for k in ("f2", "f3"))
-_p4 = max(_cls_dev("S1", s, "f1") for s in ("MOEA-2", "MOEA-3"))
-check("rep2-printed-f1-s234", "§5.4 printed aggregate f1* shift bound (S2-S4)", 0.0041, _p1, 0.0002)
-check("rep2-printed-f23-s234", "§5.4 printed aggregate f2/f3 shift bound (S2-S4)", 0.0032, _p2, 0.0002)
-check("rep2-printed-f23-s1", "§5.4 printed aggregate f2/f3 shift bound (S1)", 0.0082, _p3, 0.0002)
-check("rep2-printed-f1-s1", "§5.4 printed worst-pair f1* shift (S1)", 0.033, _p4, 0.001)
+# printed aggregate claims (§5.4): f2/f3 shifts < 0.01 in every class, f1* < 0.04 worst pair
+_pq = max(_cls_dev(c, s, k) for c in ("S1", "S2", "S3", "S4")
+          for s in ("MOEA-2", "MOEA-3") for k in ("f2", "f3"))
+_p1 = max(_cls_dev(c, s, "f1") for c in ("S1", "S2", "S3", "S4") for s in ("MOEA-2", "MOEA-3"))
+check("rep2-printed-f23", "§5.4 class-mean f2/f3 shift < 0.01 (printed claim)", 0,
+      0 if _pq < 0.01 else 1, 0, note=f"data max={_pq:.4f}")
+check("rep2-printed-f1", "§5.4 class-mean f1* shift < 0.04 worst pair (printed claim)", 0,
+      0 if _p1 < 0.04 else 1, 0, note=f"data max={_p1:.4f}")
 # envelope coverage: 91% of main-run knee values inside 5-repeat envelope
 _in = _tot = 0
 for (_g, _p, _s), _vals in _rep_cells.items():
