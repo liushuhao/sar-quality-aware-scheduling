@@ -106,7 +106,8 @@ _CHECKS = [
 ]
 
 
-def check_t55(text: str, label: str, t55: dict) -> "tuple[list, list, int]":
+def check_t55(text: str, label: str, t55: dict,
+              collector: "list | None" = None) -> "tuple[list, list, int]":
     fails: list = []
     passes: list = []
     seen = 0
@@ -116,6 +117,10 @@ def check_t55(text: str, label: str, t55: dict) -> "tuple[list, list, int]":
             if not m:
                 continue
             seen += 1
+            # R110: feed the printed decimal tokens into the L8 census funnel
+            if collector is not None:
+                collector.extend(grp for grp in m.groups()
+                                 if grp and "." in grp)
             g = m.group(1)
             if branch == "rep_range":
                 want_lo, _ = t55[("rep_range", "R3H")]

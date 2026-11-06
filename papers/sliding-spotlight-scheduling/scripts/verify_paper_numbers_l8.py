@@ -1211,6 +1211,27 @@ def census_counts(text: str, literals: "list[str]",
     return out
 
 
+def census_sequence(text: str, literals: "list[str]",
+                    strip_comments: bool = True) -> list:
+    """Reading literals in document order -- the swap-sensitive fingerprint.
+
+    The counts map cannot see a one-for-one exchange of two registered
+    literals (R110 boundary 2): 4.15 and 2.36 trade places and every count
+    stays the same.  The ordered sequence changes at the first exchanged
+    position, so it is frozen next to the counts.  Longest first in the
+    alternation so a short literal cannot shadow a longer one.
+    """
+    body = strip_tex_comments(text) if strip_comments else text
+    if not literals:
+        return []
+    pattern = re.compile(
+        r"(?<![\d.])(?:"
+        + "|".join(sorted({re.escape(x) for x in literals},
+                          key=len, reverse=True))
+        + r")(?![\d])")
+    return pattern.findall(body)
+
+
 def check_census(text: str, label: str, scored: "list[str]",
                  registry: dict, strip_comments: bool = True,
                  registered: "list[float] | None" = None) -> list:
@@ -1231,9 +1252,8 @@ def check_census(text: str, label: str, scored: "list[str]",
     fails: list = []
     name = Path(label).name
     known = registry.get("files", {}).get(name)
-    cur = census_counts(text, census_literals(text, scored, registered or [],
-                                               strip_comments),
-                        strip_comments)
+    literals = census_literals(text, scored, registered or [], strip_comments)
+    cur = census_counts(text, literals, strip_comments)
     if known is None:
         fails.append(f"{label}: no reading census registered for {name} -- the "
                      f"gate cannot tell whether a reading printed once is "
@@ -1253,7 +1273,39 @@ def check_census(text: str, label: str, scored: "list[str]",
     for lit in sorted(set(known) - set(cur)):
         fails.append(f"{label}: the census registers {lit} ({known[lit]} "
                      f"occurrence(s)) but nothing prints it any more")
+    seq_reg = registry.get("sequences", {}).get(name)
+    if seq_reg is not None:
+        seq_now = census_sequence(text, literals, strip_comments)
+        if seq_now != seq_reg:
+            at = next((i for i, (a, b) in enumerate(zip(seq_now, seq_reg))
+                       if a != b), min(len(seq_now), len(seq_reg)))
+            fails.append(
+                f"{label}: reading sequence fingerprint differs at position "
+                f"{at} (now {seq_now[at:at + 3]!r} vs registered "
+                f"{seq_reg[at:at + 3]!r}) -- two registered readings may "
+                "have been exchanged; counts alone cannot see this "
+                "(--update-census only after reviewing the text)")
     return fails
+
+
+def census_path_guard(name: str, source: Path, registry: dict) -> list:
+    """A same-named copy elsewhere must not borrow the real manuscript's census.
+
+    The census is keyed by basename (R110 boundary 3): a review/ copy of
+    main.tex otherwise inherits the registered counts of the delivered file.
+    The write side already records each registered path; the read side here
+    checks the candidate against it.  Synthetic fixtures bypass via
+    L8_CENSUS_ANY_PATH=1, the same opt-out shape as L8_CENSUS_OPTIONAL.
+    """
+    if os.environ.get("L8_CENSUS_ANY_PATH") == "1":
+        return []
+    want = registry.get("paths", {}).get(name)
+    if want and Path(want).resolve() != source.resolve():
+        return [f"{name}: census path guard -- this file resolves to "
+                f"{source.resolve()} but the census registers {want}; a "
+                "same-named copy cannot borrow the real manuscript's census "
+                "(set L8_CENSUS_ANY_PATH=1 only for synthetic fixtures)"]
+    return []
 
 
 def main(argv=None) -> int:
@@ -1334,15 +1386,16 @@ def main(argv=None) -> int:
     census_reg = _load(CENSUS) if CENSUS.is_file() else {"files": {}}
     census_skipped: list = []
     registered_vals = registered_values(exp)
-    census_new: dict = {"note": "Every literal the L8 core classes and T54 "
-                                "score, and how many times the COMPILED "
-                                "manuscript prints it (R106). An occurrence "
-                                "that drifts, disappears or is duplicated "
-                                "changes the count; regenerate with "
-                                "--update-census after reviewing the text. "
-                                "T55 / R56 / 16x / ignition readings are "
-                                "outside this census (residual R110).",
-                        "files": {}, "paths": {}}
+    census_new: dict = {"note": "Every literal the L8 core classes, T54/T55, "
+                                "R56, B16X and ignition arms score, and how "
+                                "many times the COMPILED manuscript prints it "
+                                "(R106). An occurrence that drifts, disappears "
+                                "or is duplicated changes the count; the "
+                                "ordered sequences expose a one-for-one "
+                                "exchange of two registered readings (R110). "
+                                "Regenerate with --update-census after "
+                                "reviewing the text.",
+                        "files": {}, "paths": {}, "sequences": {}}
     print("\n=== manuscript L8 numbers vs artifacts ===")
     from verify_r56_group import (R56_MIN_CHECKS, check_r56,
                                   r5_invariants, r56_expectations as _r56_exp)
@@ -1361,20 +1414,17 @@ def main(argv=None) -> int:
             cost_r3h=abs(exp["coverage_cost_pp"]["R3H"][0]),
             cost_r2f=abs(exp["coverage_cost_pp"]["R2F"][0]))
         f54, p54, seen54 = check_t54(text, p.name, t54)
-        # the census covers the core classes AND T54 (both score through this
-        # module's funnels); T55 / R56 / 16x / ignition live in other modules
-        # and are outside it -- stated in the census note, tracked as R110
-        scored = list(_CENSUS_COLLECT)
-        _CENSUS_COLLECT = None
-        # T54 readings come from a separate expectation dict, so they must be
-        # folded in here or their reprints stay outside the census
-        reg_vals = registered_vals + registered_values(t54)
+        # T54/T55/R56 readings come from separate expectation dicts, so their
+        # numeric values are folded into the registered-value scan below or
+        # their reprints stay outside the census.  R110 closed the remaining
+        # gap: T55 also feeds the collector directly, and the B16X/ignition
+        # arms in this module append their printed tokens before the snapshot.
         fails += f54
         passes += p54
         seen += seen54
         from verify_t55_group import check_t55, t55_expectations as _t55_exp
         t55 = _t55_exp()
-        f55, p55, seen55 = check_t55(text, p.name, t55)
+        f55, p55, seen55 = check_t55(text, p.name, t55, _CENSUS_COLLECT)
         fails += f55
         passes += p55
         seen += seen55
@@ -1398,21 +1448,30 @@ def main(argv=None) -> int:
         passes += p56
         seen += seen56
         seen56_total += seen56
+        # all arms have run: snapshot the collector and fold every external
+        # arm's expectation values into the registered-value reprint scan
+        scored = list(_CENSUS_COLLECT)
+        _CENSUS_COLLECT = None
+        reg_vals = (registered_vals + registered_values(t54)
+                    + registered_values(t55) + registered_values(r56))
         rev, _ = reverse_check(text, p.name)
         # --update-census wins over the fixture opt-out: an update run must
         # never be downgraded into a silent no-op that then wipes the file.
         if args.update_census:
+            _lits = census_literals(text, scored, reg_vals,
+                                    p.suffix.lower() == ".tex")
             census_new["files"][p.name] = census_counts(
-                text, census_literals(text, scored, reg_vals,
-                                      p.suffix.lower() == ".tex"),
-                p.suffix.lower() == ".tex")
+                text, _lits, p.suffix.lower() == ".tex")
             census_new.setdefault("paths", {})[p.name] = str(p.resolve())
+            census_new.setdefault("sequences", {})[p.name] = census_sequence(
+                text, _lits, p.suffix.lower() == ".tex")
             census_note = (f"census rewritten "
                            f"({len(census_new['files'][p.name])} literal(s))")
         elif os.environ.get("L8_CENSUS_OPTIONAL") == "1":
             census_note = "CENSUS SKIPPED (L8_CENSUS_OPTIONAL=1)"
             census_skipped.append(p.name)
         else:
+            fails += census_path_guard(p.name, p, census_reg)
             fc = check_census(text, p.name, scored, census_reg,
                                p.suffix.lower() == ".tex", reg_vals)
             fails += fc
@@ -1486,6 +1545,7 @@ def main(argv=None) -> int:
             return 1
         merged = dict(census_reg.get("files", {}))
         merged_paths = dict(census_reg.get("paths", {}))
+        merged_seqs = dict(census_reg.get("sequences", {}))
         blocked = [(name, merged_paths[name], path)
                    for name, path in census_new.get("paths", {}).items()
                    if merged_paths.get(name) and merged_paths[name] != path
@@ -1503,8 +1563,9 @@ def main(argv=None) -> int:
             return 1
         merged.update(census_new["files"])
         merged_paths.update(census_new.get("paths", {}))
+        merged_seqs.update(census_new.get("sequences", {}))
         out = {"note": census_new["note"], "files": merged,
-               "paths": merged_paths}
+               "paths": merged_paths, "sequences": merged_seqs}
         CENSUS.write_text(json.dumps(out, ensure_ascii=False, indent=1,
                                      sort_keys=True) + "\n", encoding="utf-8")
         print(f"census rewritten -> {CENSUS} "
@@ -1861,6 +1922,8 @@ def check_budget16x(text: str, label: str, budget_path: Path):
         if not m and os.environ.get("L8_B16X_OPTIONAL") == "1":
             continue
         seen += 1
+        if m and _CENSUS_COLLECT is not None:
+            _CENSUS_COLLECT.append(m.group(1))
         if not m:
             fails.append(f"{label}: B16X {desc} -- sentence MISSING from "
                          "manuscript (registered reading, silent drop)")
@@ -1894,6 +1957,10 @@ def check_ignition_sentences(text: str, label: str, cons_summary: dict,
         if not m and os.environ.get("L8_B16X_OPTIONAL") == "1":
             return
         seen += 1
+        if _CENSUS_COLLECT is not None and printed:
+            tokens = printed if isinstance(printed, (list, tuple)) else (printed,)
+            _CENSUS_COLLECT.extend(tok for tok in tokens
+                                   if isinstance(tok, str) and "." in tok)
         if not m:
             fails.append(f"{label}: IGN {desc} -- sentence fragment MISSING")
         elif not ok:

@@ -273,19 +273,55 @@ CENSUS = FORK / "scripts" / "readings_census.json"
 
 
 def _registered():
-    """The registered value set the CLI folds into the census (exp + T54)."""
+    """The registered value set the CLI folds into the census.
+
+    R110 widened this from exp + T54 to the full arm set: T55 and R56
+    expectation dicts feed the same reprint scan (B16X/ignition feed the
+    collector directly in the CLI loop).
+    """
+    from verify_r56_group import r56_expectations
     exp = exp_fixture()
     t54 = v8.t54_expectations(
         served_instances=exp["served_task_instances"][0],
         cost_r3h=abs(exp["coverage_cost_pp"]["R3H"][0]),
         cost_r2f=abs(exp["coverage_cost_pp"]["R2F"][0]))
-    return v8.registered_values(exp) + v8.registered_values(t54)
+    return (v8.registered_values(exp) + v8.registered_values(t54)
+            + v8.registered_values(t55())
+            + v8.registered_values(r56_expectations()))
+
+
+_R56_CACHE = None
+
+
+def _r56():
+    global _R56_CACHE
+    if _R56_CACHE is None:
+        from verify_r56_group import r56_expectations
+        _R56_CACHE = r56_expectations()
+    return _R56_CACHE
 
 
 def _scored_literals(text):
+    # Mirror the CLI's full arm sequence (R110): core + T54 + T55 + B16X +
+    # ignition + R56 all feed one collector, or collector-only arm tokens
+    # such as the T55 s-grid prints have no source in a core-only harness.
     v8._CENSUS_COLLECT = []
     try:
         v8.check_paper(text, MAIN.name, exp_fixture())
+        v8.check_t54(text, MAIN.name, t54())
+        _check_t55(text, MAIN.name, t55(), v8._CENSUS_COLLECT)
+        v8.check_budget16x(text, MAIN.name,
+                           v8.V5 / "budget_check" / "budget_check.json")
+        v8.check_ignition_sentences(
+            text, MAIN.name,
+            v8._load(v8.V5 / "counterfactual_fd" /
+                     "counterfactual_summary.json")["conservative"],
+            v8.V5 / "anchor_free" / "anchor_free.json",
+            v8._load(v8.V5 / "anchor_free" / "probe16x" /
+                     "pilot_R3H_seed302.json"),
+            v8._load(v8.V5 / "budget_check" / "budget_check.json"))
+        from verify_r56_group import check_r56
+        check_r56(text, MAIN.name, _r56())
         return list(v8._CENSUS_COLLECT)
     finally:
         v8._CENSUS_COLLECT = None
@@ -347,7 +383,9 @@ def test_r106_cli_rc_flips_on_a_reprint_drift(tmp_path):
     (bad_dir / "main.tex").write_text(
         MAIN_TEXT.replace("$2.4669$~m (Section", "$2.4667$~m (Section", 1),
         encoding="utf-8", newline="")
-    env = dict(os.environ, PYTHONHASHSEED="0")
+    # L8_CENSUS_ANY_PATH: these tmp copies are synthetic fixtures, so they opt
+    # out of the R110 path guard that rejects same-named copies elsewhere
+    env = dict(os.environ, PYTHONHASHSEED="0", L8_CENSUS_ANY_PATH="1")
     for path, want in ((bad_dir / "main.tex", 1), (good_dir / "main.tex", 0)):
         r = subprocess.run([sys.executable, "-B", str(SCRIPT), "--paper",
                             str(path)], capture_output=True, text=True,
@@ -433,6 +471,94 @@ def test_update_census_refuses_a_same_named_copy(tmp_path):
     assert r.returncode == 1, r.stdout[-1500:]
     assert "REFUSED" in r.stdout, r.stdout[-1500:]
     assert CENSUS.read_bytes() == before, "the census was overwritten by a copy"
+
+
+# ── R110 boundary 3: read-side path guard (write side already REFUSES) ────
+def test_r110_path_guard_rejects_same_named_copy(tmp_path, monkeypatch):
+    """A review/ copy named main.tex must not borrow the real census."""
+    reg = json.loads(CENSUS.read_text(encoding="utf-8"))
+    monkeypatch.delenv("L8_CENSUS_ANY_PATH", raising=False)
+    copy = tmp_path / "main.tex"
+    copy.write_text(MAIN_TEXT, encoding="utf-8")
+    fails = v8.census_path_guard("main.tex", copy, reg)
+    assert len(fails) == 1 and "census path guard" in fails[0]
+    # the registered real manuscript resolves to the registered path
+    assert v8.census_path_guard("main.tex", MAIN, reg) == []
+    # synthetic fixtures opt out explicitly
+    monkeypatch.setenv("L8_CENSUS_ANY_PATH", "1")
+    assert v8.census_path_guard("main.tex", copy, reg) == []
+
+
+def test_r110_path_guard_blocks_a_copy_via_cli(tmp_path):
+    """The guard is wired into the exit code, not just available."""
+    good = tmp_path / "main.tex"
+    good.write_text(MAIN_TEXT, encoding="utf-8", newline="")
+    env = dict(os.environ, PYTHONHASHSEED="0")  # deliberately no ANY_PATH bypass
+    r = subprocess.run([sys.executable, "-B", str(SCRIPT), "--paper",
+                        str(good)], capture_output=True, text=True,
+                       encoding="utf-8", errors="replace", env=env,
+                       cwd=str(FORK.parent.parent))
+    assert r.returncode == 1, r.stdout[-2000:]
+    assert "census path guard" in r.stdout
+
+
+# ── R110 boundary 2: sequence fingerprint sees a count-invisible swap ────
+def test_r110_sequence_fingerprint_catches_a_one_for_one_swap():
+    """Exchanging two registered readings keeps every count but reorders."""
+    text = "alpha 4.15 beta 2.36 gamma 0.50 delta"
+    lits = ["0.50", "2.36", "4.15"]
+    seq = v8.census_sequence(text, lits, False)
+    assert seq == ["4.15", "2.36", "0.50"]
+    counts = v8.census_counts(text, lits, False)
+    swapped = (text.replace("4.15", "9.99", 1)
+                   .replace("2.36", "4.15", 1)
+                   .replace("9.99", "2.36", 1))
+    # the precondition: the counts map alone cannot see the exchange
+    assert v8.census_counts(swapped, lits, False) == counts
+    reg = {"files": {"x.tex": counts},
+           "paths": {},
+           "sequences": {"x.tex": seq}}
+    fails = v8.check_census(swapped, "x.tex", lits, reg, False, [])
+    assert any("sequence fingerprint" in f for f in fails), fails
+    # the untouched text stays clean
+    assert v8.check_census(text, "x.tex", lits, reg, False, []) == []
+
+
+# ── R110 boundary 1: the four external arms now feed the census funnel ───
+def test_r110_t55_unanchored_reprint_drift_is_caught_by_census_alone():
+    """17.06 prints twice; only the body sentence is T55-anchored, so the
+    caption reprint was invisible until the arm fed the census (R110)."""
+    reg = json.loads(CENSUS.read_text(encoding="utf-8"))
+    assert reg["files"]["main.tex"]["17.06"] == 2
+    anchor = "priority-aware 17.06/30.11~pp"
+    assert anchor in MAIN_TEXT
+    drifted = MAIN_TEXT.replace(anchor, "priority-aware 17.99/30.11~pp", 1)
+    # the anchored T55 class still passes: its own sentence is untouched
+    f55, _p55, _s55 = _check_t55(drifted, MAIN.name, t55())
+    assert not f55, f55
+    # the census alone must catch the reprint drift
+    scored = _scored_literals(MAIN_TEXT)
+    fails = v8.check_census(drifted, MAIN.name, scored, reg, True,
+                            _registered())
+    assert any("17.06" in f for f in fails), fails
+
+
+def test_r110_collector_only_arm_tokens_are_registered():
+    """28.3/55.5/11.99 enter via the arm collector -- no expectation dict
+    carries them, so a registry entry proves the B16X/ignition/T55 funnel."""
+    reg = json.loads(CENSUS.read_text(encoding="utf-8"))
+    for name in ("main.tex", "full.md"):
+        for lit in ("28.3", "55.5", "11.99"):
+            assert lit in reg["files"][name], (name, lit)
+        assert reg["sequences"][name], f"{name}: empty sequence fingerprint"
+
+
+def test_r110_registry_without_sequences_keeps_counts_only_behavior():
+    """A pre-fingerprint registry must not break on the missing key."""
+    text = "alpha 4.15 beta 2.36"
+    lits = ["2.36", "4.15"]
+    reg = {"files": {"x.tex": v8.census_counts(text, lits, False)}, "paths": {}}
+    assert v8.check_census(text, "x.tex", lits, reg, False, []) == []
 
 
 if __name__ == "__main__":
