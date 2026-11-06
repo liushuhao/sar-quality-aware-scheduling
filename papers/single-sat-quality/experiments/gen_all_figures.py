@@ -246,6 +246,10 @@ ax_b.legend(fontsize=6.5)
 ax_c = fig.add_subplot(gs[2])
 all_deltas = []
 all_ns = []
+# R116: a fixed-seed generator replaces the global np.random so the fig2
+# jitter is byte-reproducible across reruns (the old uniform() advanced
+# global state; the logistic panel keeps its own default_rng(42) below).
+rng_fig1_jitter = np.random.default_rng(20261106)
 for group in SCENARIO_GROUPS:
     gk = [k for k in keys_bl_sq if results[k]["group"] == group]
     if gk:
@@ -254,7 +258,7 @@ for group in SCENARIO_GROUPS:
         n_vals = [results[k].get("G-BL", {}).get("n_targets", 20) for k in gk]
         # Jitter x positions around discrete group centers to reduce overplotting
         group_x = {"S1": 20, "S2": 100, "S3": 300, "S4": 500}
-        jittered = [group_x.get(group, 0) * (1 + np.random.uniform(-0.08, 0.08)) for _ in gk]
+        jittered = [group_x.get(group, 0) * (1 + rng_fig1_jitter.uniform(-0.08, 0.08)) for _ in gk]
         ax_c.scatter(jittered, g_delta, c=GROUP_COLORS.get(group, '#999'), s=25, alpha=0.6,
                     edgecolors='none', label=group)
         all_deltas.extend(g_delta)
@@ -615,11 +619,29 @@ for oi, obj in enumerate(objectives):
 # ── Bottom panel: Logistic regression for f1* deficit ──
 ax_log = fig.add_subplot(gs[3, :])
 
+# Single source for both the fit statistics (alpha/beta/N50/CI) and the
+# density-class mapping: the JSON written by scripts/n50_logistic.py, whose
+# output the manuscript quotes (§6.3). R112 removed the second hardcoded
+# GROUP_N copy so a class rename/N change cannot drift figure against text.
+N50_JSON = os.path.join(RESULTS, "n50_logistic.json")
+if not os.path.exists(N50_JSON):
+    raise SystemExit(
+        f"missing {N50_JSON}: run scripts/n50_logistic.py first. "
+        "Refusing to refit locally - the figure must plot the same fit the "
+        "manuscript quotes in section 6.3.")
+with open(N50_JSON, encoding="utf-8") as f:
+    n50_meta = json.load(f)
+if "group_N" not in n50_meta:
+    raise SystemExit(
+        f"{N50_JSON} has no 'group_N' field: rerun scripts/n50_logistic.py "
+        "(the figure's density classes must come from the same JSON the "
+        "manuscript fit quotes, R112 single-source).")
+GROUP_N = n50_meta["group_N"]
+
 # Deficit over the SAME six density classes and scenario set as
-# scripts/n50_logistic.py, whose output the manuscript quotes (§6.3).
-# common_keys cannot be used here: it requires all five solvers, which
-# excludes S7/S8 and would silently fit a different (four-class) subset.
-GROUP_N = {"S1": 20, "S2": 100, "S7": 150, "S8": 200, "S3": 300, "S4": 500}
+# scripts/n50_logistic.py. common_keys cannot be used here: it requires all
+# five solvers, which excludes S7/S8 and would silently fit a different
+# (four-class) subset.
 deficit_data = []
 for k, v in m2_data.items():
     if not isinstance(v, dict) or "f1" not in v:
@@ -631,17 +653,6 @@ for k, v in m2_data.items():
 
 n_vals = np.asarray([d[0] for d in deficit_data])
 deficit_vals = np.asarray([d[1] for d in deficit_data])
-
-# Single source for the fit statistics: the JSON written by
-# scripts/n50_logistic.py (alpha/beta/N50/CI), so figure and text cannot diverge.
-N50_JSON = os.path.join(RESULTS, "n50_logistic.json")
-if not os.path.exists(N50_JSON):
-    raise SystemExit(
-        f"missing {N50_JSON}: run scripts/n50_logistic.py first. "
-        "Refusing to refit locally - the figure must plot the same fit the "
-        "manuscript quotes in section 6.3.")
-with open(N50_JSON, encoding="utf-8") as f:
-    n50_meta = json.load(f)
 
 alpha_fit = n50_meta["alpha"]
 beta_fit = n50_meta["beta"]
