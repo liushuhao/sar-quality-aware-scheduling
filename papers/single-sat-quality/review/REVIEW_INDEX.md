@@ -14,6 +14,8 @@
 
 **收尾（2026-11-05，R7 落地 → R1-R14 全闭）**：扩容跑批 400/400 完整后重写 §5.4（EN/ZH，4e11ee0）——分层事实：聚合层复制子集类均值移动 ≤0.0041/0.0032（S2-S4）/0.0082（S1 f2/f3）、f1 最差对 0.033，最小相邻类差 0.006 仍超移动一个量级 → 结论不动摇；场景层 91% 包络覆盖、最大偏差集中稀疏类；seed07 跨进程 3 局部解（探针 10 次，`experiments/probe_process_entropy_seed07.py`）+seed08 连内分裂如实披露；进程熵来源诚实声明 not identified。数字闸 rep-* 4 条（小样本期望）替换 rep2-* 34 条（274/0）+fingerprint 改指 20261104 批。异源环两轮核查（deepseek 12 项+mimo 2 项+2 微瑕）全处置（`.scratch/ring-20261104-review/aggregate-r7check.md`）。EN 49/ZH 40 页 0 错 0 悬空。R116（fig2 钉种子）按裁决维持挂账（未触图件脚本）。
 
+**R116 已兑现（2026-11-06，f40ce1f）**：R112 批触 `experiments/gen_all_figures.py`，按移交义务一并 钉种——`:257` 全局 `np.random` 换 `default_rng(20261106)`；同批 R112 删硬编码 GROUP_N 改读 `experiments/results/n50_logistic.json` 的 `group_N` 单源（缺文件/缺键双 SystemExit）。证据：改前连跑 fig2 PNG 哈希漂移、改后三连跑 7/7 PNG 全等、6 个非目标图与改前像素逐字节一致（仅 fig2 按裁决变化）；EN 49/ZH 40 页重编 0 错（ZH 须 xelatex）。
+
 
 
 ## 2026-10-31 批次：ARS 五席异源面板（claude -p × 5：EIC/R1/R2/R3/DA）+ 修复 + 确认轮
