@@ -1,7 +1,8 @@
 CRediT authorship contribution statement
 ========================================
 Paper: Physics-Aware Multi-Objective Scheduling for an Agile SAR Satellite:
-       Balancing Profit, NESZ, and Geometric Resolution
+       Balancing Profit, NESZ-Based Radiometric Ordering, and Geometric
+       Resolution
 Journal: Advances in Space Research
 Author: LIU Shuhao
 
