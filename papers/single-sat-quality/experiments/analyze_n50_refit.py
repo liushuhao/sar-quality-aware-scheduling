@@ -63,12 +63,31 @@ def main():
     baselines = json.load(open(RES / "baselines_200.json", encoding="utf-8"))
     prog = json.load(open(RES / "moea_2obj" / "_progress.json", encoding="utf-8"))["completed"]
 
+    # S7/S8 baselines are not archived in baselines_200.json — recompute the
+    # G-BL anchor on the fly (runner-identical constants; baseline_b1 is
+    # near-instant) so the refit covers the same 6 classes as §6.3's fit.
+    import pickle, sys
+    sys.path.insert(0, str(PROJ.parents[1] / "src"))
+    from sar_sim.solver.baselines import baseline_b1
+    from sar_sim.solver.types import build_agile_instance_from_scenario, precompute_geometry
+    SLEW_RATE, SETTLE_TIME = 0.0524, 5.0
+
     rows = []
-    for key, b in baselines.items():
+    for key in sorted(prog.keys()):
         grp = key.split("/")[0]
-        if grp not in GROUP_N or key not in prog:
+        if grp not in GROUP_N:
             continue
-        bound = int(b["b1"]["n_selected"]) == 200
+        if key in baselines:
+            bound = int(baselines[key]["b1"]["n_selected"]) == 200
+        else:
+            with open(PROJ / "experiments" / "scenarios" / key, "rb") as fh:
+                data = pickle.load(fh)
+            instance = build_agile_instance_from_scenario(data, max_slew_rate=SLEW_RATE, settle_time=SETTLE_TIME)
+            precompute_geometry(instance, step_s=10.0)
+            gbl = baseline_b1(data.get("windows", []), data.get("targets", []),
+                              max_slew_rate=SLEW_RATE, settle_time=SETTLE_TIME,
+                              geom_cache=instance.geom_cache, instance=instance)
+            bound = len(gbl.schedule) == 200
         deficit = 1 if float(prog[key]["f1"]) < DEFICIT_THRESHOLD else 0
         rows.append((GROUP_N[grp], bound, deficit))
 
