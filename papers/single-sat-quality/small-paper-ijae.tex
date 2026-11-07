@@ -113,8 +113,6 @@ with few exceptions \citep{Kramer2025SARVis}, existing
 agile SAR scheduling methods either reduce SAR to a coverage-only objective
 or apply post hoc quality checks on schedules produced by
 coverage-maximizing solvers.
-Few approaches treat physical quality dimensions as primary optimization
-objectives in the SAR domain.
 
 The problem is NP-hard by reduction from the Orienteering Problem with
 Time-Dependent Profits \citep{Peng2019Orienteering}, precluding
@@ -309,11 +307,8 @@ through reference-point-based diversity preservation.
 The hypervolume (HV) indicator is widely used for comparing Pareto fronts
 \citep{Zitzler1999HV}, but its blindness to decision-space diversity creates
 interpretational challenges when mixing single-objective and multi-objective
-solvers, a methodological issue we address in \S~\ref{sec:pareto-coupling}.
-These trade-offs have not been made explicit in prior SAR scheduling:
-the closest approaches embed aggregated quality proxies or composite
-quality scores within the optimization loop, rather than separate,
-continuous, physics-derived geometric and radiometric objectives.
+solvers, a methodological issue we address in
+\S~\ref{sec:evaluation-metrics} and \S~\ref{sec:pareto-coupling}.
 Our NSGA-III formulation makes these trade-offs explicit by placing
 coverage profit, geometric quality, and radiometric quality in a unified
 multi-objective framework.
@@ -918,8 +913,6 @@ values fall inside the five-repeat envelope of the same instance; the
 largest deviations occur in sparse scenarios, where small schedules can
 settle into distinct local optima. Pinning the remaining process-level
 randomness is left as a reproducibility recommendation.
-Results from the main experiment are presented in
-\S\ref{sec:overall-performance}--\S\ref{sec:pareto-coupling} and \S\ref{sec:squint-special}.
 The second is the ablation experiment, which successively removes the squint component
 (variant B), the incidence-angle component (variant C), and all physical objectives
 (variant D) from the MOEA-3 framework, running each variant on the same
@@ -1028,12 +1021,11 @@ decision-space diversity (a single extreme point can out-volume an entire
 front), these rankings are interpreted only as secondary diagnostics, and the
 point-count confound is analyzed in \S~\ref{sec:pareto-coupling}.
 
-The following sections deepen this overall analysis from five perspectives:
-\S\ref{sec:squint-special} examines the special trade-off of squint-aware scheduling,
-\S\ref{sec:scale-sensitivity} investigates scale sensitivity (how multi-objective advantage varies with target density),
-\S\ref{sec:pareto-coupling} reveals the geometric mechanism of Pareto compression,
-\S\ref{sec:ablation} verifies the condition dependence of this mechanism through ablation,
-and \S\ref{sec:robustness-calibration} separates initialization and search-budget confounds through robustness controls.
+The next five subsections quantify the squint-aware special regime
+(\S\ref{sec:squint-special}), trace how its advantage contracts with target
+density (\S\ref{sec:scale-sensitivity}--\S\ref{sec:pareto-coupling}), and
+test whether it survives ablation and the initialization and budget
+controls (\S\ref{sec:ablation}--\S\ref{sec:robustness-calibration}).
 
 % ── 6.2 Squint-Aware Special Regime ──
 \subsection{Squint-Aware Special Regime}
@@ -1083,9 +1075,9 @@ $0.98 \pm 0.03$ at S2 ($N = 100$), and reaches $0.996$--$0.999$ at
 $N \geq 150$ (S7--S8, S3), remaining within $1\%$ of G-BL at S4 ($0.996$).
 The $f_2$ improvement over G-BL follows the same contraction, falling from $+33.7\%$ (S1)
 to $+3.6\%$ (S2) and to $+1.3\%$ or less at $N \geq 150$.
-The proportion of scenarios where MOEA-2's coverage falls measurably short of
-G-BL ($f_1^* < 0.95$, i.e., a coverage deficit exceeding 5\%)
-collapses from $80\%$ (S1) to $10\%$ (S2) and to $0\%$ at $N \geq 150$.
+Scenario-level frequency tells the same story: at S1, $80\%$ of scenarios
+show a measurable coverage deficit ($f_1^* < 0.95$, i.e., a deficit
+exceeding 5\%), at S2 $10\%$, and $0\%$ at $N \geq 150$.
 The coverage cost of multi-objective optimization is therefore a sparse-density phenomenon:
 between $N = 20$ and $N = 100$ the solver transitions from actively trading off
 coverage for quality to operating at the greedy baseline, and beyond
@@ -1580,20 +1572,17 @@ the residual within-schedule $\theta$-conflict persists (negative at all
 densities, strongest at sparse density; \S\ref{sec:pareto-coupling},
 Eq.~\ref{eq:rnull}), not a mathematical
 identity between $f_2$ and $f_3$. In multi-pass or multi-satellite
-settings with greater angular diversity, the $\theta$-conflict would
-re-emerge and the third objective may become discriminative; the static,
-advance-known target set likewise excludes dynamic arrivals and
-rolling-horizon re-optimization, where newly arriving tasks compete
-within the same windows and could shift the saturation threshold.
+settings with greater angular diversity, the $\theta$-conflict re-emerges
+and the third objective regains discriminating power; dynamic arrivals and
+rolling-horizon re-optimization are out of scope here, and their effect on
+the saturation threshold is untested.
 The saturation threshold itself ($N_{50} \approx 51$,
 \S~\ref{sec:scale-sensitivity}) is estimated within this synthetic, static
-scenario family; real mission request streams with heterogeneous priorities
-and arrival processes could shift it, so the threshold should be read as
-family-specific rather than platform-independent; the priority weights
-themselves are drawn uniformly on $\{1,\dots,10\}$
-(\S\ref{sec:experiment-design}), so the heavy-tailed streams typical of
-operational demand are untested, and the sparse-regime exchange rate could
-move materially under skew. The threshold is likewise unchanged under the
+scenario family and should be read as family-specific rather than
+platform-independent: real request streams are heavy-tailed and arrive
+over time, and their effect on the threshold is untested (the priority
+weights are drawn uniformly on $\{1,\dots,10\}$,
+\S\ref{sec:experiment-design}). The threshold is likewise unchanged under the
 bound/unbound split of \S~\ref{sec:constraints} (cap-free subset refit:
 midpoint identical, $n=253$; the 47 ceiling-bound scenarios show no
 deficit). At $N=20$ the greedy coverage anchor is the exact optimum in 37
@@ -1624,9 +1613,9 @@ with alternative crowding operators. Two further scope notes bound the operation
 caps equate to a 200-task ceiling (\S~\ref{sec:constraints}) and bind in
 roughly half of the dense S3--S4 scenarios, so dense-regime convergence
 reflects both temporal (C2) and resource (C3--C4) saturation, and results
-may differ under other energy or downlink budgets; and the
-dwell time is fixed at 30\,s, removing the dwell-versus-SNR trade-off that an
-agile scheduler could otherwise exploit. The utility model optimizes quality and quantity without an explicit
+are conditional on the tested caps; the
+dwell time is fixed at 30\,s, removing the dwell-versus-SNR trade-off from
+the model. The utility model optimizes quality and quantity without an explicit
 latency or urgency objective; acquisition timeliness is not optimized, but
 the acquisition-delay statistic of \S~\ref{sec:operational-implications}
 now measures it post hoc.
