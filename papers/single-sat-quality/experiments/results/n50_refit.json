@@ -1,0 +1,94 @@
+{
+  "threshold": 0.95,
+  "n_scenarios": 200,
+  "fits": {
+    "pooled": {
+      "desc": "all scenarios (existing \u00a76.3 fit reference)",
+      "n": 200,
+      "deficit_rate": 0.225,
+      "by_group": {
+        "S1": {
+          "N": 20,
+          "n": 50,
+          "deficit": "40/50"
+        },
+        "S2": {
+          "N": 100,
+          "n": 50,
+          "deficit": "5/50"
+        },
+        "S3": {
+          "N": 300,
+          "n": 50,
+          "deficit": "0/50"
+        },
+        "S4": {
+          "N": 500,
+          "n": 50,
+          "deficit": "0/50"
+        }
+      },
+      "fit": {
+        "n50": 50.94822416413854,
+        "ci": [
+          38.06954305447153,
+          62.3136229468798
+        ],
+        "n_boot_ok": 1000
+      }
+    },
+    "unbound_c2_limited": {
+      "desc": "cap-free subset (R1-02 primary)",
+      "n": 153,
+      "deficit_rate": 0.29411764705882354,
+      "by_group": {
+        "S1": {
+          "N": 20,
+          "n": 50,
+          "deficit": "40/50"
+        },
+        "S2": {
+          "N": 100,
+          "n": 50,
+          "deficit": "5/50"
+        },
+        "S3": {
+          "N": 300,
+          "n": 30,
+          "deficit": "0/30"
+        },
+        "S4": {
+          "N": 500,
+          "n": 23,
+          "deficit": "0/23"
+        }
+      },
+      "fit": {
+        "n50": 50.94822431024845,
+        "ci": [
+          38.129364438649624,
+          63.54270485216003
+        ],
+        "n_boot_ok": 1000
+      }
+    },
+    "bound_c3_c4": {
+      "desc": "ceiling-bound subset (reported separately per R2-04)",
+      "n": 47,
+      "deficit_rate": 0.0,
+      "by_group": {
+        "S3": {
+          "N": 300,
+          "n": 20,
+          "deficit": "0/20"
+        },
+        "S4": {
+          "N": 500,
+          "n": 27,
+          "deficit": "0/27"
+        }
+      },
+      "fit": null
+    }
+  }
+}
