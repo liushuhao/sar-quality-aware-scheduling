@@ -37,6 +37,16 @@ def norm_f1(entry, gbl):
     return raw / gbl
 
 
+def norm_front_max(entry, gbl):
+    """Scenario-level normalized frontier-max f1 (raw arrays divided by gbl)."""
+    fr = entry.get("frontier_f1") or []
+    if not fr:
+        return None
+    best = max(fr)
+    # entries with f1_gbl==1 store raw values; normalized arms store 0..1
+    return best / gbl if entry.get("f1_gbl", 1.0) == 1.0 else best
+
+
 def msd(x):
     return {"mean": float(np.mean(x)), "sd": float(np.std(x, ddof=1)), "n": len(x)}
 
@@ -49,16 +59,24 @@ def main():
     keys = sorted(f3c.keys())
 
     arms = {"f3copy": [], "MOEA-3": [], "MOEA-2": []}
+    fmax = {"f3copy": [], "MOEA-3": [], "MOEA-2": []}
     nsel = {"f3copy": []}
     for k in keys:
         gbl = baselines[k]["b1"]["f1_gbl"]
         arms["f3copy"].append(norm_f1(f3c[k], gbl))
         arms["MOEA-3"].append(norm_f1(m3[k], gbl))
         arms["MOEA-2"].append(norm_f1(m2[k], gbl))
+        for a, prog in (("f3copy", f3c), ("MOEA-3", m3), ("MOEA-2", m2)):
+            fm = norm_front_max(prog[k], gbl)
+            if fm is not None:
+                fmax[a].append(fm)
         nsel["f3copy"].append(f3c[k]["n_selected"])
 
     out = {"group": "S1", "n_scenarios": len(keys),
            "f1_star": {a: msd(v) for a, v in arms.items()},
+           "front_max": {a: msd(v) for a, v in fmax.items() if v},
+           "knee_deficit": {a: msd([m - f for m, f in zip(arms[a], fmax[a])])
+                            for a in arms if fmax[a]},
            "n_selected": {a: msd(v) for a, v in nsel.items()},
            "wilcoxon": {}}
     for other in ("MOEA-3", "MOEA-2"):
