@@ -89,9 +89,11 @@ into a combinatorial optimization problem: for $N$ targets each with a finite
 visibility window, the scheduler must select a subset and assign observation times
 that satisfy attitude transition constraints while maximizing some measure of
 mission value.
+
 Throughout this paper, the setting is a \emph{single-satellite, two-orbit-horizon} problem: one
 satellite plans observations over a two-orbit scheduling horizon ($\sim 200$ min), with at most
 one observation per target.
+
 In conventional satellite scheduling, observation quality is commonly
 treated as a fixed attribute of each pre-computed opportunity. Under that
 treatment the scheduling problem reduces to maximizing the number or
@@ -138,24 +140,6 @@ single-objective genetic algorithm with greedy hot-start (GA-P-BL, a control
 that returns the greedy schedule whenever it fails to improve profit, so it
 is never worse than G-BL), and two NSGA-III
 variants (MOEA-2 and MOEA-3) with two and three objectives.
-The solvers are evaluated on 200 systematically varied scenarios across four
-density classes ($N = 20$ to $N = 500$). In sparse request sets the quality
-gain is large and priced in coverage: MOEA-3 raises $f_3$ by $+40\%$ relative
-to G-BL at a $15\%$ coverage cost, MOEA-2 raises $f_2$ by $+33.7\%$ at a $14\%$
-cost (the best-coverage front point still gives $+12.5\%$ at no coverage cost),
-and a matched radiometric-aware knee rule isolates a $+4.9\%$ third-objective
-margin that a radiometric-blind rule does not reproduce. The single-point
-squint-minimized heuristic (G-SM) reaches higher $f_3$ than MOEA-3 in sparse
-scenarios but only at roughly half the coverage of G-BL ($f_1^* \approx 0.51$).
-The gain is bounded by two conditions we measure. It
-contracts monotonically as the platform's squint envelope narrows, and it
-disappears at operational densities, where the multi-objective variants
-converge to the greedy coverage anchor with quality margins below $2\%$, a
-convergence conditional on the G-BL hot start
-(\S~\ref{sec:robustness-calibration}). Both boundaries follow from the geometry
-of the geometric--radiometric coupling, which we measure inside schedules
-separately from the visibility envelope (\S~\ref{sec:pareto-coupling}).
-\S~\ref{sec:summary} synthesises these findings.
 
 
 The specific contributions of the paper are:
