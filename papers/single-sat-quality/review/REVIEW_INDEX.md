@@ -39,7 +39,7 @@
 | P1030-A/B/C/D | 四收敛簇 + 19 单点发现（明细见台账 disposition-ledger.md，随 .scratch 归档） | 五席面板 | 6 Major / 14 Minor / 余部分采纳 | **closed-with-evidence**（3faa8d2 + R2-04 终态修正 commit；确认轮 Part A 23 resolved/3 landed-incomplete/0 not-resolved——其中 R1-01/R1-02 为喂料范围伪缺口（闸证据在 patch 外，实跑 193/0），R2-04 真缺口已修并独立复核；Part B 仅 1 MINOR 即 R2-04，已修；无 CRITICAL/MAJOR 回归） |
 | P1030-FORM | 公式根基核查（用户令）：F1 重推+F2 文献+主线程数值三方交叉，12 条公式 | 票03 | — | **closed-with-evidence**（e6afada：零根基级公式错误，判定表 review/formula-verification-20261031/cross-verification.md；2 处措辞微修落地；F1-#9 驳回=核查简报符号注解错，教训入记忆） |
 | P1030-F3VAL | 根因回查唯一表象级处置（f₃ 跨窗有效性改口未验证）→ 补验证落文 | 票04/用户确认 | — | **closed-with-evidence**（构造性保序=单调性必然；真因子增益 +94.3% vs 代理 +40.4%，代理读数保守；脚本+工件+闸 tnf-* 2 断言，见 cross-verification.md 附记） |
-| P1030-TITLE | 标题 "Balancing Profit, NESZ, ..." 的 NESZ 命名是否加 proxy 信号 | EIC-01 | — | **pending-user**（投稿后标题漂移敏感，默认不动） |
+| P1030-TITLE | 标题 "Balancing Profit, NESZ, ..." 的 NESZ 命名是否加 proxy 信号 | EIC-01 | — | **closed-with-evidence**（2026-11-07 用户拍板限定词版 f0f942a：EN "NESZ-Based Radiometric Ordering"+关键词限定，同题由 11-07 面板 EIC-02 复提、以 N14 闭环） |
 | P1030-RES1 | R1-02 残余：耦合趋势 variant-A-only 复核 | 本席台账 | P3 | **closed-with-evidence**（aca37b8：A-only r=−0.80/−0.23/−0.15/−0.31，趋势成立入 §5.1，闸 corr-aonly-* 4 断言） |
 | P1030-RES2 | R1-07 残余：重复运行量化 within-instance 方差 | 本席台账 | P3 | **closed-with-evidence**（commit 见 RES1 同日：40/40 单元，S1/S4 逐位全同、S2/S3 SD≤0.004≤类间 7%，§5.4 量化句，闸 rep-* 4 断言） |
 
