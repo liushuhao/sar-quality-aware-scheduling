@@ -709,14 +709,14 @@ G-BL    & 0.0234 & 0.0150 \\
 \begin{figure}[H]
     \centering
     \includegraphics[width=\textwidth]{fig1_hypervolume.pdf}
-    \caption{统计验证，以排程内效应量证据为主：（右）配对效应量，用匹配对符号统计量 $\delta_{\text{pairs}}=(W-L)/n$（Cliff's $\delta$ 的场景内类比形式；主证据）；（左）超体积分布，论文仅将其作为次要诊断报告（\S\ref{sec:pareto-coupling}）；灰色波段标记 \citet{Romano2006} 可忽略效应区（$|\delta|<0.147$；仅供参照，配对比较的常规未配对 $\delta$ 更弱），见 \S~\ref{sec:evaluation-metrics}；小灰点为超出 $1.5\times$ 四分位距（IQR）的逐场景离群值，灰色柱标记 MOEA-2 与 MOEA-3 的比较（$\delta = -0.56$）。}
+    \caption{统计验证，以排程内效应量证据为主：（a，左）配对效应量，用匹配对符号统计量 $\delta_{\text{pairs}}=(W-L)/n$（Cliff's $\delta$ 的场景内类比形式；主证据）；（b，右）超体积分布，论文仅将其作为次要诊断报告（\S\ref{sec:pareto-coupling}）；灰色波段标记 \citet{Romano2006} 可忽略效应区（$|\delta|<0.147$；仅供参照，配对比较的常规未配对 $\delta$ 更弱），见 \S~\ref{sec:evaluation-metrics}；小灰点为超出 $1.5\times$ 四分位距（IQR）的逐场景离群值，灰色柱标记 MOEA-2 与 MOEA-3 的比较（$\delta = -0.56$）。}
     \label{fig:fig1}
 \end{figure}
 
-图~\ref{fig:fig1} 汇总了这些比较背后的统计证据。左面板展示各求解器在共享最小--最大归一化下的逐场景超体积（HV）分布：
-多点 NSGA-III 求解器的池化 HV 高于 G-BL，而 G-SM 的极端运行点实际上给出所有求解器中最高的 HV（\S~\ref{sec:pareto-coupling}）。
-右面板报告 HV 上的配对效应量（匹配对符号统计量）；超出灰色波段（$|\delta|<0.147$）的条形超过可忽略效应阈值，
+图~\ref{fig:fig1} 汇总了这些比较背后的统计证据。左面板报告 HV 上的配对效应量（匹配对符号统计量）；超出灰色波段（$|\delta|<0.147$）的条形超过可忽略效应阈值，
 方向约定为正 $\delta$ 有利于行求解器。
+右面板展示各求解器在共享最小--最大归一化下的逐场景超体积（HV）分布：
+多点 NSGA-III 求解器的池化 HV 高于 G-BL，而 G-SM 的极端运行点实际上给出所有求解器中最高的 HV（\S~\ref{sec:pareto-coupling}）。
 由于 HV 对基数不敏感却对决策空间多样性盲视（单个极端点可压过整条前沿的体积），这些排序仅作为次要诊断解读，
 点计数混淆在 \S~\ref{sec:pareto-coupling} 中分析。
 以下各节从五个角度深化这一总体分析：\S\ref{sec:squint-special} 聚焦斜视感知调度的特殊权衡，

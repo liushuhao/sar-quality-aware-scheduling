@@ -439,27 +439,30 @@ else:
 print("── Fig 4: Statistical Validation ──")
 if stats_data and "per_scenario_hv" in stats_data:
     fig = plt.figure(figsize=(4.28, 2.48))
-    gs = gridspec.GridSpec(1, 2, width_ratios=[1.15, 1], wspace=0.62,
+    # EIC-04: the effect-size panel leads — (a) on the left, HV demoted to
+    # (b) on the right as the secondary diagnostic. width_ratios keep each
+    # panel's original width (HV 1.15, delta 1.0).
+    gs = gridspec.GridSpec(1, 2, width_ratios=[1, 1.15], wspace=0.62,
                            left=0.07, right=0.97, top=0.90, bottom=0.12)
 
-    # LEFT: HV boxplot
-    ax_left = fig.add_subplot(gs[0])
+    # RIGHT: HV boxplot (panel b — secondary diagnostic)
+    ax_hv = fig.add_subplot(gs[1])
     solver_hvs = {s: [] for s in SOLVERS}
     for sc_key, sc_hv in per_scenario_hv.items():
         for solver in SOLVERS:
             if solver in sc_hv:
                 solver_hvs[solver].append(sc_hv[solver])
 
-    bp = ax_left.boxplot([solver_hvs[s] for s in SOLVERS],
+    bp = ax_hv.boxplot([solver_hvs[s] for s in SOLVERS],
                           patch_artist=True, widths=0.55,
                           medianprops={'color': 'black', 'linewidth': 1.2},
                           flierprops={'marker': 'o', 'markersize': 2, 'alpha': 0.3})
     for i, solver in enumerate(SOLVERS):
         bp['boxes'][i].set_facecolor(SOLVER_COLORS[solver])
         bp['boxes'][i].set_alpha(0.7)
-    ax_left.set_xticklabels(SOLVERS, rotation=30, ha="right", fontsize=6)
-    ax_left.set_ylabel("Hypervolume", fontsize=8)
-    ax_left.set_title("(a)", fontsize=8, loc="left")
+    ax_hv.set_xticklabels(SOLVERS, rotation=30, ha="right", fontsize=6)
+    ax_hv.set_ylabel("Hypervolume", fontsize=8)
+    ax_hv.set_title("(b)", fontsize=8, loc="left")
     # Annotation: clarify that the small grey dots are per-scenario outliers, not
     # data noise. Placed at the lower-left so it never collides with the upper-left
     # Friedman box. Reference note ("reference") in the title signals that HV is a
@@ -468,8 +471,8 @@ if stats_data and "per_scenario_hv" in stats_data:
     # the figure caption instead of inside the axes, where they collided at
     # true column width)
 
-    # RIGHT: δ forest plot
-    ax_right = fig.add_subplot(gs[1])
+    # LEFT: δ_pairs forest plot (panel a — the primary evidence, EIC-04)
+    ax_delta = fig.add_subplot(gs[0])
     if "pairwise_wilcoxon" in stats_data:
         pw = stats_data["pairwise_wilcoxon"]
         pairs = []
@@ -484,23 +487,32 @@ if stats_data and "per_scenario_hv" in stats_data:
         deltas = [p[1] for p in pairs]
         # Highlight MOEA-2 vs MOEA-3
         colors = ['#808080' if ('MOEA-2' in p[0] and 'MOEA-3' in p[0]) else '#0072B2' for p in pairs]
-        ax_right.barh(y_positions, deltas, height=0.6, color=colors, alpha=0.8, edgecolor='white')
-        ax_right.axvline(x=0, color='black', linewidth=0.8)
-        ax_right.axvspan(-0.147, 0.147, alpha=0.08, color='#808080')
-        # the grey band is explained in the caption; an in-axes label ran past
+        ax_delta.barh(y_positions, deltas, height=0.6, color=colors, alpha=0.8, edgecolor='white')
+        ax_delta.axvline(x=0, color='black', linewidth=0.8)
+        # N7/R1-03: the band is the Romano negligible-effect range for the
+        # CONVENTIONAL unpaired delta, drawn reference-only (lighter fill +
+        # dashed edges) — |delta|<0.147 thresholds must not be read off
+        # delta_pairs, which sits on roughly half the scale (see S5.3).
+        ax_delta.axvspan(-0.147, 0.147, alpha=0.05, color='#808080', lw=0)
+        for _edge in (-0.147, 0.147):
+            ax_delta.axvline(x=_edge, color='0.6', linewidth=0.6, linestyle='--')
+        # the band is explained in the caption; an in-axes label ran past
         # the top spine at true column width.
-        # Direction-of-effect annotation: Cliff's δ is computed as A(row) - A(col)
-        # (Vargha-Delaney, scaled), so positive bars mean the ROW solver has higher
-        # HV. Placed BELOW the axis (under the x-label strip) so it never collides
-        # with the MOEA-2-vs-MOEA-3 callout or any bar.
-        ax_right.text(0.98, 0.02,
-                      r"$\delta > 0$: row higher",
-                      transform=ax_right.transAxes, fontsize=6,
+        # Direction-of-effect annotation: the plotted statistic is the
+        # matched-pairs sign statistic delta_pairs = (W-L)/n (caption l.1005);
+        # the data key is still named cliffs_delta (stale name, not the
+        # Vargha-Delaney form). Positive bars mean the ROW solver has higher
+        # HV. Placed BELOW the axis (under the x-label strip) so it never
+        # collides with the MOEA-2-vs-MOEA-3 callout or any bar.
+        ax_delta.text(0.98, 0.02,
+                      r"$\delta_{\mathrm{pairs}} > 0$: row higher",
+                      transform=ax_delta.transAxes, fontsize=6,
                       ha='right', va='bottom', style='italic', color='#555')
-        ax_right.set_yticks(y_positions)
-        ax_right.set_yticklabels(labels, fontsize=6.5)
-        ax_right.set_xlabel(r"Cliff's $\delta$ (effect size)", fontsize=8)
-        ax_right.set_title("(b)", fontsize=8, loc="left")
+        ax_delta.set_yticks(y_positions)
+        ax_delta.set_yticklabels(labels, fontsize=6.5)
+        # N7/R1-03: relabel — this is delta_pairs, not Cliff's delta.
+        ax_delta.set_xlabel("$\\delta_{\\mathrm{pairs}}$\n(matched-pairs sign statistic)", fontsize=8)
+        ax_delta.set_title("(a)", fontsize=8, loc="left")
         # Annotation: place the MOEA-2 vs MOEA-3 label in the empty right half
         # (positive-δ region is unoccupied for this row), offset above the bar so
         # it never sits on the bar or the gray band.
@@ -511,7 +523,7 @@ if stats_data and "per_scenario_hv" in stats_data:
         fp = stats_data["friedman"]["p_value"]
         fp_str = "p<0.001" if fp < 0.001 else f"p={fp:.3f}"
         # Place in the upper-LEFT of the HV panel (away from MOEA-2/MOEA-3 boxes).
-        ax_left.text(0.02, 0.95, f"Friedman {fp_str}", transform=ax_left.transAxes,
+        ax_hv.text(0.02, 0.95, f"Friedman {fp_str}", transform=ax_hv.transAxes,
                     ha='left', va='top', fontsize=7,
                     bbox=dict(boxstyle='round', facecolor='lightgray', alpha=0.5))
 

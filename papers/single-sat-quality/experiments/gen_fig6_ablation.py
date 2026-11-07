@@ -200,6 +200,16 @@ def generate_figure(degs: dict, pvalues: dict) -> None:
                         )
         ax.axhline(y=0, color="#555", linewidth=0.6)
         ax.set_ylabel(metric_labels[metric], fontsize=9)
+        if metric in ("f2", "f3"):
+            # N10/R1-06: the prose quotes f2/f3 with the opposite sign
+            # ((V-A)/A, negative = degradation). Repeat both conventions on
+            # the panels where a reader will check bars against the text;
+            # top-right is bar-free (S3/S4 bars stay below ~1.3%).
+            ax.text(0.99, 0.97,
+                    r"bars: $(\mathrm{A}-\mathrm{V})/\mathrm{A}$"
+                    r"  $\cdot$  text: $(\mathrm{V}-\mathrm{A})/\mathrm{A}$",
+                    transform=ax.transAxes, fontsize=6,
+                    ha="right", va="top", color="#555")
         ax.grid(axis="y", color="#D0D0D0", linewidth=0.5, alpha=0.55)
 
     # Collect legend handles from the first subplot

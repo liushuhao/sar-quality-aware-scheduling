@@ -89,8 +89,11 @@ def fig7():
         print(f'{style["label"]:18s}', [round(v, 3) for v in vals])
 
     fig, ax = plt.subplots(figsize=(TEXT_WIDTH, 2.9))
+    # N8/R1-04: the band is the observed range of 20 shuffles, not a nominal
+    # 95% interval (the body says a nominal 95% interval would need ~10x more
+    # draws) — label it as what it is.
     ax.fill_between(xs, nl_lo, nl_hi, color='0.75', alpha=0.55, lw=0,
-                    label='independent-angle null (shuffle 95%)')
+                    label='observed shuffle range (20 shuffles/class)')
     # the shuffle-null mean sits inside the band above; drawing it as a
     # separate line duplicated the band and added an unlabelled mark.
     ax.plot(xs, env, color='0.15', lw=1.2, ls='--', marker='_', ms=9,

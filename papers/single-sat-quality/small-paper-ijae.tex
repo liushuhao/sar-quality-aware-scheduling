@@ -1010,19 +1010,19 @@ G-BL    & 0.0234 & 0.0150 \\
 \begin{figure}[H]
     \centering
     \includegraphics[width=\textwidth]{fig1_hypervolume.pdf}
-    \caption{Statistical validation, led by the within-schedule effect-size evidence: (right) pairwise effect sizes as the matched-pairs sign statistic $\delta_{\text{pairs}} = (W-L)/n$, the within-scenario analogue of Cliff's $\delta$ (the primary evidence); (left) hypervolume distribution, which the paper reports as a secondary diagnostic only (\S\ref{sec:pareto-coupling}); the gray band marks the negligible-effect range ($|\delta|<0.147$ of \citet{Romano2006}; shown for reference, as the conventional unpaired $\delta$ is weaker for the within-pair comparisons, see \S\ref{sec:evaluation-metrics}); small grey dots are per-scenario outliers beyond $1.5\times$ the interquartile range (IQR), and the grey bar marks the MOEA-2 vs. MOEA-3 comparison ($\delta = -0.56$).}
+    \caption{Statistical validation, led by the within-schedule effect-size evidence: (a, left) pairwise effect sizes as the matched-pairs sign statistic $\delta_{\text{pairs}} = (W-L)/n$, the within-scenario analogue of Cliff's $\delta$ (the primary evidence); (b, right) hypervolume distribution, which the paper reports as a secondary diagnostic only (\S\ref{sec:pareto-coupling}); the gray band marks the negligible-effect range ($|\delta|<0.147$ of \citet{Romano2006}; shown for reference, as the conventional unpaired $\delta$ is weaker for the within-pair comparisons, see \S\ref{sec:evaluation-metrics}); small grey dots are per-scenario outliers beyond $1.5\times$ the interquartile range (IQR), and the grey bar marks the MOEA-2 vs. MOEA-3 comparison ($\delta = -0.56$).}
     \label{fig:fig1}
 \end{figure}
 
 Fig.~\ref{fig:fig1} summarizes the statistical evidence behind these
-comparisons. The left panel shows the per-scenario hypervolume (HV)
+comparisons. The left panel reports pairwise effect sizes on
+HV as the matched-pairs sign statistic; bars outside the gray band ($|\delta|<0.147$) exceed the negligible-effect
+threshold, and the direction convention is that positive $\delta$ favors the
+row solver. The right panel shows the per-scenario hypervolume (HV)
 distribution of each solver under a shared min--max normalization: the
 multi-point NSGA-III solvers attain higher pooled HV than G-BL, while the
 extreme operating point of G-SM in fact yields the highest HV of any solver
-(\S~\ref{sec:pareto-coupling}). The right panel reports pairwise effect sizes on
-HV as the matched-pairs sign statistic; bars outside the gray band ($|\delta|<0.147$) exceed the negligible-effect
-threshold, and the direction convention is that positive $\delta$ favors the
-row solver. Because HV is insensitive to cardinality yet blind to
+(\S~\ref{sec:pareto-coupling}). Because HV is insensitive to cardinality yet blind to
 decision-space diversity (a single extreme point can out-volume an entire
 front), these rankings are interpreted only as secondary diagnostics, and the
 point-count confound is analyzed in \S~\ref{sec:pareto-coupling}.
