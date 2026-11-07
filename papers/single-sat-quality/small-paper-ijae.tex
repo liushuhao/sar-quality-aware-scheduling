@@ -44,13 +44,16 @@ targets in a two-orbit horizon, sparse request sets reward re-optimisation
 over the greedy coverage baseline:
 $+34\%$
 geometric-index quality at a $14\%$ coverage cost and $+40\%$ radiometric-index
-quality at a $15\%$ cost, with a controlled $+4.9\%$ third-objective margin
-under a matched selection rule that also accounts for radiometric quality.
+quality at a $15\%$ cost (the squint-minimising greedy heuristic reaches
+$+45\%$ at a $49\%$ cost), with a controlled $+4.9\%$ third-objective margin
+under a matched radiometric-aware selection rule ($+0.05\%$, $p=0.86$,
+radiometric-blind).
 
 Two measured boundaries delimit
 that gain. The advantage contracts as the squint envelope narrows, from $+28\%$
 to $+2.3\%$ in geometric quality when the cap tightens from $45^\circ$ to
-$15^\circ$, and it vanishes beyond $N \approx 150$, where the
+$15^\circ$, and it vanishes beyond $N \approx 150$ (logistic transition
+midpoint $N_{50} \approx 51$, CI $[37, 64]$), where the
 multi-objective fronts converge to the greedy coverage anchor with quality
 margins below $2\%$ under greedy hot-start initialization. The geometric and
 radiometric objectives conflict most inside sparse schedules
@@ -359,7 +362,8 @@ $\cos\theta_{\text{elev}} = \cos\xi / \cos\psi_{\text{sq}}$
 this isolates the cross-track ground-range geometry from the along-track
 squint contribution. $\theta_{\text{elev}}$ is the satellite-centered
 elevation-plane angle; it differs from the target-side incidence angle
-defined above by a few degrees due to Earth curvature at
+defined above by $2.0^\circ$ at an $18^\circ$ off-nadir angle and $7.2^\circ$ at
+$47^\circ$ in the zero-squint plane due to Earth curvature at
 these orbital altitudes, but it preserves the cross-track ordering of
 candidate views, so using it in the geometric-quality objective of
 \S~\ref{sec:objective-functions} is ordering-consistent.
@@ -1117,7 +1121,12 @@ points are all at most $1\%$, so the bootstrap confidence interval is wide
 ($N_{50} \in [37, 64]$). $N_{50}$ should therefore be read as a coarse indicator that the
 transition is confined to $N \in [20, 100]$, not as a precise threshold.
 Beyond $N \approx 150$, no scenario shows a
-coverage deficit exceeding $5\%$.
+coverage deficit exceeding $5\%$. Refitting the same logistic on the
+cap-free (C2-limited) subset alone leaves the midpoint unchanged (pooled
+refit $N_{50} = 50.8$, CI $[38.1, 63.1]$; cap-free subset $N_{50} = 50.8$,
+CI $[37.5, 62.8]$, $n=253$), and the 47 ceiling-bound scenarios---all in
+the dense classes---show no deficit ($0/47$): the density boundary is a
+sparse-regime phenomenon, not an artefact of the bound/unbound mix.
 The transition between a measurable and a negligible multi-objective
 advantage therefore lies in the $N \in [20, 100]$ band, and beyond $N = 150$
 the advantage is effectively absent.
@@ -1370,7 +1379,11 @@ most $+1.64\%$ relative to the standard budget. That shift is the same order
 as the sub-$2\%$ margins it is meant to defend, so the control alone cannot
 separate premature convergence from all runs reaching the same coverage
 wall; the bound/unbound split of \S~\ref{sec:constraints} separates the two
-subpopulations directly. A random-init
+subpopulations directly. A doubled-budget control on the five S1
+scenarios---the sparse regime where the margins are largest---leaves the
+A--D difference in place (variant A $f_1^*$: $0.931$ standard vs.\ $0.924$
+doubled on the same scenarios; variant D $1.000$ in both), so the
+sparse-regime gap is not an artifact of the standard budget. A random-init
 run of the no-physics variant D (15 S3 and 15 S4 runs) reproduces the low
 per-task squint of the hot-started runs ($f_2=0.349\pm0.016$ at S3 and
 $0.347\pm0.015$ at S4, against $0.342\pm0.026$ and $0.336\pm0.039$) at a
@@ -1463,7 +1476,9 @@ depends on the application: for maritime surveillance, the
 knee-point $+33.7\%$ $f_2$ gain at S1 corresponds to roughly a $25\%$ smaller
 per-task geometric area factor (the ground pixel area of a task scales with
 the reciprocal of the per-task index factor of Eq.~\ref{eq:f2}, evaluated at
-the elevation-plane angle; the exact schedule-level area change additionally
+the elevation-plane angle; equivalently, a linear ground sample distance
+about $13\%$ finer at the knee-point geometry ($\sqrt{0.75} \approx 0.87$);
+the exact schedule-level area change additionally
 depends on the selected task mix), and the coverage cost may be
 justified; for area-monitoring missions, the greedy baseline remains
 preferable. In dense regimes ($N \geq 300$), the multi-objective
@@ -1480,7 +1495,17 @@ spending $49$--$71\%$ of the achievable coverage ($f_1^* = 0.51$, $0.35$,
 $0.29$, $0.37$ against the G-BL anchor of $1.00$). The operational choice is
 therefore application-side---coverage budget versus achievable quality---rather
 than solver-side: MOEA-3's remaining value is the coverage-stratified frontier
-itself, which the one-line heuristic cannot enumerate.
+itself, and this is now measured against the cheapest alternative: a
+placement-only interpolation family (a $q$-fraction of the greedy coverage
+schedule re-timed by the squint-minimising rule,
+$q \in \{0, 0.25, 0.5, 0.75, 1\}$, $K=10$ random subsets per level,
+feasibility restored by the same C2 repair the heuristic uses) is feasible
+throughout, and at matched coverage (mixture coverage at or above the knee
+point's) the knee point dominates the best feasible mixture point in $185$
+of the $200$ scenarios ($92.5\%$) for $f_2$ and $184$ ($92.0\%$) for $f_3$.
+The family re-times G-BL's selection only---it does not mix task selections,
+and its $q=1$ endpoint is not G-SM itself---so the measured comparison
+bounds the re-timing channel, not selection diversity.
 
 The agility-envelope sensitivity, previously an open qualification, is
 tested directly: repeating the sparse $N=20$ configurations with the
@@ -1519,13 +1544,14 @@ so the greedy choice follows the mission's priority. Indeed, the
 MOEA-2 coverage gap relative to the coverage-only anchor is
 within $0.4\%$ at $N \geq 300$ (Table~\ref{tab:scale-sensitivity}); since GA-P-BL
 coincides with G-BL in all but one scenario, no meaningful separate gap
-exists. The dense-regime greedy
-choice also differs from quality steering on a timeliness dimension, by
-construction rather than by a measured latency figure: G-BL places each
-task at its earliest feasible time within the visibility window, whereas
-quality-steering solutions may delay acquisitions to reach lower-squint
-geometry, so the coverage-priority choice is the natural default when
-acquisition timeliness matters.
+exists. Acquisition timeliness, now measured rather than assumed: relative
+to the earliest window starts, G-BL itself drifts by class-means of
+$100$--$652$\,s because greedy sequencing defers tasks cumulatively, so the
+arms' difference is the meaningful quantity---and it is confined to the
+sparse regime: the quality-steering knee schedules lag G-BL by $167$\,s on
+average at S1, while at S2--S4 the class-mean delays agree within $4$\,s.
+Acquisition timeliness therefore adds a cost to the quality gain only where
+that gain is on offer, and does not differentiate the dense-regime choice.
 
 \subsection{Transferability Across Remote-Sensing Domains}
 The analytic device most likely to transfer beyond SAR is the
@@ -1566,7 +1592,15 @@ family-specific rather than platform-independent; the priority weights
 themselves are drawn uniformly on $\{1,\dots,10\}$
 (\S\ref{sec:experiment-design}), so the heavy-tailed streams typical of
 operational demand are untested, and the sparse-regime exchange rate could
-move materially under skew. Similarly,
+move materially under skew. The threshold is likewise unchanged under the
+bound/unbound split of \S~\ref{sec:constraints} (cap-free subset refit:
+midpoint identical, $n=253$; the 47 ceiling-bound scenarios show no
+deficit). At $N=20$ the greedy coverage anchor is the exact optimum in 37
+of 50 scenarios (32 by the all-targets upper bound, 5 confirmed by an
+exact CP-SAT model over the $10$\,s decision grid, released with the
+analysis scripts); in the remaining 13 the exact optimum exceeds it by a
+mean of $6.7\%$ (median $5.4\%$, maximum $14.7\%$ of the exact value), so
+the anchor is near-optimal with bounded headroom. Similarly,
 ScanSAR, Spotlight, and TOPS modes introduce different NESZ and resolution
 dependencies beyond Stripmap, and the scenario design uses a fixed orbit
 (693 km circular LEO) without exploring sensitivity to orbital parameters.
@@ -1580,18 +1614,21 @@ initialization materially improves MOEA convergence; the coverage
 convergence reported here is conditional on this initialization, and
 full-scale random-init experiments are needed to establish the unconditional
 behavior. Similarly, the S1
-coverage reversal under variant D (\S~\ref{sec:ablation}) currently lacks a
-mechanistic explanation; a crowding-distance account is plausible but
-awaits verification with alternative crowding
-operators. Two further scope notes bound the operational reading: the C3--C4 resource
+coverage reversal under variant D (\S~\ref{sec:ablation}) now has a
+partial mechanistic account: the diagnostic arm of \S~\ref{sec:ablation}
+localizes the deficit to the quality content of $f_2$ (three objectives
+without it reach full coverage), leaving the excess-above-anchor part of
+the reversal to the crowding-distance account, which awaits verification
+with alternative crowding operators. Two further scope notes bound the operational reading: the C3--C4 resource
 caps equate to a 200-task ceiling (\S~\ref{sec:constraints}) and bind in
 roughly half of the dense S3--S4 scenarios, so dense-regime convergence
 reflects both temporal (C2) and resource (C3--C4) saturation, and results
 may differ under other energy or downlink budgets; and the
 dwell time is fixed at 30\,s, removing the dwell-versus-SNR trade-off that an
 agile scheduler could otherwise exploit. The utility model optimizes quality and quantity without an explicit
-latency or urgency objective; acquisition timeliness is therefore not
-evaluated as a separate scheduling dimension and is left to future work.
+latency or urgency objective; acquisition timeliness is not optimized, but
+the acquisition-delay statistic of \S~\ref{sec:operational-implications}
+now measures it post hoc.
 The initialization and budget controls bound the findings above without fixing
 population values: their samples are small (10/4/5/5 scenarios with three seeds
 for the hot-start control; 15 runs per class for the random-init variant-D
