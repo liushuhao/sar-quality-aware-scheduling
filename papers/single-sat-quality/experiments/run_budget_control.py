@@ -106,8 +106,21 @@ def run_variant(pkl_path, variant):
 
 
 def main():
+    # N18 (panel R1-07): group/scenario/output overrides via argv, defaults
+    # preserve the original S3+S4 control byte-for-byte.
+    import argparse
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--groups", nargs="+", default=None,
+                    help="density groups (default: the original S3 S4)")
+    ap.add_argument("--n", type=int, default=None, help="scenarios per group")
+    ap.add_argument("--out", default=None, help="output json path override")
+    args = ap.parse_args()
+    groups = args.groups or GROUPS
+    n_scen = args.n or N_SCENARIOS
+    out_path = Path(args.out) if args.out else OUT_PATH
+
     state = {}
-    if OUT_PATH.exists():
+    if out_path.exists():
         try:
             state = json.load(open(OUT_PATH, encoding="utf-8"))
             print(f"Resumed: {sum(len(v) for v in state.get('results', {}).values())} pairs done")
@@ -116,9 +129,9 @@ def main():
     results = state.setdefault("results", {})
     git_commit = _git_commit()
 
-    for group in GROUPS:
+    for group in groups:
         d = SCENARIOS_DIR / group
-        pkls = sorted(d.glob("*.pkl"))[:N_SCENARIOS]
+        pkls = sorted(d.glob("*.pkl"))[:n_scen]
         if not pkls:
             continue
         pairs = results.setdefault(group, [])
@@ -135,7 +148,7 @@ def main():
             pair = {"scenario": pkl.name, "pkl_sha1": _pkl_sha1(pkl), "git_commit": git_commit,
                     "A": ra, "D": rd, "delta_f1": delta}
             pairs.append(pair)
-            json.dump(state, open(OUT_PATH, "w", encoding="utf-8"), indent=2)
+            json.dump(state, open(out_path, "w", encoding="utf-8"), indent=2)
             print(f"  {pkl.name}: A f1*={ra['f1']:.3f} (f2={ra['f2']:.4f})  D f1*={rd['f1']:.3f} (f2={rd['f2']:.4f})  d={delta:+.3f}  t={time.time()-t0:.0f}s", flush=True)
 
     summary = {}
@@ -154,14 +167,14 @@ def main():
             "f2_pooled_mean": float(np.concatenate([a_f2, d_f2]).mean()),
         }
     state["summary"] = summary
-    state["params"] = {"pop": POP, "gen": GEN, "n_scenarios": N_SCENARIOS,
-                       "groups": GROUPS, "n_obj": 3, "n_ref_dirs": 12, "git_commit": git_commit}
-    json.dump(state, open(OUT_PATH, "w", encoding="utf-8"), indent=2)
+    state["params"] = {"pop": POP, "gen": GEN, "n_scenarios": n_scen,
+                       "groups": groups, "n_obj": 3, "n_ref_dirs": 12, "git_commit": git_commit}
+    json.dump(state, open(out_path, "w", encoding="utf-8"), indent=2)
 
     print("\n=== SUMMARY ===")
     for g, s in summary.items():
         print(f"  {g}: A={s['A_f1_mean']:.3f}+/-{s['A_f1_std']:.3f}  D={s['D_f1_mean']:.3f}+/-{s['D_f1_std']:.3f}  d={s['delta_mean']:+.3f}  f2_pooled={s['f2_pooled_mean']:.4f}")
-    print(f"Wrote {OUT_PATH}")
+    print(f"Wrote {out_path}")
 
 
 if __name__ == "__main__":
