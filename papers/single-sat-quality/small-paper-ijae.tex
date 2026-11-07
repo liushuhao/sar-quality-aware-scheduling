@@ -1558,10 +1558,18 @@ The saturation threshold itself ($N_{50} \approx 51$,
 \S~\ref{sec:scale-sensitivity}) is estimated within this synthetic, static
 scenario family; real mission request streams with heterogeneous priorities
 and arrival processes could shift it, so the threshold should be read as
-family-specific rather than platform-independent. Similarly,
+family-specific rather than platform-independent; the priority weights
+themselves are drawn uniformly on $\{1,\dots,10\}$
+(\S\ref{sec:experiment-design}), so the heavy-tailed streams typical of
+operational demand are untested, and the sparse-regime exchange rate could
+move materially under skew. Similarly,
 ScanSAR, Spotlight, and TOPS modes introduce different NESZ and resolution
 dependencies beyond Stripmap, and the scenario design uses a fixed orbit
 (693 km circular LEO) without exploring sensitivity to orbital parameters.
+The two-orbit scheduling horizon is likewise fixed: longer horizons grant
+more scheduling freedom per target, so the density boundary should not be
+read as horizon-independent (the single-revolution scenario variants are
+used for robustness checks only, not for the boundary).
 The hot-start control experiment
 (\S~\ref{sec:robustness-calibration}) indicates that G-BL
 initialization materially improves MOEA convergence; the coverage
