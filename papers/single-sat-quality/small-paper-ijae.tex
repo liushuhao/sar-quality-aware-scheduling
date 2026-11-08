@@ -503,23 +503,10 @@ $\sum_{i \in \mathcal{S}} e_i \leq E_{\max}$ and
 $\sum_{i \in \mathcal{S}} m_i \leq M_{\max}$, where $E_{\max}=10^7$ and
 $M_{\max}=10^{11}$ (arbitrary units) and typical per-task consumptions are
 $e_i = 5\times10^4$ and $m_i = 5\times10^8$. Both caps therefore translate
-into the same ceiling of 200 concurrently scheduled tasks. This ceiling is
-inactive in sparse regimes but binds in a subset of dense scenarios: 20 of
-50 G-BL schedules at S3 and 27 of 50 at S4 select exactly 200 tasks, so the
-binding constraint there is C3--C4 rather than C2, while the remaining
-dense scenarios are schedule-limited by C2. Splitting each dense class by
-this classification, the two subpopulations carry distinct quality profiles:
-at S4 the C3--C4-bound scenarios average $f_2 = 0.365$, $f_3 = 0.643$ (G-BL
-class means), whereas the C2-limited scenarios average $0.303$ and $0.714$
---- coverage packing under the shared cap thins per-task quality --- while
-at S3 the two groups are closer ($0.346$, $0.606$ vs.\ $0.339$, $0.623$).
-MOEA-3 reproduces the same split (S4: $0.366$/$0.647$ vs.\
-$0.305$/$0.720$), so class-mean quality margins partly reflect the
-bound/unbound mix within each class. The A--D ablation invariance is,
-if anything, reinforced when all variants are pinned to a shared resource
-cap (\S~\ref{sec:ablation}), but dense-regime coverage convergence should be
-read as convergence to the feasible task count under both constraint
-families rather than to temporal saturation alone.
+into the same ceiling of 200 concurrently scheduled tasks---inactive in
+sparse regimes, but binding in a subset of dense scenarios whose
+consequences for the quality measurements are quantified in
+\S~\ref{sec:scale-sensitivity}.
 % ============================================================
 %  4. METHODOLOGY (~1000 words)
 % ============================================================
@@ -1036,6 +1023,25 @@ refit $N_{50} = 50.8$, CI $[38.1, 63.1]$; cap-free subset $N_{50} = 50.8$,
 CI $[37.5, 62.8]$, $n=253$), and the 47 ceiling-bound scenarios---all in
 the dense classes---show no deficit ($0/47$): the density boundary is a
 sparse-regime phenomenon, not an artefact of the bound/unbound mix.
+
+The ceiling underlying this split is the C3--C4 resource cap of
+\S\ref{sec:constraints}: it is inactive in sparse regimes but binds in a
+subset of dense scenarios---20 of 50 G-BL schedules at S3 and 27 of 50 at
+S4 select exactly 200 tasks, so the binding constraint there is C3--C4
+rather than C2, while the remaining dense scenarios are schedule-limited
+by C2. Splitting each dense class by this classification, the two
+subpopulations carry distinct quality profiles: at S4 the C3--C4-bound
+scenarios average $f_2 = 0.365$, $f_3 = 0.643$ (G-BL class means),
+whereas the C2-limited scenarios average $0.303$ and $0.714$ --- coverage
+packing under the shared cap thins per-task quality --- while at S3 the
+two groups are closer ($0.346$, $0.606$ vs.\ $0.339$, $0.623$). MOEA-3
+reproduces the same split (S4: $0.366$/$0.647$ vs.\ $0.305$/$0.720$), so
+class-mean quality margins partly reflect the bound/unbound mix within
+each class. The A--D ablation invariance is, if anything, reinforced when
+all variants are pinned to a shared resource cap (\S~\ref{sec:ablation}),
+but dense-regime coverage convergence should be read as convergence to
+the feasible task count under both constraint families rather than to
+temporal saturation alone.
 The $f_3$ row of Fig.~\ref{fig:fig3} shows the same pattern on the
 radiometric objective: at sparse density MOEA-3 separates visibly from G-BL
 and G-SM sits in its own high-$f_3$ regime, whereas the dense panels show all
@@ -1552,7 +1558,7 @@ localizes the deficit to the quality content of $f_2$ (three objectives
 without it reach full coverage), leaving the excess-above-anchor part of
 the reversal to the crowding-distance account, which awaits verification
 with alternative crowding operators. Two further scope notes bound the operational reading: the C3--C4 resource
-caps equate to a 200-task ceiling (\S~\ref{sec:constraints}) and bind in
+caps equate to a 200-task ceiling (\S~\ref{sec:scale-sensitivity}) and bind in
 roughly half of the dense S3--S4 scenarios, so dense-regime convergence
 reflects both temporal (C2) and resource (C3--C4) saturation, and results
 are conditional on the tested caps; the
