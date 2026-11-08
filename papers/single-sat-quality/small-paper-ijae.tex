@@ -67,7 +67,7 @@ redundancy between objectives. A four-variant objective ablation over
 $1{,}200$ further runs traces these gains to the squint channel rather than
 to objective redundancy. Together the boundaries give planners two quantified operating limits:
 squint-envelope contraction and a density threshold, plus an optional
-operating point.
+operating point, the knee point of that trade-off.
 \end{abstract}
 \begin{keyword}
 agile SAR \sep satellite scheduling \sep multi-objective optimization \sep NSGA-III \sep noise-equivalent sigma-zero (NESZ, relative ordering index) \sep geometric resolution
@@ -381,7 +381,7 @@ construction (\S\ref{sec:system-model}). The comparisons in \S\ref{sec:evaluatio
 and below depend only on the induced ordering---strongest within windows (mean incidence
 varies by about $1.5^\circ$ in S1; \S\ref{sec:ablation}), while across $18^\circ$--$47^\circ$
 the suppressed factor varies by roughly $2.4\times$; $f_3$ is a geometry proxy, not an
-absolute NESZ ranking.
+absolute NESZ measure.
 
 \paragraph{Squint magnitude and $R^3$ dominance.}
 In the produced schedules the per-task squint is moderate (mean $|\psi_{\text{sq}}|$ of $16$--$24^\circ$), so
@@ -456,9 +456,9 @@ $\sum_{i \in \mathcal{S}} e_i \leq E_{\max}$ and
 $\sum_{i \in \mathcal{S}} m_i \leq M_{\max}$, where $E_{\max}=10^7$ and
 $M_{\max}=10^{11}$ (arbitrary units) and typical per-task consumptions are
 $e_i = 5\times10^4$ and $m_i = 5\times10^8$. Both caps therefore translate
-into the same ceiling of 200 concurrently scheduled tasks---inactive in
-sparse regimes, but binding in a subset of dense scenarios whose
-consequences for the quality measurements are quantified in
+into the same ceiling of 200 concurrently scheduled tasks. That ceiling is
+inactive in sparse regimes but binding in a subset of dense scenarios, and
+its effect on the quality measurements is quantified in
 \S~\ref{sec:scale-sensitivity}.
 % ============================================================
 %  4. METHODOLOGY (~1000 words)
@@ -673,7 +673,7 @@ the reference-point-based selection of \citet{Deb2014}.
 We treat per-objective comparisons paired with Cliff's $\delta$ effect sizes
 as the primary quality indicator, because single-point greedy solvers and
 multi-point NSGA-III fronts contribute different numbers of points to the
-objective space. Hypervolume (HV) is reported as a secondary
+objective space. HV is reported as a secondary
 diagnostic only: with origin-anchored reference boxes it is insensitive to
 cardinality (dominated points add no volume), but it is also blind to
 decision-space diversity --- as shown in \S~\ref{sec:pareto-coupling},
@@ -682,11 +682,19 @@ exceeds MOEA-3's $0.0893$), so HV is not interpreted as a standalone quality
 judgment. Statistical significance is assessed via the Friedman test for
 overall differences across the five configurations $\times$ 200 scenarios, followed by
 pairwise Wilcoxon signed-rank comparisons with Bonferroni correction
-($\alpha = 0.05 / 10 = 0.005$); because G-BL and GA-P-BL coincide in all but
-one scenario (\S\ref{sec:ga-p-bl}), the Friedman statistic is conservative
-toward fewer distinct rankings and is
-driven largely by within-scenario dispersion of the two multi-point NSGA-III
-solvers. Per-objective and ablation comparisons are
+($\alpha = 0.05 / 10 = 0.005$, the family of ten pairwise solver comparisons;
+the four-variant ablation of \S~\ref{sec:ablation} applies $\alpha=0.05/12$
+within each reported metric, each family of 12 being the three non-physics
+variants by four density classes against A, and the S7--S8 ablation
+comparisons are reported as exploratory and lie outside these families;
+pairs with zero within-pair difference are dropped from the Wilcoxon
+signed-rank statistic and reported separately); because G-BL and GA-P-BL
+coincide in all but one scenario (\S\ref{sec:ga-p-bl}), the Friedman statistic
+is conservative toward fewer distinct rankings and is driven largely by
+within-scenario dispersion of the two multi-point NSGA-III solvers rather
+than by baseline-vs-baseline differences, since G-BL, GA-P-BL, and G-SM
+each contribute a single point per scenario.
+Per-objective and ablation comparisons are
 reported with raw $p$-values alongside the Bonferroni threshold. Effect
 sizes are measured by Cliff's $\delta$, classified following
 \citet{Romano2006} ($|\delta| < 0.147$ negligible,
@@ -847,7 +855,6 @@ covers the direct-scaling component only.
 \end{tabular}
 \end{table}
 
-
 \begin{table}[H]
 \centering
 \caption{Hypervolume across 200 scenarios for the two multi-objective solvers, with G-BL as a single-point reference (single-point solvers G-SM and GA-P-BL are omitted; see the point-count asymmetry discussion in \S~\ref{sec:pareto-coupling}).}
@@ -889,21 +896,11 @@ the anchor carries bounded headroom.
 
 The Friedman test on pooled HV is reported as a descriptive omnibus only:
 it confirms overall differences among the five
-solvers across all 200 scenarios ($\chi^2=669.02$, $p<10^{-140}$; conservative toward fewer
-distinct rankings, \S~\ref{sec:evaluation-metrics}), and the inferential
-weight rests on the per-objective pairwise analyses of
-Table~\ref{tab:solver-profiles}. G-BL, GA-P-BL, and G-SM each contribute a single point
-per scenario, so the pooled statistic is driven largely by the within-scenario
-HV dispersion of the two multi-point NSGA-III solvers rather than by
-baseline-vs-baseline differences. Pairwise Wilcoxon
-signed-rank tests use the Bonferroni threshold $\alpha=0.005$
-($\alpha=0.05/10$, the family of ten pairwise solver comparisons; the
-four-variant ablation of \S~\ref{sec:ablation} applies $\alpha=0.05/12$
-within each reported metric, each family of 12 being the three non-physics
-variants by four density classes against A; the S7--S8 ablation comparisons
-are reported as exploratory and lie outside these families); pairs
-with zero within-pair difference are dropped from the Wilcoxon signed-rank
-statistic and reported separately; interpretation
+solvers across all 200 scenarios ($\chi^2=669.02$, $p<10^{-140}$), and the
+inferential weight rests on the per-objective pairwise analyses of
+Table~\ref{tab:solver-profiles}. The test setup, the conservative direction
+of the statistic, and the treatment of zero-difference pairs are specified in
+\S~\ref{sec:evaluation-metrics}; interpretation
 relies on Cliff's $\delta$ given the large sample size.
 MOEA-2 and MOEA-3 differ on pooled HV with $\delta = -0.56$
 ($p < 10^{-5}$), but this contrast blends the sparse-regime divergence with
@@ -1239,8 +1236,8 @@ G-BL), so the greedy schedule is a near-optimal coverage anchor
 \S\ref{par:front-compression} does not depend on the HV ranking.
 
 \paragraph{Non-optimality of the discarded set.}\label{par:non-optimality}
-Because each quality objective is a mean over the scheduled set, and thus
-selection-invariant, one must ask whether solvers raise it
+Because each quality objective is a mean over the scheduled set, one
+must ask whether solvers raise it
 by discarding poorly-geometried targets. They do not: the targets the solvers
 drop have, if anything, \emph{higher} best-achievable radiometric quality than
 the retained set (mean window-best $\cos^3\xi$: $0.92$ dropped vs.\ $0.80$
