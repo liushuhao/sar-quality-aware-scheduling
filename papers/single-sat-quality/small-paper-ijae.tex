@@ -362,15 +362,6 @@ tension between scheduling throughput and SAR-specific imaging quality.
 All quality objectives use the \emph{mean} over scheduled tasks, making
 them independent of the number of scheduled tasks $m = |\mathcal{S}|$
 and thereby producing a genuine ``quantity versus quality'' Pareto trade-off.
-Because the mean is selection-invariant, one must ask whether solvers raise it
-by discarding poorly-geometried targets. They do not: the targets the solvers
-drop have, if anything, \emph{higher} best-achievable radiometric quality than
-the retained set (mean window-best $\cos^3\xi$: $0.92$ dropped vs.\ $0.80$
-retained for MOEA-3 at S1, $0.95$ vs.\ $0.79$ for MOEA-2; gap $0.86$ vs.\
-$0.82$ at S4). Dropping is not quality-ranked --- it prices coverage profit
-and scheduling feasibility, not per-task quality --- so the quality gains
-reported below come from timing selection within windows, not from cherry-
-picking the target set.
 \paragraph{Objective 1: Coverage Profit.}
 The normalized coverage profit (Eq.~\ref{eq:f1}) is defined relative to the greedy baseline
 \begin{equation}
@@ -378,13 +369,9 @@ f_1^* = \frac{1}{f_1^{\text{G-BL}}} \sum_{i \in \mathcal{S}} p_i
 \label{eq:f1}
 \end{equation}
 where $f_1^{\text{G-BL}}$ is the profit achieved by the profit-only greedy
-scheduler (G-BL, \S~\ref{sec:gbl}) on the same scenario.
-Normalization by G-BL rather than GA-P-BL is conservative for the
-MOEA coverage deficit: GA-P-BL output is identical to G-BL
-in all but one of the 200 scenarios
-(mean $f_1^* = 1.00$ at every scale, Table~\ref{tab:solver-profiles}),
-so G-BL-normalized
-$f_1^*$ values equal the coverage comparison to the single-objective GA.
+scheduler (G-BL, \S~\ref{sec:gbl}) on the same scenario; normalization by
+G-BL rather than GA-P-BL is conservative for the MOEA coverage deficit
+(\S~\ref{sec:overall-performance}).
 \paragraph{Objective 2: Geometric Image Quality.}
 The ground pixel area of a SAR image is the product of ground-range resolution
 $\rho_{\text{rg}} = c / (2B \sin\theta)$ and azimuth resolution
@@ -412,89 +399,34 @@ f_3 = \frac{1}{|\mathcal{S}|} \sum_{i \in \mathcal{S}} \cos^3\xi_i
 Higher $f_3$ indicates a lower per-task NESZ factor (better radiometric sensitivity).
 
 \paragraph{Modeling choices behind Eq.~\ref{eq:f3}.}
-Equation~\ref{eq:f3} is grounded in a 3D geometric approximation that
-decomposes the slant range as
-$R \approx R_{\text{elev}} / \cos\psi_{\text{sq}}$ (where $R_{\text{elev}}$
-is the elevation-plane range at zero squint), yielding the equivalent form
-$\text{NESZ} \propto 1/(\cos^3\theta_{\text{elev}} \cdot \cos^3\psi_{\text{sq}})$.
-This plane-Earth range model omits the Earth's curvature and the antenna
-elevation-pattern roll-off; at the $47^\circ$ edge of the tested incidence
-range (curved-Earth slant range $964$\,km versus $922$\,km plane-Earth) it
-underestimates slant range by roughly $4\%$ and $R^3$ by roughly $13\%$, and
-it suppresses the $\sin\theta$ factor that a ground-resolution
-reference area adds to standard NESZ expressions. It is therefore used here as
-a relative ordering index across observation geometries, not as an absolute
-radiometric prediction; the comparisons in \S\ref{sec:evaluation-metrics}
-and below depend only on the ordering it induces. This ordering defense is
-strongest for within-window timing selection, where incidence varies by only a
-few degrees (about $1.5^\circ$ mean within-window range in the S1 scenarios;
-\S\ref{sec:ablation}); across targets or windows that span the full
-$18^\circ$--$47^\circ$ incidence range, the suppressed $\sin\theta$ factor
-varies by roughly $2.4\times$, so $f_3$ should be read as a geometry proxy
-rather than an absolute NESZ ranking across widely separated incidence angles.
-In fact the suppression is ordering-preserving by construction: the ground
-incidence is a monotone function of the same off-nadir angle
-($\theta = \arcsin\big(\frac{R_e+H}{R_e}\sin\xi\big)$,
-\S\ref{sec:system-model}), so dividing by $\sin\theta$ reweights but cannot
-reorder acquisition geometries. Recomputing the sparse-regime comparison of
-\S\ref{sec:overall-performance} with the retained factor enlarges the MOEA-3
-gain over G-BL from $+40\%$ to $+94\%$ (ratio of class means at S1; the
-class-mean ratio moves from $1.40$ to $1.94$ because the ground-reference
-factor penalizes the window-edge placement of G-BL more than the MOEA-3
-selections): the proxy reading is conservative, and the ordering-based
-comparisons are unaffected. The proxy also excludes ambiguity-limited NESZ
-regimes, where the noise floor is set by integrated ambiguity power rather
-than the direct $R^3$ scaling; the ordering argument covers the
-direct-scaling component only.
-In the schedules produced by the solvers below, the per-task squint angle is
-moderate rather than near-zero (the mean $|\psi_{\text{sq}}|$ across the four
-density classes is $16$--$24^\circ$, with a $90$th percentile of
-$32$--$39^\circ$), so the $\cos^3\psi_{\text{sq}}$ factor contributes on the order of
-$10$--$25\%$ of the $f_3$ range rather than the few percent it would at
-near-zero squint. The proportionality $\text{NESZ} \propto R^3$
-captures the dominant geometric dependence; platform-constant terms (noise
-figure, transmit power, processing gain) do not affect the relative ordering
-of observation geometries. This cubic dependence means even modest
-deviations from the optimal viewing geometry make fine observation timing
-critical for radiometric performance.
-\paragraph{Physical Trade-Off.}
-The two quality objectives partition SAR imaging performance by physical
-mechanism: $f_2$ captures spatial resolution (geometric), $f_3$ captures
-signal-to-noise ratio (radiometric).
-Their optima are not coincident; $f_3$ peaks at the zero-Doppler point
-($\xi$ minimal, $\psi_{\text{sq}} = 0$), whereas $f_2$ benefits from
-moderately higher incidence because $\sin\theta_{\text{elev}}$ grows with
-the elevation-plane incidence angle.
-This creates a genuine trade-off: pursuing the cleanest NESZ
-(zero-Doppler observation) forces acceptance of stretched ground-range pixels;
-pursuing optimal ground pixel area requires deviating from the zero-Doppler
-point and accepting elevated radiometric noise.
-The squint angle $\psi_{\text{sq}}$ appears in both $f_2$ and $f_3$
-(Eqs.~\ref{eq:f2}--\ref{eq:f3}): reducing $\psi_{\text{sq}}$ simultaneously
-improves both resolution components through the $\cos\psi_{\text{sq}}$
-factor (azimuth resolution enters $f_2$ directly, and $\cos\xi =
-\cos\theta_{\text{elev}}\cos\psi_{\text{sq}}$ carries the same factor into
-the $R^3$ radiometric index), so squint is an alignment rather than a
-trade-off axis. The residual two-axis structure is
-$[\theta_{\text{elev}}, \psi_{\text{sq}}]$: the
-$\theta_{\text{elev}}$ axis carries the genuine conflict ($f_2$ grows with
-$\sin\theta_{\text{elev}}$, $f_3$ with $\cos^3\theta_{\text{elev}}$ at
-fixed squint), while $\psi_{\text{sq}}$ enters both objectives with the
-same sign. In practice, the zero-squint point coincides with the time of
-closest approach, which minimizes the slant range and, for a spherical
-Earth, approximately minimizes the off-nadir angle $\xi$ (i.e.\ maximizes
-$\cos\xi$ and hence $f_3$); solver convergence to low-squint regimes
-removes the alignment axis and leaves the $\theta_{\text{elev}}$
-trade-off, whose exploitation is what saturates under coverage pressure at
-high density
-(the factorized null of Eq.~\ref{eq:rnull} and its
-axis decomposition in \S~\ref{sec:pareto-coupling} separate the definitional
-coupling from the scheduler-induced component).
+Equation~\ref{eq:f3} rests on a 3D geometric approximation that writes the slant range as an
+elevation-plane range at zero squint over $\cos\psi_{\text{sq}}$, yielding $\text{NESZ} \propto
+1/(\cos^3\theta_{\text{elev}} \cdot \cos^3\psi_{\text{sq}})$; $f_3$ serves as a relative ordering index.
 
-Because $\theta$ and $\psi_{\text{sq}}$ are derived from the same LOS vector
-(\S~\ref{sec:system-model}), the per-task $f_2$ and $f_3$ contributions
-share geometric structure; its quantitative characterization is presented in
-\S~\ref{sec:pareto-coupling}.
+\paragraph{Modeling approximation and error.}
+The plane-Earth model omits Earth curvature and the antenna elevation-pattern roll-off
+($4\%$/$13\%$ slant-range/$R^3$ underestimation at the $47^\circ$ edge) and suppresses the
+ground-reference $\sin\theta$ factor; the suppression itself is ordering-preserving by
+construction (\S\ref{sec:system-model}). The comparisons in \S\ref{sec:evaluation-metrics}
+and below depend only on the induced ordering---strongest within windows (mean incidence
+varies by about $1.5^\circ$ in S1; \S\ref{sec:ablation}), while across $18^\circ$--$47^\circ$
+the suppressed factor varies by roughly $2.4\times$; $f_3$ is a geometry proxy, not an
+absolute NESZ ranking.
+
+\paragraph{Squint magnitude and $R^3$ dominance.}
+In the produced schedules the per-task squint is moderate (mean $|\psi_{\text{sq}}|$ of $16$--$24^\circ$), so
+the $\cos^3\psi_{\text{sq}}$ factor contributes $10$--$25\%$ of the $f_3$ range; $\text{NESZ} \propto R^3$ captures
+the dominant geometric dependence, and platform-constant terms do not affect the ordering.
+\paragraph{Physical Trade-Off.}
+The two quality objectives partition SAR imaging performance by mechanism: $f_2$ spatial
+resolution (geometric), $f_3$ signal-to-noise ratio (radiometric). Their optima conflict:
+$f_3$ peaks at the zero-Doppler point ($\psi_{\text{sq}} = 0$) whereas $f_2$ benefits from
+moderately higher incidence---radiometric cleanliness against ground pixel area. The
+squint angle enters both objectives (Eqs.~\ref{eq:f2}--\ref{eq:f3}) through the same
+$\cos\psi_{\text{sq}}$ factor, so squint is an alignment rather than a trade-off axis.
+Since $\theta$ and $\psi_{\text{sq}}$ derive from the same LOS vector
+(\S\ref{sec:system-model}), the per-task $f_2$ and $f_3$ contributions share geometric
+structure, quantified in \S\ref{sec:pareto-coupling}.
 % ── 3.3 Constraints ──
 \subsection{Constraints}\label{sec:constraints}
 Observation-window membership is treated as the domain of each start-time
@@ -923,11 +855,26 @@ MOEA-3 raises $f_3$ by $+40\%$ ($0.698$ vs.\ $0.497$) at a $15\%$ coverage cost
 ($f_1^* = 0.85$).
 At S2 the performance gains diminish, and at S3--S4 MOEA coverage and quality
 converge to the G-BL reference. Across every scale, GA-P-BL output is
-numerically identical to G-BL in all but one scenario (mean $f_2$ and $f_3$
-within $0.001$ of G-BL, and the single differing scenario improves profit;
+numerically identical to G-BL in all but one scenario (mean $f_1^* = 1.00$
+at every scale, mean $f_2$ and $f_3$ within $0.001$ of G-BL, and the single
+differing scenario improves profit;
 Sec.~\ref{sec:ga-p-bl}), serving as a control that confirms the greedy
-coverage baseline rather than an independent solver. G-SM occupies a different operating regime, exchanging
+coverage baseline rather than an independent solver; normalization by G-BL
+rather than GA-P-BL (\S\ref{sec:objective-functions}) is therefore
+conservative for the MOEA coverage deficit, and G-BL-normalized $f_1^*$
+values equal the coverage comparison to the single-objective GA. G-SM occupies a different operating regime, exchanging
 coverage and $f_2$ for higher $f_3$.
+
+Recomputing the sparse-regime comparison above with the ground-reference
+factor retained enlarges the MOEA-3 gain over G-BL from $+40\%$ to $+94\%$
+(ratio of class means at S1; the class-mean ratio moves from $1.40$ to
+$1.94$ because the ground-reference factor penalizes the window-edge
+placement of G-BL more than the MOEA-3 selections): the proxy reading of
+$f_3$ (\S\ref{sec:objective-functions}) is conservative, and the
+ordering-based comparisons are unaffected. The proxy also excludes
+ambiguity-limited NESZ regimes, where the noise floor is set by integrated
+ambiguity power rather than the direct $R^3$ scaling; the ordering argument
+covers the direct-scaling component only.
 
 \begin{table}[H]
 \centering
@@ -1234,7 +1181,24 @@ the \emph{per-task} $f_2$ component is $0.16$--$0.17$ at S1--S3 and $0.14$ at
 S4 for variant A, with a pooled per-task range of $0.64$--$0.65$ across classes ---
 a different object from the schedule-level $f_2$ objective whose pooled
 bounds ($0.11$--$0.56$) enter the HV normalization of
-\S~\ref{sec:evaluation-metrics}. Consistent with this saturation, the per-density hypervolume
+\S~\ref{sec:evaluation-metrics}. The mechanism is alignment: reducing
+$\psi_{\text{sq}}$ simultaneously improves both resolution components through
+the same $\cos\psi_{\text{sq}}$ factor (azimuth resolution enters $f_2$
+directly, and $\cos\xi = \cos\theta_{\text{elev}}\cos\psi_{\text{sq}}$
+carries the same factor into the $R^3$ radiometric index), so the residual
+two-axis structure $[\theta_{\text{elev}}, \psi_{\text{sq}}]$ carries its
+genuine conflict on the $\theta_{\text{elev}}$ axis alone ($f_2$ grows with
+$\sin\theta_{\text{elev}}$, $f_3$ with $\cos^3\theta_{\text{elev}}$ at fixed
+squint, while $\psi_{\text{sq}}$ enters both objectives with the same sign).
+In practice, the zero-squint point coincides with the time of closest
+approach, which minimizes the slant range and, for a spherical Earth,
+approximately minimizes the off-nadir angle $\xi$ (i.e.\ maximizes
+$\cos\xi$ and hence $f_3$); solver convergence to low-squint regimes
+removes the alignment axis and leaves the $\theta_{\text{elev}}$ trade-off,
+whose exploitation is what saturates under coverage pressure at high density
+(the factorized null of Eq.~\ref{eq:rnull} and its axis decomposition above
+separate the definitional coupling from the scheduler-induced component).
+Consistent with this saturation, the per-density hypervolume
 contracts at higher density: at S4 the pooled HV is $0.25$ (MOEA-2) and $0.17$
 (MOEA-3) of its S1 value, reflecting the near-point front compression
 documented above and not a degradation of solution quality. All fronts
@@ -1283,6 +1247,18 @@ We therefore report HV as a secondary diagnostic only. In one of the 200
 scenarios a sparse-density MOEA solution exceeds $f_1^*=1.00$ ($+10.8\%$ above
 G-BL), so the greedy schedule is a near-optimal coverage anchor. The front
 compression documented above does not depend on the HV ranking.
+
+\textbf{Non-optimality of the discarded set.}
+Because each quality objective is a mean over the scheduled set, and thus
+selection-invariant, one must ask whether solvers raise it
+by discarding poorly-geometried targets. They do not: the targets the solvers
+drop have, if anything, \emph{higher} best-achievable radiometric quality than
+the retained set (mean window-best $\cos^3\xi$: $0.92$ dropped vs.\ $0.80$
+retained for MOEA-3 at S1, $0.95$ vs.\ $0.79$ for MOEA-2; gap $0.86$ vs.\
+$0.82$ at S4). Dropping is not quality-ranked --- it prices coverage profit
+and scheduling feasibility, not per-task quality --- so the quality gains
+reported above come from timing selection within windows, not from
+cherry-picking the target set.
 
 \input{sections/_ablation_section.tex}
 
