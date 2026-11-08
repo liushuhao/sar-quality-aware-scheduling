@@ -444,36 +444,7 @@ confines feasible acquisitions; the selected
 schedules concentrate at mean $|\psi_{\text{sq}}|$ of $16$--$24^\circ$
 (\S\ref{sec:pareto-coupling}).
 Both are observation-geometry limits applied before scheduling.
-
-\paragraph{Physical modeling scope.}
-The quality objectives capture first-order geometric and radiometric
-effects (ground-range resolution, azimuth broadening, $R^3$ NESZ scaling).
-Throughout, $\psi_{\text{sq}}$ is the geometric line-of-sight squint, the
-angle between the target line of sight and the zero-Doppler plane; this is
-the quantity that enters $f_2$, $f_3$, and the C1 squint bound. Second-order
-radar effects are treated as platform-level constants and are not modeled:
-the geometric Doppler centroid $f_{\text{dc}} \approx (2v/\lambda)\sin\psi_{\text{sq}}$
-reaches $10^2$\,kHz at the scheduled $16$--$24^\circ$ squints, one to two
-orders of magnitude above typical Stripmap PRFs ($10^0$--$10^1$\,kHz), so
-unmanaged echoes would alias outside the processing band and leave the
-Doppler centroid ambiguous. Yaw steering cannot remove this offset: it
-compensates only the small Earth-rotation component, whereas the geometric
-squint is fixed by the target's direction relative to the velocity vector at
-the scheduled $16$--$24^\circ$. A squinted acquisition therefore requires a
-dedicated receive-window and PRF timing design, which is outside the model;
-the projection loss itself is not absorbed by Doppler processing --- keeping
-the beam on the target fixes $\psi_{\text{sq}}$, and the
-$1/\cos\psi_{\text{sq}}$ broadening in the azimuth resolution is what $f_2$
-charges for. The echo-processing chain itself (receive window, duty
-cycle, ambiguity control, PRF selection), the azimuth antenna gain roll-off
-with squint, and squint-dependent azimuth processing are all outside the
-model; the Doppler magnitude is used only as a scale, whose sign follows the
-look direction and is out of scope. This idealization preserves the
-relative ordering of acquisition geometries \emph{within} the simulated
-platform family, which is what the solver comparisons act on; absolute
-performance claims for platforms without a dedicated large-squint
-timing/processing chain are out of scope. The sensitivity of the recommendations to the
-agility envelope itself is tested directly in \S\ref{sec:operational-implications}.
+Modeling scope and its limits are collected in \S\ref{sec:limitations}.
 
 \paragraph{C2: Attitude Maneuver and Non-Overlap.}
 Between consecutive observations, the satellite must rotate through the
@@ -910,7 +881,7 @@ G-BL    & 0.0234 & 0.0150 \\
 \begin{figure}[H]
     \centering
     \includegraphics[width=\textwidth]{fig1_hypervolume.pdf}
-    \caption{Statistical validation, led by the within-schedule effect-size evidence: (a, left) pairwise effect sizes as the matched-pairs sign statistic $\delta_{\text{pairs}} = (W-L)/n$, the within-scenario analogue of Cliff's $\delta$ (the primary evidence); (b, right) hypervolume distribution (secondary diagnostic only, \S\ref{sec:pareto-coupling}); the gray band marks the negligible-effect range ($|\delta|<0.147$ of \citet{Romano2006}; shown for reference, as the conventional unpaired $\delta$ is weaker for the within-pair comparisons, see \S\ref{sec:evaluation-metrics}); small grey dots are per-scenario outliers beyond $1.5\times$ the interquartile range (IQR), and the grey bar marks the MOEA-2 vs. MOEA-3 comparison ($\delta = -0.56$).}
+    \caption{Statistical validation, led by the within-schedule effect-size evidence: (a, left) pairwise effect sizes as the matched-pairs sign statistic $\delta_{\text{pairs}} = (W-L)/n$, the within-scenario analogue of Cliff's $\delta$ (the primary evidence); (b, right) hypervolume distribution (secondary diagnostic only, \S\ref{par:hv-diagnostic}); the gray band marks the negligible-effect range ($|\delta|<0.147$ of \citet{Romano2006}; shown for reference, as the conventional unpaired $\delta$ is weaker for the within-pair comparisons, see \S\ref{sec:evaluation-metrics}); small grey dots are per-scenario outliers beyond $1.5\times$ the interquartile range (IQR), and the grey bar marks the MOEA-2 vs. MOEA-3 comparison ($\delta = -0.56$).}
     \label{fig:fig1}
 \end{figure}
 
@@ -924,13 +895,20 @@ distribution under a shared min--max normalization; per
 only, and the point-count confound is analyzed in
 \S~\ref{sec:pareto-coupling}.
 
+The greedy coverage anchor is near-optimal at sparse density: at $N=20$ it is the exact optimum in 37
+of 50 scenarios (32 by the all-targets upper bound, 5 confirmed by an
+exact CP-SAT model over the $10$\,s decision grid, released with the
+analysis scripts); in the remaining 13 the exact optimum exceeds it by a
+mean of $6.7\%$ (median $5.4\%$, maximum $14.7\%$ of the exact value), so
+the anchor carries bounded headroom.
+
 The next five subsections quantify the squint-aware special regime
 (\S\ref{sec:squint-special}), trace how its advantage contracts with target
 density (\S\ref{sec:scale-sensitivity}--\S\ref{sec:pareto-coupling}), and
 test whether it survives ablation and the initialization and budget
 controls (\S\ref{sec:ablation}--\S\ref{sec:robustness-calibration}).
 
-% ── 6.3 Scale Sensitivity (Fig 5) ──
+% ── 6.2 Scale Sensitivity (Fig 3) ──
 \subsection{Scale Sensitivity}
 \label{sec:scale-sensitivity}
 The gap between MOEA-2 and G-BL varies systematically with scenario density
@@ -1005,13 +983,13 @@ all variants are pinned to a shared resource cap (\S~\ref{sec:ablation}),
 but dense-regime coverage convergence should be read as convergence to
 the feasible task count under both constraint families rather than to
 temporal saturation alone.
-The $f_3$ row of Fig.~\ref{fig:fig3} shows the same pattern on the
+The $f_3$ row of Fig.~\ref{fig:fig3} shows the same sparse-to-dense contraction on the
 radiometric objective: at sparse density MOEA-3 separates visibly from G-BL
 and G-SM sits in its own high-$f_3$ regime, whereas the dense panels show all
 solvers converging to nearly identical distributions, consistent with
 Table~\ref{tab:solver-profiles}.
 
-% ── 6.2 Squint-Aware Special Regime ──
+% ── 6.3 Squint-Aware Special Regime (Fig 2) ──
 \subsection{Squint-Aware Special Regime}
 \label{sec:squint-special}
 The squint-minimized greedy solver (G-SM) improves NESZ radiometric quality ($f_3$)
@@ -1051,11 +1029,13 @@ Table~\ref{tab:solver-profiles}).
 % ── 6.4 Mechanism of Pareto Compression ──
 \subsection{Mechanism of Pareto Compression}\label{sec:pareto-coupling}
 
-The dense-regime convergence of \S\ref{sec:scale-sensitivity} has a geometric
+The dense-regime convergence reported in
+\S\ref{sec:scale-sensitivity}, before the special regime of
+\S\ref{sec:squint-special}, has a geometric
 cause: the two physical objectives conflict most strongly when the scheduler
 can move acquisitions, and coverage pressure takes that freedom away.
 
-\textbf{Front compression.}
+\paragraph{Compression mechanism.}\label{par:front-compression}
 Fig.~\ref{fig:fig4} shows a representative S4 front that contains
 $4.7 \pm 4.4$ MOEA-3 non-dominated solutions (MOEA-2: $1.6 \pm 0.9$) yet spans
 only about $0.08$ in $f_1^*$ and $0.014$ in $f_2$, against a total span of
@@ -1076,7 +1056,7 @@ $f_1^* \approx 0.37$ at S4, a region outside the MOEA-3 surface
     \label{fig:fig4}
 \end{figure}
 
-\textbf{Independent-angle null.}
+\paragraph{Null hypothesis and coupling decomposition.}\label{par:null-decomposition}
 Because $\theta$ and $\psi_{\text{sq}}$ both derive from the same LOS vector
 $\mathbf{l} = (l_x, l_y, l_z)$ (\S~\ref{sec:system-model}), the per-task $f_2$
 and $f_3$ contributions share geometric structure. We separate this
@@ -1084,7 +1064,7 @@ definitional coupling from scheduler-induced correlation with an
 independent-angle null over the accessible envelope
 ($\theta_{\text{elev}} \in [16^\circ, 41^\circ]$,
 $|\psi_{\text{sq}}| \leq 45^\circ$, the experimental squint envelope of
-\S\ref{sec:system-model}; the satellite-side counterpart of the C1 incidence
+\S\ref{sec:constraints}; the satellite-side counterpart of the C1 incidence
 range $[18^\circ, 47^\circ]$). A permutation null that shuffles the
 visibility-window-grid $\theta_{\text{elev}}$ and $\psi_{\text{sq}}$ marginals
 within each density class gives $r_{\text{null}} = -0.60$ to $-0.62$ across
@@ -1186,14 +1166,11 @@ removes the alignment axis and leaves the $\theta_{\text{elev}}$ trade-off,
 whose exploitation is what saturates under coverage pressure at high density
 (the factorized null of Eq.~\ref{eq:rnull} and its axis decomposition above
 separate the definitional coupling from the scheduler-induced component).
-Consistent with this saturation, the per-density hypervolume
-contracts at higher density: at S4 the pooled HV is $0.25$ (MOEA-2) and $0.17$
-(MOEA-3) of its S1 value, reflecting the near-point front compression
-documented above and not a degradation of solution quality. All fronts
+All fronts
 reported here are approximate, obtained by NSGA-III under the tested search
 budget.
 
-\textbf{Value of the third objective.}
+\paragraph{Value of the third objective.}\label{par:third-objective}
 MOEA-3 separates from MOEA-2 in $f_3$ mainly at sparse density. At S1 it
 attains $0.698\pm0.039$ against $0.657\pm0.040$ ($+6.2\%$ under the reported
 knee rules, paired Wilcoxon $p = 5.5\times10^{-13}$; matched-pairs sign
@@ -1222,7 +1199,7 @@ bounded; at operational densities coverage pressure locks the selection, while
 the underlying $f_2$--$f_3$ trade-off persists, with a negative
 within-schedule correlation at every density.
 
-\textbf{Hypervolume as a secondary diagnostic.}
+\paragraph{Hypervolume as a secondary diagnostic.}\label{par:hv-diagnostic}
 Table~\ref{tab:hv} ranks G-BL first in coverage and last in HV, and the
 NSGA-III variants first and second in HV despite their lower coverage. G-SM,
 omitted from the table, attains the highest HV of any solver ($0.2341$) from
@@ -1231,12 +1208,17 @@ $f_3 \approx 0.79$ at S4), so the ranking would invert if it were included. HV
 rewards an extreme single point and is insensitive to cardinality: every
 single-objective solver contributes one point per scenario, while MOEA-3
 contributes $33.8 \pm 8.4$ non-dominated points at S1 (MOEA-2: $6.8 \pm 2.1$).
-We therefore report HV as a secondary diagnostic only. In one of the 200
+We therefore report HV as a secondary diagnostic only. Consistent with the
+saturation above, the per-density hypervolume contracts at higher density:
+at S4 the pooled HV is $0.25$ (MOEA-2) and $0.17$ (MOEA-3) of its S1 value,
+reflecting the near-point front compression documented above and not a
+degradation of solution quality. In one of the 200
 scenarios a sparse-density MOEA solution exceeds $f_1^*=1.00$ ($+10.8\%$ above
-G-BL), so the greedy schedule is a near-optimal coverage anchor. The front
-compression documented above does not depend on the HV ranking.
+G-BL), so the greedy schedule is a near-optimal coverage anchor
+(\S~\ref{sec:overall-performance}). The front compression of
+\S\ref{par:front-compression} does not depend on the HV ranking.
 
-\textbf{Non-optimality of the discarded set.}
+\paragraph{Non-optimality of the discarded set.}\label{par:non-optimality}
 Because each quality objective is a mean over the scheduled set, and thus
 selection-invariant, one must ask whether solvers raise it
 by discarding poorly-geometried targets. They do not: the targets the solvers
@@ -1513,32 +1495,19 @@ single solver ranking, is the transferable contribution.
 % ── 7.4 Limitations ──
 \subsection{Limitations}\label{sec:limitations}
 Our study is bounded by scope decisions that define directions for future work.
+
+\paragraph{Scope.}
 The density-dependent third-objective indistinguishability reported above is specific to the
 single-satellite, two-orbit-horizon Stripmap setting: it reflects solver convergence to lower-squint
 geometries that attenuate the envelope-level $f_2$--$f_3$ correlation while
 the residual within-schedule $\theta$-conflict persists (negative at all
-densities, strongest at sparse density; \S\ref{sec:pareto-coupling},
+densities, strongest at sparse density; \S\ref{par:null-decomposition},
 Eq.~\ref{eq:rnull}), not a mathematical
 identity between $f_2$ and $f_3$. In multi-pass or multi-satellite
 settings with greater angular diversity, the $\theta$-conflict re-emerges
 and the third objective regains discriminating power; dynamic arrivals and
 rolling-horizon re-optimization are out of scope here, and their effect on
 the saturation threshold is untested.
-The saturation threshold itself ($N_{50} \approx 51$,
-\S~\ref{sec:scale-sensitivity}) is estimated within this synthetic, static
-scenario family and should be read as family-specific rather than
-platform-independent: real request streams are heavy-tailed and arrive
-over time, and their effect on the threshold is untested (the priority
-weights are drawn uniformly on $\{1,\dots,10\}$,
-\S\ref{sec:experiment-design}). The threshold is likewise unchanged under the
-bound/unbound split of \S~\ref{sec:constraints} (cap-free subset refit:
-midpoint identical, $n=253$; the 47 ceiling-bound scenarios show no
-deficit). At $N=20$ the greedy coverage anchor is the exact optimum in 37
-of 50 scenarios (32 by the all-targets upper bound, 5 confirmed by an
-exact CP-SAT model over the $10$\,s decision grid, released with the
-analysis scripts); in the remaining 13 the exact optimum exceeds it by a
-mean of $6.7\%$ (median $5.4\%$, maximum $14.7\%$ of the exact value), so
-the anchor is near-optimal with bounded headroom. Similarly,
 ScanSAR, Spotlight, and TOPS modes introduce different NESZ and resolution
 dependencies beyond Stripmap, and the scenario design uses a fixed orbit
 (693 km circular LEO) without exploring sensitivity to orbital parameters.
@@ -1546,6 +1515,59 @@ The two-orbit scheduling horizon is likewise fixed: longer horizons grant
 more scheduling freedom per target, so the density boundary should not be
 read as horizon-independent (the single-revolution scenario variants are
 used for robustness checks only, not for the boundary).
+The quality objectives capture first-order geometric and radiometric
+effects (ground-range resolution, azimuth broadening, $R^3$ NESZ scaling).
+Throughout, $\psi_{\text{sq}}$ is the geometric line-of-sight squint, the
+angle between the target line of sight and the zero-Doppler plane; this is
+the quantity that enters $f_2$, $f_3$, and the C1 squint bound. Second-order
+radar effects are treated as platform-level constants and are not modeled:
+the geometric Doppler centroid $f_{\text{dc}} \approx (2v/\lambda)\sin\psi_{\text{sq}}$
+reaches $10^2$\,kHz at the scheduled $16$--$24^\circ$ squints, one to two
+orders of magnitude above typical Stripmap PRFs ($10^0$--$10^1$\,kHz), so
+unmanaged echoes would alias outside the processing band and leave the
+Doppler centroid ambiguous. Yaw steering cannot remove this offset: it
+compensates only the small Earth-rotation component, whereas the geometric
+squint is fixed by the target's direction relative to the velocity vector at
+the scheduled $16$--$24^\circ$. A squinted acquisition therefore requires a
+dedicated receive-window and PRF timing design, which is outside the model;
+the projection loss itself is not absorbed by Doppler processing --- keeping
+the beam on the target fixes $\psi_{\text{sq}}$, and the
+$1/\cos\psi_{\text{sq}}$ broadening in the azimuth resolution is what $f_2$
+charges for. The echo-processing chain itself (receive window, duty
+cycle, ambiguity control, PRF selection), the azimuth antenna gain roll-off
+with squint, and squint-dependent azimuth processing are all outside the
+model; the Doppler magnitude is used only as a scale, whose sign follows the
+look direction and is out of scope. This idealization preserves the
+relative ordering of acquisition geometries \emph{within} the simulated
+platform family, which is what the solver comparisons act on; absolute
+performance claims for platforms without a dedicated large-squint
+timing/processing chain are out of scope. The sensitivity of the recommendations to the
+agility envelope itself is tested directly in \S\ref{sec:operational-implications}.
+
+Two further scope notes bound the operational reading: the C3--C4 resource
+caps equate to a 200-task ceiling (\S~\ref{sec:scale-sensitivity}) and bind in
+roughly half of the dense S3--S4 scenarios, so dense-regime convergence
+reflects both temporal (C2) and resource (C3--C4) saturation, and results
+are conditional on the tested caps; the
+dwell time is fixed at 30\,s, removing the dwell-versus-SNR trade-off from
+the model. The utility model optimizes quality and quantity without an explicit
+latency or urgency objective; acquisition timeliness is not optimized, but
+the acquisition-delay statistic of \S~\ref{sec:operational-implications}
+now measures it post hoc.
+
+\paragraph{Threshold.}
+The saturation threshold itself ($N_{50} \approx 51$,
+\S~\ref{sec:scale-sensitivity}) is estimated within this synthetic, static
+scenario family and should be read as family-specific rather than
+platform-independent: real request streams are heavy-tailed and arrive
+over time, and their effect on the threshold is untested (the priority
+weights are drawn uniformly on $\{1,\dots,10\}$,
+\S\ref{sec:experiment-design}). The threshold is likewise unchanged under the
+bound/unbound split of \S~\ref{sec:scale-sensitivity} (cap-free subset refit:
+midpoint identical, $n=253$; the 47 ceiling-bound scenarios show no
+deficit).
+
+\paragraph{Controls.}
 The hot-start control experiment
 (\S~\ref{sec:robustness-calibration}) indicates that G-BL
 initialization materially improves MOEA convergence; the coverage
@@ -1557,16 +1579,7 @@ partial mechanistic account: the diagnostic arm of \S~\ref{sec:ablation}
 localizes the deficit to the quality content of $f_2$ (three objectives
 without it reach full coverage), leaving the excess-above-anchor part of
 the reversal to the crowding-distance account, which awaits verification
-with alternative crowding operators. Two further scope notes bound the operational reading: the C3--C4 resource
-caps equate to a 200-task ceiling (\S~\ref{sec:scale-sensitivity}) and bind in
-roughly half of the dense S3--S4 scenarios, so dense-regime convergence
-reflects both temporal (C2) and resource (C3--C4) saturation, and results
-are conditional on the tested caps; the
-dwell time is fixed at 30\,s, removing the dwell-versus-SNR trade-off from
-the model. The utility model optimizes quality and quantity without an explicit
-latency or urgency objective; acquisition timeliness is not optimized, but
-the acquisition-delay statistic of \S~\ref{sec:operational-implications}
-now measures it post hoc.
+with alternative crowding operators.
 The initialization and budget controls bound the findings above without fixing
 population values: their samples are small (10/4/5/5 scenarios with three seeds
 for the hot-start control; 15 runs per class for the random-init variant-D
@@ -1575,12 +1588,16 @@ order, and hot and random runs share scenario seeds, so every deficit is a
 within-seed paired difference expressed on the G-BL-normalized $f_1^*$ scale,
 on which the greedy anchor reads exactly $1.0$ by construction. The reference-point counts of MOEA-2
 ($H=13$) and MOEA-3 ($H=91$) differ by construction, but a matched control at $p=4$
-($H=15$, \S~\ref{sec:pareto-coupling}) confirms the sparse-regime $f_3$ gain is not driven by
-reference-direction density. Finally, we do not benchmark against learning-based
+($H=15$, \S\ref{par:third-objective}) confirms the sparse-regime $f_3$ gain is not driven by
+reference-direction density.
+
+\paragraph{Baselines.}
+Finally, we do not benchmark against learning-based
 schedulers (e.g., \citet{Chen2025NeuralPriority}), which represent an alternative
 methodological family; a systematic comparison of physics-aware
 heuristic methods against data-driven approaches is left to
 future work.
+
 % ============================================================
 %  8. CONCLUSION (~250 words)
 % ============================================================
