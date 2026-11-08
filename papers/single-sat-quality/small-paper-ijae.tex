@@ -185,57 +185,32 @@ We examine three lines of research that our study connects:
 satellite scheduling (2.1), SAR physical quality modeling (2.2),
 and multi-objective evolutionary optimization (2.3).
 \subsection{Satellite Scheduling}
-Satellite scheduling has been studied extensively in the Earth-observation
-domain. The survey by \citet{Ferrari2025} catalogs over 200
-publications spanning exact methods, heuristics, metaheuristics, and
-learning-based approaches. Exact formulations based on mixed-integer linear
-programming (MILP) achieve optimality on small instances but fail to scale
-to operational problem sizes, motivating a broad family of heuristic and
-metaheuristic alternatives including genetic algorithms, simulated annealing,
-and tabu search~\citep{Wang2019MILP,Chen2019MILPMulti}.
-The earliest formal treatments of agile satellite scheduling by
-\citet{Lemaitre2002MultiSat} and
-\citet{Bianchessi2007} established the
-foundational problem structure of time-dependent transition
-times between observations.
-Recent work further generalizes these methods to agile satellites, where
-the freedom to choose observation start times within each visibility window
-is exploited to pack more observations into a single orbit~\citep{Peng2019Orienteering,Chen2024LearnConstruct}.
-A parallel line of research has pursued learning-based and hybrid approaches
-for satellite scheduling. \citet{Liu2024TwoStageDRL} and
-\citet{Zhou2025TwoPhase} apply deep reinforcement learning to
-agile optical satellite scheduling, while \citet{Jacquet2024GNN}
-combine graph neural networks with Monte Carlo tree search for the same domain.
-\citet{Wang2026Lagrangian} propose a Lagrangian relaxation-based
-heuristic for multi-satellite mission planning.
-\citet{Caleiras2026SuperAgile} formulate super-agile
-satellite scheduling as a constraint programming problem, capturing
-the time-dependent transition constraints characteristic of super-agile platforms.
-\citet{Herrmann2023} apply RL to on-board AEOS scheduling, maximizing target collection reward without imaging quality as an objective.
-\citet{Wu2026WhaleHighDensity} address high-target-density AEOS scheduling with an improved whale optimization algorithm, reporting convergence challenges that echo the density-driven constraint tightening we analyze in \S~\ref{sec:scale-sensitivity}.
-Despite their methodological diversity, most prior
-works treat quality as a fixed property determined at observation-window
-generation. In contrast, SAR imaging quality varies continuously with acquisition
-geometry and is directly optimizable within the scheduling window. \citet{Chang2022Gaofen}
-propose early MOEAs for SAR satellite scheduling that combine an adaptive large
-neighborhood search with NSGA-II and NSGA-III selection; their three-objective
-model (ground-target loss rate, invalid observations, and sensor-activation
-count) targets operational metrics (the closest prior work to ours) but
-it omits imaging quality dimensions. \citet{Wei2025MONP}
-introduce a neural-policy-guided MOEA that incorporates a composite image
-quality score as an optimization objective. \citet{Kramer2025SARVis}
-schedule SAR constellation observations with a hybrid metaheuristic using a
-weighted visibility--performance composite, embedding a SAR-quality proxy in
-the scheduler, and \citet{Yao2024Bilevel}
-develop a bilevel evolutionary algorithm for multi-satellite scheduling
-that separates task allocation from detailed observation planning.
-\citet{ChangZhou2025Memetic} formulate agile Earth-observation scheduling
-with a bi-objective image-quality-loss/energy model in which quality enters as
-an attitude-angle proxy attached to each observation opportunity, and
-\citet{Wu2019NSGA3Formation} apply NSGA-III to satellite-formation imaging
-scheduling with coverage- and timeliness-type objectives; in this
-literature imaging quality is a scalar attribute or coarse proxy rather than a
-decomposed physical objective.
+Satellite scheduling is surveyed in depth by \citet{Ferrari2025} (over 200 publications
+across exact, heuristic, metaheuristic, and learning methods). Mixed-integer linear
+programming is exact on small instances but does not scale, motivating genetic
+algorithms, simulated annealing, tabu search~\citep{Wang2019MILP,Chen2019MILPMulti},
+a Lagrangian-relaxation heuristic for multi-satellite planning~\citep{Wang2026Lagrangian},
+and constraint programming for the super-agile problem~\citep{Caleiras2026SuperAgile};
+\citet{Lemaitre2002MultiSat} and \citet{Bianchessi2007} established the agile problem's
+time-dependent transition structure, and recent work packs more observations per orbit
+via free start times within visibility windows~\citep{Peng2019Orienteering,Chen2024LearnConstruct}.
+A fast-growing parallel line is learning-based: \citet{Liu2024TwoStageDRL} and
+\citet{Zhou2025TwoPhase} apply deep reinforcement learning to agile optical satellite
+scheduling, \citet{Jacquet2024GNN} combine graph networks with Monte Carlo tree search, and
+\citet{Herrmann2023} apply RL on-board without imaging quality; for
+high-density AEOS, \citet{Wu2026WhaleHighDensity} report convergence challenges echoing
+the density-driven tightening we analyze in \S~\ref{sec:scale-sensitivity}.
+Most prior work treats imaging quality as fixed at window generation, whereas SAR quality
+varies continuously with acquisition geometry and is directly optimizable inside the
+scheduling window. The SAR-specific branch applies multi-objective evolutionary algorithms
+(MOEAs) to this gap, but with quality as a scalar or proxy: \citet{Chang2022Gaofen} pair
+large-neighborhood search with NSGA-II/III over a three-objective operational model
+(ground-target loss, invalid observations, sensor activations; the closest prior work
+to ours, but without imaging quality); \citet{Wei2025MONP} use a neural-policy MOEA over a
+composite score; \citet{Kramer2025SARVis} embed a quality proxy for constellations;
+\citet{Yao2024Bilevel} separate allocation from detailed planning;
+\citet{ChangZhou2025Memetic} attach an attitude-angle proxy;
+\citet{Wu2019NSGA3Formation} use NSGA-III with coverage and timeliness objectives.
 The common limitation of this prior work is that SAR physical quality
 metrics such as noise-equivalent sigma zero (NESZ), azimuth resolution, and
 ground-range resolution are either absent or approximated by coarse
@@ -281,6 +256,13 @@ The hypervolume (HV) indicator \citep{Zitzler1999HV} is a standard
 Pareto-front comparison tool; its interpretational caveats for mixing
 single- and multi-objective solvers are handled in
 \S~\ref{sec:evaluation-metrics} and \S~\ref{sec:pareto-coupling}.
+For this study's use, three caveats matter. First, with origin-anchored reference boxes
+HV is insensitive to cardinality---dominated points add no volume, so one extreme point
+can out-volume an entire front. Second, it is blind to decision-space diversity, making
+front-ranking claims fragile when single-point greedy solvers and multi-point NSGA-III
+fronts are mixed. Third, these properties rule out HV as a standalone quality judgment,
+so we pair it with per-objective effect sizes and report it as a secondary diagnostic
+with explicit point-count controls.
 Our NSGA-III formulation makes these trade-offs explicit by placing
 coverage profit, geometric quality, and radiometric quality in a unified
 multi-objective framework.
