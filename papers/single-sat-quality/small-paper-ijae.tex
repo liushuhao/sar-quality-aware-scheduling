@@ -43,7 +43,7 @@ non-dominated sorting genetic algorithm III (NSGA-III), and we measure where
 the formulation pays off. Across 200 simulated scenarios spanning 20 to 500
 targets in a two-orbit horizon, sparse request sets reward re-optimisation
 over the greedy coverage baseline:
-$+34\%$
+$+33.7\%$
 geometric-index quality at a $14\%$ coverage cost and $+40\%$ radiometric-index
 quality at a $15\%$ cost (the squint-minimising greedy heuristic reaches
 $+45\%$ at a $49\%$ cost), with a controlled $+4.9\%$ third-objective margin
@@ -65,9 +65,9 @@ high density,
 which locates the loss of value in the schedule geometry and not in a
 redundancy between objectives. A four-variant objective ablation over
 $1{,}200$ further runs traces these gains to the squint channel rather than
-to objective redundancy. Mission planners can read the two boundaries as
-a quantitative rule for when quality-aware SAR scheduling justifies its
-coverage cost.
+to objective redundancy. Together the boundaries give planners two quantified operating limits:
+squint-envelope contraction and a density threshold, plus an optional
+operating point.
 \end{abstract}
 \begin{keyword}
 agile SAR \sep satellite scheduling \sep multi-objective optimization \sep NSGA-III \sep noise-equivalent sigma-zero (NESZ, relative ordering index) \sep geometric resolution
@@ -1428,7 +1428,7 @@ In sparse regimes ($N \leq 100$), MOEA-2 achieves a $+33.7\%$ geometric-quality
 improvement at S1 at a $14\%$ coverage cost ($f_1^* = 0.86$
 at $N=20$ relative to G-BL). Whether this trade-off is acceptable
 depends on the application: for maritime surveillance, the
-knee-point $+33.7\%$ $f_2$ gain at S1 corresponds to roughly a $25\%$ smaller
+knee-point gain at S1 corresponds to roughly a $25\%$ smaller
 per-task geometric area factor (the ground pixel area of a task scales with
 the reciprocal of the per-task index factor of Eq.~\ref{eq:f2}, evaluated at
 the elevation-plane angle; equivalently, a linear ground sample distance
@@ -1470,7 +1470,7 @@ on squint-agile platforms with the dedicated large-squint timing/processing
 chain of \S\ref{sec:constraints} (the $45^\circ$ experimental envelope of
 \S\ref{sec:constraints}), MOEA-2 may provide geometric quality gains
 that outweigh the coverage penalty in specific contexts: the knee point
-trades $14\%$ coverage for $+33\%$ $f_2$, while the best-coverage front
+trades $14\%$ coverage for $+33.7\%$ $f_2$, while the best-coverage front
 point still gives $+12.5\%$ $f_2$ at zero coverage cost, a configuration
 preferable when coverage cannot be sacrificed; for sparse requests on
 narrow-envelope platforms, and for dense monitoring campaigns
@@ -1637,7 +1637,11 @@ coincides with the greedy reference in all but one scenario, which delimits the
 benefit of adding physical objectives to profit-only search.
 For mission planning the rule is direct: quality-aware multi-objective
 scheduling pays on wide-envelope platforms with sparse request sets, and greedy
-methods attain the tested coverage reference at dense cadences. The boundary
+methods attain the tested coverage reference at dense cadences. The
+squint-minimized heuristic matches or exceeds MOEA-3's radiometric quality at
+every density, and a knee-point schedule dominates the best placement-only
+mixture in $92.5\%$ of scenarios for $f_2$, so the mixed family's advantage is
+an exchange-rate rather than a solver-ranking effect. The boundary
 estimates and the coupling decomposition give a baseline against which
 multi-satellite, multi-pass, and multi-mode extensions can be measured.
 % ── AI and AI-Assisted Technologies (Elsevier/ASR policy) ──
