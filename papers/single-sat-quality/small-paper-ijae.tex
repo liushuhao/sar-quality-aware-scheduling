@@ -905,6 +905,30 @@ analysis scripts); in the remaining 13 the exact optimum exceeds it by a
 mean of $6.7\%$ (median $5.4\%$, maximum $14.7\%$ of the exact value), so
 the anchor carries bounded headroom.
 
+The Friedman test on pooled HV is reported as a descriptive omnibus only:
+it confirms overall differences among the five
+solvers across all 200 scenarios ($\chi^2=669.02$, $p<10^{-140}$; conservative toward fewer
+distinct rankings, \S~\ref{sec:evaluation-metrics}), and the inferential
+weight rests on the per-objective pairwise analyses of
+Table~\ref{tab:solver-profiles}. G-BL, GA-P-BL, and G-SM each contribute a single point
+per scenario, so the pooled statistic is driven largely by the within-scenario
+HV dispersion of the two multi-point NSGA-III solvers rather than by
+baseline-vs-baseline differences. Pairwise Wilcoxon
+signed-rank tests use the Bonferroni threshold $\alpha=0.005$
+($\alpha=0.05/10$, the family of ten pairwise solver comparisons; the
+four-variant ablation of \S~\ref{sec:ablation} applies $\alpha=0.05/12$
+within each reported metric, each family of 12 being the three non-physics
+variants by four density classes against A; the S7--S8 ablation comparisons
+are reported as exploratory and lie outside these families); pairs
+with zero within-pair difference are dropped from the Wilcoxon signed-rank
+statistic and reported separately; interpretation
+relies on Cliff's $\delta$ given the large sample size.
+MOEA-2 and MOEA-3 differ on pooled HV with $\delta = -0.56$
+($p < 10^{-5}$), but this contrast blends the sparse-regime divergence with
+the dense-regime convergence and is inflated by the HV point-count
+asymmetry (\S~\ref{sec:pareto-coupling}); contrasts involving
+G-SM are large because it occupies an extreme radiometric-quality regime.
+
 The following subsections first map the density landscape---how the
 multi-objective advantage contracts with target density
 (\S\ref{sec:scale-sensitivity})---then isolate the squint-aware special
@@ -1388,11 +1412,7 @@ density, strongest at sparse density (\S~\ref{sec:pareto-coupling}), and
 MOEA-3 separates from MOEA-2 in $f_3$ at sparse
 density ($+6.2\%$ at $N=20$) with the advantage shrinking to $\lesssim 0.2\%$
 at $N \geq 300$, confirming the coverage-pressure mechanism detailed in
-\S~\ref{sec:pareto-coupling}. Taken together, these results establish that
-the G-BL-seeded front we obtain near the full-coverage working point, while
-offering multiple quality-coverage configurations,
-is compressed by the geometric coupling above: the narrow $f_2$ range limits
-practical differentiation between solutions.
+\S~\ref{sec:pareto-coupling}.
 \textbf{(3)}~G-SM occupies a distinct high-radiometric-quality regime at
 density-dependent coverage cost;
 \textbf{(4)}~solver outcomes become invariant to the choice of physical
@@ -1404,29 +1424,14 @@ geometric properties of the two-orbit-horizon observation geometry
 properties, \S~\ref{sec:pareto-coupling}); the fifth reflects solver
 initialization.
 
-The Friedman test on pooled HV is reported as a descriptive omnibus only:
-it confirms overall differences among the five
-solvers across all 200 scenarios ($\chi^2=669.02$, $p<10^{-140}$; conservative toward fewer
-distinct rankings, \S~\ref{sec:evaluation-metrics}), and the inferential
-weight rests on the per-objective pairwise analyses of
-Table~\ref{tab:solver-profiles}. G-BL, GA-P-BL, and G-SM each contribute a single point
-per scenario, so the pooled statistic is driven largely by the within-scenario
-HV dispersion of the two multi-point NSGA-III solvers rather than by
-baseline-vs-baseline differences. Pairwise Wilcoxon
-signed-rank tests use the Bonferroni threshold $\alpha=0.005$
-($\alpha=0.05/10$, the family of ten pairwise solver comparisons; the
-four-variant ablation of \S~\ref{sec:ablation} applies $\alpha=0.05/12$
-within each reported metric, each family of 12 being the three non-physics
-variants by four density classes against A; the S7--S8 ablation comparisons
-are reported as exploratory and lie outside these families); pairs
-with zero within-pair difference are dropped from the Wilcoxon signed-rank
-statistic and reported separately; interpretation
-relies on Cliff's $\delta$ given the large sample size.
-MOEA-2 and MOEA-3 differ on pooled HV with $\delta = -0.56$
-($p < 10^{-5}$), but this contrast blends the sparse-regime divergence with
-the dense-regime convergence and is inflated by the HV point-count
-asymmetry (\S~\ref{sec:pareto-coupling}); contrasts involving
-G-SM are large because it occupies an extreme radiometric-quality regime.
+Taken together, these results establish that
+the G-BL-seeded front we obtain near the full-coverage working point, while
+offering multiple quality-coverage configurations,
+is compressed by the geometric coupling above: the narrow $f_2$ range limits
+practical differentiation between solutions.
+
+The pooled-HV Friedman omnibus and pairwise contrasts are reported in
+\S~\ref{sec:overall-performance}.
 
 Independently of the multi-objective question, GA-P-BL is never worse than
 G-BL by construction and coincides with it in all but one scenario
