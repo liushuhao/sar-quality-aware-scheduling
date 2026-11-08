@@ -756,7 +756,7 @@ classes (S4 MOEA-3 $f_2$ 10th percentile $0.291$ vs.\ G-BL mean $0.336$).
 \subsection{Experiment Design Overview}
 \label{sec:experiment-design}
 
-This study comprises three classes of experiments.
+This study comprises the following classes of experiments.
 The first is the main experiment, running all five configurations (G-BL, G-SM,
 the GA-P-BL control, MOEA-2, MOEA-3)
 on 50 scenarios per density class (S1--S4), totaling 200 scenarios.
@@ -776,9 +776,9 @@ values fall inside the five-repeat envelope of the same instance; the
 largest deviations occur in sparse scenarios, where small schedules can
 settle into distinct local optima. Pinning the remaining process-level
 randomness is left as a reproducibility recommendation. In addition, the
-agility-envelope sensitivity is probed directly: the sparse $N=20$
-configuration is repeated under tightened squint caps ($25^\circ$ and
-$15^\circ$; \S\ref{sec:envelope-sensitivity}).
+agility-envelope sensitivity is probed directly on the sparse $N=20$
+subset under tightened squint caps
+($25^\circ$, $15^\circ$; \S\ref{sec:envelope-sensitivity}).
 The second is the ablation experiment, which successively removes the squint component
 (variant B), the incidence-angle component (variant C), and all physical objectives
 (variant D) from the MOEA-3 framework, running each variant on the same
@@ -911,8 +911,10 @@ multi-objective advantage contracts with target density
 regime (\S\ref{sec:squint-special}), decompose the underlying mechanism
 (\S\ref{sec:pareto-coupling}), test whether the measured gains survive
 ablation and the initialization and budget controls
-(\S\ref{sec:ablation}--\S\ref{sec:robustness-calibration}), and finally
-probe the agility-envelope sensitivity (\S\ref{sec:envelope-sensitivity}).
+(\S\ref{sec:ablation}--\S\ref{sec:robustness-calibration}),
+probe the agility-envelope sensitivity (\S\ref{sec:envelope-sensitivity}),
+and finally quantify the coverage-stratified frontier control against the
+cheapest placement-only alternative (\S\ref{sec:frontier-control}).
 
 % ── 6.2 Scale Sensitivity (Fig 3) ──
 \subsection{Scale Sensitivity}
@@ -993,7 +995,13 @@ The $f_3$ row of Fig.~\ref{fig:fig3} shows the same sparse-to-dense contraction 
 radiometric objective: at sparse density MOEA-3 separates visibly from G-BL
 and G-SM sits in its own high-$f_3$ regime, whereas the dense panels show all
 solvers converging to nearly identical distributions, consistent with
-Table~\ref{tab:solver-profiles}.
+Table~\ref{tab:solver-profiles}. Acquisition timeliness, now measured rather
+than assumed: relative to the earliest window starts, G-BL itself drifts by
+class-means of $100$--$652$\,s because greedy sequencing defers tasks
+cumulatively, so the knee-vs-G-BL difference is the meaningful quantity---and it is
+confined to the sparse regime: the quality-steering knee schedules lag G-BL
+by $167$\,s on average at S1, while at S2--S4 the class-mean delays agree
+within $4$\,s.
 
 % ── 6.3 Squint-Aware Special Regime (Fig 2) ──
 \subsection{Squint-Aware Special Regime}
@@ -1340,6 +1348,20 @@ absolute geometry improves for every solver under the tighter cap
 (G-BL $f_2$ rises from $0.295$ to $0.405$ to $0.448$), because window
 filtering removes the low-quality high-squint options.
 
+% ── 6.8 Coverage-Stratified Frontier Control ──
+\subsection{Coverage-Stratified Frontier Control}\label{sec:frontier-control}
+Beyond the coverage--quality exchange rate, MOEA-3's remaining value is
+the coverage-stratified frontier itself, measured against the cheapest
+alternative: a placement-only
+interpolation family (a $q$-fraction of the greedy coverage schedule
+re-timed by the squint-minimising rule,
+$q \in \{0, 0.25, 0.5, 0.75, 1\}$, $K=10$ random subsets per level,
+feasibility restored by the same C2 repair the heuristic uses); that
+family is feasible throughout, and at matched coverage (mixture coverage
+at or above the knee point's) the knee point dominates the best feasible
+mixture point in $185$ of the $200$ scenarios ($92.5\%$) for $f_2$ and
+$184$ ($92.0\%$) for $f_3$.
+
 % ============================================================
 %  7. DISCUSSION (~1200 words)
 % ============================================================
@@ -1431,27 +1453,22 @@ preferable. In dense regimes ($N \geq 300$), the multi-objective
 advantage falls below $1\%$ improvement in $f_2$, while G-SM offers
 the highest radiometric quality ($+16\%$ $f_3$ at S4) at a $63\%$
 coverage cost; this gain comes from the one-line squint-minimization
-heuristic rather than from multi-objective search.
+heuristic rather than from multi-objective search. Read as an exchange
+rate, this favors the quality-first heuristic when coverage can be
+spent: G-SM matches or exceeds MOEA-3's radiometric quality at every
+density ($f_3$ higher by $+3.4\%$, $+23.1\%$, $+21.3\%$, $+15.6\%$ at
+S1--S4, from the class means of Table~\ref{tab:solver-profiles}) while
+spending $49$--$71\%$ of the achievable coverage ($f_1^* = 0.51$,
+$0.35$, $0.29$, $0.37$ against the G-BL anchor of $1.00$).
 
-Read as an exchange rate, this favors the quality-first heuristic when
-coverage can be spent: G-SM matches or exceeds MOEA-3's radiometric quality
-at every density ($f_3$ higher by $+3.4\%$, $+23.1\%$, $+21.3\%$, $+15.6\%$
-at S1--S4, from the class means of Table~\ref{tab:solver-profiles}) while
-spending $49$--$71\%$ of the achievable coverage ($f_1^* = 0.51$, $0.35$,
-$0.29$, $0.37$ against the G-BL anchor of $1.00$). The operational choice is
-therefore application-side---coverage budget versus achievable quality---rather
-than solver-side: MOEA-3's remaining value is the coverage-stratified frontier
-itself, and this is now measured against the cheapest alternative: a
-placement-only interpolation family (a $q$-fraction of the greedy coverage
-schedule re-timed by the squint-minimising rule,
-$q \in \{0, 0.25, 0.5, 0.75, 1\}$, $K=10$ random subsets per level,
-feasibility restored by the same C2 repair the heuristic uses) is feasible
-throughout, and at matched coverage (mixture coverage at or above the knee
-point's) the knee point dominates the best feasible mixture point in $185$
-of the $200$ scenarios ($92.5\%$) for $f_2$ and $184$ ($92.0\%$) for $f_3$.
-The family re-times G-BL's selection only---it does not mix task selections,
-and its $q=1$ endpoint is not G-SM itself---so the measured comparison
-bounds the re-timing channel, not selection diversity.
+The operational choice is therefore application-side---coverage budget
+versus achievable quality---rather than solver-side: the
+coverage-stratified-frontier control (\S\ref{sec:frontier-control})
+shows the knee point dominating the cheapest placement-only alternative.
+The interpolation family (\S\ref{sec:frontier-control}) re-times G-BL's
+selection only---it does not mix task selections, and its $q=1$ endpoint
+is not G-SM itself---so the measured comparison bounds the re-timing
+channel, not selection diversity.
 
 The quality advantage of physics-aware multi-objective scheduling is therefore
 specific to wide-envelope platforms (\S\ref{sec:envelope-sensitivity}); on
@@ -1477,14 +1494,9 @@ so the greedy choice follows the mission's priority. Indeed, the
 MOEA-2 coverage gap relative to the coverage-only anchor is
 within $0.4\%$ at $N \geq 300$ (Table~\ref{tab:scale-sensitivity}); since GA-P-BL
 coincides with G-BL in all but one scenario, no meaningful separate gap
-exists. Acquisition timeliness, now measured rather than assumed: relative
-to the earliest window starts, G-BL itself drifts by class-means of
-$100$--$652$\,s because greedy sequencing defers tasks cumulatively, so the
-arms' difference is the meaningful quantity---and it is confined to the
-sparse regime: the quality-steering knee schedules lag G-BL by $167$\,s on
-average at S1, while at S2--S4 the class-mean delays agree within $4$\,s.
-Acquisition timeliness therefore adds a cost to the quality gain only where
-that gain is on offer, and does not differentiate the dense-regime choice.
+exists. The measured timeliness (\S\ref{sec:scale-sensitivity}) adds a cost to
+the quality gain only where that gain is on offer, and does not
+differentiate the dense-regime choice.
 
 \subsection{Transferability Across Remote-Sensing Domains}
 The analytic device most likely to transfer beyond SAR is the
@@ -1562,7 +1574,7 @@ are conditional on the tested caps; the
 dwell time is fixed at 30\,s, removing the dwell-versus-SNR trade-off from
 the model. The utility model optimizes quality and quantity without an explicit
 latency or urgency objective; acquisition timeliness is not optimized, but
-the acquisition-delay statistic of \S~\ref{sec:operational-implications}
+the acquisition-delay statistic of \S~\ref{sec:scale-sensitivity}
 now measures it post hoc.
 
 \paragraph{Threshold.}
