@@ -97,9 +97,7 @@ SAR 成像在调度器可选择获取时刻时根本性地偏离这一假设，�
 该问题通过时间依赖利润的定向问题归约 \citep{Peng2019Orienteering} 被证明为 NP-hard，
 排除了除最小实例外所有情况下的多项式时间精确算法。
 SAR 文献已建立了 NESZ 和几何分辨率作为观测几何函数的成熟模型 \citep{Curlander1991,Cumming2005}，
-多目标优化文献提供了如 NSGA-III \citep{Deb2014} 等成熟框架用于同时处理三个或更多目标。
-然而，这三类要素的直接整合（SAR 物理建模、多目标进化算法（MOEA）和卫星调度）
-仍有限。因此，我们将 SAR 调度公式化为在 MOEA 框架内具有独立、物理导出的几何和辐射质量目标。
+因此，我们将 SAR 调度公式化为在多目标进化算法（MOEA）框架内具有独立、物理导出的几何和辐射质量目标。
 
 我们公式化了一个三目标敏捷 SAR 调度问题，其中调度器同时优化：
 (1) 总覆盖收益，(2) 平均几何图像质量（地面距离和方位分辨率），
@@ -194,11 +192,7 @@ $\text{NESZ} \propto R^3$
 （条带 SAR 经方位压缩增益后）\citep{Curlander1991,Moreira2026}。
 本文使用的具体斜距分解与排序指标近似在 \S~\ref{sec:objective-functions} 中推导。
 \citet{Moreira2026} 调查了星载 SAR 技术的演进，并强调成像质量与采集几何内在相关。
-这些质量模型在 SAR 系统设计中常规用于指定性能包络（例如，条带上的最大 NESZ）。
-然而，它们在调度中的使用仍限于固定观测计划的事后验证 \citep{KramerMiller2024}
-或在观测窗口层面的二元可行性过滤 \citep{QualityScreening2026}（arXiv 预印本）。
-调度文献和 SAR 质量建模文献一直在并行发展：调度器将质量视为约束，
-而 SAR 工程师在调度确定后计算质量。我们的工作通过将连续质量函数直接嵌入优化目标空间，
+我们的工作通过将连续质量函数直接嵌入优化目标空间，
 连接了这两个领域。
 \subsection{多目标进化优化}
 多目标进化算法已发展为处理两个或更多竞争性目标的标准工具包。
@@ -208,9 +202,9 @@ NSGA-III 算法 \citep{Deb2014} 通过基于参考点的多样性保持机制，
 星座设计和任务规划问题，其中燃料消耗、覆盖率和重访时间等目标必须同时平衡。
 在卫星调度中，MOEA 主要应用于光学领域，目标包括总收益、任务完成时间、
 资源利用率和负载均衡。
-超体积（HV）指标是比较帕累托前沿近似最广泛使用的质量度量 \citep{Zitzler1999HV}，
-但其对决策空间多样性的盲视在比较单目标和多目标求解器时产生了可解释性挑战，
-我们在 \S~\ref{sec:evaluation-metrics} 与 \S~\ref{sec:pareto-coupling} 中处理了这一方法论问题。
+超体积（HV）指标 \citep{Zitzler1999HV} 是比较帕累托前沿的标准工具；
+其在单目标与多目标求解器混比时的可解释性注意事项在
+\S~\ref{sec:evaluation-metrics} 与 \S~\ref{sec:pareto-coupling} 中处理。
 我们的 NSGA-III 公式化通过将覆盖收益、几何质量和辐射质量
 置于统一的多目标框架中，使这些权衡变得明确，产生任务规划者可以检查的帕累托前沿，
 以做出明智的质量-覆盖决策。
@@ -461,7 +455,7 @@ GA 运行 200 代，采用模拟二进制交叉（$p_c = 0.9$, $\eta_c = 20$）
 若 GA 的 $f_1$ 低于 G-BL，则改返回贪心调度，从而按构造保证
 $f_1^{\text{GA-P-BL}} \ge f_1^{\text{G-BL}}$。实践中该保护使 GA-P-BL 的输出
 在 200 个场景中的 199 个上与 G-BL 数值相同（唯一例外场景的收益提高 $13.5\%$；
-$f_1^*$ 均值之差小于 $0.001$）（\S~\ref{sec:overall-performance}）；
+$f_2$ 与 $f_3$ 的均值在所有尺度上与 G-BL 相差小于 $0.001$）（\S~\ref{sec:overall-performance}）；
 因此 GA-P-BL 起的是确认贪心收益基线的对照作用，而非独立求解器。
 \subsection{MOEA-2 和 MOEA-3：多目标进化算法}
 \label{sec:moea-description}
@@ -555,7 +549,7 @@ MOEA-2 和 MOEA-3 采用 NSGA-III，具有与 GA-P-BL 相同的种群大小、�
 \subsection{评估指标}\label{sec:evaluation-metrics}
 我们将逐目标比较与 Cliff's $\delta$ 效应量作为主要质量指标，因为单目标贪心求解器与多点 NSGA-III 前沿向目标空间贡献的点数不同。超体积（HV）仅作为次要诊断量报告：以原点为参考盒时它对基数不敏感（被支配点不贡献体积），但对决策空间多样性盲视——如 \S~\ref{sec:pareto-coupling} 所示，若纳入单点 G-SM，其排序会反转（G-SM 的 HV 为 $0.2341$，高于 MOEA-3 的 $0.0893$），因此 HV 不被解释为独立的质量判断。
 统计显著性通过 Friedman 检验评估五种配置 $\times$ 200 个场景的总体差异，
-随后进行配对 Wilcoxon 符号秩检验，采用 Bonferroni 校正（$\alpha = 0.05 / 10 = 0.005$，即十个逐对求解器比较的检验族；消融四变体按每个所报告指标分别施加 $\alpha=0.05/12$，每族为 3 个非物理变体 $\times$ 4 个密度类对 A 的比较，\S~\ref{sec:ablation}；S7--S8 消融比较为探索性、不在上述各族内；零差值配对从 Wilcoxon 统计量中剔除并单独报告）；由于 G-BL 与 GA-P-BL 在 200 个场景的 199 个上重合（且按构造从不劣于 G-BL），Friedman 统计量对更少的不同排名是保守的，且主要由两个多点 NSGA-III 求解器的场景内离散驱动。
+随后进行配对 Wilcoxon 符号秩检验，采用 Bonferroni 校正（$\alpha = 0.05 / 10 = 0.005$，即十个逐对求解器比较的检验族；消融四变体按每个所报告指标分别施加 $\alpha=0.05/12$，每族为 3 个非物理变体 $\times$ 4 个密度类对 A 的比较，\S~\ref{sec:ablation}；S7--S8 消融比较为探索性、不在上述各族内；零差值配对从 Wilcoxon 统计量中剔除并单独报告）；由于 G-BL 与 GA-P-BL 在除一个场景外均重合（\S\ref{sec:ga-p-bl}），Friedman 统计量对更少的不同排名是保守的，且主要由两个多点 NSGA-III 求解器的场景内离散驱动。
 每目标配对检验和消融比较以原始 $p$ 值报告，同时给出 Bonferroni 阈值。
 效应量通过 Cliff's $\delta$ 测量，按 \citet{Romano2006} 的分类
 （$|\delta| < 0.147$ 可忽略，$< 0.33$ 小，$< 0.474$ 中，$\geq 0.474$ 大）。
@@ -591,7 +585,7 @@ $\delta_{\text{pairs}} = (W - L)/n$；
 在最稀疏密度 S1，MOEA-2 相对于 G-BL 改善了 $f_2$ $+33.7\%$（逐场景比值口径；合并均值之比为 $+33\%$：$0.393$ vs.\ $0.295$），同时接受 $14\%$ 的覆盖率降低（$f_1^* = 0.86$，膝点值；最佳覆盖率前沿点 $+12.5\%$）；
 MOEA-3 以 $15\%$ 覆盖率代价（$f_1^* = 0.85$）将 $f_3$ 提升 $+40\%$（$0.698$ vs.\ $0.497$）。
 在 S2 性能增益减小，在 S3--S4 MOEA 覆盖率和质量收敛到 G-BL 参考值。
-在每个尺度上，GA-P-BL 的输出在除一个场景外均与 G-BL 数值相同（各尺度下 $f_1^*$ 均值均为 $1.00$，均值 $f_2$ 与 $f_3$ 与 G-BL 相差在 $0.001$ 内，唯一差异场景改善收益；\S~\ref{sec:ga-p-bl}），充当确认贪心覆盖率基线的对照，而非独立的求解器；因此以 G-BL 而非 GA-P-BL 归一化（\S\ref{sec:objective-functions}）对 MOEA 的覆盖缺口是保守的，按 G-BL 归一化的 $f_1^*$ 与相对单目标 GA 的覆盖比较一致。
+在每个尺度上，GA-P-BL 的输出在除一个场景外均与 G-BL 数值相同（各尺度下 $f_1^*$ 均值均为 $1.00$；\S~\ref{sec:ga-p-bl}），充当确认贪心覆盖率基线的对照，而非独立的求解器；因此以 G-BL 而非 GA-P-BL 归一化（\S\ref{sec:objective-functions}）对 MOEA 的覆盖缺口是保守的，按 G-BL 归一化的 $f_1^*$ 与相对单目标 GA 的覆盖比较一致。
 G-SM 占据一个不同的运行区域，以覆盖率和 $f_2$ 换取更高的 $f_3$。
 
 按保留的地面参照因子重算上文的稀疏场景对比，MOEA-3 相对 G-BL 的增益从 $+40\%$ 扩大到
@@ -658,15 +652,14 @@ G-BL    & 0.0234 & 0.0150 \\
 \begin{figure}[H]
     \centering
     \includegraphics[width=\textwidth]{fig1_hypervolume.pdf}
-    \caption{统计验证，以排程内效应量证据为主：（a，左）配对效应量，用匹配对符号统计量 $\delta_{\text{pairs}}=(W-L)/n$（Cliff's $\delta$ 的场景内类比形式；主证据）；（b，右）超体积分布，论文仅将其作为次要诊断报告（\S\ref{sec:pareto-coupling}）；灰色波段标记 \citet{Romano2006} 可忽略效应区（$|\delta|<0.147$；仅供参照，配对比较的常规未配对 $\delta$ 更弱），见 \S~\ref{sec:evaluation-metrics}；小灰点为超出 $1.5\times$ 四分位距（IQR）的逐场景离群值，灰色柱标记 MOEA-2 与 MOEA-3 的比较（$\delta = -0.56$）。}
+    \caption{统计验证，以排程内效应量证据为主：（a，左）配对效应量，用匹配对符号统计量 $\delta_{\text{pairs}}=(W-L)/n$（Cliff's $\delta$ 的场景内类比形式；主证据）；（b，右）超体积分布（仅次要诊断，\S\ref{sec:pareto-coupling}）；灰色波段标记 \citet{Romano2006} 可忽略效应区（$|\delta|<0.147$；仅供参照，配对比较的常规未配对 $\delta$ 更弱），见 \S~\ref{sec:evaluation-metrics}；小灰点为超出 $1.5\times$ 四分位距（IQR）的逐场景离群值，灰色柱标记 MOEA-2 与 MOEA-3 的比较（$\delta = -0.56$）。}
     \label{fig:fig1}
 \end{figure}
 
 图~\ref{fig:fig1} 汇总了这些比较背后的统计证据。左面板报告 HV 上的配对效应量（匹配对符号统计量）；超出灰色波段（$|\delta|<0.147$）的条形超过可忽略效应阈值，
 方向约定为正 $\delta$ 有利于行求解器。
 右面板展示各求解器在共享最小--最大归一化下的逐场景超体积（HV）分布：
-多点 NSGA-III 求解器的池化 HV 高于 G-BL，而 G-SM 的极端运行点实际上给出所有求解器中最高的 HV（\S~\ref{sec:pareto-coupling}）。
-由于 HV 对基数不敏感却对决策空间多样性盲视（单个极端点可压过整条前沿的体积），这些排序仅作为次要诊断解读，
+按 \S~\ref{sec:evaluation-metrics}，HV 排序仅作为次要诊断解读，
 点计数混淆在 \S~\ref{sec:pareto-coupling} 中分析。
 后续五个小节量化斜视感知特殊区域（\S\ref{sec:squint-special}），追踪其优势如何随目标密度
 收缩（\S\ref{sec:scale-sensitivity}--\S\ref{sec:pareto-coupling}），并检验该优势
@@ -1002,7 +995,7 @@ MOEA-2 和 MOEA-3 在池化 HV 上不同，$\delta = -0.56$（$p < 10^{-5}$）�
 但该对比混合了稀疏区域的发散与密集区域的收敛，且被 HV 点计数不对称性放大（\S~\ref{sec:pareto-coupling}），
 而涉及 G-SM 的对比很大，因为它占据了一个极端的辐射质量区域。
 
-独立于多目标问题本身，GA-P-BL 的输出在除一个场景外均与 G-BL 相同（按构造从不更差；\S~\ref{sec:ga-p-bl}）；
+独立于多目标问题本身，GA-P-BL 按构造从不劣于 G-BL，且除一个场景外与 G-BL 重合（\S~\ref{sec:ga-p-bl}）；
 因此本研究的结论限定为添加物理目标的边际价值，而非收益导向搜索本身。
 \subsection{运营指导意义}
 \label{sec:operational-implications}

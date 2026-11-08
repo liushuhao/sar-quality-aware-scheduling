@@ -120,14 +120,10 @@ The problem is NP-hard by reduction from the Orienteering Problem with
 Time-Dependent Profits \citep{Peng2019Orienteering}, precluding
 polynomial-time exact algorithms for all but the smallest instances.
 The SAR literature has well-established models for NESZ and geometric resolution
-as functions of observation geometry \citep{Curlander1991,Cumming2005}, and
-the multi-objective optimization literature provides mature frameworks such
-as the Non-dominated Sorting Genetic Algorithm III (NSGA-III) \citep{Deb2014} for handling three or more objectives simultaneously.
-Yet direct integration of these three elements (SAR physical modeling,
-multi-objective evolutionary algorithms (MOEAs), and satellite scheduling)
-remains limited. We therefore formulate SAR scheduling with separate,
-physics-derived geometric and radiometric quality objectives within a MOEA
-framework.
+as functions of observation geometry \citep{Curlander1991,Cumming2005}. We
+therefore formulate SAR scheduling with separate,
+physics-derived geometric and radiometric quality objectives within a
+multi-objective evolutionary algorithm (MOEA) framework.
 
 We formulate a three-objective agile SAR scheduling problem in which the
 scheduler optimizes (1) total coverage profit, (2) mean geometric image quality
@@ -140,7 +136,6 @@ single-objective genetic algorithm with greedy hot-start (GA-P-BL, a control
 that returns the greedy schedule whenever it fails to improve profit, so it
 is never worse than G-BL), and two NSGA-III
 variants (MOEA-2 and MOEA-3) with two and three objectives.
-
 
 The specific contributions of the paper are:
 \begin{enumerate}[nosep]
@@ -274,13 +269,7 @@ cube of slant range: $\text{NESZ} \propto R^3$ for Stripmap SAR after azimuth co
 gain~\citep{Curlander1991,Moreira2026}. The specific range decomposition and
 ordering-index approximation used in this work are derived in
 \S~\ref{sec:objective-functions}.
-These quality models are routinely used in SAR system design but their use in
-scheduling remains limited to post hoc validation of fixed
-observation plans~\citep{KramerMiller2024} or binary feasibility filtering
-at the observation-window level~\citep{QualityScreening2026}. The
-scheduling literature and the SAR quality modeling literature have
-developed in parallel: schedulers treat quality as a constraint, while
-SAR engineers compute quality after the schedule is fixed. Our study
+Our study
 connects these two domains by embedding continuous quality functions
 directly into the optimization objective space.
 \subsection{Multi-Objective Evolutionary Optimization}
@@ -288,10 +277,9 @@ Multi-objective evolutionary algorithms are a standard toolkit
 for problems with competing objectives. The NSGA-III algorithm
 \citep{Deb2014} extends the NSGA-II framework \citep{Deb2002NSGA2} to many-objective problems
 through reference-point-based diversity preservation.
-The hypervolume (HV) indicator is widely used for comparing Pareto fronts
-\citep{Zitzler1999HV}, but its blindness to decision-space diversity creates
-interpretational challenges when mixing single-objective and multi-objective
-solvers, a methodological issue we address in
+The hypervolume (HV) indicator \citep{Zitzler1999HV} is a standard
+Pareto-front comparison tool; its interpretational caveats for mixing
+single- and multi-objective solvers are handled in
 \S~\ref{sec:evaluation-metrics} and \S~\ref{sec:pareto-coupling}.
 Our NSGA-III formulation makes these trade-offs explicit by placing
 coverage profit, geometric quality, and radiometric quality in a unified
@@ -621,7 +609,8 @@ schedule with G-BL: if the GA's $f_1$ falls short, the greedy schedule is
 returned instead, guaranteeing $f_1^{\text{GA-P-BL}} \ge f_1^{\text{G-BL}}$ by
 construction. In practice this guard makes GA-P-BL output numerically
 identical to G-BL in 199 of 200 scenarios (the single exception improves
-profit by $13.5\%$; mean $f_1^*$ differs by less than $0.001$)
+profit by $13.5\%$; mean $f_2$ and $f_3$ are within $0.001$ of G-BL at
+every scale)
 (\S\ref{sec:overall-performance}); GA-P-BL therefore acts as a control that
 confirms the greedy profit baseline rather than as an independent solver.
 \subsection{MOEA-2 and MOEA-3: Multi-Objective Evolutionary Algorithms}
@@ -753,9 +742,9 @@ exceeds MOEA-3's $0.0893$), so HV is not interpreted as a standalone quality
 judgment. Statistical significance is assessed via the Friedman test for
 overall differences across the five configurations $\times$ 200 scenarios, followed by
 pairwise Wilcoxon signed-rank comparisons with Bonferroni correction
-($\alpha = 0.05 / 10 = 0.005$); because G-BL and GA-P-BL coincide in 199 of 200 scenarios (and never differ
-to GA-P-BL's disadvantage by construction),
-the Friedman statistic is conservative toward fewer distinct rankings and is
+($\alpha = 0.05 / 10 = 0.005$); because G-BL and GA-P-BL coincide in all but
+one scenario (\S\ref{sec:ga-p-bl}), the Friedman statistic is conservative
+toward fewer distinct rankings and is
 driven largely by within-scenario dispersion of the two multi-point NSGA-III
 solvers. Per-objective and ablation comparisons are
 reported with raw $p$-values alongside the Bonferroni threshold. Effect
@@ -856,8 +845,7 @@ MOEA-3 raises $f_3$ by $+40\%$ ($0.698$ vs.\ $0.497$) at a $15\%$ coverage cost
 At S2 the performance gains diminish, and at S3--S4 MOEA coverage and quality
 converge to the G-BL reference. Across every scale, GA-P-BL output is
 numerically identical to G-BL in all but one scenario (mean $f_1^* = 1.00$
-at every scale, mean $f_2$ and $f_3$ within $0.001$ of G-BL, and the single
-differing scenario improves profit;
+at every scale;
 Sec.~\ref{sec:ga-p-bl}), serving as a control that confirms the greedy
 coverage baseline rather than an independent solver; normalization by G-BL
 rather than GA-P-BL (\S\ref{sec:objective-functions}) is therefore
@@ -935,7 +923,7 @@ G-BL    & 0.0234 & 0.0150 \\
 \begin{figure}[H]
     \centering
     \includegraphics[width=\textwidth]{fig1_hypervolume.pdf}
-    \caption{Statistical validation, led by the within-schedule effect-size evidence: (a, left) pairwise effect sizes as the matched-pairs sign statistic $\delta_{\text{pairs}} = (W-L)/n$, the within-scenario analogue of Cliff's $\delta$ (the primary evidence); (b, right) hypervolume distribution, which the paper reports as a secondary diagnostic only (\S\ref{sec:pareto-coupling}); the gray band marks the negligible-effect range ($|\delta|<0.147$ of \citet{Romano2006}; shown for reference, as the conventional unpaired $\delta$ is weaker for the within-pair comparisons, see \S\ref{sec:evaluation-metrics}); small grey dots are per-scenario outliers beyond $1.5\times$ the interquartile range (IQR), and the grey bar marks the MOEA-2 vs. MOEA-3 comparison ($\delta = -0.56$).}
+    \caption{Statistical validation, led by the within-schedule effect-size evidence: (a, left) pairwise effect sizes as the matched-pairs sign statistic $\delta_{\text{pairs}} = (W-L)/n$, the within-scenario analogue of Cliff's $\delta$ (the primary evidence); (b, right) hypervolume distribution (secondary diagnostic only, \S\ref{sec:pareto-coupling}); the gray band marks the negligible-effect range ($|\delta|<0.147$ of \citet{Romano2006}; shown for reference, as the conventional unpaired $\delta$ is weaker for the within-pair comparisons, see \S\ref{sec:evaluation-metrics}); small grey dots are per-scenario outliers beyond $1.5\times$ the interquartile range (IQR), and the grey bar marks the MOEA-2 vs. MOEA-3 comparison ($\delta = -0.56$).}
     \label{fig:fig1}
 \end{figure}
 
@@ -944,13 +932,10 @@ comparisons. The left panel reports pairwise effect sizes on
 HV as the matched-pairs sign statistic; bars outside the gray band ($|\delta|<0.147$) exceed the negligible-effect
 threshold, and the direction convention is that positive $\delta$ favors the
 row solver. The right panel shows the per-scenario hypervolume (HV)
-distribution of each solver under a shared min--max normalization: the
-multi-point NSGA-III solvers attain higher pooled HV than G-BL, while the
-extreme operating point of G-SM in fact yields the highest HV of any solver
-(\S~\ref{sec:pareto-coupling}). Because HV is insensitive to cardinality yet blind to
-decision-space diversity (a single extreme point can out-volume an entire
-front), these rankings are interpreted only as secondary diagnostics, and the
-point-count confound is analyzed in \S~\ref{sec:pareto-coupling}.
+distribution under a shared min--max normalization; per
+\S~\ref{sec:evaluation-metrics} the HV rankings are secondary diagnostics
+only, and the point-count confound is analyzed in
+\S~\ref{sec:pareto-coupling}.
 
 The next five subsections quantify the squint-aware special regime
 (\S\ref{sec:squint-special}), trace how its advantage contracts with target
@@ -1051,9 +1036,6 @@ refit $N_{50} = 50.8$, CI $[38.1, 63.1]$; cap-free subset $N_{50} = 50.8$,
 CI $[37.5, 62.8]$, $n=253$), and the 47 ceiling-bound scenarios---all in
 the dense classes---show no deficit ($0/47$): the density boundary is a
 sparse-regime phenomenon, not an artefact of the bound/unbound mix.
-The transition between a measurable and a negligible multi-objective
-advantage therefore lies in the $N \in [20, 100]$ band, and beyond $N = 150$
-the advantage is effectively absent.
 The $f_3$ row of Fig.~\ref{fig:fig3} shows the same pattern on the
 radiometric objective: at sparse density MOEA-3 separates visibly from G-BL
 and G-SM sits in its own high-$f_3$ regime, whereas the dense panels show all
@@ -1413,9 +1395,9 @@ the dense-regime convergence and is inflated by the HV point-count
 asymmetry (\S~\ref{sec:pareto-coupling}); contrasts involving
 G-SM are large because it occupies an extreme radiometric-quality regime.
 
-Independently of the multi-objective question, GA-P-BL output coincides with
-G-BL in all but one scenario (never worse by construction;
-Sec.~\ref{sec:ga-p-bl}); the present claims therefore concern the marginal
+Independently of the multi-objective question, GA-P-BL is never worse than
+G-BL by construction and coincides with it in all but one scenario
+(\S\ref{sec:ga-p-bl}); the present claims therefore concern the marginal
 value of adding physical objectives rather than profit-oriented search alone.
 
 \subsection{Operational Implications}
