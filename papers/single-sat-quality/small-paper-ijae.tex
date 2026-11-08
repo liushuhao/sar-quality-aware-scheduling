@@ -158,7 +158,7 @@ The specific contributions of the paper are:
     $45^\circ$ to $15^\circ$), and the density threshold beyond which the
     multi-objective variants converge to the greedy coverage anchor
     ($N_{50} \approx 51$; negligible advantage beyond $N=150$)
-    (\S\ref{sec:scale-sensitivity}, \S\ref{sec:operational-implications});
+    (\S\ref{sec:scale-sensitivity}, \S\ref{sec:envelope-sensitivity});
     \item An anchor-independent decomposition of the $f_2$--$f_3$ coupling
     that separates the trade-off carried by raw visibility geometry from the
     within-schedule residual (\S\ref{sec:pareto-coupling}): measured across
@@ -775,7 +775,10 @@ $f_2$ and $0.20$ in $f_3$ at S1). At the scenario level, $91\%$ of the main-run 
 values fall inside the five-repeat envelope of the same instance; the
 largest deviations occur in sparse scenarios, where small schedules can
 settle into distinct local optima. Pinning the remaining process-level
-randomness is left as a reproducibility recommendation.
+randomness is left as a reproducibility recommendation. In addition, the
+agility-envelope sensitivity is probed directly: the sparse $N=20$
+configuration is repeated under tightened squint caps ($25^\circ$ and
+$15^\circ$; \S\ref{sec:envelope-sensitivity}).
 The second is the ablation experiment, which successively removes the squint component
 (variant B), the incidence-angle component (variant C), and all physical objectives
 (variant D) from the MOEA-3 framework, running each variant on the same
@@ -902,11 +905,14 @@ analysis scripts); in the remaining 13 the exact optimum exceeds it by a
 mean of $6.7\%$ (median $5.4\%$, maximum $14.7\%$ of the exact value), so
 the anchor carries bounded headroom.
 
-The next five subsections quantify the squint-aware special regime
-(\S\ref{sec:squint-special}), trace how its advantage contracts with target
-density (\S\ref{sec:scale-sensitivity}--\S\ref{sec:pareto-coupling}), and
-test whether it survives ablation and the initialization and budget
-controls (\S\ref{sec:ablation}--\S\ref{sec:robustness-calibration}).
+The following subsections first map the density landscape---how the
+multi-objective advantage contracts with target density
+(\S\ref{sec:scale-sensitivity})---then isolate the squint-aware special
+regime (\S\ref{sec:squint-special}), decompose the underlying mechanism
+(\S\ref{sec:pareto-coupling}), test whether the measured gains survive
+ablation and the initialization and budget controls
+(\S\ref{sec:ablation}--\S\ref{sec:robustness-calibration}), and finally
+probe the agility-envelope sensitivity (\S\ref{sec:envelope-sensitivity}).
 
 % ── 6.2 Scale Sensitivity (Fig 3) ──
 \subsection{Scale Sensitivity}
@@ -1317,6 +1323,23 @@ lower-squint convergence is therefore not a hot-start residue; if anything the
 seed biases hot-started runs toward the higher squint of the greedy schedule,
 which inserts tasks at their earliest feasible time.
 
+% ── 6.7 Agility-Envelope Sensitivity ──
+\subsection{Agility-Envelope Sensitivity}\label{sec:envelope-sensitivity}
+The agility-envelope sensitivity, previously an open qualification, is
+tested directly: repeating the sparse $N=20$ configurations with the
+window-generation squint cap reduced from $45^\circ$ to $25^\circ$ and
+$15^\circ$ (50 paired scenarios per cap, identical targets and seeds)
+shows that the multi-objective edge contracts monotonically with the
+envelope. Relative to G-BL in the same scenarios, MOEA-3's $f_2$
+advantage shrinks from $+28\%$ at the $45^\circ$ cap to $+9\%$ at
+$25^\circ$ and $+2.3\%$ at $15^\circ$, while its coverage cost shrinks
+from $15\%$ to $4\%$ to $\approx 0\%$ ($f_1^* = 0.85$, $0.96$, $1.01$; the
+value above $1.00$ reflects the near-optimal rather than strict coverage
+anchor, \S\ref{sec:pareto-coupling});
+absolute geometry improves for every solver under the tighter cap
+(G-BL $f_2$ rises from $0.295$ to $0.405$ to $0.448$), because window
+filtering removes the low-quality high-squint options.
+
 % ============================================================
 %  7. DISCUSSION (~1200 words)
 % ============================================================
@@ -1430,25 +1453,12 @@ The family re-times G-BL's selection only---it does not mix task selections,
 and its $q=1$ endpoint is not G-SM itself---so the measured comparison
 bounds the re-timing channel, not selection diversity.
 
-The agility-envelope sensitivity, previously an open qualification, is
-tested directly: repeating the sparse $N=20$ configurations with the
-window-generation squint cap reduced from $45^\circ$ to $25^\circ$ and
-$15^\circ$ (50 paired scenarios per cap, identical targets and seeds)
-shows that the multi-objective edge contracts monotonically with the
-envelope. Relative to G-BL in the same scenarios, MOEA-3's $f_2$
-advantage shrinks from $+28\%$ at the $45^\circ$ cap to $+9\%$ at
-$25^\circ$ and $+2.3\%$ at $15^\circ$, while its coverage cost shrinks
-from $15\%$ to $4\%$ to $\approx 0\%$ ($f_1^* = 0.85$, $0.96$, $1.01$; the
-value above $1.00$ reflects the near-optimal rather than strict coverage
-anchor, \S\ref{sec:pareto-coupling});
-absolute geometry improves for every solver under the tighter cap
-(G-BL $f_2$ rises from $0.295$ to $0.405$ to $0.448$), because window
-filtering removes the low-quality high-squint options. The quality
-advantage of physics-aware multi-objective scheduling is therefore
-specific to wide-envelope platforms; on platforms with
-$|\psi_{\text{sq}}| \lesssim 25^\circ$ agility, or without a dedicated
-large-squint timing/processing chain (\S~\ref{sec:constraints}), the greedy baseline attains comparable
-quality at full coverage even in sparse regimes. The logistic midpoint
+The quality advantage of physics-aware multi-objective scheduling is therefore
+specific to wide-envelope platforms (\S\ref{sec:envelope-sensitivity}); on
+platforms with $|\psi_{\text{sq}}| \lesssim 25^\circ$ agility, or without a
+dedicated large-squint timing/processing chain (\S~\ref{sec:constraints}),
+the greedy baseline attains comparable quality at full coverage even in
+sparse regimes. The logistic midpoint
 $N_{50} \approx 51$ (\S~\ref{sec:scale-sensitivity}) provides a coarse
 indicator between the density regimes. Our results suggest a conditional
 operational guideline: for sparse observation requests ($N \lesssim 100$)
@@ -1542,7 +1552,7 @@ relative ordering of acquisition geometries \emph{within} the simulated
 platform family, which is what the solver comparisons act on; absolute
 performance claims for platforms without a dedicated large-squint
 timing/processing chain are out of scope. The sensitivity of the recommendations to the
-agility envelope itself is tested directly in \S\ref{sec:operational-implications}.
+agility envelope itself is tested directly in \S\ref{sec:envelope-sensitivity}.
 
 Two further scope notes bound the operational reading: the C3--C4 resource
 caps equate to a 200-task ceiling (\S~\ref{sec:scale-sensitivity}) and bind in
