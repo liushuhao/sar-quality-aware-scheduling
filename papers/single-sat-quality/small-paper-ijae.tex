@@ -930,43 +930,6 @@ density (\S\ref{sec:scale-sensitivity}--\S\ref{sec:pareto-coupling}), and
 test whether it survives ablation and the initialization and budget
 controls (\S\ref{sec:ablation}--\S\ref{sec:robustness-calibration}).
 
-% ── 6.2 Squint-Aware Special Regime ──
-\subsection{Squint-Aware Special Regime}
-\label{sec:squint-special}
-The squint-minimized greedy solver (G-SM) improves NESZ radiometric quality ($f_3$)
-relative to the profit-only baseline (G-BL) by selecting observation times that
-minimize squint angle within each visibility window.
-Across all 200 scenarios, this produces a large positive effect on $f_3$
-(matched-pairs sign statistic $\delta_{\text{pairs}} = +0.99$, $p \approx 1.5\times10^{-34}$, on a per-scenario
-paired basis: 199 of 200 scenarios improve) at an aggregate cost
-in coverage ($\delta_{\text{pairs}} = -1.0$, $p < 10^{-34}$, on raw $f_1$; $f_1^*$ is not used here because G-BL yields constant $f_1^* = 1.0$ by definition, for which the normalized-profit comparison degenerates to a one-sample test against a fixed value).
-The trade-off, however, is strongly density-dependent.
-In sparse scenarios (S1, $N = 20$), G-SM drops to $f_1^* = 0.51 \pm 0.16$
-($-49\%$ vs.\ G-BL at $1.00$) while improving $f_3$ from $0.497 \pm 0.044$ to
-$0.722 \pm 0.058$ ($+45\%$).
-In dense scenarios the $f_1$ cost remains severe: it peaks at S3
-($N = 300$: $f_1^* = 0.29 \pm 0.04$, $-71\%$), eases slightly at S4
-($N = 500$: $0.37 \pm 0.12$, $-63\%$), while $f_3$ rises from
-$0.675 \pm 0.074$ to $0.786 \pm 0.046$ ($+16\%$ at S4).
-Fig.~\ref{fig:fig2} visualizes this density-dependent trade-off: the
-Locally Estimated Scatterplot Smoothing (LOESS)
-trend in panel (c) identifies a transition region around $N = 100$
-where the $f_1$ penalty grows rapidly.
-The radiometric advantage narrows with density ($+45\%$ at S1 to
-$+16\%$ at S4) as tightly packed time windows constrain how far each
-acquisition can be moved toward the squint-minimizing time, while the
-coverage cost remains large at every density (G-SM schedules, on average,
-$44\%$ of the tasks G-BL selects at S1, falling to $\sim$20--27\% at
-$N \geq 100$; these are means of the per-scenario scheduled-task-count
-ratios, the profit-side analogue of which appears in
-Table~\ref{tab:solver-profiles}).
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=\textwidth]{fig2_squint_effect.pdf}
-    \caption{Effect of squint-aware scheduling: (a) $f_3$ scatter; (b) $\Delta f_1^*$ histogram; (c) $\Delta f_1^*$ vs.\ $N$ with LOESS trend}
-    \label{fig:fig2}
-\end{figure}
-
 % ── 6.3 Scale Sensitivity (Fig 5) ──
 \subsection{Scale Sensitivity}
 \label{sec:scale-sensitivity}
@@ -1047,6 +1010,43 @@ radiometric objective: at sparse density MOEA-3 separates visibly from G-BL
 and G-SM sits in its own high-$f_3$ regime, whereas the dense panels show all
 solvers converging to nearly identical distributions, consistent with
 Table~\ref{tab:solver-profiles}.
+
+% ── 6.2 Squint-Aware Special Regime ──
+\subsection{Squint-Aware Special Regime}
+\label{sec:squint-special}
+The squint-minimized greedy solver (G-SM) improves NESZ radiometric quality ($f_3$)
+relative to the profit-only baseline (G-BL) by selecting observation times that
+minimize squint angle within each visibility window.
+Across all 200 scenarios, this produces a large positive effect on $f_3$
+(matched-pairs sign statistic $\delta_{\text{pairs}} = +0.99$, $p \approx 1.5\times10^{-34}$, on a per-scenario
+paired basis: 199 of 200 scenarios improve) at an aggregate cost
+in coverage ($\delta_{\text{pairs}} = -1.0$, $p < 10^{-34}$, on raw $f_1$; $f_1^*$ is not used here because G-BL yields constant $f_1^* = 1.0$ by definition, for which the normalized-profit comparison degenerates to a one-sample test against a fixed value).
+The trade-off, however, is strongly density-dependent.
+In sparse scenarios (S1, $N = 20$), G-SM drops to $f_1^* = 0.51 \pm 0.16$
+($-49\%$ vs.\ G-BL at $1.00$) while improving $f_3$ from $0.497 \pm 0.044$ to
+$0.722 \pm 0.058$ ($+45\%$).
+In dense scenarios the $f_1$ cost remains severe: it peaks at S3
+($N = 300$: $f_1^* = 0.29 \pm 0.04$, $-71\%$), eases slightly at S4
+($N = 500$: $0.37 \pm 0.12$, $-63\%$), while $f_3$ rises from
+$0.675 \pm 0.074$ to $0.786 \pm 0.046$ ($+16\%$ at S4).
+Fig.~\ref{fig:fig2} visualizes this density-dependent trade-off: the
+Locally Estimated Scatterplot Smoothing (LOESS)
+trend in panel (c) identifies a transition region around $N = 100$
+where the $f_1$ penalty grows rapidly.
+The radiometric advantage narrows with density ($+45\%$ at S1 to
+$+16\%$ at S4) as tightly packed time windows constrain how far each
+acquisition can be moved toward the squint-minimizing time, while the
+coverage cost remains large at every density (G-SM schedules, on average,
+$44\%$ of the tasks G-BL selects at S1, falling to $\sim$20--27\% at
+$N \geq 100$; these are means of the per-scenario scheduled-task-count
+ratios, the profit-side analogue of which appears in
+Table~\ref{tab:solver-profiles}).
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{fig2_squint_effect.pdf}
+    \caption{Effect of squint-aware scheduling: (a) $f_3$ scatter; (b) $\Delta f_1^*$ histogram; (c) $\Delta f_1^*$ vs.\ $N$ with LOESS trend}
+    \label{fig:fig2}
+\end{figure}
 
 % ── 6.4 Mechanism of Pareto Compression ──
 \subsection{Mechanism of Pareto Compression}\label{sec:pareto-coupling}
