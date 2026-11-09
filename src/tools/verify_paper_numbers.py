@@ -953,6 +953,37 @@ for _t, _n in ((_b2en, "en"), (_b2zh, "zh")):
     check(f"b2-prose-13p5-{_n}",
           f"§3.4 {_n} prints the exception as 13.5%", 1,
           int("$13.5\\%$" in _t), 0)
+
+# ── R161 2026-11-09: guard-never-fired prose + causal attribution ──────────
+# §3.4 used to credit the 199/200 coincidence to the guard; the archive shows
+# used_gbl_fallback is False on all 200 records (guard never fired) and the
+# coincidence is GA-P-BL's own returned solution. Bind the corrected prose and
+# forbid the old attribution from coming back.
+check("b2-guard-flag-present",
+      "§3.4 every b2 record carries the used_gbl_fallback field", 200,
+      sum(1 for k in _b2keys if "used_gbl_fallback" in b2[k]), 0,
+      note="distinguishes 'all False' from 'field missing', which the .get() "
+           "count and set symmetry below would silently pass")
+_nfb = sum(1 for k in _b2keys if b2[k].get("used_gbl_fallback"))
+check("b2-guard-never-fired",
+      "§3.4 the guard never triggered: zero used_gbl_fallback records", 0,
+      _nfb, 0, note="prose 'never triggered in the 200 scenarios' binds here")
+for _t, _n, _g0, _cau, _old in (
+        (_b2en, "en", "never triggered in the 200 scenarios",
+         "not an effect of the guard", "this guard makes GA-P-BL"),
+        (_b2zh, "zh", "在这 200 个场景中从未触发",
+         "而非该保护规则所致", "实践中该保护使")):
+    check(f"b2-prose-guard0-{_n}",
+          f"§3.4 {_n} prints that the guard never triggered in the 200 scenarios",
+          1, int(_g0 in _t), 0)
+    check(f"b2-prose-causal-{_n}",
+          f"§3.4 {_n} attributes the coincidence to the returned solution, "
+          f"not the guard", 1, int(_cau in _t), 0)
+    check(f"b2-prose-no-guard-causal-{_n}",
+          f"§3.4 {_n} no longer credits the coincidence to the guard", 0,
+          int(_old in _t), 0,
+          note="hybrid regression (new sentence kept + old attribution "
+               "re-inserted) must fail here")
 # Table 1 GA-P-BL rows are b2-derived too (EN l.830/837/844/851, ZH mirrors);
 # no assertion covered them anywhere in this file before R138.
 T1_GBL = {

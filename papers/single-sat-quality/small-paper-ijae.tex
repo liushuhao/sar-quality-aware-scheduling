@@ -547,12 +547,14 @@ $f_2$ and $f_3$ are computed post hoc on the best-found schedule.
 After optimization, a never-worse-than-baseline guard compares the best GA
 schedule with G-BL: if the GA's $f_1$ falls short, the greedy schedule is
 returned instead, guaranteeing $f_1^{\text{GA-P-BL}} \ge f_1^{\text{G-BL}}$ by
-construction. In practice this guard makes GA-P-BL output numerically
-identical to G-BL in 199 of 200 scenarios (the single exception improves
-profit by $13.5\%$; mean $f_2$ and $f_3$ are within $0.001$ of G-BL at
-every scale)
-(\S\ref{sec:overall-performance}); GA-P-BL therefore acts as a control that
-confirms the greedy profit baseline rather than as an independent solver.
+construction. The guard never triggered in the 200 scenarios: GA-P-BL's own
+output is numerically identical to G-BL in 199 of 200 scenarios (the single
+exception improves profit by $13.5\%$; mean $f_2$ and $f_3$ are within
+$0.001$ of G-BL at every scale)
+(\S\ref{sec:overall-performance}); the coincidence is an attribute of
+GA-P-BL's own returned solution, not an effect of the guard. GA-P-BL
+therefore acts as a control that confirms the greedy profit baseline rather
+than as an independent solver.
 \subsection{MOEA-2 and MOEA-3: Multi-Objective Evolutionary Algorithms}
 \label{sec:moea-description}
 MOEA-2 and MOEA-3 extend the GA-P-BL chromosome encoding to
