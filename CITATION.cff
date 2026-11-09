@@ -21,7 +21,7 @@ keywords:
   - physics-aware optimization
 references:
   - type: article
-    title: "Physics-Aware Multi-Objective Scheduling for Agile SAR Satellites: Balancing Profit, NESZ, and Azimuth Resolution"
+    title: "Physics-Aware Multi-Objective Scheduling for an Agile SAR Satellite: Balancing Profit, NESZ-Based Radiometric Ordering, and Geometric Resolution"
     author:
       - family-names: LIU
         given-names: SHUHAO
