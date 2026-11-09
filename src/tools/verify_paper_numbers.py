@@ -890,6 +890,88 @@ check("r8-m3-s4-drop", "§3.2 dropped f3max mean (MOEA-3 S4)",
 check("r8-m3-s4-ret", "§3.2 retained f3max mean (MOEA-3 S4)",
       0.82, _dq["solvers"]["MOEA-3"]["S4"]["f3max_retained_mean"], 0.005)
 
+# ── R138 2026-11-09: GA-P-BL (b2) assertions, §3.4 + Table 1 ───────────────
+# b2 was loaded at l.50/l.79 and never asserted. The prose makes four claims
+# (guard inequality, 199/200 identical, the single exception's +13.5%, and
+# f2/f3 means within 0.001 at every scale) and Table 1 prints four GA-P-BL
+# rows from the same archive. Ring 20261109-r138 (ds+mimo) additionally
+# required: a join/denominator guard (a truncated archive otherwise passes),
+# prose bindings for the two integers census cannot see, a three-metric
+# identity count, and a homogeneity check on the recompute tag.
+_b2keys = set(b2)
+check("b2-join-n", "§3.4 b2 archive holds all 200 scenario records", 200,
+      len(_b2keys), 0)
+check("b2-join-keys", "§3.4 b2 and G-BL archives cover the same scenarios", 0,
+      len(_b2keys ^ set(bl)), 0)
+_guard_viol = sum(1 for k in _b2keys if b2[k]["f1_raw"] + 1e-9 < b2[k]["f1_gbl"])
+check("b2-guard", "§3.4 never-worse guard holds on every record", 0,
+      _guard_viol, 0)
+_fb = [k for k in _b2keys if b2[k].get("used_gbl_fallback")]
+_fb_expect = [k for k in _b2keys if b2[k]["f1_raw"] + 1e-9 < b2[k]["f1_gbl"]]
+check("b2-fallback-consistent",
+      "§3.4 fallback flag agrees with the guard outcome on every record", 0,
+      len(set(_fb) ^ set(_fb_expect)), 0)
+_same3 = [k for k in _b2keys
+          if abs(b2[k]["f1"] - bl[k]["b1"]["f1"]) < 1e-12
+          and abs(b2[k]["f2"] - bl[k]["b1"]["f2"]) < 1e-12
+          and abs(b2[k]["f3"] - bl[k]["b1"]["f3"]) < 1e-12]
+check("b2-same-count", "§3.4 GA-P-BL identical to G-BL on 199 of 200 (f1/f2/f3)",
+      199, len(_same3), 0,
+      note="three-metric identity, not f1 alone: a partial f2/f3 recompute "
+           "would otherwise leave the count at 199 with the paper false")
+_exc = [k for k in _b2keys if k not in _same3]
+check("b2-exc-count", "§3.4 exactly one non-identical scenario", 1, len(_exc), 0)
+if len(_exc) == 1:
+    _epct = (b2[_exc[0]]["f1"] / bl[_exc[0]]["b1"]["f1"] - 1) * 100
+    check("b2-exc-pct", "§3.4 the single exception improves profit by 13.5%",
+          13.5, _epct, 0.05, note="one-decimal rounding window; the printed "
+          "literal is bound by b2-prose-13p5-* below")
+for _c in ("S1", "S2", "S3", "S4"):
+    _kk = [k for k in _b2keys if k.startswith(_c + "/")]
+    for _m in ("f2", "f3"):
+        _d = abs(float(np.mean([b2[k][_m] for k in _kk]))
+                 - float(np.mean([bl[k]["b1"][_m] for k in _kk])))
+        check(f"b2-f2f3-{_c.lower()}-{_m}",
+              f"§3.4 {_c} {_m} class-mean offset from G-BL within 0.001",
+              0.0, _d, 0.001,
+              note="paper=0 so tol is the bound itself; scoring the paper "
+                   "value 0.001 would widen the window to 0.002")
+_tag = {b2[k].get("f2_f3_recompute") for k in _b2keys}
+check("b2-recompute-homogeneous",
+      "§3.4 every record carries the same f2/f3 recompute tag", 1, len(_tag), 0,
+      note=f"tags={sorted(t for t in _tag if t)}")
+_b2en = (PAPER / "small-paper-ijae.tex").read_text(encoding="utf-8")
+_b2zh = (PAPER / "small-paper-ijae-zh.tex").read_text(encoding="utf-8")
+check("b2-prose-199-en",
+      "§3.4 EN sentence prints 'identical to G-BL in 199 of 200 scenarios'", 1,
+      int("identical to G-BL in 199 of 200 scenarios" in _b2en), 0,
+      note="anchored away from §6.2's unrelated '199 of 200' G-SM contrast")
+check("b2-prose-199-zh",
+      "§3.4 ZH mirror prints 在 200 个场景中的 199 个上与 G-BL 数值相同", 1,
+      int("在 200 个场景中的 199 个上与 G-BL 数值相同" in _b2zh), 0)
+for _t, _n in ((_b2en, "en"), (_b2zh, "zh")):
+    check(f"b2-prose-13p5-{_n}",
+          f"§3.4 {_n} prints the exception as 13.5%", 1,
+          int("$13.5\\%$" in _t), 0)
+# Table 1 GA-P-BL rows are b2-derived too (EN l.830/837/844/851, ZH mirrors);
+# no assertion covered them anywhere in this file before R138.
+T1_GBL = {
+    "S1": (("1.00", "0.02"), ("0.295", "0.037"), ("0.498", "0.044")),
+    "S2": (("1.00", "0.00"), ("0.317", "0.026"), ("0.561", "0.060")),
+    "S3": (("1.00", "0.00"), ("0.342", "0.026"), ("0.616", "0.042")),
+    "S4": (("1.00", "0.00"), ("0.336", "0.039"), ("0.675", "0.074")),
+}
+for _cls, _rows in T1_GBL.items():
+    _kk = [k for k in _b2keys if k.startswith(_cls + "/")]
+    for _i, _key in enumerate(("f1", "f2", "f3")):
+        _v = np.array([b2[k][_key] for k in _kk])
+        _pm, _psd = _rows[_i]
+        check(f"t1g-{_cls}-{_key}", f"Table1 {_cls} GA-P-BL {_key}",
+              float(_pm), float(_v.mean()), 0.011)
+        check(f"t1g-{_cls}-{_key}sd", f"Table1 {_cls} GA-P-BL {_key} SD",
+              float(_psd), float(_v.std(ddof=1)), 0.011)
+
+
 # phenomenon2 cliff (MOEA-3 vs MOEA-2 f3 per group) + paired Wilcoxon p (§6.4, R11)
 for cls, pv in (("S1", 0.88), ("S4", 0.32)):
     dv = p2_cliff["per_group"][cls]["f3"]
