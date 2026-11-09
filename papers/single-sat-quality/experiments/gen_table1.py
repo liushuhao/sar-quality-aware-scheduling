@@ -3,11 +3,16 @@
 Compute per-group f2, f3 statistics from raw progress files,
 then generate Table 1 markdown with f1*/f2/f3 ± std and HV data.
 """
+import sys
 import json
 import numpy as np
 from collections import defaultdict
 import os
 from pathlib import Path
+
+# GBK 控制台兜底（print 含 ±/−/✓ 等 cp936 编不出的字符时会 UnicodeEncodeError）
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8")
 
 PROJECT = str(Path(__file__).resolve().parent.parent)
 RESULTS = os.path.join(PROJECT, "experiments", "results")

@@ -1,4 +1,5 @@
 """Orbit model verification: analytical cross-checks + Skyfield TLE."""
+import sys
 import numpy as np
 from numpy import cos, sin, pi, sqrt, degrees, arccos, arcsin, arctan2
 
@@ -66,6 +67,10 @@ from sar_sim.solver.types import _lat_lon_to_ecef, _satellite_body_frame
 from sar_sim.solver.types import AgileSARInstance, AgileTask
 from sar_sim.types import ObservationWindow, GroundTarget
 from datetime import datetime, timedelta
+
+# GBK 控制台兜底（print 含 ±/−/✓ 等 cp936 编不出的字符时会 UnicodeEncodeError）
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8")
 
 # Build minimal instance
 t0 = datetime(2025, 1, 1)

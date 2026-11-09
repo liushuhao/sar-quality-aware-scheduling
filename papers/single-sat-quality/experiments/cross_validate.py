@@ -7,6 +7,10 @@ import numpy as np
 from collections import defaultdict
 import sys
 
+# GBK 控制台兜底（print 含 ±/−/✓ 等 cp936 编不出的字符时会 UnicodeEncodeError）
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8")
+
 BASE = os.path.dirname(os.path.abspath(__file__))
 RESULTS = os.path.join(BASE, 'results')
 

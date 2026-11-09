@@ -12,6 +12,7 @@ Outputs:
   experiments/results/statistical_results.json  — per-scenario HV, p-values, effect sizes
   experiments/results/solver_summary.csv        — solver × scenario_group summary
 """
+import sys
 import json, os, sys
 from collections import defaultdict
 from itertools import combinations
@@ -75,6 +76,10 @@ print(f"  MOEA-3: {len(m3_data)} scenarios")
 # See _provenance.check_pkl_sha1_consistency for semantics.
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from _provenance import check_pkl_sha1_consistency
+
+# GBK 控制台兜底（print 含 ±/−/✓ 等 cp936 编不出的字符时会 UnicodeEncodeError）
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8")
 check_pkl_sha1_consistency({
     "G-BL/G-SM": {k: (v.get("pkl_sha1") if isinstance(v, dict) else None)
                   for k, v in bl_data.items()},
