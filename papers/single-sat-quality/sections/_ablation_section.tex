@@ -6,6 +6,7 @@ To quantify the contribution of incidence-angle ($\theta$) and squint-angle
 (${\psi_{\text{sq}}}$) modeling to solver performance, we repeat the MOEA-3
 experiment with four objective-function variants:
 %
+{\sloppy
 \begin{description}
 \item[A. Full physical (baseline)] $f_2 = \frac{1}{|\mathcal{S}|}\sum \sin\theta_{\text{elev},i} \cdot \cos\psi_{\text{sq},i}$,
       $f_3 = \frac{1}{|\mathcal{S}|}\sum \cos^3\xi_i$ (identical to the
@@ -23,6 +24,7 @@ experiment with four objective-function variants:
       and $f_3$, or merely to the presence of additional objectives that
       structure the search.
 \end{description}
+}
 %
 All four variants use identical NSGA-III parameters (population $= 100$,
 generations $= 200$, Das-Dennis $p=12$), the same scenario files, and
@@ -55,7 +57,7 @@ means the variant is worse than A.
 \begin{table}[H]
 \centering
 \small
-\setlength{\tabcolsep}{4pt}
+\setlength{\tabcolsep}{2.5pt}
 \caption{Per-class ablation results. $f_1/n$ is the mean priority weight of the selected tasks. Bold: significant at the ablation threshold $\alpha=0.05/12$ on the $\Delta f_1^*\%$ column (Wilcoxon signed-rank vs.~A, \S\ref{sec:evaluation-metrics}; for this metric the family comprises the 12 variant-by-class comparisons, and all marked cells satisfy it).}
 \label{tab:ablation}
 \begin{tabular}{llccccrc}

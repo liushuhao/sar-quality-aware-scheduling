@@ -376,6 +376,8 @@ $e_i = 5\times10^4$、$m_i = 5\times10^8$。两个上限因此等价于同一天
 \centering
 \caption{求解器：贪心基线（G-BL, G-SM）、带热启动的单目标 GA（GA-P-BL）和具有两个及三个目标的 NSGA-III 变体（MOEA-2, MOEA-3）}
 \label{tab:solvers}
+\small
+\setlength{\tabcolsep}{4pt}
 \begin{tabular}{llll}
 \toprule
 \textbf{标签} & \textbf{类型} & \textbf{目标} & \textbf{热启动} \\
@@ -780,7 +782,7 @@ r_{\text{null}} = \frac{\mathrm{Cov}(f_2, f_3)}{\sqrt{\mathrm{Var}(f_2)\,\mathrm
 \label{eq:rnull}
 \end{equation}
 零假设下的独立性把矩因子化，例如
-$E[f_2 f_3] = E[\sin\theta_{\text{elev}}\cos^3\theta_{\text{elev}}]\,E[\cos^4\psi_{\text{sq}}]$。
+$E[f_2 f_3] =$\,\allowbreak$E[\sin\theta_{\text{elev}}\cos^3\theta_{\text{elev}}]$\,\allowbreak$E[\cos^4\psi_{\text{sq}}]$。
 负号标记的是结构性冲突：在仅 $\theta_{\text{elev}}$ 的极限（固定斜视）下，
 $f_{2,i} \propto \sin\theta_{\text{elev}}$ 与
 $f_{3,i} \propto \cos^3\theta_{\text{elev}}$ 严格反单调（蒙特卡洛 $r_\theta = -0.997$），
@@ -989,8 +991,6 @@ MOEA-3 以 $f_2$（相对 MOEA-2 约 $-4\%$）换取各 NSGA-III 配置中最高
 
 \textbf{(1)}~多目标优化的质量优势随目标密度饱和：
 $f_2$ 改进从 $N=20$ 的 $+33.7\%$ 缩小到 $N=500$ 的 $+0.3\%$。
-在密集场景（$N \geq 300$）下，以 G-BL 为种子的 MOEA-2 和 MOEA-3 公式化接近 G-BL 覆盖锚点，
-边际几何质量增益可忽略。
 
 \textbf{(2)}~第三目标是密度依赖的而非冗余的：
 调度内的逐任务 $f_2$--$f_3$ 相关性在每个密度下均为负，在稀疏密度下最强（\S~\ref{sec:pareto-coupling}），
