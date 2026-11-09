@@ -996,6 +996,34 @@ try:
 except Exception as e:
     print(f"WARN envelope-cap check skipped: {e}")
 
+# ── R153 2026-11-09: acquisition-delay G-BL arm, §6.2 prose binding ─────────
+# The G-BL arm is recomputed by analyze_acquisition_delay.py (deterministic
+# baseline_b1; delay 0 is NOT guaranteed -- C2 in-window push plus non-earliest
+# window selection). Integers are census-ineligible, so these prose readings
+# get explicit scored checks instead.
+_dly = json.loads(fingerprint("acquisition_delay_analysis.json").read_text(encoding="utf-8"))
+_dcd = _dly["class_mean_delay"]
+_gbl_delay = {c: _dcd[c]["G-BL"]["mean"] for c in ("S1", "S2", "S3", "S4")}
+check("delay-gbl-s1", "§6.2 G-BL class-mean delay S1 (printed range low 100 s)",
+      100, _gbl_delay["S1"], 0.5)
+check("delay-gbl-s4", "§6.2 G-BL class-mean delay S4 (printed range high 652 s)",
+      652, _gbl_delay["S4"], 0.5)
+check("delay-gbl-range", "§6.2 printed 100–652 s spans G-BL S1 min / S4 max",
+      0.0, abs(min(_gbl_delay.values()) - _gbl_delay["S1"])
+      + abs(max(_gbl_delay.values()) - _gbl_delay["S4"]), 1e-9)
+check("delay-knee-s1", "§6.2 MOEA-3 knee minus G-BL at S1 (printed 167 s)",
+      167, _dcd["S1"]["knee_minus_gbl"], 0.5)
+for _c in ("S2", "S3", "S4"):
+    check(f"delay-agree-{_c.lower()}",
+          f"§6.2 |knee−G-BL| at {_c} within printed 4 s",
+          0.0, abs(_dcd[_c]["knee_minus_gbl"]), 4.0)
+_en_txt = (PAPER / "small-paper-ijae.tex").read_text(encoding="utf-8")
+_zh_txt = (PAPER / "small-paper-ijae-zh.tex").read_text(encoding="utf-8")
+check("delay-prose-en", "§6.2 EN sentence prints 100–652 / 167 / within 4 s",
+      1, int(all(s in _en_txt for s in ("$100$--$652$", "$167$", "within $4$"))), 0)
+check("delay-prose-zh", "§6.2 ZH mirror prints 100–652 / 167 / 不足 4 s",
+      1, int(all(s in _zh_txt for s in ("$100$--$652$", "$167$", "不足 $4$"))), 0)
+
 run_census(update="--update-census" in sys.argv)
 
 # ── report ──────────────────────────────────────────────────────────────────
