@@ -279,7 +279,7 @@ ax_c.set_ylabel("$\\Delta f_1^*$ (profit loss)", fontsize=8)
 ax_c.set_title("(c)", fontsize=8)
 ax_c.legend(fontsize=6.5)
 
-save_figure(fig, "fig2_squint_effect")
+save_figure(fig, "fig3_squint_effect")
 
 # ═══════════════════════════════════════════════════════════════════════════
 #  FIGURE 2: [REMOVED — merged into Fig 3]
@@ -704,7 +704,7 @@ ax_log.yaxis.grid(True, linestyle='--', alpha=0.3, linewidth=0.5)
 # the parenthetical note moved to the caption: at true column width it collided
 # with the legend and ran past the left spine.
 
-save_figure(fig, "fig3_scale_sensitivity")
+save_figure(fig, "fig2_scale_sensitivity")
 
 # ── Done ──
 print("\n" + "=" * 50)

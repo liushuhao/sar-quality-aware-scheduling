@@ -671,7 +671,7 @@ $f_2$ 相对于 G-BL 的改进同步收缩，从 $+33.7\%$（S1）降到 $+3.6\%
 求解器从主动以覆盖率换取质量转变为在贪心基线附近运行，超过 $N = 150$ 后差距实际上为零。
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.75\textwidth]{fig3_scale_sensitivity.pdf}
+    \includegraphics[width=0.75\textwidth]{fig2_scale_sensitivity.pdf}
     \caption{尺度敏感性：（上）稀疏（S1--S2）与密集（S3--S4）场景类别下归一化收益 $f_1^*$、几何质量 $f_2$ 与辐射质量 $f_3$ 的逐目标分布；（下）覆盖率差距比例（$f_1^* < 0.95$）的逻辑回归拟合，附逐场景抖动指示点。}
     \label{fig:fig3}
 \end{figure}
@@ -734,7 +734,7 @@ $f_3$ 则从 $0.675 \pm 0.074$ 上升到 $0.786 \pm 0.046$（S4 处 $+16\%$）�
 而覆盖率成本在每个密度下都保持较大（G-SM 在 S1 排定的任务数平均为 G-BL 选择的 $44\%$，在 $N \geq 100$ 时降至约 $20$--$27\%$；这些是逐场景排定任务数比值的均值，其收益侧对应量出现在表~\ref{tab:solver-profiles}）。
 \begin{figure}[H]
     \centering
-    \includegraphics[width=\textwidth]{fig2_squint_effect.pdf}
+    \includegraphics[width=\textwidth]{fig3_squint_effect.pdf}
     \caption{斜视感知调度的效果：(a) $f_3$ 散点图；(b) $\Delta f_1^*$ 直方图；(c) $\Delta f_1^*$ 与 $N$ 的关系及 LOESS 趋势}
     \label{fig:fig2}
 \end{figure}
@@ -991,8 +991,6 @@ MOEA-3 以 $f_2$（相对 MOEA-2 约 $-4\%$）换取各 NSGA-III 配置中最高
 $f_2$ 改进从 $N=20$ 的 $+33.7\%$ 缩小到 $N=500$ 的 $+0.3\%$。
 在密集场景（$N \geq 300$）下，以 G-BL 为种子的 MOEA-2 和 MOEA-3 公式化接近 G-BL 覆盖锚点，
 边际几何质量增益可忽略。
-GA-P-BL 的输出在除一个场景外均与 G-BL 相同（按构造从不更差；\S~\ref{sec:ga-p-bl}），
-因此收敛主张涉及添加物理目标的边际价值，而非所有面向收益求解器的通用上限。
 
 \textbf{(2)}~第三目标是密度依赖的而非冗余的：
 调度内的逐任务 $f_2$--$f_3$ 相关性在每个密度下均为负，在稀疏密度下最强（\S~\ref{sec:pareto-coupling}），
