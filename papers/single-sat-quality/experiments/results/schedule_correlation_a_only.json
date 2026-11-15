@@ -1,0 +1,34 @@
+{
+  "source": "moea_3obj/_progress.json variant-A keys only",
+  "caliber": "scripts/compute_schedule_correlation.py (pooled per-task + per-schedule)",
+  "classes": {
+    "S1": {
+      "r": -0.7980103095004901,
+      "n_tasks": 166,
+      "n_schedules": 10,
+      "per_schedule_mean": -0.8014931535002061,
+      "fisher_z_mean": -1.1570450994732475
+    },
+    "S2": {
+      "r": -0.22690290578411146,
+      "n_tasks": 957,
+      "n_schedules": 10,
+      "per_schedule_mean": -0.22384596608368118,
+      "fisher_z_mean": -0.22872151988843642
+    },
+    "S3": {
+      "r": -0.14830005510394717,
+      "n_tasks": 1998,
+      "n_schedules": 10,
+      "per_schedule_mean": -0.15012978296003174,
+      "fisher_z_mean": -0.151539826447189
+    },
+    "S4": {
+      "r": -0.3120079478737299,
+      "n_tasks": 1998,
+      "n_schedules": 10,
+      "per_schedule_mean": -0.31040201019645797,
+      "fisher_z_mean": -0.3221753916374623
+    }
+  }
+}

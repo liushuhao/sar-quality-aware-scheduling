@@ -1,0 +1,114 @@
+{
+  "threshold": 0.95,
+  "n_scenarios": 300,
+  "fits": {
+    "pooled": {
+      "desc": "all scenarios (existing \u00a76.3 fit reference)",
+      "n": 300,
+      "deficit_rate": 0.15,
+      "by_group": {
+        "S1": {
+          "N": 20,
+          "n": 50,
+          "deficit": "40/50"
+        },
+        "S2": {
+          "N": 100,
+          "n": 50,
+          "deficit": "5/50"
+        },
+        "S7": {
+          "N": 150,
+          "n": 50,
+          "deficit": "0/50"
+        },
+        "S8": {
+          "N": 200,
+          "n": 50,
+          "deficit": "0/50"
+        },
+        "S3": {
+          "N": 300,
+          "n": 50,
+          "deficit": "0/50"
+        },
+        "S4": {
+          "N": 500,
+          "n": 50,
+          "deficit": "0/50"
+        }
+      },
+      "fit": {
+        "n50": 50.767247027010704,
+        "ci": [
+          38.07648384288938,
+          63.13295786022306
+        ],
+        "n_boot_ok": 1000
+      }
+    },
+    "unbound_c2_limited": {
+      "desc": "cap-free subset (R1-02 primary)",
+      "n": 253,
+      "deficit_rate": 0.17786561264822134,
+      "by_group": {
+        "S1": {
+          "N": 20,
+          "n": 50,
+          "deficit": "40/50"
+        },
+        "S2": {
+          "N": 100,
+          "n": 50,
+          "deficit": "5/50"
+        },
+        "S7": {
+          "N": 150,
+          "n": 50,
+          "deficit": "0/50"
+        },
+        "S8": {
+          "N": 200,
+          "n": 50,
+          "deficit": "0/50"
+        },
+        "S3": {
+          "N": 300,
+          "n": 30,
+          "deficit": "0/30"
+        },
+        "S4": {
+          "N": 500,
+          "n": 23,
+          "deficit": "0/23"
+        }
+      },
+      "fit": {
+        "n50": 50.76723654143931,
+        "ci": [
+          37.514794776155526,
+          62.77115659940085
+        ],
+        "n_boot_ok": 1000
+      }
+    },
+    "bound_c3_c4": {
+      "desc": "ceiling-bound subset (reported separately per R2-04)",
+      "n": 47,
+      "deficit_rate": 0.0,
+      "by_group": {
+        "S3": {
+          "N": 300,
+          "n": 20,
+          "deficit": "0/20"
+        },
+        "S4": {
+          "N": 500,
+          "n": 27,
+          "deficit": "0/27"
+        }
+      },
+      "fit": null
+    }
+  }
+}

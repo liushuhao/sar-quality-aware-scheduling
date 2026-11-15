@@ -1,0 +1,29 @@
+cff-version: 1.2.0
+message: "If you use this code or data, please cite the paper below."
+type: software
+title: "agile-sar-moo-scheduling"
+version: "1.1.0"
+date-released: 2026-11-15
+license: CC-BY-4.0
+authors:
+  - family-names: LIU
+    given-names: SHUHAO
+    affiliation: "College of Intelligent Systems Science and Engineering, Harbin Engineering University"
+    email: shuhao.liu.86@outlook.com
+    orcid: https://orcid.org/0009-0009-2116-3670
+keywords:
+  - agile SAR
+  - satellite scheduling
+  - multi-objective optimization
+  - NSGA-III
+  - NESZ
+  - azimuth resolution
+  - physics-aware optimization
+references:
+  - type: article
+    title: "Physics-Aware Multi-Objective Scheduling for an Agile SAR Satellite: Balancing Profit, NESZ-Based Radiometric Ordering, and Geometric Resolution"
+    author:
+      - family-names: LIU
+        given-names: SHUHAO
+    journal: "Advances in Space Research"
+    year: 2026

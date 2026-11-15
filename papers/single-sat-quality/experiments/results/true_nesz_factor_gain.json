@@ -1,0 +1,13 @@
+{
+  "what": "f3 proxy conservatism validation (panel 20261031 root-cause closure)",
+  "group": "S1",
+  "n_scenarios": 50,
+  "gbl_regen_bitmatch": 50,
+  "proxy_gain_rom": 0.4041719649620099,
+  "true_gain_rom": 0.9426128448795437,
+  "calibers": {
+    "proxy": "mean cos^3(xi)  (paper f3)",
+    "true": "mean cos^3(xi)/sin(theta_g)  (retained ground-reference factor)",
+    "gain": "ratio of class means (same caliber as the +40% headline)"
+  }
+}

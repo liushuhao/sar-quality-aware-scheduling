@@ -1,0 +1,18 @@
+GA-P-BL experiment: 6 groups, 300 total
+  Params: pop=100, gen=200
+  git_commit: 49ee9ca6
+  Output: D:\hermes\my-workspace\projects\planning paper\papers\single-sat-quality\experiments\results\b2_profit_bl\_progress.json
+
+  [1/300] S1-A_seed00.pkl: f1=1.0 n=20 t=7.9s
+  [2/300] S1-A_seed01.pkl: f1=1.0 n=19 t=7.2s
+  [3/300] S1-A_seed02.pkl: f1=1.0 n=20 t=7.9s
+  [10/300] S1-A_seed09.pkl: f1=1.0 n=20 t=7.4s
+  [20/300] S1-B_seed09.pkl: f1=1.0 n=19 t=6.6s
+  [30/300] S1-C_seed09.pkl: f1=1.0 n=18 t=6.3s
+  [40/300] S1-D_seed09.pkl: f1=1.0 n=19 t=6.6s
+  [50/300] S1-E_seed09.pkl: f1=1.0 n=20 t=7.3s
+  [60/300] S2-A_seed09.pkl: f1=1.0 n=97 t=59.7s
+  [70/300] S2-B_seed09.pkl: f1=1.0 n=56 t=28.3s
+  [80/300] S2-C_seed09.pkl: f1=1.0 n=60 t=64.4s
+  [90/300] S2-D_seed09.pkl: f1=1.0 n=58 t=53.6s
+  [100/300] S2-E_seed09.pkl: f1=1.0 n=45 t=16.3s

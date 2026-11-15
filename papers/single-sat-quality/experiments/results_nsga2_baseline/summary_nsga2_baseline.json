@@ -1,0 +1,322 @@
+{
+  "metadata": {
+    "scope": "S1-S2 sparse classes, NSGA-II external baseline",
+    "solver": "nsga2_3obj",
+    "solver_seed": 1,
+    "params": {
+      "population_size": 100,
+      "n_generations": 200,
+      "n_obj": 3,
+      "n_ref_dirs_note": "unused by NSGA-II",
+      "crossover": "SBX(prob=0.9, eta=20)",
+      "mutation": "PM(prob=0.1, eta=20)",
+      "hotstart": "G-BL chromosome, sigma=0.5"
+    },
+    "git_commit": "2b88872d",
+    "code_stamp": "4d4b7b3f4b95a7dcf2eb20f765f695bfdb03657e",
+    "hv_convention": "3D HV, objectives min-max normalized with global ranges from statistical_results.json (S1-S4), clipped to unit box, ref=(0,0,0); same algorithm as statistical_analysis.compute_hv (Table tab:hv)",
+    "exchange_rate_definition": "mean per-scenario f2 gain vs G-BL (%) divided by mean coverage cost (1 - f1*) in percentage points"
+  },
+  "per_seed_nsga2": {
+    "S1": {
+      "00": {
+        "n_scenarios": 5,
+        "f1_star_mean": 0.8266547902783857,
+        "f2_mean": 0.3528296521758033,
+        "f3_mean": 0.6714838874384206,
+        "n_selected_mean": 15.8
+      },
+      "01": {
+        "n_scenarios": 5,
+        "f1_star_mean": 0.823064013530818,
+        "f2_mean": 0.3830532302052073,
+        "f3_mean": 0.6958549297090162,
+        "n_selected_mean": 14.6
+      },
+      "02": {
+        "n_scenarios": 5,
+        "f1_star_mean": 0.8873218615258281,
+        "f2_mean": 0.36184061086447483,
+        "f3_mean": 0.7078238499870286,
+        "n_selected_mean": 16.4
+      },
+      "03": {
+        "n_scenarios": 5,
+        "f1_star_mean": 0.8178667488569161,
+        "f2_mean": 0.41047870024979005,
+        "f3_mean": 0.7077748827947922,
+        "n_selected_mean": 15.6
+      },
+      "04": {
+        "n_scenarios": 5,
+        "f1_star_mean": 0.8511362425969292,
+        "f2_mean": 0.36252347566204524,
+        "f3_mean": 0.690590200882413,
+        "n_selected_mean": 15.8
+      },
+      "05": {
+        "n_scenarios": 5,
+        "f1_star_mean": 0.8339976634607347,
+        "f2_mean": 0.3900972711468296,
+        "f3_mean": 0.6818002199602688,
+        "n_selected_mean": 14.8
+      },
+      "06": {
+        "n_scenarios": 5,
+        "f1_star_mean": 0.7419756738324373,
+        "f2_mean": 0.4013133839116141,
+        "f3_mean": 0.6959064136735791,
+        "n_selected_mean": 13.2
+      },
+      "07": {
+        "n_scenarios": 5,
+        "f1_star_mean": 0.7278623963976502,
+        "f2_mean": 0.351304933731563,
+        "f3_mean": 0.7291961480093809,
+        "n_selected_mean": 13.8
+      },
+      "08": {
+        "n_scenarios": 5,
+        "f1_star_mean": 0.8597463670209571,
+        "f2_mean": 0.3872116732347228,
+        "f3_mean": 0.6772701680971588,
+        "n_selected_mean": 15.8
+      },
+      "09": {
+        "n_scenarios": 5,
+        "f1_star_mean": 0.7523433252069066,
+        "f2_mean": 0.41795194413076847,
+        "f3_mean": 0.706051303810914,
+        "n_selected_mean": 13.2
+      }
+    },
+    "S2": {
+      "00": {
+        "n_scenarios": 5,
+        "f1_star_mean": 0.9904862131501264,
+        "f2_mean": 0.3293652857249,
+        "f3_mean": 0.5867211057933837,
+        "n_selected_mean": 65.4
+      },
+      "01": {
+        "n_scenarios": 5,
+        "f1_star_mean": 0.9677489015111604,
+        "f2_mean": 0.33077350726385407,
+        "f3_mean": 0.6014240603017476,
+        "n_selected_mean": 64.2
+      },
+      "02": {
+        "n_scenarios": 5,
+        "f1_star_mean": 0.9919292717086835,
+        "f2_mean": 0.3293618172303866,
+        "f3_mean": 0.6037601143746661,
+        "n_selected_mean": 67.0
+      },
+      "03": {
+        "n_scenarios": 5,
+        "f1_star_mean": 0.9561075108784134,
+        "f2_mean": 0.3295252875419914,
+        "f3_mean": 0.6105733649970599,
+        "n_selected_mean": 58.8
+      },
+      "04": {
+        "n_scenarios": 5,
+        "f1_star_mean": 0.9800215989114373,
+        "f2_mean": 0.32677579829567915,
+        "f3_mean": 0.5919568570520752,
+        "n_selected_mean": 63.6
+      },
+      "05": {
+        "n_scenarios": 5,
+        "f1_star_mean": 0.9851010235180784,
+        "f2_mean": 0.3326655992914933,
+        "f3_mean": 0.5945349083325093,
+        "n_selected_mean": 61.0
+      },
+      "06": {
+        "n_scenarios": 5,
+        "f1_star_mean": 0.9847216514010189,
+        "f2_mean": 0.3316128049705998,
+        "f3_mean": 0.5948234793313191,
+        "n_selected_mean": 63.0
+      },
+      "07": {
+        "n_scenarios": 5,
+        "f1_star_mean": 0.9896907216494846,
+        "f2_mean": 0.3344376751276689,
+        "f3_mean": 0.594839030917895,
+        "n_selected_mean": 62.4
+      },
+      "08": {
+        "n_scenarios": 5,
+        "f1_star_mean": 0.9897641751027934,
+        "f2_mean": 0.32049526113131377,
+        "f3_mean": 0.599486191619495,
+        "n_selected_mean": 63.2
+      },
+      "09": {
+        "n_scenarios": 5,
+        "f1_star_mean": 0.9846767566364655,
+        "f2_mean": 0.31887841618640783,
+        "f3_mean": 0.5948976150095924,
+        "n_selected_mean": 61.4
+      }
+    }
+  },
+  "classes": {
+    "S1": {
+      "n_scenarios": 50,
+      "solvers": {
+        "G-BL": {
+          "f1_star_mean": 1.0,
+          "f1_star_sd": 0.0,
+          "f2_mean": 0.29476161371564435,
+          "f2_sd": 0.03737969008809787,
+          "f3_mean": 0.49744384456522295,
+          "f3_sd": 0.04380099093246522,
+          "hv_mean": 0.00683787581414405,
+          "hv_sd": 0.005501313343260131,
+          "f2_gain_pct_vs_gbl": 0.0,
+          "f3_gain_pct_vs_gbl": 0.0,
+          "coverage_cost_pp": 0.0,
+          "exchange_rate_f2_pct_per_pp": null
+        },
+        "MOEA-2": {
+          "f1_star_mean": 0.8588905785235006,
+          "f1_star_sd": 0.13480296642572284,
+          "f2_mean": 0.3929142366019471,
+          "f2_sd": 0.05522646275363861,
+          "f3_mean": 0.6573840790711621,
+          "f3_sd": 0.040014976109883145,
+          "hv_mean": 0.1650920202956593,
+          "hv_sd": 0.05593363863573456,
+          "f2_gain_pct_vs_gbl": 33.69573973951844,
+          "f3_gain_pct_vs_gbl": 33.15409154906581,
+          "coverage_cost_pp": 14.110942147649912,
+          "exchange_rate_f2_pct_per_pp": 2.3879156605521374
+        },
+        "MOEA-3": {
+          "f1_star_mean": 0.8501624046777877,
+          "f1_star_sd": 0.1228600553141041,
+          "f2_mean": 0.37618847881478473,
+          "f2_sd": 0.04982421885596909,
+          "f3_mean": 0.6984967006814058,
+          "f3_sd": 0.039072353652750115,
+          "hv_mean": 0.24984671375887582,
+          "hv_sd": 0.09720665144366337,
+          "f2_gain_pct_vs_gbl": 27.959045011618446,
+          "f3_gain_pct_vs_gbl": 41.562940828303745,
+          "coverage_cost_pp": 14.983759532221224,
+          "exchange_rate_f2_pct_per_pp": 1.8659566013119098
+        },
+        "NSGA-II": {
+          "f1_star_mean": 0.8121969082707564,
+          "f1_star_sd": 0.13186059857177526,
+          "f2_mean": 0.3818604875312819,
+          "f2_sd": 0.051398821153651846,
+          "f3_mean": 0.6963752004362972,
+          "f3_sd": 0.040281031534507704,
+          "hv_mean": 0.29627081593536336,
+          "hv_sd": 0.10017723316957462,
+          "f2_gain_pct_vs_gbl": 29.77400632499813,
+          "f3_gain_pct_vs_gbl": 41.01493973534753,
+          "coverage_cost_pp": 18.780309172924365,
+          "exchange_rate_f2_pct_per_pp": 1.5853842474501652
+        }
+      }
+    },
+    "S2": {
+      "n_scenarios": 50,
+      "solvers": {
+        "G-BL": {
+          "f1_star_mean": 1.0,
+          "f1_star_sd": 0.0,
+          "f2_mean": 0.31721612426451684,
+          "f2_sd": 0.02632768098379674,
+          "f3_mean": 0.56113437613306,
+          "f3_sd": 0.060343901670449666,
+          "hv_mean": 0.017914720386343355,
+          "hv_sd": 0.009298023051997138,
+          "f2_gain_pct_vs_gbl": 0.0,
+          "f3_gain_pct_vs_gbl": 0.0,
+          "coverage_cost_pp": 0.0,
+          "exchange_rate_f2_pct_per_pp": null
+        },
+        "MOEA-2": {
+          "f1_star_mean": 0.981203299463923,
+          "f1_star_sd": 0.028870002240023538,
+          "f2_mean": 0.32866523596005826,
+          "f2_sd": 0.029644183546388793,
+          "f3_mean": 0.5893509849724522,
+          "f3_sd": 0.0439977559719462,
+          "hv_mean": 0.02903162830646931,
+          "hv_sd": 0.010995268744165105,
+          "f2_gain_pct_vs_gbl": 3.6078017226205548,
+          "f3_gain_pct_vs_gbl": 5.424779431232893,
+          "coverage_cost_pp": 1.8796700536076907,
+          "exchange_rate_f2_pct_per_pp": 1.9193803272526602
+        },
+        "MOEA-3": {
+          "f1_star_mean": 0.9763928054987316,
+          "f1_star_sd": 0.04010114065330525,
+          "f2_mean": 0.32887432195616595,
+          "f2_sd": 0.02960998729790102,
+          "f3_mean": 0.5965225848975071,
+          "f3_sd": 0.04216038502219842,
+          "hv_mean": 0.03148855404595887,
+          "hv_sd": 0.013141207972446016,
+          "f2_gain_pct_vs_gbl": 3.6745034882166068,
+          "f3_gain_pct_vs_gbl": 6.786036869706684,
+          "coverage_cost_pp": 2.3607194501268407,
+          "exchange_rate_f2_pct_per_pp": 1.5565184960962544
+        },
+        "NSGA-II": {
+          "f1_star_mean": 0.9820247824467662,
+          "f1_star_sd": 0.02824498499219982,
+          "f2_mean": 0.3283891452764295,
+          "f2_sd": 0.028911163537722082,
+          "f3_mean": 0.5973016727729743,
+          "f3_sd": 0.04076007190485381,
+          "hv_mean": 0.03287999266657192,
+          "hv_sd": 0.01561745151967763,
+          "f2_gain_pct_vs_gbl": 3.5310724718593134,
+          "f3_gain_pct_vs_gbl": 6.940981631721061,
+          "coverage_cost_pp": 1.7975217553233838,
+          "exchange_rate_f2_pct_per_pp": 1.9644115357168819
+        }
+      }
+    }
+  },
+  "external_hv_reproduction_check": {
+    "S1": {
+      "published": {
+        "G-BL": 0.00683787581414405,
+        "G-SM": 0.2154055421933282,
+        "GA-P-BL": 0.006765800687571008,
+        "MOEA-2": 0.1650920202956593,
+        "MOEA-3": 0.24984671375887582
+      },
+      "recomputed": {
+        "G-BL": 0.00683787581414405,
+        "MOEA-2": 0.1650920202956593,
+        "MOEA-3": 0.24984671375887582
+      }
+    },
+    "S2": {
+      "published": {
+        "G-BL": 0.017914720386343355,
+        "G-SM": 0.2505166125561033,
+        "GA-P-BL": 0.01791472038634364,
+        "MOEA-2": 0.02903162830646931,
+        "MOEA-3": 0.03148855404595887
+      },
+      "recomputed": {
+        "G-BL": 0.017914720386343355,
+        "MOEA-2": 0.02903162830646931,
+        "MOEA-3": 0.03148855404595887
+      }
+    },
+    "max_abs_diff": 0.0,
+    "pass": true
+  }
+}

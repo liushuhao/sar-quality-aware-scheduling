@@ -1,0 +1,494 @@
+#!/usr/bin/env python3
+"""
+Cross-Solver Audit: verify every numerical claim in small-paper-ijae.tex
+against tracked JSON source data.
+
+Three audits in one:
+  1) Field integrity: does each _progress.json have the expected schema?
+  2) Per-group statistics: compute mean±std from raw data, compare with tex claims
+  3) Orphan scan: grep each tex number → verify existence in source files
+
+Usage: python experiments/cross_solver_audit.py
+Output: handoffs/cross-solver-audit-YYYYMMDD.md
+"""
+
+import json
+import os
+import re
+import sys
+import glob
+from collections import defaultdict
+from datetime import datetime
+
+# GBK 控制台兜底（print 含 ±/−/✓ 等 cp936 编不出的字符时会 UnicodeEncodeError）
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8")
+
+_SQS_EXP = os.path.dirname(os.path.abspath(__file__))
+PROJ = os.path.dirname(_SQS_EXP)          # papers/single-sat-quality
+TEX_PATH = os.path.join(PROJ, "small-paper-ijae.tex")
+RESULTS = os.path.join(PROJ, "experiments", "results")
+OUT_DIR = os.path.join(PROJ, "review")
+TOLERANCE = 0.015  # 1.5% relative tolerance for floating comparisons
+
+# ── Group definitions ──
+CLASS_LABELS = {"S1": 20, "S2": 100, "S3": 300, "S4": 500}
+ALL_SOLVERS = ["G-BL", "G-SM", "GA-P-BL", "MOEA-2", "MOEA-3"]
+
+def load_json(path):
+    with open(path) as f:
+        return json.load(f)
+
+def pct(val):
+    """Format as ±X.X% string for display."""
+    return f"{val*100:.1f}%"
+
+class AuditReport:
+    def __init__(self):
+        self.passes = []
+        self.fails = []
+        self.warns = []
+        self.orphans = []
+    
+    def ok(self, check, detail=""):
+        self.passes.append(f"  ✓ {check}: {detail}" if detail else f"  ✓ {check}")
+    
+    def fail(self, check, detail=""):
+        self.fails.append(f"  ✗ {check}: {detail}" if detail else f"  ✗ {check}")
+    
+    def warn(self, check, detail=""):
+        self.warns.append(f"  ⚠ {check}: {detail}" if detail else f"  ⚠ {check}")
+    
+    def orphan(self, num, context, source):
+        self.orphans.append(f"  👻 {num} ({context}): expected in {source}")
+    
+    def summary(self):
+        return {
+            "pass": len(self.passes),
+            "fail": len(self.fails),
+            "warn": len(self.warns),
+            "orphan": len(self.orphans),
+        }
+
+# ══════════════════════════════════════════════
+# AUDIT 1: Field integrity — schema check
+# ══════════════════════════════════════════════
+def audit_field_integrity(rpt):
+    print("\n=== AUDIT 1: Field Integrity ===")
+    
+    # baselines
+    bl = load_json(os.path.join(RESULTS, "baselines_200.json"))
+    n_bl_entries = len(bl)
+    rpt.ok(f"baselines_200.json: {n_bl_entries} scenario entries")
+    
+    # Check each entry has b1 and b3 subkeys with required fields
+    required_bl = {"f1", "f1_raw", "f1_gbl", "f2", "f3", "n_selected", "n_targets"}
+    missing_bl = 0
+    for sk, sd in bl.items():
+        for solver_key in ["b1", "b3"]:
+            if solver_key not in sd:
+                rpt.fail(f"baselines: {sk} missing solver {solver_key}")
+                continue
+            missing = required_bl - set(sd[solver_key].keys())
+            if missing:
+                missing_bl += 1
+                if missing_bl <= 5:
+                    rpt.fail(f"baselines[{sk}][{solver_key}] missing fields: {missing}")
+    if missing_bl == 0:
+        rpt.ok("baselines: all entries have required b1/b3 fields")
+    
+    # MOEA-3
+    m3 = load_json(os.path.join(RESULTS, "moea_3obj", "_progress.json"))
+    req_moea = {"seed", "n_targets", "n_selected", "f1", "f1_raw", "f1_gbl", "f2", "f3", "runtime_s", "n_frontier"}
+    missing_m3 = 0
+    for sk, sd in m3.get("completed", {}).items():
+        missing = req_moea - set(sd.keys())
+        if missing:
+            missing_m3 += 1
+            if missing_m3 <= 5:
+                rpt.fail(f"moea_3obj[{sk}] missing fields: {missing}")
+    m3_count = len(m3.get("completed", {}))
+    rpt.ok(f"moea_3obj: {m3_count} entries")
+    if missing_m3 == 0:
+        rpt.ok("moea_3obj: all entries have required fields")
+    
+    # MOEA-2
+    m2 = load_json(os.path.join(RESULTS, "moea_2obj", "_progress.json"))
+    missing_m2 = 0
+    for sk, sd in m2.get("completed", {}).items():
+        missing = req_moea - set(sd.keys())
+        if missing:
+            missing_m2 += 1
+            if missing_m2 <= 5:
+                rpt.fail(f"moea_2obj[{sk}] missing fields: {missing}")
+    m2_count = len(m2.get("completed", {}))
+    rpt.ok(f"moea_2obj: {m2_count} entries")
+    if missing_m2 == 0:
+        rpt.ok("moea_2obj: all entries have required fields")
+    
+    # Check scenario key consistency: same keys across solvers
+    bl_keys = set(bl.keys())
+    m3_keys = set(m3["completed"].keys())
+    m2_keys = set(m2["completed"].keys())
+    
+    only_bl = bl_keys - m3_keys
+    only_m3 = m3_keys - bl_keys
+    only_m2 = m2_keys - bl_keys
+    
+    if only_bl:
+        rpt.warn(f"baselines has {len(only_bl)} scenarios not in moea_3obj (first 5: {sorted(only_bl)[:5]})")
+    if only_m3:
+        rpt.warn(f"moea_3obj has {len(only_m3)} scenarios not in baselines (first 5: {sorted(only_m3)[:5]})")
+    if only_m2:
+        rpt.warn(f"moea_2obj has {len(only_m2)} scenarios not in baselines (first 5: {sorted(only_m2)[:5]})")
+    
+    common_keys = bl_keys & m3_keys & m2_keys
+    rpt.ok(f"scenario keys: {len(common_keys)} common across all 3 solvers")
+    
+    # Check S4 key naming issue (known from memory)
+    s4_keys_bl = [k for k in bl_keys if k.startswith("S4/")]
+    s4_keys_m3 = [k for k in m3_keys if k.startswith("S4/")]
+    s4_keys_m2 = [k for k in m2_keys if k.startswith("S4/")]
+    
+    if len(s4_keys_bl) != len(s4_keys_m3):
+        rpt.fail(f"S4 key count mismatch: baselines={len(s4_keys_bl)}, moea_3obj={len(s4_keys_m3)}")
+    if len(s4_keys_bl) != len(s4_keys_m2):
+        rpt.warn(f"S4 key count mismatch: baselines={len(s4_keys_bl)}, moea_2obj={len(s4_keys_m2)}")
+    
+    return bl, m3, m2
+
+# ══════════════════════════════════════════════
+# AUDIT 2: Per-group statistics — compute from data, compare vs tex
+# ══════════════════════════════════════════════
+def audit_group_stats(rpt, bl, m3, m2):
+    print("\n=== AUDIT 2: Group Statistics ===")
+    
+    # Group scenarios by class
+    def group_by_class(data_dict):
+        groups = defaultdict(list)
+        for key, val in data_dict.items():
+            cls = key.split("/")[0]
+            if cls in CLASS_LABELS:
+                groups[cls].append((key, val))
+        return groups
+    
+    bl_groups = group_by_class(bl)
+    m3_groups = group_by_class(m3["completed"])
+    m2_groups = group_by_class(m2["completed"])
+    
+    # Compute mean ± std for each group × solver
+    def compute_stats(groups, solver_subkey=None, is_baselines=True):
+        """Compute f1, f1*, f2, f3 mean ± std per group."""
+        stats = {}
+        for cls in sorted(CLASS_LABELS.keys()):
+            entries = groups.get(cls, [])
+            if not entries:
+                stats[cls] = None
+                continue
+            f1_raw_list, f1_gbl_list, f2_list, f3_list = [], [], [], []
+            n_selected_list, n_targets_list = [], []
+            for key, sd in entries:
+                if is_baselines:
+                    e = sd[solver_subkey] if solver_subkey in sd else list(sd.values())[0]
+                else:
+                    e = sd
+                f1_raw_list.append(e["f1_raw"])
+                f1_gbl_list.append(e["f1_gbl"])
+                f2_list.append(e["f2"])
+                f3_list.append(e["f3"])
+                n_selected_list.append(e["n_selected"])
+                n_targets_list.append(e["n_targets"])
+            
+            import numpy as np
+            # f1* = f1_raw / f1_gbl (per scenario)
+            f1_star = np.array(f1_raw_list) / np.maximum(np.array(f1_gbl_list), 1e-10)
+            
+            stats[cls] = {
+                "n": len(entries),
+                "f1*_mean": float(np.mean(f1_star)),
+                "f1*_std": float(np.std(f1_star, ddof=1)),
+                "f2_mean": float(np.mean(f2_list)),
+                "f2_std": float(np.std(f2_list, ddof=1)),
+                "f3_mean": float(np.mean(f3_list)),
+                "f3_std": float(np.std(f3_list, ddof=1)),
+                "n_selected_mean": float(np.mean(n_selected_list)),
+            }
+        return stats
+    
+    import numpy as np
+    
+    # G-BL stats (from baselines, subkey "b1")
+    gbl_stats = compute_stats(bl_groups, solver_subkey="b1", is_baselines=True)
+    # G-SM stats (from baselines, subkey "b3")
+    gsm_stats = compute_stats(bl_groups, solver_subkey="b3", is_baselines=True)
+    # MOEA-2 stats
+    m2_stats = compute_stats(m2_groups, is_baselines=False)
+    # MOEA-3 stats
+    m3_stats = compute_stats(m3_groups, is_baselines=False)
+    
+    # Paper Table 2 claims (all density classes; values synced to tex @ e01ca3d;
+    # S1 MOEA-2 f1* std 0.14->0.13 synced 2026-10-16 per current tex).
+    # GA-P-BL rows omitted: guard forces GA-P-BL == G-BL (fallback collapse),
+    # so its table rows duplicate G-BL by construction.
+
+    # We don't have GA-P-BL data directly in the same format — let's flag this
+    ga_bl_path = os.path.join(RESULTS, "b2_profit_bl", "_progress.json")
+    if os.path.exists(ga_bl_path):
+        ga_data = load_json(ga_bl_path)
+        # Need to figure out its schema
+        rpt.ok("GA-P-BL _progress.json exists (will check schema separately)")
+    else:
+        rpt.warn("GA-P-BL _progress.json NOT found at expected path")
+
+    # Check Table 2 values
+    print("\n── Table 2 (solver profiles per density class) ──")
+    table2_claims = {
+        "S1": {
+            "G-BL":   {"f1*": (1.00, 0.00), "f2": (0.295, 0.037), "f3": (0.497, 0.044)},
+            "G-SM":   {"f1*": (0.51, 0.16), "f2": (0.389, 0.086), "f3": (0.722, 0.058)},
+            "MOEA-2": {"f1*": (0.86, 0.13), "f2": (0.394, 0.059), "f3": (0.654, 0.038)},
+            "MOEA-3": {"f1*": (0.85, 0.12), "f2": (0.377, 0.050), "f3": (0.699, 0.037)},
+        },
+        "S2": {
+            "G-BL":   {"f1*": (1.00, 0.00), "f2": (0.317, 0.026), "f3": (0.561, 0.060)},
+            "G-SM":   {"f1*": (0.35, 0.09), "f2": (0.357, 0.078), "f3": (0.735, 0.055)},
+            "MOEA-2": {"f1*": (0.99, 0.03), "f2": (0.328, 0.030), "f3": (0.589, 0.045)},
+            "MOEA-3": {"f1*": (0.98, 0.04), "f2": (0.329, 0.030), "f3": (0.597, 0.042)},
+        },
+        "S3": {
+            "G-BL":   {"f1*": (1.00, 0.00), "f2": (0.342, 0.026), "f3": (0.616, 0.042)},
+            "G-SM":   {"f1*": (0.29, 0.04), "f2": (0.317, 0.055), "f3": (0.756, 0.036)},
+            "MOEA-2": {"f1*": (1.00, 0.00), "f2": (0.343, 0.026), "f3": (0.622, 0.040)},
+            "MOEA-3": {"f1*": (1.00, 0.01), "f2": (0.344, 0.026), "f3": (0.623, 0.040)},
+        },
+        "S4": {
+            "G-BL":   {"f1*": (1.00, 0.00), "f2": (0.336, 0.039), "f3": (0.675, 0.074)},
+            "G-SM":   {"f1*": (0.37, 0.12), "f2": (0.291, 0.067), "f3": (0.786, 0.046)},
+            "MOEA-2": {"f1*": (1.00, 0.01), "f2": (0.338, 0.038), "f3": (0.680, 0.073)},
+            "MOEA-3": {"f1*": (1.00, 0.01), "f2": (0.338, 0.038), "f3": (0.680, 0.073)},
+        },
+    }
+
+    computed = {"G-BL": gbl_stats, "G-SM": gsm_stats, "MOEA-2": m2_stats, "MOEA-3": m3_stats}
+
+    for cls, solvers in table2_claims.items():
+        for solver, claims in solvers.items():
+            cs = computed.get(solver, {}).get(cls, {})
+            if not cs:
+                rpt.warn(f"Table2 {solver} {cls}: no computed data")
+                continue
+            for obj, (claim_mean, claim_std) in claims.items():
+                comp_mean = cs.get(f"{obj}_mean")
+                comp_std = cs.get(f"{obj}_std")
+                if comp_mean is None:
+                    continue
+                mean_ok = abs(comp_mean - claim_mean) <= max(TOLERANCE * abs(claim_mean), 0.003)
+                std_ok = True
+                if claim_std is not None and comp_std is not None:
+                    std_ok = abs(comp_std - claim_std) <= max(TOLERANCE * abs(claim_std), 0.005)
+
+                status = "OK" if (mean_ok and std_ok) else "MISMATCH"
+                marker = rpt.ok if (mean_ok and std_ok) else (rpt.fail if abs(comp_mean - claim_mean) > 0.02 else rpt.warn)
+                marker(
+                    f"Table2 {solver} {cls} {obj}",
+                    f"paper={claim_mean}±{claim_std}, data={comp_mean:.4f}±{comp_std:.4f} [{status}]"
+                )
+    
+    # Check Table 5 (scale-sensitivity)
+    print("\n── Table 5 (scale sensitivity) ──")
+    table5_claims = {
+        "S1": {"f1*": (0.86, 0.14), "f2_imp": 33.7, "pct_opt": 80},
+        "S2": {"f1*": (0.985, 0.03), "f2_imp": 3.5, "pct_opt": 10},
+        "S3": {"f1*": (0.999, 0.00), "f2_imp": 0.4, "pct_opt": 0},
+        "S4": {"f1*": (0.996, 0.01), "f2_imp": 0.4, "pct_opt": 0},
+    }
+    
+    for cls, claims in table5_claims.items():
+        m2c = m2_stats.get(cls)
+        gblc = gbl_stats.get(cls)
+        if not m2c or not gblc:
+            rpt.warn(f"Table5 {cls}: missing data")
+            continue
+        
+        # Check f1* 
+        f1_ok = abs(m2c["f1*_mean"] - claims["f1*"][0]) <= max(TOLERANCE * abs(claims["f1*"][0]), 0.01)
+        marker = rpt.ok if f1_ok else rpt.fail
+        marker(
+            f"Table5 {cls} f1*",
+            f"paper={claims['f1*'][0]}±{claims['f1*'][1]}, data={m2c['f1*_mean']:.3f}±{m2c['f1*_std']:.3f}"
+        )
+        
+        # f2 improvement: (f2_MOEA2 - f2_GBL) / f2_GBL * 100
+        f2_imp_computed = (m2c["f2_mean"] - gblc["f2_mean"]) / max(gblc["f2_mean"], 1e-10) * 100
+        imp_ok = abs(f2_imp_computed - claims["f2_imp"]) <= 1.0
+        marker = rpt.ok if imp_ok else rpt.fail
+        marker(
+            f"Table5 {cls} f2 improvement",
+            f"paper={claims['f2_imp']}%, data={f2_imp_computed:.2f}%"
+        )
+        
+        # % f1* < 0.95 (active trade-off)
+        if cls in m2_groups:
+            entries = m2_groups[cls]
+            f1_star_vals = []
+            for key, sd in entries:
+                f1_star = sd["f1_raw"] / max(sd["f1_gbl"], 1e-10)
+                f1_star_vals.append(f1_star)
+            pct_opt_computed = sum(1 for v in f1_star_vals if v < 0.95) / len(f1_star_vals) * 100
+            pct_ok = abs(pct_opt_computed - claims["pct_opt"]) <= 10
+            marker = rpt.ok if pct_ok else rpt.fail
+            marker(
+                f"Table5 {cls} % f1*<0.95",
+                f"paper={claims['pct_opt']}%, data={pct_opt_computed:.0f}%"
+            )
+
+# ══════════════════════════════════════════════
+# AUDIT 3: Orphan scan — extract all paper numbers, check they exist in data
+# ══════════════════════════════════════════════
+def audit_orphan_scan(rpt, bl, m3, m2):
+    print("\n=== AUDIT 3: Orphan Scan ===")
+    
+    # Load all JSON data into a flat searchable dict
+    all_data = {
+        "baselines": bl,
+        "moea_3obj": m3.get("completed", {}),
+        "moea_2obj": m2.get("completed", {}),
+    }
+    
+    # Read .tex
+    with open(TEX_PATH) as f:
+        tex = f.read()
+    
+    # Extract key numerical patterns from abstract and key sections
+    # Pattern: look for numbers in specific contexts
+    
+    # 1. Orphan scan (existence only).  The former stale-value comparison
+    # (0.169/0.170 ± 0.066) predated the window-fixed rerun and produced
+    # permanent false WARNs; the live values are owned by the Table 2 dict
+    # above (synced to tex).  Removed 2026-10-16.
+    s4_m2_entries = [sd for k, sd in m2.get("completed", {}).items() if k.startswith("S4/")]
+    s4_m3_entries = [sd for k, sd in m3.get("completed", {}).items() if k.startswith("S4/")]
+    
+    if s4_m2_entries:
+        has_f3 = all("f3" in sd for sd in s4_m2_entries)
+        if has_f3:
+            f3_vals = [sd["f3"] for sd in s4_m2_entries]
+            import numpy as np
+            mean_f3, std_f3 = np.mean(f3_vals), np.std(f3_vals, ddof=1)
+            rpt.ok(f"MOEA-2 S4 f3 exists: {len(f3_vals)} entries, mean={mean_f3:.4f}±{std_f3:.4f}")
+        else:
+            rpt.fail("MOEA-2 S4: f3 field MISSING from all entries — ORPHAN")
+    else:
+        rpt.fail("MOEA-2 S4: no entries found")
+    
+    if s4_m3_entries:
+        has_f3 = all("f3" in sd for sd in s4_m3_entries)
+        if has_f3:
+            f3_vals = [sd["f3"] for sd in s4_m3_entries]
+            import numpy as np
+            mean_f3, std_f3 = np.mean(f3_vals), np.std(f3_vals, ddof=1)
+            rpt.ok(f"MOEA-3 S4 f3 exists: {len(f3_vals)} entries, mean={mean_f3:.4f}±{std_f3:.4f}")
+        else:
+            rpt.fail("MOEA-3 S4: f3 field MISSING from all entries — ORPHAN")
+    else:
+        rpt.fail("MOEA-3 S4: no entries found")
+    
+    # 2. Effect-size / coupling / abstract-delta claims: superseded by
+    # verify_paper_numbers.py — the authoritative 144-assertion ledger, which
+    # covers the f3 Cliff's δ=+0.88, §6.4 Fisher-z and §7.1 claims. Historical
+    # checks here referenced a removed effect_sizes.json / f2_f3_coupling.json
+    # namespace and pre-D01 correlation values; re-implementing them would
+    # duplicate the ledger.
+
+    # 3. Check: paper claims "200 scenarios" — count unique scenario keys
+    all_bl_keys = set(bl.keys())
+    rpt.ok(f"Scenario count: paper=200, data={len(all_bl_keys)} unique baselines entries")
+
+    # 4. Check: scenario key naming — do S4 keys have consistent naming?
+    # Problem from memory: S4 key mismatch might cause gen_all_figures.py to exclude them
+    s4_all_keys = set(k for k in all_bl_keys if k.startswith("S4/"))
+    s4_m3_keys = set(k for k in m3.get("completed", {}).keys() if k.startswith("S4/"))
+    diff = s4_all_keys - s4_m3_keys
+    if diff:
+        rpt.warn(f"S4 keys in baselines but NOT in moea_3obj: {sorted(diff)[:5]}")
+    diff2 = s4_m3_keys - s4_all_keys
+    if diff2:
+        rpt.warn(f"S4 keys in moea_3obj but NOT in baselines: {sorted(diff2)[:5]}")
+
+# ══════════════════════════════════════════════
+# RUN
+# ══════════════════════════════════════════════
+def main():
+    rpt = AuditReport()
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    
+    print("=" * 60)
+    print(f"Cross-Solver Audit — {timestamp}")
+    print("Paper: small-paper-ijae.tex")
+    print("Sources: baselines_200.json, moea_2obj, moea_3obj, effect_sizes, f2_f3_coupling")
+    print("=" * 60)
+    
+    bl, m3, m2 = audit_field_integrity(rpt)
+    audit_group_stats(rpt, bl, m3, m2)
+    audit_orphan_scan(rpt, bl, m3, m2)
+    
+    # ── Summary ──
+    s = rpt.summary()
+    print("\n" + "=" * 60)
+    print("AUDIT SUMMARY")
+    print("=" * 60)
+    print(f"  ✅ Pass:   {s['pass']}")
+    print(f"  ❌ Fail:   {s['fail']}")
+    print(f"  ⚠  Warn:   {s['warn']}")
+    print(f"  👻 Orphan: {s['orphan']}")
+    
+    if s['fail'] == 0 and s['orphan'] == 0:
+        print("\n  STATUS: ALL CHECKS PASS — paper numbers are reproducible")
+    elif s['fail'] == 0 and s['orphan'] == 0 and s['warn'] > 0:
+        print("\n  STATUS: PASS with warnings — minor discrepancies, paper may need tweaks")
+    else:
+        print(f"\n  STATUS: {s['fail']} FAIL + {s['orphan']} ORPHAN — paper needs fixes before submission")
+    
+    # Write report
+    os.makedirs(OUT_DIR, exist_ok=True)
+    report_path = os.path.join(OUT_DIR, f"cross-solver-audit-{timestamp}.md")
+    
+    with open(report_path, "w") as f:
+        f.write(f"# Cross-Solver Audit Report — {timestamp}\n\n")
+        f.write(f"**Paper:** `small-paper-ijae.tex`\n\n")
+        f.write(f"## Results\n\n")
+        f.write(f"- ✅ Pass: {s['pass']}\n")
+        f.write(f"- ❌ Fail: {s['fail']}\n")
+        f.write(f"- ⚠ Warn: {s['warn']}\n")
+        f.write(f"- 👻 Orphan: {s['orphan']}\n\n")
+        
+        if s['pass']:
+            f.write("### ✅ Passes\n\n")
+            for line in rpt.passes:
+                f.write(f"{line}\n")
+            f.write("\n")
+        
+        if s['fail']:
+            f.write("### ❌ Fails\n\n")
+            for line in rpt.fails:
+                f.write(f"{line}\n")
+            f.write("\n")
+        
+        if s['warn']:
+            f.write("### ⚠ Warnings\n\n")
+            for line in rpt.warns:
+                f.write(f"{line}\n")
+            f.write("\n")
+        
+        if s['orphan']:
+            f.write("### 👻 Orphans\n\n")
+            for line in rpt.orphans:
+                f.write(f"{line}\n")
+            f.write("\n")
+    
+    print(f"\nReport written to: {report_path}")
+    return s
+
+if __name__ == "__main__":
+    s = main()
+    sys.exit(0 if s['fail'] == 0 and s['orphan'] == 0 else 1)

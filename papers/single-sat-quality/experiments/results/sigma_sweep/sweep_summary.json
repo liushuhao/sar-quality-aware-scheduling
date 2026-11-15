@@ -1,0 +1,198 @@
+{
+  "sigma_values": [
+    0.1,
+    0.3,
+    0.5,
+    0.7
+  ],
+  "solvers": [
+    "moea_2obj",
+    "moea_3obj"
+  ],
+  "groups": [
+    "S1",
+    "S2",
+    "S3",
+    "S4"
+  ],
+  "solver_seed": 42,
+  "params": {
+    "population_size": 100,
+    "n_generations": 200,
+    "n_ref_dirs": 12
+  },
+  "git_commit": "f96674f6",
+  "aggregator": [
+    {
+      "sigma": 0.1,
+      "solver": "moea_2obj",
+      "group": "S3",
+      "n": 10,
+      "f1_mean": 1157.1,
+      "f1_std": 36.9,
+      "f2_mean": 0.3427,
+      "f2_std": 0.0082,
+      "f3_mean": 0.6088,
+      "f3_std": 0.0105,
+      "n_selected_mean": 200.0,
+      "n_selected_std": 0.0
+    },
+    {
+      "sigma": 0.1,
+      "solver": "moea_3obj",
+      "group": "S3",
+      "n": 10,
+      "f1_mean": 1157.1,
+      "f1_std": 36.9,
+      "f2_mean": 0.3428,
+      "f2_std": 0.0083,
+      "f3_mean": 0.6098,
+      "f3_std": 0.0106,
+      "n_selected_mean": 200.0,
+      "n_selected_std": 0.0
+    },
+    {
+      "sigma": 0.3,
+      "solver": "moea_2obj",
+      "group": "S3",
+      "n": 10,
+      "f1_mean": 1157.1,
+      "f1_std": 36.9,
+      "f2_mean": 0.3428,
+      "f2_std": 0.0081,
+      "f3_mean": 0.609,
+      "f3_std": 0.0103,
+      "n_selected_mean": 200.0,
+      "n_selected_std": 0.0
+    },
+    {
+      "sigma": 0.3,
+      "solver": "moea_3obj",
+      "group": "S3",
+      "n": 10,
+      "f1_mean": 1157.1,
+      "f1_std": 36.9,
+      "f2_mean": 0.3428,
+      "f2_std": 0.0082,
+      "f3_mean": 0.6099,
+      "f3_std": 0.0101,
+      "n_selected_mean": 200.0,
+      "n_selected_std": 0.0
+    },
+    {
+      "sigma": 0.5,
+      "solver": "moea_2obj",
+      "group": "S3",
+      "n": 10,
+      "f1_mean": 1157.1,
+      "f1_std": 36.9,
+      "f2_mean": 0.3429,
+      "f2_std": 0.0082,
+      "f3_mean": 0.6086,
+      "f3_std": 0.0107,
+      "n_selected_mean": 200.0,
+      "n_selected_std": 0.0
+    },
+    {
+      "sigma": 0.5,
+      "solver": "moea_3obj",
+      "group": "S3",
+      "n": 10,
+      "f1_mean": 1157.1,
+      "f1_std": 36.9,
+      "f2_mean": 0.3427,
+      "f2_std": 0.0081,
+      "f3_mean": 0.6092,
+      "f3_std": 0.0105,
+      "n_selected_mean": 200.0,
+      "n_selected_std": 0.0
+    },
+    {
+      "sigma": 0.7,
+      "solver": "moea_2obj",
+      "group": "S3",
+      "n": 10,
+      "f1_mean": 1154.8,
+      "f1_std": 38.5,
+      "f2_mean": 0.3431,
+      "f2_std": 0.0082,
+      "f3_mean": 0.6088,
+      "f3_std": 0.011,
+      "n_selected_mean": 199.7,
+      "n_selected_std": 0.5
+    },
+    {
+      "sigma": 0.7,
+      "solver": "moea_3obj",
+      "group": "S3",
+      "n": 10,
+      "f1_mean": 1154.0,
+      "f1_std": 38.3,
+      "f2_mean": 0.3432,
+      "f2_std": 0.0083,
+      "f3_mean": 0.6099,
+      "f3_std": 0.0104,
+      "n_selected_mean": 199.5,
+      "n_selected_std": 0.7
+    }
+  ],
+  "correlations": [
+    {
+      "sigma": 0.1,
+      "solver": "moea_2obj",
+      "group": "S3",
+      "n": 10,
+      "r_f2f3": 0.1276
+    },
+    {
+      "sigma": 0.1,
+      "solver": "moea_3obj",
+      "group": "S3",
+      "n": 10,
+      "r_f2f3": 0.1373
+    },
+    {
+      "sigma": 0.3,
+      "solver": "moea_2obj",
+      "group": "S3",
+      "n": 10,
+      "r_f2f3": 0.0572
+    },
+    {
+      "sigma": 0.3,
+      "solver": "moea_3obj",
+      "group": "S3",
+      "n": 10,
+      "r_f2f3": 0.0644
+    },
+    {
+      "sigma": 0.5,
+      "solver": "moea_2obj",
+      "group": "S3",
+      "n": 10,
+      "r_f2f3": 0.1402
+    },
+    {
+      "sigma": 0.5,
+      "solver": "moea_3obj",
+      "group": "S3",
+      "n": 10,
+      "r_f2f3": 0.0429
+    },
+    {
+      "sigma": 0.7,
+      "solver": "moea_2obj",
+      "group": "S3",
+      "n": 10,
+      "r_f2f3": 0.1127
+    },
+    {
+      "sigma": 0.7,
+      "solver": "moea_3obj",
+      "group": "S3",
+      "n": 10,
+      "r_f2f3": 0.1274
+    }
+  ],
+  "n_total": 80
+}

@@ -1,0 +1,30 @@
+{
+  "generated_at": "2026-08-06",
+  "generator_script": "generate_all_scenarios.py",
+  "note": "Scenarios regenerated 2026-08-06 with the 10s step after the RDR-003/004/005 refactor (commit 7412881); pkl SARInstrument records incidence 18-47 deg, matching this manifest.",
+  "groups": {
+    "S1": {"n_targets": 20, "n_subconfigs": 5, "n_seeds_per_subconfig": 10, "total_pkls": 50},
+    "S2": {"n_targets": 100, "n_subconfigs": 5, "n_seeds_per_subconfig": 10, "total_pkls": 50},
+    "S3": {"n_targets": 300, "n_subconfigs": 5, "n_seeds_per_subconfig": 10, "total_pkls": 50},
+    "S4": {"n_targets": 500, "n_subconfigs": 5, "n_seeds_per_subconfig": 10, "total_pkls": 50},
+    "S5": {"n_targets": 20, "n_subconfigs": 5, "n_seeds_per_subconfig": 10, "total_pkls": 50, "purpose": "psi_sq sensitivity"},
+    "S6": {"n_targets": 20, "n_subconfigs": 5, "n_seeds_per_subconfig": 10, "total_pkls": 50, "purpose": "C3 cluster stress test, narrow window"},
+    "S7": {"n_targets": 150, "n_subconfigs": 5, "n_seeds_per_subconfig": 10, "total_pkls": 50, "purpose": "intermediate density for N50 CI tightening"},
+    "S8": {"n_targets": 200, "n_subconfigs": 5, "n_seeds_per_subconfig": 10, "total_pkls": 50, "purpose": "intermediate density for N50 CI tightening"}
+  },
+  "total_scenarios": 400,
+  "orbit": {
+    "altitude_km": 693.0,
+    "inclination_deg": 97.8,
+    "ltan_h": 6.0,
+    "sim_duration_orbits": 2,
+    "timestep_s": 10
+  },
+  "instrument": {
+    "incidence_min_deg": 18.0,
+    "incidence_max_deg": 47.0,
+    "look_direction": "both",
+    "antenna_type": "reflector",
+    "min_elevation_deg": 5.0
+  }
+}

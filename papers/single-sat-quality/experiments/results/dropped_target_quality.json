@@ -1,0 +1,98 @@
+{
+  "f3_max_definition": "cos^3(min phi over the task's cached window grid)",
+  "f2_max_definition": "max over the cached grid of sqrt(max(cos^2 psi - cos^2 phi, 0))",
+  "solvers": {
+    "MOEA-3": {
+      "S1": {
+        "n_scenarios": 50,
+        "n_retained": 782,
+        "n_dropped": 214,
+        "f3max_retained_mean": 0.7971224846163721,
+        "f3max_dropped_mean": 0.9177626842398348,
+        "f3max_retained_std": 0.16819467922378178,
+        "f3max_dropped_std": 0.13464512877931897,
+        "f2max_retained_mean": 0.9130598929046476,
+        "f2max_dropped_mean": 0.9652719314149403
+      },
+      "S2": {
+        "n_scenarios": 50,
+        "n_retained": 3134,
+        "n_dropped": 1322,
+        "f3max_retained_mean": 0.8266382303844254,
+        "f3max_dropped_mean": 0.8613350026684266,
+        "f3max_retained_std": 0.16122168031567946,
+        "f3max_dropped_std": 0.17713504214428652,
+        "f2max_retained_mean": 0.9268286235570867,
+        "f2max_dropped_mean": 0.9387284288024266
+      },
+      "S3": {
+        "n_scenarios": 50,
+        "n_retained": 7710,
+        "n_dropped": 7250,
+        "f3max_retained_mean": 0.8128783098184585,
+        "f3max_dropped_mean": 0.8262720692286851,
+        "f3max_retained_std": 0.15637608995083968,
+        "f3max_dropped_std": 0.18520127247205673,
+        "f2max_retained_mean": 0.9215968999570452,
+        "f2max_dropped_mean": 0.9232019600117221
+      },
+      "S4": {
+        "n_scenarios": 50,
+        "n_retained": 7117,
+        "n_dropped": 17781,
+        "f3max_retained_mean": 0.8160476910501627,
+        "f3max_dropped_mean": 0.864015591921161,
+        "f3max_retained_std": 0.1462376982234165,
+        "f3max_dropped_std": 0.1624029316927396,
+        "f2max_retained_mean": 0.9235680615105286,
+        "f2max_dropped_mean": 0.9417036983039445
+      }
+    },
+    "MOEA-2": {
+      "S1": {
+        "n_scenarios": 50,
+        "n_retained": 777,
+        "n_dropped": 219,
+        "f3max_retained_mean": 0.7866498489754221,
+        "f3max_dropped_mean": 0.9521646791937198,
+        "f3max_retained_std": 0.16888957659362644,
+        "f3max_dropped_std": 0.08530116774965182,
+        "f2max_retained_mean": 0.9082479085763859,
+        "f2max_dropped_mean": 0.9811525324674875
+      },
+      "S2": {
+        "n_scenarios": 50,
+        "n_retained": 3157,
+        "n_dropped": 1299,
+        "f3max_retained_mean": 0.8264550330769816,
+        "f3max_dropped_mean": 0.8623945713074811,
+        "f3max_retained_std": 0.16091398232419207,
+        "f3max_dropped_std": 0.17793195344438104,
+        "f2max_retained_mean": 0.9267894630499236,
+        "f2max_dropped_mean": 0.9390342988884601
+      },
+      "S3": {
+        "n_scenarios": 50,
+        "n_retained": 7718,
+        "n_dropped": 7242,
+        "f3max_retained_mean": 0.8129612255703107,
+        "f3max_dropped_mean": 0.8261984992621687,
+        "f3max_retained_std": 0.15637445505581696,
+        "f3max_dropped_std": 0.18523793030781885,
+        "f2max_retained_mean": 0.9216329258158452,
+        "f2max_dropped_mean": 0.9231653393133266
+      },
+      "S4": {
+        "n_scenarios": 50,
+        "n_retained": 7119,
+        "n_dropped": 17779,
+        "f3max_retained_mean": 0.8160074916147974,
+        "f3max_dropped_mean": 0.8640370844450435,
+        "f3max_retained_std": 0.1462540051294135,
+        "f3max_dropped_std": 0.16239322507473392,
+        "f2max_retained_mean": 0.9235501617808552,
+        "f2max_dropped_mean": 0.9417129057649455
+      }
+    }
+  }
+}
