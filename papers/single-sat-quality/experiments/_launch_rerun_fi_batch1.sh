@@ -3,8 +3,8 @@
 # Core 3 families, single-process each, backgrounded. Baselines need no rerun.
 # Each family audited after completion; batch 2 (ablations) follows.
 set -u
-cd "D:/hermes/my-workspace/projects/planning-paper/papers/single-sat-quality/experiments"
-PY="D:/Program Files/Python/python.exe"
+cd "$(dirname "$0")"
+PY="${PYTHON:-python}"
 LOGS=logs
 STAMP=$(date +%Y%m%d_%H%M%S)
 

@@ -1,4 +1,4 @@
-$Exp = 'D:\hermes\my-workspace\projects\planning-paper\papers\single-sat-quality\experiments'
+$Exp = $PSScriptRoot
 $Logs = "$Exp\logs"
 # 1. MOEA-2 main rerun (resume 176/400)
 Start-Process -FilePath python -ArgumentList 'run_moea_2obj.py' -WorkingDirectory $Exp -RedirectStandardOutput "$Logs\moea2obj_rdr066_20260813.log" -RedirectStandardError "$Logs\moea2obj_rdr066_20260813_err.log" -WindowStyle Hidden

@@ -1,0 +1,2 @@
+# 复现仓换行约束：读者克隆后 shell 启动器必须是 LF，否则 bash 会把 \r 当命令字符
+*.sh text eol=lf

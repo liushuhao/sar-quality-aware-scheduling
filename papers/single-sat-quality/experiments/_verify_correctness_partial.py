@@ -5,8 +5,9 @@ constraint-feasibility counts. Does NOT write live files.
 import json, hashlib, sys
 from pathlib import Path
 
-RES = Path("D:/hermes/my-workspace/projects/planning-paper/papers/single-sat-quality/experiments/results")
-SCEN = Path("D:/hermes/my-workspace/projects/planning-paper/papers/single-sat-quality/experiments/scenarios")
+_HERE = Path(__file__).resolve().parent
+RES = _HERE / "results"
+SCEN = _HERE / "scenarios"
 FAMS = {
     "b2_profit_bl": "GA-P-BL",
     "moea_2obj": "MOEA-2",

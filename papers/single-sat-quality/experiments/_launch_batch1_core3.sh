@@ -5,8 +5,8 @@
 #
 # Audit + downstream regen handled separately after all three finish.
 set -u
-cd "D:/hermes/my-workspace/projects/planning-paper/papers/single-sat-quality/experiments"
-PY="D:/Program Files/Python/python.exe"
+cd "$(dirname "$0")"
+PY="${PYTHON:-python}"
 LOGS=logs
 
 echo "[$(date '+%F %T')] launching core-3 rerun (batch 1)"

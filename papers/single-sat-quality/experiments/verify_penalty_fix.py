@@ -3,7 +3,7 @@
 import sys, pickle, time
 from pathlib import Path
 import numpy as np
-sys.path.insert(0, 'D:/hermes/my-workspace/projects/planning-paper/src')
+sys.path.insert(0, str(Path(__file__).resolve().parents[3] / 'src'))
 from sar_sim.solver.moea import moea_solver
 from sar_sim.solver.baselines import baseline_b1
 from sar_sim.solver.types import build_agile_instance_from_scenario, precompute_geometry
